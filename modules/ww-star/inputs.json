@@ -1,0 +1,19 @@
+{
+  "star_example.samples": [
+    {
+      "name": "SRR10724344",
+      "r1": "/path_to_first_input/SRR10724344_1.fastq.gz",
+      "r2": "/path_to_first_input/SRR10724344_2.fastq.gz"
+    },
+    {
+      "name": "SRR12345678",
+      "r1": "/path_to_second_input/SRR12345678_1.fastq.gz",
+      "r2": "/path_to_second_input/SRR12345678_2.fastq.gz"
+    }
+  ],
+  "star_example.reference_genome": {
+    "name": "SuperAwesomeGenome",
+    "fasta": "/path_to_ref_data/awesome_genome.fna",
+    "gtf": "/path_to_ref_data/awesome_transcripts.gtf"
+  }
+}

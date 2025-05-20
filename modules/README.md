@@ -1,0 +1,3 @@
+
+# WILDS WDL Modules
+WILDS WDL modules are tool-specific collections of tasks in a WDL script with a “unit test” workflow that executes each task at least once. Researchers are free to use the workflow if it fits their needs, but the purpose of it is solely to ensure proper function of each task over time. This sounds like a given as long as the script itself stays the same, but Docker images, execution engine infrastructures, and the tools themselves can shift independent of our scripts. To stay ahead of this, a GitHub Action will execute this workflow as a check on every PR to main and as a scheduled check every week. This will provide confidence that our tasks function as expected, and quickly notify us when they don’t.
