@@ -1,0 +1,91 @@
+name: WDL Validation and Linting
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  miniwdl_check:
+    runs-on: ubuntu-latest
+    steps:
+    - 
+      name: Checkout
+      uses: actions/checkout@v4
+    - 
+      name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.13
+    - 
+      name: Install miniwdl
+      run: |
+        python -m pip install --upgrade pip
+        pip3 install miniwdl
+    - 
+      name: Miniwdl Check
+      run: |
+        EXITCODE=0
+        echo "Checking WDL files using \`miniwdl check\`."
+        files=$(find modules -name '*.wdl')
+        for file in $files; do
+          echo "  [***] $file [***]"
+          miniwdl check "$file"
+          EXITCODE=$(($? || EXITCODE))
+        done
+        exit $EXITCODE
+
+  womtoolval:
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v4
+    -
+      name: Set Up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+    -
+      name: Pull WOMtool Jarfile
+      run: wget -q https://github.com/broadinstitute/cromwell/releases/download/86/womtool-86.jar
+    -
+      name: WOMtool Validation
+      run: |
+        EXITCODE=0
+        echo "Validating WDL files using WOMtool."
+        for module_dir in modules/*/; do
+          module_name=$(basename $module_dir)
+          wdl_file="$module_dir$module_name.wdl"
+          inputs_file="$module_dir$module_name-inputs.json"
+          
+          if [ -f "$wdl_file" ] && [ -f "$inputs_file" ]; then
+            echo "  [***] Validating $wdl_file with $inputs_file [***]"
+            java -jar womtool-86.jar validate "$wdl_file" -i "$inputs_file"
+            EXITCODE=$(($? || EXITCODE))
+          elif [ -f "$wdl_file" ]; then
+            echo "  [***] Validating $wdl_file (no inputs file found) [***]"
+            java -jar womtool-86.jar validate "$wdl_file"
+            EXITCODE=$(($? || EXITCODE))
+          fi
+        done
+        exit $EXITCODE
+
+  sprocket-lint:
+    runs-on: ubuntu-latest
+    steps:
+    - 
+      name: Checkout
+      uses: actions/checkout@v4
+    -
+      name: Check for ShellCheck
+      run: which shellcheck || sudo apt-get install -y shellcheck
+    - 
+      name: Sprocket Linting
+      uses: stjude-rust-labs/sprocket-action@main
+      with:
+        action: lint
+        deny-warnings: true
+        deny-notes: true
+        except: TodoComment ContainerUri TrailingComma
