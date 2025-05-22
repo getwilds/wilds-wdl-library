@@ -5,13 +5,50 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
     paths:
-      - '**.wdl'
+      - 'modules/**/*.wdl'
+      - 'modules/**/*.json'
       - '.github/workflows/testrun.yml'
 
 permissions:
   contents: read
 
 jobs:
+  discover-modules:
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.find-modules.outputs.modules }}
+    steps:
+    - 
+      name: Checkout
+      uses: actions/checkout@v4
+    - 
+      name: Find WDL modules
+      id: find-modules
+      run: |
+        # Find all directories in modules/ that contain both a .wdl file and inputs.json
+        modules=()
+        for module_dir in modules/*/; do
+          if [ -d "$module_dir" ]; then
+            module_name=$(basename "$module_dir")
+            wdl_file="$module_dir$module_name.wdl"
+            inputs_file="$module_dir/inputs.json"
+            
+            if [ -f "$wdl_file" ] && [ -f "$inputs_file" ]; then
+              modules+=("$module_name")
+              echo "Found module: $module_name"
+            else
+              echo "Skipping $module_name - missing required files"
+              [ ! -f "$wdl_file" ] && echo "  Missing: $wdl_file"
+              [ ! -f "$inputs_file" ] && echo "  Missing: $inputs_file"
+            fi
+          fi
+        done
+        
+        # Convert array to JSON format for matrix strategy
+        printf -v modules_json '%s\n' "${modules[@]}" | jq -R . | jq -s .
+        echo "modules=$modules_json" >> $GITHUB_OUTPUT
+        echo "Found modules: $modules_json"
+
   download-test-data:
     runs-on: ubuntu-latest
     steps:
@@ -53,8 +90,12 @@ jobs:
         retention-days: 1
 
   miniwdl-test:
-    needs: download-test-data
+    needs: [discover-modules, download-test-data]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
+      fail-fast: false
     steps:
     - 
       name: Checkout
@@ -78,8 +119,13 @@ jobs:
     - 
       name: Run workflow with miniwdl
       run: |
-        mkdir -p test-output/miniwdl
-        miniwdl run modules/ww-sra/ww-sra.wdl -i modules/ww-sra/inputs.json --dir test-output/miniwdl
+        mkdir -p test-output/miniwdl/${{ matrix.module }}
+        module_dir="modules/${{ matrix.module }}"
+        wdl_file="$module_dir/${{ matrix.module }}.wdl"
+        inputs_file="$module_dir/inputs.json"
+        
+        echo "Running ${{ matrix.module }} with miniwdl..."
+        miniwdl run "$wdl_file" -i "$inputs_file" --dir "test-output/miniwdl/${{ matrix.module }}"
     - 
       name: Display validation report
       run: |
@@ -87,8 +133,12 @@ jobs:
         find test-output/miniwdl -name "validation_report.txt" -exec cat {} \;
   
   cromwell-test:
-    needs: download-test-data
+    needs: [discover-modules, download-test-data]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
+      fail-fast: false
     steps:
     - 
       name: Checkout
@@ -112,8 +162,14 @@ jobs:
     - 
       name: Run workflow with Cromwell
       run: |
-        mkdir -p test-output/cromwell
-        java -jar cromwell-86.jar run modules/ww-sra/ww-sra.wdl -i modules/ww-sra/inputs.json -o modules/ww-sra/options.json
+        mkdir -p test-output/cromwell/${{ matrix.module }}
+        module_dir="modules/${{ matrix.module }}"
+        wdl_file="$module_dir/${{ matrix.module }}.wdl"
+        inputs_file="$module_dir/inputs.json"
+        options_file="$module_dir/options.json"
+        
+        echo "Running ${{ matrix.module }} with Cromwell..."
+        java -jar cromwell-86.jar run "$wdl_file" -i "$inputs_file" -o "$options_file"
     - 
       name: Display validation report
       run: |
@@ -121,8 +177,12 @@ jobs:
         find . -name "validation_report.txt" -exec cat {} \;
   
   sprocket-test:
-    needs: download-test-data
+    needs: [discover-modules, download-test-data]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
+      fail-fast: false
     steps:
     - 
       name: Checkout
@@ -147,7 +207,14 @@ jobs:
       run: cargo-binstall sprocket --version 0.12.2
     - 
       name: Run workflow with Sprocket
-      run: sprocket run --output test-output/sprocket modules/ww-sra/ww-sra.wdl modules/ww-sra/inputs.json
+      run: |
+        mkdir -p test-output/sprocket/${{ matrix.module }}
+        module_dir="modules/${{ matrix.module }}"
+        wdl_file="$module_dir/${{ matrix.module }}.wdl"
+        inputs_file="$module_dir/inputs.json"
+        
+        echo "Running ${{ matrix.module }} with Sprocket..."
+        sprocket run --output "test-output/sprocket/${{ matrix.module }}" "$wdl_file" "$inputs_file"
     - 
       name: Display validation report
       run: |
