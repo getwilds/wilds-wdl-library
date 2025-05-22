@@ -5,6 +5,6 @@
     "default_runtime_attributes": {
         "maxRetries": 1
     },
-    "final_workflow_outputs_dir": "/path_to_outputs/star_test_run/",
+    "final_workflow_outputs_dir": "cromwell_outputs",
     "use_relative_output_paths": true
 }
