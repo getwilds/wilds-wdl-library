@@ -1,0 +1,118 @@
+name: WDL Workflow Test Run
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - '**.wdl'
+      - '.github/workflows/testrun.yml'
+
+jobs:
+  miniwdl-test:
+    runs-on: ubuntu-latest
+    steps:
+    - 
+      name: Checkout
+      uses: actions/checkout@v4
+    - 
+      name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.13
+    - 
+      name: Install miniwdl
+      run: |
+        python -m pip install --upgrade pip
+        pip3 install miniwdl
+    - 
+      name: Run workflow with miniwdl
+      run: |
+        mkdir -p test-output/miniwdl
+        miniwdl run modules/ww-sra/ww-sra.wdl -i modules/ww-sra/inputs.json --dir test-output/miniwdl
+    -
+      name: Check for output files
+      run: |
+        # Check that we have the expected output files
+        if [ ! -f $(find test-output/miniwdl -name "SRR13191702_1.fastq.gz") ]; then
+          echo "R1 FASTQ file not found!"
+          exit 1
+        fi
+        
+        # List the output files for debugging
+        echo "Output files:"
+        find test-output/miniwdl -type f -name "*.fastq.gz" | sort
+  
+  cromwell-test:
+    runs-on: ubuntu-latest
+    steps:
+    - 
+      name: Checkout
+      uses: actions/checkout@v4
+    - 
+      name: Set Up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+    - 
+      name: Download Cromwell
+      run: |
+        wget -q https://github.com/broadinstitute/cromwell/releases/download/86/cromwell-86.jar
+    - 
+      name: Run workflow with Cromwell
+      run: |
+        mkdir -p test-output/cromwell
+        java -jar cromwell-86.jar run modules/ww-sra/ww-sra.wdl -i modules/ww-sra/inputs.json -o modules/ww-sra/options.json
+    -
+      name: Check for output files
+      run: |
+        # Find the cromwell-executions directory
+        EXEC_DIR=$(find . -type d -name "cromwell-executions" | head -1)
+        WORKFLOW_DIR=$(find $EXEC_DIR -type d -name "sra_download" | head -1)
+        
+        # List the directories to debug
+        echo "Execution directories:"
+        ls -la $WORKFLOW_DIR
+        
+        # Check the output directory
+        echo "Output directory contents:"
+        find test-output/cromwell -type f | sort
+        
+        # If the outputs aren't in the expected directory, check the execution directory
+        find $WORKFLOW_DIR -name "*.fastq.gz" | sort
+  
+  sprocket-test:
+    runs-on: ubuntu-latest
+    steps:
+    - 
+      name: Checkout
+      uses: actions/checkout@v4
+    - 
+      name: Set Up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+    - 
+      name: Install cargo-binstall
+      run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+    - 
+      name: Install Sprocket
+      run: cargo-binstall sprocket --version 0.12.2
+    - 
+      name: Run workflow with Sprocket
+      run: sprocket run --output test-output/sprocket modules/ww-sra/ww-sra.wdl modules/ww-sra/inputs.json
+    -
+      name: Check for output files
+      run: |
+        # List the output directory
+        echo "Sprocket output directory:"
+        find test-output/sprocket -type f | sort
+        
+        # Check for the expected files
+        if [ ! -f $(find test-output/sprocket -name "SRR13191702_1.fastq.gz") ]; then
+          echo "R1 FASTQ file not found in Sprocket output!"
+          ls -R test-output/sprocket
+          exit 1
+        fi
