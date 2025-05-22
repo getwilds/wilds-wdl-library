@@ -45,7 +45,11 @@ jobs:
         done
         
         # Convert array to JSON format for matrix strategy
-        printf -v modules_json '%s\n' "${modules[@]}" | jq -R . | jq -s .
+        if [ ${#modules[@]} -eq 0 ]; then
+          modules_json="[]"
+        else
+          modules_json=$(printf '%s\n' "${modules[@]}" | jq -R . | jq -s .)
+        fi
         echo "modules=$modules_json" >> $GITHUB_OUTPUT
         echo "Found modules: $modules_json"
 
