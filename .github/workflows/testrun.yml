@@ -30,18 +30,11 @@ jobs:
       run: |
         mkdir -p test-output/miniwdl
         miniwdl run modules/ww-sra/ww-sra.wdl -i modules/ww-sra/inputs.json --dir test-output/miniwdl
-    -
-      name: Check for output files
+    - 
+      name: Display validation report
       run: |
-        # Check that we have the expected output files
-        if [ ! -f $(find test-output/miniwdl -name "SRR13191702_1.fastq.gz") ]; then
-          echo "R1 FASTQ file not found!"
-          exit 1
-        fi
-        
-        # List the output files for debugging
-        echo "Output files:"
-        find test-output/miniwdl -type f -name "*.fastq.gz" | sort
+        echo "=== MiniWDL Validation Report ==="
+        find test-output/miniwdl -name "validation_report.txt" -exec cat {} \;
   
   cromwell-test:
     runs-on: ubuntu-latest
@@ -64,23 +57,11 @@ jobs:
       run: |
         mkdir -p test-output/cromwell
         java -jar cromwell-86.jar run modules/ww-sra/ww-sra.wdl -i modules/ww-sra/inputs.json -o modules/ww-sra/options.json
-    -
-      name: Check for output files
+    - 
+      name: Display validation report
       run: |
-        # Find the cromwell-executions directory
-        EXEC_DIR=$(find . -type d -name "cromwell-executions" | head -1)
-        WORKFLOW_DIR=$(find $EXEC_DIR -type d -name "sra_download" | head -1)
-        
-        # List the directories to debug
-        echo "Execution directories:"
-        ls -la $WORKFLOW_DIR
-        
-        # Check the output directory
-        echo "Output directory contents:"
-        find test-output/cromwell -type f | sort
-        
-        # If the outputs aren't in the expected directory, check the execution directory
-        find $WORKFLOW_DIR -name "*.fastq.gz" | sort
+        echo "=== Cromwell Validation Report ==="
+        find . -name "validation_report.txt" -exec cat {} \;
   
   sprocket-test:
     runs-on: ubuntu-latest
@@ -103,16 +84,8 @@ jobs:
     - 
       name: Run workflow with Sprocket
       run: sprocket run --output test-output/sprocket modules/ww-sra/ww-sra.wdl modules/ww-sra/inputs.json
-    -
-      name: Check for output files
+    - 
+      name: Display validation report
       run: |
-        # List the output directory
-        echo "Sprocket output directory:"
-        find test-output/sprocket -type f | sort
-        
-        # Check for the expected files
-        if [ ! -f $(find test-output/sprocket -name "SRR13191702_1.fastq.gz") ]; then
-          echo "R1 FASTQ file not found in Sprocket output!"
-          ls -R test-output/sprocket
-          exit 1
-        fi
+        echo "=== Sprocket Validation Report ==="
+        find test-output/sprocket -name "validation_report.txt" -exec cat {} \;
