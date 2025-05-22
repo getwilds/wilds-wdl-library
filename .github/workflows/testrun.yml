@@ -8,6 +8,9 @@ on:
       - '**.wdl'
       - '.github/workflows/testrun.yml'
 
+permissions:
+  contents: read
+
 jobs:
   miniwdl-test:
     runs-on: ubuntu-latest
