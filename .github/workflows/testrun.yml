@@ -41,7 +41,7 @@ jobs:
         export PATH="$PWD/sratoolkit.3.1.1-ubuntu64/bin:$PATH"
         
         # Download a small test RNA-seq sample (SRR13008264 - mouse RNA-seq, ~100MB)
-        fasterq-dump --split-files SRR13008264
+        fasterq-dump --split-files SRR13008264 -O test-data/
         gzip SRR13008264_1.fastq SRR13008264_2.fastq
         ls -la test-data/
     - 
