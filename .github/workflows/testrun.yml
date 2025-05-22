@@ -212,7 +212,6 @@ jobs:
     - 
       name: Run workflow with Sprocket
       run: |
-        mkdir -p test-output/sprocket/${{ matrix.module }}
         module_dir="modules/${{ matrix.module }}"
         wdl_file="$module_dir/${{ matrix.module }}.wdl"
         inputs_file="$module_dir/inputs.json"
