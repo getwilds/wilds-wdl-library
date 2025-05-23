@@ -1,0 +1,7 @@
+{
+  "sra_star.sra_id_list":["SRR9713123", "SRR9713124"],
+  "sra_star.ref_genome": {
+    "star_tar":"/home/tfirman/star_index.tar.gz",
+    "ref_name":"hg38"
+  }
+}
