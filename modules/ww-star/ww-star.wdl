@@ -201,7 +201,9 @@ task star_align_two_pass {
       --quantMode GeneCounts \
       --quantTranscriptomeBAMcompression 5 
 
-    rm -r star_index
+    # Clean up temporary directories
+    rm -rf star_index _STARtmp
+    rm -rf _STARpass1 _STARgenome 2>/dev/null || true
 
     mv Aligned.sortedByCoord.out.bam \
       "~{sample_data.name}.~{ref_genome_name}.Aligned.sortedByCoord.out.bam"
