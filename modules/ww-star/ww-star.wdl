@@ -29,7 +29,8 @@ workflow star_example {
         star_log_final: "Final log files from STAR alignment for each sample",
         star_log_progress: "Progress log files from STAR alignment for each sample",
         star_log: "Main log files from STAR alignment for each sample",
-        star_sj: "Splice junction files from STAR alignment for each sample"
+        star_sj: "Splice junction files from STAR alignment for each sample",
+        validation_report: "validation report confirming all expected outputs were generated"
     }
   }
 
@@ -71,6 +72,13 @@ workflow star_example {
     }
   }
 
+  call validate_outputs { input:
+    sample_names = star_align_two_pass.name,
+    bam_files = star_align_two_pass.bam,
+    bai_files = star_align_two_pass.bai,
+    gene_count_files = star_align_two_pass.gene_counts
+  }
+
   output {
     Array[File] star_bam = star_align_two_pass.bam
     Array[File] star_bai = star_align_two_pass.bai
@@ -79,6 +87,7 @@ workflow star_example {
     Array[File] star_log_progress = star_align_two_pass.log_progress
     Array[File] star_log = star_align_two_pass.log
     Array[File] star_sj = star_align_two_pass.sj_out
+    File validation_report = validate_outputs.report
   }
 }
 
@@ -220,5 +229,119 @@ task star_align_two_pass {
     docker: "getwilds/star:2.7.6a"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
+  }
+}
+
+task validate_outputs {
+  meta {
+    description: "Validate that all expected STAR output files were generated correctly"
+    outputs: {
+        report: "Validation report summarizing file checks and alignment statistics"
+    }
+  }
+
+  parameter_meta {
+    bam_files: "Array of BAM files to validate"
+    bai_files: "Array of BAM index files to validate"
+    gene_count_files: "Array of gene count files to validate"
+    sample_names: "Array of sample names that were processed"
+  }
+
+  input {
+    Array[File] bam_files
+    Array[File] bai_files
+    Array[File] gene_count_files
+    Array[String] sample_names
+  }
+
+  command <<<
+    set -eo pipefail
+    
+    echo "=== STAR Alignment Validation Report ===" > validation_report.txt
+    echo "" >> validation_report.txt
+    
+    # Arrays for bash processing
+    sample_names=(~{sep=" " sample_names})
+    bam_files=(~{sep=" " bam_files})
+    bai_files=(~{sep=" " bai_files})
+    gene_count_files=(~{sep=" " gene_count_files})
+    
+    validation_passed=true
+    total_mapped_reads=0
+    
+    # Check each sample
+    for i in "${!sample_names[@]}"; do
+      sample_name="${sample_names[$i]}"
+      bam_file="${bam_files[$i]}"
+      bai_file="${bai_files[$i]}"
+      gene_count_file="${gene_count_files[$i]}"
+      
+      echo "--- Sample: $sample_name ---" >> validation_report.txt
+      
+      # Check BAM file exists and is not empty
+      if [[ -f "$bam_file" && -s "$bam_file" ]]; then
+        bam_size=$(stat -c%s "$bam_file")
+        echo "BAM file: $bam_file (${bam_size} bytes)" >> validation_report.txt
+        
+        # Try to get alignment stats from samtools if available
+        if command -v samtools &> /dev/null; then
+          mapped_reads=$(samtools view -c -F 4 "$bam_file" 2>/dev/null || echo "N/A")
+          total_reads=$(samtools view -c "$bam_file" 2>/dev/null || echo "N/A")
+          echo "  Total reads: $total_reads" >> validation_report.txt
+          echo "  Mapped reads: $mapped_reads" >> validation_report.txt
+          
+          if [[ "$mapped_reads" =~ ^[0-9]+$ ]]; then
+            total_mapped_reads=$((total_mapped_reads + mapped_reads))
+          fi
+        fi
+      else
+        echo "BAM file: $bam_file - MISSING OR EMPTY" >> validation_report.txt
+        validation_passed=false
+      fi
+      
+      # Check BAI file exists
+      if [[ -f "$bai_file" ]]; then
+        bai_size=$(stat -c%s "$bai_file")
+        echo "BAI file: $bai_file (${bai_size} bytes)" >> validation_report.txt
+      else
+        echo "BAI file: $bai_file - MISSING" >> validation_report.txt
+        validation_passed=false
+      fi
+      
+      # Check gene counts file exists and has content
+      if [[ -f "$gene_count_file" && -s "$gene_count_file" ]]; then
+        gene_count_size=$(stat -c%s "$gene_count_file")
+        gene_count_lines=$(wc -l < "$gene_count_file" 2>/dev/null || echo "N/A")
+        echo "Gene counts file: $gene_count_file (${gene_count_size} bytes, ${gene_count_lines} lines)" >> validation_report.txt
+      else
+        echo "Gene counts file: $gene_count_file - MISSING OR EMPTY" >> validation_report.txt
+        validation_passed=false
+      fi
+      
+      echo "" >> validation_report.txt
+    done
+    
+    # Overall summary
+    echo "=== Validation Summary ===" >> validation_report.txt
+    echo "Total samples processed: ${#sample_names[@]}" >> validation_report.txt
+    if [[ "$validation_passed" == "true" ]]; then
+      echo "Overall Status: PASSED" >> validation_report.txt
+    else
+      echo "Overall Status: FAILED" >> validation_report.txt
+      exit 1
+    fi
+    
+    # Also output to stdout for immediate feedback
+    cat validation_report.txt
+  >>>
+
+  output {
+    File report = "validation_report.txt"
+  }
+
+  runtime {
+    docker: "getwilds/star:2.7.6a"
+    memory: "2 GB"
+    cpu: 1
   }
 }
