@@ -1,7 +1,8 @@
 {
-  "sra_star.sra_id_list":["SRR9713123", "SRR9713124"],
+  "sra_star.sra_id_list":["SRR13008264"],
   "sra_star.ref_genome": {
-    "star_tar":"/home/tfirman/star_index.tar.gz",
-    "ref_name":"hg38"
+    "name": "chr22",
+    "fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.fa",
+    "gtf": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.gtf"
   }
 }
