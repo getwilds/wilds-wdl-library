@@ -1,0 +1,3 @@
+
+# WILDS WDL Vignettes
+WILDS WDL vignettes are compact workflows that link together tasks from two or three different modules to demonstrate computational patterns that are ubiquitous to bioinformatics. A great example would be the GATK best practices workflows, potentially even a bit shorter, but similar principle: standard workflows to connect basic tools to perform highly-utilized concepts. No new tasks should be contained in these scripts, just an overarching workflow that imports existing modules and strings them together appropriately. An integration test run on small datasets should be run on these workflows weekly via GitHub Actions.
