@@ -1,43 +1,43 @@
-name: Module Test Run
+name: Vignette Test Run
 
 on:
   workflow_dispatch:
   pull_request:
     types: [opened, reopened, synchronize]
     paths:
-      - 'modules/**/*.wdl'
-      - 'modules/**/*.json'
-      - '.github/workflows/modules-testrun.yml'
+      - 'vignettes/**/*.wdl'
+      - 'vignettes/**/*.json'
+      - '.github/workflows/vignettes-testrun.yml'
 
 permissions:
   contents: read
 
 jobs:
-  discover-modules:
+  discover-vignettes:
     runs-on: ubuntu-latest
     outputs:
-      modules: ${{ steps.find-modules.outputs.modules }}
+      vignettes: ${{ steps.find-vignettes.outputs.vignettes }}
     steps:
     - 
       name: Checkout
       uses: actions/checkout@v4
     - 
-      name: Find WDL modules
-      id: find-modules
+      name: Find WDL vignettes
+      id: find-vignettes
       run: |
-        # Find all directories in modules/ that contain both a .wdl file and inputs.json
-        modules=()
-        for module_dir in modules/*/; do
-          if [ -d "$module_dir" ]; then
-            module_name=$(basename "$module_dir")
-            wdl_file="$module_dir$module_name.wdl"
-            inputs_file="$module_dir/inputs.json"
+        # Find all directories in vignettes/ that contain both a .wdl file and inputs.json
+        vignettes=()
+        for vignette_dir in vignettes/*/; do
+          if [ -d "$vignette_dir" ]; then
+            vignette_name=$(basename "$vignette_dir")
+            wdl_file="$vignette_dir$vignette_name.wdl"
+            inputs_file="$vignette_dir/inputs.json"
             
             if [ -f "$wdl_file" ] && [ -f "$inputs_file" ]; then
-              modules+=("$module_name")
-              echo "Found module: $module_name"
+              vignettes+=("$vignette_name")
+              echo "Found vignette: $vignette_name"
             else
-              echo "Skipping $module_name - missing required files"
+              echo "Skipping $vignette_name - missing required files"
               [ ! -f "$wdl_file" ] && echo "  Missing: $wdl_file"
               [ ! -f "$inputs_file" ] && echo "  Missing: $inputs_file"
             fi
@@ -45,13 +45,13 @@ jobs:
         done
         
         # Convert array to JSON format for matrix strategy
-        if [ ${#modules[@]} -eq 0 ]; then
-          modules_json="[]"
+        if [ ${#vignettes[@]} -eq 0 ]; then
+          vignettes_json="[]"
         else
-          modules_json=$(printf '%s\n' "${modules[@]}" | jq -R . | jq -s -c .)
+          vignettes_json=$(printf '%s\n' "${vignettes[@]}" | jq -R . | jq -s -c .)
         fi
-        echo "modules=$modules_json" >> $GITHUB_OUTPUT
-        echo "Found modules: $modules_json"
+        echo "vignettes=$vignettes_json" >> $GITHUB_OUTPUT
+        echo "Found vignettes: $vignettes_json"
 
   download-test-data:
     runs-on: ubuntu-latest
@@ -94,11 +94,11 @@ jobs:
         retention-days: 1
 
   miniwdl-test:
-    needs: [discover-modules, download-test-data]
+    needs: [discover-vignettes, download-test-data]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
+        vignette: ${{ fromJson(needs.discover-vignettes.outputs.vignettes) }}
       fail-fast: false
     steps:
     - 
@@ -123,13 +123,13 @@ jobs:
     - 
       name: Run workflow with miniwdl
       run: |
-        mkdir -p test-output/miniwdl/${{ matrix.module }}
-        module_dir="modules/${{ matrix.module }}"
-        wdl_file="$module_dir/${{ matrix.module }}.wdl"
-        inputs_file="$module_dir/inputs.json"
+        mkdir -p test-output/miniwdl/${{ matrix.vignette }}
+        vignette_dir="vignettes/${{ matrix.vignette }}"
+        wdl_file="$vignette_dir/${{ matrix.vignette }}.wdl"
+        inputs_file="$vignette_dir/inputs.json"
         
-        echo "Running ${{ matrix.module }} with miniwdl..."
-        miniwdl run "$wdl_file" -i "$inputs_file" --dir "test-output/miniwdl/${{ matrix.module }}"
+        echo "Running ${{ matrix.vignette }} with miniwdl..."
+        miniwdl run "$wdl_file" -i "$inputs_file" --dir "test-output/miniwdl/${{ matrix.vignette }}"
     - 
       name: Display validation report
       run: |
@@ -137,11 +137,11 @@ jobs:
         find test-output/miniwdl -name "validation_report.txt" -exec cat {} \;
   
   cromwell-test:
-    needs: [discover-modules, download-test-data]
+    needs: [discover-vignettes, download-test-data]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
+        vignette: ${{ fromJson(needs.discover-vignettes.outputs.vignettes) }}
       fail-fast: false
     steps:
     - 
@@ -166,13 +166,13 @@ jobs:
     - 
       name: Run workflow with Cromwell
       run: |
-        mkdir -p test-output/cromwell/${{ matrix.module }}
-        module_dir="modules/${{ matrix.module }}"
-        wdl_file="$module_dir/${{ matrix.module }}.wdl"
-        inputs_file="$module_dir/inputs.json"
-        options_file="$module_dir/options.json"
+        mkdir -p test-output/cromwell/${{ matrix.vignette }}
+        vignette_dir="vignettes/${{ matrix.vignette }}"
+        wdl_file="$vignette_dir/${{ matrix.vignette }}.wdl"
+        inputs_file="$vignette_dir/inputs.json"
+        options_file="$vignette_dir/options.json"
         
-        echo "Running ${{ matrix.module }} with Cromwell..."
+        echo "Running ${{ matrix.vignette }} with Cromwell..."
         java -jar cromwell-86.jar run "$wdl_file" -i "$inputs_file" -o "$options_file"
     - 
       name: Display validation report
@@ -181,11 +181,11 @@ jobs:
         find . -name "validation_report.txt" -exec cat {} \;
   
   sprocket-test:
-    needs: [discover-modules, download-test-data]
+    needs: [discover-vignettes, download-test-data]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
+        vignette: ${{ fromJson(needs.discover-vignettes.outputs.vignettes) }}
       fail-fast: false
     steps:
     - 
@@ -212,12 +212,12 @@ jobs:
     - 
       name: Run workflow with Sprocket
       run: |
-        module_dir="modules/${{ matrix.module }}"
-        wdl_file="$module_dir/${{ matrix.module }}.wdl"
-        inputs_file="$module_dir/inputs.json"
+        vignette_dir="vignettes/${{ matrix.vignette }}"
+        wdl_file="$vignette_dir/${{ matrix.vignette }}.wdl"
+        inputs_file="$vignette_dir/inputs.json"
         
-        echo "Running ${{ matrix.module }} with Sprocket..."
-        sprocket run --output "test-output/sprocket/${{ matrix.module }}" "$wdl_file" "$inputs_file"
+        echo "Running ${{ matrix.vignette }} with Sprocket..."
+        sprocket run --output "test-output/sprocket/${{ matrix.vignette }}" "$wdl_file" "$inputs_file"
     - 
       name: Display validation report
       run: |
