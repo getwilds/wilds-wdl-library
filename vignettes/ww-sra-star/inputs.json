@@ -1,0 +1,10 @@
+{
+  "sra_star.sra_id_list":["SRR13008264"],
+  "sra_star.ref_genome": {
+    "name": "chr22",
+    "fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.fa",
+    "gtf": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.gtf"
+  },
+  "sra_star.ncpu": 2,
+  "sra_star.memory_gb": 8
+}
