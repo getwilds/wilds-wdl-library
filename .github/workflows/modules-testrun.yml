@@ -1,4 +1,4 @@
-name: WDL Workflow Test Run
+name: Module Test Run
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
     paths:
       - 'modules/**/*.wdl'
       - 'modules/**/*.json'
-      - '.github/workflows/testrun.yml'
+      - '.github/workflows/modules-testrun.yml'
 
 permissions:
   contents: read
