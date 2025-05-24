@@ -70,7 +70,7 @@ workflow sra_star {
         sjdb_overhang = sjdb_overhang,
         memory_gb = memory_gb,
         cpu_cores = ncpu,
-        star_threads = ncpu - 2
+        star_threads = ncpu
     }
   }
 
