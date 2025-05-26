@@ -90,6 +90,6 @@ workflow sra_star {
     Array[File] star_log_progress = star_align_two_pass.log_progress
     Array[File] star_log = star_align_two_pass.log
     Array[File] star_sj = star_align_two_pass.sj_out
-    File validation_report = star_tasks.validate_outputs.report
+    File validation_report = validate_outputs.report
   }
 }
