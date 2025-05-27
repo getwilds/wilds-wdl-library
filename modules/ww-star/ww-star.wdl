@@ -52,7 +52,7 @@ workflow star_example {
     Int memory_gb = 64
   }
 
-  call build_star_index { input:
+  call build_index { input:
       reference_fasta = reference_genome.fasta,
       reference_gtf = reference_genome.gtf,
       sjdb_overhang = sjdb_overhang,
@@ -62,9 +62,9 @@ workflow star_example {
   }
 
   scatter (sample in samples) {
-    call star_align_two_pass { input:
+    call align_two_pass { input:
         sample_data = sample,
-        star_genome_tar = build_star_index.star_index_tar,
+        star_genome_tar = build_index.star_index_tar,
         ref_genome_name = reference_genome.name,
         sjdb_overhang = sjdb_overhang,
         memory_gb = memory_gb,
@@ -73,25 +73,25 @@ workflow star_example {
   }
 
   call validate_outputs { input:
-    sample_names = star_align_two_pass.name,
-    bam_files = star_align_two_pass.bam,
-    bai_files = star_align_two_pass.bai,
-    gene_count_files = star_align_two_pass.gene_counts
+    sample_names = align_two_pass.name,
+    bam_files = align_two_pass.bam,
+    bai_files = align_two_pass.bai,
+    gene_count_files = align_two_pass.gene_counts
   }
 
   output {
-    Array[File] star_bam = star_align_two_pass.bam
-    Array[File] star_bai = star_align_two_pass.bai
-    Array[File] star_gene_counts = star_align_two_pass.gene_counts
-    Array[File] star_log_final = star_align_two_pass.log_final
-    Array[File] star_log_progress = star_align_two_pass.log_progress
-    Array[File] star_log = star_align_two_pass.log
-    Array[File] star_sj = star_align_two_pass.sj_out
+    Array[File] star_bam = align_two_pass.bam
+    Array[File] star_bai = align_two_pass.bai
+    Array[File] star_gene_counts = align_two_pass.gene_counts
+    Array[File] star_log_final = align_two_pass.log_final
+    Array[File] star_log_progress = align_two_pass.log_progress
+    Array[File] star_log = align_two_pass.log
+    Array[File] star_sj = align_two_pass.sj_out
     File validation_report = validate_outputs.report
   }
 }
 
-task build_star_index {
+task build_index {
   meta {
     description: "Task for building the STAR index files from fasta/gtf."
     outputs: {
@@ -146,7 +146,7 @@ task build_star_index {
   }
 }
 
-task star_align_two_pass {
+task align_two_pass {
   meta {
     description: "Task for aligning RNA-seq reads using STAR's two-pass technique."
     outputs: {

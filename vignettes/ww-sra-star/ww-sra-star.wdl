@@ -45,7 +45,7 @@ workflow sra_star {
     Int memory_gb = 64
   }
 
-  call star_tasks.build_star_index { input:
+  call star_tasks.build_index { input:
       reference_fasta = ref_genome.fasta,
       reference_gtf = ref_genome.gtf,
       sjdb_overhang = sjdb_overhang,
@@ -60,8 +60,8 @@ workflow sra_star {
         ncpu = ncpu
     }
 
-    call star_tasks.star_align_two_pass { input:
-        star_genome_tar = build_star_index.star_index_tar,
+    call star_tasks.align_two_pass { input:
+        star_genome_tar = build_index.star_index_tar,
         sample_data = {
           "name": id,
           "r1": fastqdump.r1_end,
@@ -76,20 +76,20 @@ workflow sra_star {
   }
 
   call star_tasks.validate_outputs { input:
-    sample_names = star_align_two_pass.name,
-    bam_files = star_align_two_pass.bam,
-    bai_files = star_align_two_pass.bai,
-    gene_count_files = star_align_two_pass.gene_counts
+    sample_names = align_two_pass.name,
+    bam_files = align_two_pass.bam,
+    bai_files = align_two_pass.bai,
+    gene_count_files = align_two_pass.gene_counts
   }
 
   output {
-    Array[File] star_bam = star_align_two_pass.bam
-    Array[File] star_bai = star_align_two_pass.bai
-    Array[File] star_gene_counts = star_align_two_pass.gene_counts
-    Array[File] star_log_final = star_align_two_pass.log_final
-    Array[File] star_log_progress = star_align_two_pass.log_progress
-    Array[File] star_log = star_align_two_pass.log
-    Array[File] star_sj = star_align_two_pass.sj_out
+    Array[File] star_bam = align_two_pass.bam
+    Array[File] star_bai = align_two_pass.bai
+    Array[File] star_gene_counts = align_two_pass.gene_counts
+    Array[File] star_log_final = align_two_pass.log_final
+    Array[File] star_log_progress = align_two_pass.log_progress
+    Array[File] star_log = align_two_pass.log
+    Array[File] star_sj = align_two_pass.sj_out
     File validation_report = validate_outputs.report
   }
 }
