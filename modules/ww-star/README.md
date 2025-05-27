@@ -2,179 +2,199 @@
 [![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This WILDS WDL workflow performs RNA-seq alignment using STAR's two-pass methodology. It is designed to be a modular component within the WILDS ecosystem that can be used independently or integrated with other WILDS workflows.
+A WILDS WDL module for RNA-seq alignment using STAR's two-pass methodology.
 
 ## Overview
 
-The workflow performs the following key steps:
-1. STAR index building from provided reference genome files
-2. STAR two-pass alignment for each sample
-3. Generation of gene counts and alignment metrics
+This module provides reusable WDL tasks for high-quality RNA-seq alignment using STAR (Spliced Transcripts Alignment to a Reference). It implements STAR's two-pass approach for improved splice junction detection and includes comprehensive validation of outputs.
 
-## Features
+The module is designed to be a foundational component within the WILDS ecosystem, suitable for use in larger RNA-seq analysis pipelines.
 
-- Two-pass STAR alignment for improved splice junction detection
-- Produces sorted BAM files with indexes
-- Generates gene count matrices for downstream analysis
-- Outputs detailed alignment logs for QC assessment
-- Configurable resource allocation (CPU and memory)
-- Adjustable STAR parameters for different genome sizes
-- Compatible with the WILDS workflow ecosystem
-- Thoroughly tested with multiple WDL executors (Cromwell, miniWDL, Sprocket)
+## Module Structure
 
-## Usage
+This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-### Requirements
+- **Tasks**: `build_index`, `align_two_pass`, `validate_outputs`
+- **Workflow**: `star_example` (demonstration workflow that executes all tasks)
+- **Container**: `getwilds/star:2.7.6a`
 
-- [Cromwell](https://cromwell.readthedocs.io/), [MiniWDL](https://github.com/chanzuckerberg/miniwdl), [Sprocket](https://sprocket.bio/), or another WDL-compatible workflow executor
-- Docker/Apptainer (the workflow uses WILDS Docker containers)
+## Tasks
 
-### Basic Usage
+### `build_index`
+Builds STAR genome index from reference FASTA and GTF files.
 
-1. Create an inputs JSON file with your sample information:
+**Inputs:**
+- `reference_fasta` (File): Reference genome FASTA file
+- `reference_gtf` (File): Reference genome GTF annotation file
+- `sjdb_overhang` (Int): Splice junction database overhang (default: 100)
+- `genome_sa_index_nbases` (Int): SA index string length (default: 14)
+- `memory_gb` (Int): Memory allocation in GB (default: 64)
+- `cpu_cores` (Int): Number of CPU cores (default: 8)
+
+**Outputs:**
+- `star_index_tar` (File): Compressed STAR genome index
+
+### `align_two_pass`
+Performs two-pass STAR alignment with gene counting.
+
+**Inputs:**
+- `star_genome_tar` (File): STAR genome index from `build_index`
+- `sample_data` (SampleInfo): Sample information struct
+- `ref_genome_name` (String): Reference genome name for output files
+- Various resource and parameter settings
+
+**Outputs:**
+- `bam` (File): Sorted BAM alignment file
+- `bai` (File): BAM index file
+- `gene_counts` (File): Gene-level read counts
+- `log_final`, `log_progress`, `log` (Files): STAR log files
+- `sj_out` (File): Splice junction file
+
+### `validate_outputs`
+Validates alignment outputs and generates a comprehensive report.
+
+**Inputs:**
+- Arrays of output files from alignment tasks
+
+**Outputs:**
+- `report` (File): Validation summary with alignment statistics
+
+## Usage as a Module
+
+### Importing into Your Workflow
+
+```wdl
+import "path/to/ww-star.wdl" as star_tasks
+
+struct SampleInfo {
+    String name
+    File r1
+    File r2
+}
+
+workflow my_rna_seq_pipeline {
+  input {
+    Array[SampleInfo] samples
+    File reference_fasta
+    File reference_gtf
+  }
+  
+  call star_tasks.build_index {
+    input:
+      reference_fasta = reference_fasta,
+      reference_gtf = reference_gtf
+  }
+  
+  scatter (sample in samples) {
+    call star_tasks.align_two_pass {
+      input:
+        sample_data = sample,
+        star_genome_tar = build_index.star_index_tar,
+        ref_genome_name = "hg38"
+    }
+  }
+  
+  output {
+    Array[File] aligned_bams = align_two_pass.bam
+    Array[File] gene_counts = align_two_pass.gene_counts
+  }
+}
+```
+
+### Integration Examples
+
+This module integrates seamlessly with other WILDS components:
+- **ww-sra**: Download sequencing data before alignment
+- **ww-sra-star vignette**: Complete SRA-to-alignment pipeline
+- **ww-star-deseq2 vignette**: Extended pipeline with differential expression
+
+## Testing the Module
+
+The module includes a demonstration workflow with comprehensive testing:
+
+```bash
+# Using Cromwell
+java -jar cromwell.jar run ww-star.wdl --inputs inputs.json --options options.json
+
+# Using miniWDL
+miniwdl run ww-star.wdl -i inputs.json
+
+# Using Sprocket
+sprocket run ww-star.wdl inputs.json
+```
+
+### Test Input Format
 
 ```json
 {
   "star_example.samples": [
     {
       "name": "sample1",
-      "r1": "/path/to/sample1_1.fastq.gz",
-      "r2": "/path/to/sample1_2.fastq.gz"
-    },
-    {
-      "name": "sample2",
-      "r1": "/path/to/sample2_1.fastq.gz",
-      "r2": "/path/to/sample2_2.fastq.gz"
+      "r1": "/path/to/sample1_R1.fastq.gz",
+      "r2": "/path/to/sample1_R2.fastq.gz"
     }
   ],
   "star_example.reference_genome": {
     "name": "hg38",
-    "fasta": "/path/to/reference/genome.fasta",
-    "gtf": "/path/to/reference/annotation.gtf"
-  }
+    "fasta": "/path/to/genome.fasta",
+    "gtf": "/path/to/annotation.gtf"
+  },
+  "star_example.genome_sa_index_nbases": 14,
+  "star_example.cpus": 8,
+  "star_example.memory_gb": 64
 }
 ```
 
-2. Run the workflow using your preferred WDL executor:
+## Configuration Guidelines
 
-```bash
-# Cromwell
-java -jar cromwell.jar run ww-star.wdl --inputs ww-star-inputs.json --options ww-star-options.json
+### Resource Allocation
 
-# miniWDL
-miniwdl run ww-star.wdl -i ww-star-inputs.json
+The module supports flexible resource configuration:
 
-# Sprocket
-sprocket run ww-star.wdl ww-star-inputs.json
-```
+- **Memory**: Scales with genome size (64GB recommended for human genome)
+- **CPUs**: Adjustable based on available resources (8 cores recommended)
+- **Index Parameters**: `genome_sa_index_nbases` should be set based on genome size:
+  - Human genome (~3GB): 14 (default)
+  - Mouse genome (~2.7GB): 14
+  - C. elegans (~100MB): 11
+  - Small test genomes: 8-11
 
-### Integration with Other WILDS Workflows
+### Advanced Parameters
 
-This workflow pairs well with other WILDS workflows:
-- [ww-sra](https://github.com/getwilds/ww-sra) for downloading data from NCBI's Sequence Read Archive
-- [ww-star-deseq2](https://github.com/getwilds/ww-star-deseq2) for differential expression analysis
+- `sjdb_overhang`: Set to (read_length - 1) for optimal junction detection
+- Resource allocation can be tuned for different compute environments
 
-### Detailed Options
+## Requirements
 
-The workflow accepts the following inputs:
+- WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
+- Docker/Apptainer support
+- Sufficient memory for genome indexing (varies by genome size)
 
-| Parameter | Description | Type | Required? | Default |
-|-----------|-------------|------|-----------|---------|
-| `samples` | Array of sample information objects | Array[SampleInfo] | Yes | - |
-| `reference_genome` | Reference genome information | RefGenome | Yes | - |
-| `sjdb_overhang` | Length of genomic sequence around annotated junctions | Int | No | 100 |
-| `genome_sa_index_nbases` | SA pre-indexing string length (scales with genome size) | Int | No | 14 |
-| `cpus` | Number of CPU cores for each task | Int | No | 8 |
-| `memory_gb` | Memory allocation for each task in GB | Int | No | 64 |
+## Features
 
-#### SampleInfo Structure
+- **Two-pass alignment**: Improved splice junction detection
+- **Comprehensive outputs**: BAM files, gene counts, QC metrics
+- **Validation**: Built-in output validation and reporting
+- **Scalable**: Configurable resource allocation
+- **Robust**: Extensive error handling and cleanup
+- **Compatible**: Works with multiple WDL executors
 
-Each entry in the `samples` array should contain:
-- `name`: Sample identifier
-- `r1`: Path to R1 FASTQ file
-- `r2`: Path to R2 FASTQ file
+## Module Development
 
-#### RefGenome Structure
+This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
+- Multiple WDL executors (Cromwell, miniWDL, Sprocket)
+- Real RNA-seq data (chromosome 22 subset for efficiency)
+- Comprehensive validation of all outputs
 
-The `reference_genome` should contain:
-- `name`: Reference genome name
-- `fasta`: Path to reference FASTA file
-- `gtf`: Path to reference GTF file
-
-#### Advanced Configuration
-
-For smaller genomes or limited resources, you can adjust the parameters:
-
-```json
-{
-  "star_example.genome_sa_index_nbases": 11,
-  "star_example.cpus": 2,
-  "star_example.memory_gb": 8
-}
-```
-
-**Note**: `genome_sa_index_nbases` should typically be set to `min(14, log2(GenomeLength)/2 - 1)`. For example:
-- Human genome (~3GB): 14 (default)
-- Mouse genome (~2.7GB): 14
-- C. elegans (~100MB): 11
-- Small test chromosomes: 8-11
-
-### Output Files
-
-The workflow produces the following outputs:
-
-| Output | Description |
-|--------|-------------|
-| `star_bam` | Aligned BAM files for each sample |
-| `star_bai` | BAM indexes for each sample |
-| `star_gene_counts` | Raw gene counts for each sample |
-| `star_log_final` | STAR final logs |
-| `star_log_progress` | STAR progress logs |
-| `star_log` | STAR main logs |
-| `star_sj` | STAR splice junction files |
-
-## Testing
-
-This workflow includes comprehensive testing with multiple WDL executors through GitHub Actions. The test suite:
-
-- Downloads a small RNA-seq dataset (SRR13008264) from NCBI SRA
-- Uses human chromosome 22 as a reference genome for faster testing
-- Runs the workflow with Cromwell, miniWDL, and Sprocket
-- Verifies that all executors produce the expected outputs
-
-Tests are automatically triggered on:
-- Pull requests that modify WDL files
-- Manual workflow dispatch
-- Changes to the test workflow itself
-
-## For Fred Hutch Users
-
-For Fred Hutch users, we recommend using [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/) to submit this workflow directly to the on-premise HPC cluster. To do this:
-
-1. Clone or download this repository
-2. Update `ww-star-inputs.json` with your sample names and FASTQ file paths
-3. Update `ww-star-options.json` with your preferred output location (`final_workflow_outputs_dir`)
-4. Submit the WDL file along with your custom JSONs to the Fred Hutch cluster via PROOF
-
-Additional Notes:
-- All file paths in the JSONs must be visible to the Fred Hutch cluster, e.g. `/fh/fast/`, AWS S3 bucket, etc.
-- To avoid duplication of reference genome data, we highly recommend executing this workflow with call caching enabled in the options json (`write_to_cache`, `read_from_cache`).
-
-## Docker Containers
-
-This workflow uses the following Docker container from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library):
-
-- `getwilds/star:2.7.6a` - For STAR alignment and index building
-
-The container is available on both DockerHub and GitHub Container Registry.
+For questions specific to this module or to contribute improvements, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).
 
 ## Support
 
-For questions, bugs, and/or feature requests, reach out to the Fred Hutch Data Science Lab (DaSL) at wilds@fredhutch.org, or open an issue on our [issue tracker](https://github.com/getwilds/ww-star/issues).
+For questions, bugs, and/or feature requests, reach out to the Fred Hutch Data Science Lab (DaSL) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
 
 ## Contributing
 
-If you would like to contribute to this WILDS WDL workflow, please see our [WILDS Contributor Guide](https://getwilds.org/guide/) for more details.
+If you would like to contribute to this WILDS WDL module, please see our [WILDS Contributor Guide](https://getwilds.org/guide/) and the [WILDS WDL Library contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
 
 ## License
 
