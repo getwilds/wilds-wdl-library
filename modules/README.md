@@ -42,7 +42,7 @@ modules/module-name/
 ### **Required Components**
 
 - **WDL File**: Contains all tasks plus a demonstration workflow
-- **Inputs Json**: Provides realistic test data for automated testing
+- **Inputs JSON**: Provides realistic test data for automated testing
 - **README**: Module-specific documentation with usage examples
 
 ### **Optional Components**
