@@ -47,7 +47,7 @@ modules/module-name/
 
 ### **Optional Components**
 
-- **Options Json**: Workflow execution configuration
+- **Options JSON**: Workflow execution configuration
 - **Additional Input Files**: Alternative input configurations for testing
 
 ## Available Modules
