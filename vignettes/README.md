@@ -46,7 +46,7 @@ vignettes/vignette-name/
 
 ### **Optional Components**
 
-- **Options Json**: Workflow execution configuration for different executors
+- **Options JSON**: Workflow execution configuration for different executors
 - **Additional Input Files**: Alternative configurations for different use cases
 
 ## Available Vignettes
