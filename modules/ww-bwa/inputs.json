@@ -7,14 +7,14 @@
     }
   ],
   "bwa_example.reference_genome": {
-    "ref_dict": "/fh/fast/paguirigan_a/sanaz/Research/VariantCalling/ww-vc-trio_sanaz/chromoseq/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.dict",
-    "ref_fasta": "/fh/fast/paguirigan_a/sanaz/Research/VariantCalling/ww-vc-trio_sanaz/chromoseq/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa",
-    "ref_amb": "/fh/fast/paguirigan_a/sanaz/Research/VariantCalling/ww-vc-trio_sanaz/chromoseq/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa.amb",
-    "ref_ann": "/fh/fast/paguirigan_a/sanaz/Research/VariantCalling/ww-vc-trio_sanaz/chromoseq/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa.ann",
-    "ref_bwt": "/fh/fast/paguirigan_a/sanaz/Research/VariantCalling/ww-vc-trio_sanaz/chromoseq/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa.bwt",
-    "ref_fasta_index": "/fh/fast/paguirigan_a/sanaz/Research/VariantCalling/ww-vc-trio_sanaz/chromoseq/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa.fai",
-    "ref_pac": "/fh/fast/paguirigan_a/sanaz/Research/VariantCalling/ww-vc-trio_sanaz/chromoseq/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa.pac",
-    "ref_sa": "/fh/fast/paguirigan_a/sanaz/Research/VariantCalling/ww-vc-trio_sanaz/chromoseq/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa.sa",
+    "ref_dict": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.dict",
+    "ref_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa",
+    "ref_amb": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa.amb",
+    "ref_ann": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa.ann",
+    "ref_bwt": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa.bwt",
+    "ref_fasta_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa.fai",
+    "ref_pac": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa.pac",
+    "ref_sa": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/reference_files/GRCh38/Gencode_GRCh38.primary_assembly.genome.fa.sa",
     "ref_name": "hg38"
   },
   "bwa_example.cpus": 2,
