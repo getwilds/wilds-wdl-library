@@ -1,102 +1,189 @@
-# ww-gatk
-[![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
+```markdown
+# ww-bwa
+[![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)  
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL module for sequence alignment using the Burrows-Wheler Alignment tool (BWA).
+A WILDS WDL module for sequence alignment using the Burrows-Wheeler Aligner (BWA-MEM).
 
 ## Overview
 
-This module provides reusable WDL tasks for aligning reads to a reference using BWA-MEM.
+This module provides reusable WDL tasks for aligning sequencing reads to a reference genome using **BWA-MEM**, a fast and accurate aligner suitable for reads ranging from 70bp to 1Mbp. The module includes a demonstration workflow that performs alignment and outputs sorted BAM files, and is designed to integrate seamlessly into broader pipelines such as germline or somatic variant calling.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `bwa_mem`
-- **Workflow**: `bwa_example` (demonstration workflow that executes all tasks)
+- **Task**: `bwa_mem`
+- **Workflow**: `bwa_example` (demonstration workflow for aligning paired-end reads)
 - **Container**: `getwilds/bwa:0.7.17`
 
 ## Tasks
 
 ### `bwa_mem`
-Calls germline variants.
+
+Aligns paired-end reads to a reference genome using BWA-MEM and outputs a sorted BAM file.
 
 **Inputs:**
-- `sample_data` (SampleInfo): Sample information struct (name, R1 and R2 FASTQs)
-- `reference_fasta` (File): Reference genome FASTA file
-- `cpu_cores` (Int): Total number of CPU cores allocated for the task
-- `memory_gb` (Int): Memory allocated for the task in GB
+- `sample_data` (`SampleInfo`): Struct containing sample name and R1/R2 FASTQ files
+- `reference_fasta` (`File`): Reference genome FASTA file (indexed and preprocessed externally)
+- `cpu_cores` (`Int`): Number of CPU cores allocated (default: 8)
+- `memory_gb` (`Int`): Memory allocated in GB (default: 62)
 
 **Outputs:**
-- `sorted_bam` (File): Sorted BWA-MEM alignment output BAM file
+- `sorted_bam` (`File`): Sorted alignment file in BAM format
 
-## Features
+## Workflow
 
-The module is designed to be a foundational component within the WILDS ecosystem, suitable for use in larger analysis pipelines.
+### `bwa_example`
 
-## Usage
+A demonstration workflow that aligns an array of samples to a provided reference genome.
 
-### Requirements
+**Inputs:**
+- `samples` (`Array[SampleInfo]`): Array of sample structs
+- `reference_genome` (`RefGenome`): Struct containing the reference FASTA and associated index files
+- `cpus` (`Int`): Number of CPUs per task (default: 8)
+- `memory_gb` (`Int`): Memory per task in GB (default: 64)
 
-- [Cromwell](https://cromwell.readthedocs.io/), [MiniWDL](https://github.com/chanzuckerberg/miniwdl), [Sprocket](https://sprocket.bio/), or another WDL-compatible workflow executor
-- Docker/Apptainer (the workflow uses `getwilds/bwa:0.7.17` container)
+**Outputs:**
+- `bwa_bam` (`Array[File]`): Sorted BAM files for each sample
+
+## Usage as a Module
 
 ### Importing into Your Workflow
 
-TBD
+```wdl
+import "path/to/ww-bwa.wdl" as bwa_tasks
+
+struct SampleInfo {
+    String name
+    File r1
+    File r2
+}
+
+struct RefGenome {
+    File ref_dict
+    File ref_fasta
+    File ref_amb
+    File ref_ann
+    File ref_bwt
+    File ref_fasta_index
+    File ref_pac
+    File ref_sa
+}
+
+workflow my_alignment_pipeline {
+  input {
+    Array[SampleInfo] samples
+    RefGenome reference_genome
+  }
+
+  scatter (sample in samples) {
+    call bwa_tasks.bwa_mem {
+      input:
+        sample_data = sample,
+        reference_fasta = reference_genome.ref_fasta
+    }
+  }
+
+  output {
+    Array[File] aligned_bams = bwa_mem.sorted_bam
+  }
+}
+```
 
 ### Integration Examples
 
-TBD
+This module integrates seamlessly with other WILDS components:
+- **ww-sra**: Download sequencing data prior to alignment
+- **ww-gatk**: Use the output BAMs for germline variant calling with GATK
+- **ww-qc**: Validate and summarize BAM file quality
 
 ## Testing the Module
 
-TBD
+The module includes a demonstration workflow (`bwa_example`) with support for execution on multiple WDL backends:
+
+```bash
+# Using Cromwell
+java -jar cromwell.jar run ww-bwa.wdl --inputs inputs.json --options options.json
+
+# Using miniWDL
+miniwdl run ww-bwa.wdl -i inputs.json
+
+# Using Sprocket
+sprocket run ww-bwa.wdl inputs.json
+```
+
+### Test Input Format
+
+```json
+{
+  "bwa_example.samples": [
+    {
+      "name": "sample1",
+      "r1": "/path/to/sample1_R1.fastq.gz",
+      "r2": "/path/to/sample1_R2.fastq.gz"
+    }
+  ],
+  "bwa_example.reference_genome": {
+    "ref_dict": "/path/to/genome.dict",
+    "ref_fasta": "/path/to/genome.fasta",
+    "ref_amb": "/path/to/genome.amb",
+    "ref_ann": "/path/to/genome.ann",
+    "ref_bwt": "/path/to/genome.bwt",
+    "ref_fasta_index": "/path/to/genome.fasta.fai",
+    "ref_pac": "/path/to/genome.pac",
+    "ref_sa": "/path/to/genome.sa"
+  },
+  "bwa_example.cpus": 8,
+  "bwa_example.memory_gb": 64
+}
+```
 
 ## Configuration Guidelines
 
 ### Resource Allocation
 
-The module supports flexible resource configuration:
-
-- **Memory**: TBD
-- **CPUs**: TBD
+- **Memory**: 62–64 GB recommended for human genomes; can be tuned for smaller references
+- **CPUs**: 8 cores typically sufficient for most samples; BWA-MEM and samtools scale with available threads
 
 ### Advanced Parameters
 
-- Resource allocation can be tuned for different compute environments
+- Ensure the reference genome is pre-indexed with BWA and has an associated `.fai` and `.dict`
+- Set `cpu_cores` and `memory_gb` based on your environment and dataset size
 
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- Docker/Apptainer support
-- Sufficient memory for alignment
+- Docker or Apptainer support
+- Indexed reference genome files (e.g., `.bwt`, `.amb`, `.sa`, `.fai`, `.dict`)
 
 ## Features
 
-- **BWA-MEM alignment**: Align sequences 70bp to 1Mbp in length
-- **Validation**: Built-in output validation and reporting
-- **Scalable**: Configurable resource allocation
-- **Robust**: Extensive error handling and cleanup
-- **Compatible**: Works with multiple WDL executors
+- **BWA-MEM alignment**: Fast and accurate for reads 70bp to 1Mbp
+- **Sorted BAM output**: Ready for downstream analysis (variant calling, QC, etc.)
+- **Modular design**: Integrates with other WILDS workflows and tools
+- **Scalable**: Supports batch alignment across many samples
+- **Flexible**: Customizable resource settings per task
+- **Robust**: Includes error handling and reproducible output filenames
 
 ## Module Development
 
 This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
-- Real RNA-seq data (chromosome 22 subset for efficiency)
-- Comprehensive validation of all outputs
+- Subsets of real human genome data (e.g., chr22)
+- Automated output verification
 
-For questions specific to this module or to contribute improvements, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).
+For development, contributions, and collaboration, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).
 
 ## Support
 
-For questions, bugs, and/or feature requests, reach out to the Fred Hutch Data Science Lab (DaSL) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
+For questions, bugs, and/or feature requests, contact the Fred Hutch Data Science Lab (DaSL) at [wilds@fredhutch.org](mailto:wilds@fredhutch.org) or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
 
 ## Contributing
 
-If you would like to contribute to this WILDS WDL module, please see our [WILDS Contributor Guide](https://getwilds.org/guide/) and the [WILDS WDL Library contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
+To contribute to this module, please review the [WILDS Contributor Guide](https://getwilds.org/guide/) and the [contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md).
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for details.
+Distributed under the MIT License. See `LICENSE` for full details.
+```
