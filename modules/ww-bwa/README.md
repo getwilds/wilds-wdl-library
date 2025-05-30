@@ -1,4 +1,3 @@
-```markdown
 # ww-bwa
 [![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)  
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -186,4 +185,3 @@ To contribute to this module, please review the [WILDS Contributor Guide](https:
 ## License
 
 Distributed under the MIT License. See `LICENSE` for full details.
-```
