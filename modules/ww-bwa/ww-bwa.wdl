@@ -44,8 +44,9 @@ workflow bwa_example {
 
   scatter (sample in samples) {
     call bwa_mem { input:
+        bwa_genome_tar = bwa_index.bwa_index_tar,
+        reference_fasta = reference_fasta,
         sample_data = sample,
-        reference_fasta = bwa_index.fasta,
         cpu_cores = cpus,
         memory_gb = memory_gb
     }
@@ -61,12 +62,7 @@ task bwa_index {
   meta {
     description: "Task for building BWA index files from a reference FASTA"
     outputs: {
-        fasta: "Reference genome FASTA file",
-        fa_amb: "Text file of ambiguous bases",
-        fa_ann: "Text file of reference sequence information, such as name and length",
-        fa_bwt: "Binary file of Burrows-Wheeler transformed reference sequence",
-        fa_pac: "Binary file of compressed reference sequence",
-        fa_sa: "Binary file of the suffix array"
+        bwa_index_tar: "Compressed tarball containing BWA genome index"
     }
   }
 
@@ -82,18 +78,19 @@ task bwa_index {
     Int memory_gb = 32
   }
 
+  String ref_name = basename(reference_fasta)  # Name of local copy
+
   command <<<
   set -eo pipefail && \
-  bwa index "~{reference_fasta}"
+  mkdir -p bwa_index && \
+  cp ~{reference_fasta} bwa_index/~{ref_name} && \
+  echo "Building BWA index..." && \
+  bwa index "bwa_index/~{ref_name}" && \
+  tar -czf bwa_index.tar.gz bwa_index/*
   >>>
 
   output {
-    File fasta = "~{reference_fasta}"
-    File fa_amb = "~{reference_fasta}.amb"
-    File fa_ann = "~{reference_fasta}.ann"
-    File fa_bwt = "~{reference_fasta}.bwt"
-    File fa_pac = "~{reference_fasta}.pac"
-    File fa_sa = "~{reference_fasta}.sa"
+    File bwa_index_tar = "bwa_index.tar.gz"
   }
 
   runtime {
@@ -113,30 +110,34 @@ task bwa_mem {
   }
 
   parameter_meta {
-    reference_fasta: "BWA indexed reference genome FASTA file"
+    bwa_genome_tar: "Compressed tarball containing BWA genome index"
+    reference_fasta: "Reference genome FASTA file"
     sample_data: "Sample object containing sample name and R1/R2 FASTQ files"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
 
   input {
+    File bwa_genome_tar
     File reference_fasta
     SampleInfo sample_data
     Int cpu_cores = 8
     Int memory_gb = 16
   }
 
+  # Name of reference FASTA file, which should be in bwa_genome_tar
+  String ref_name = basename(reference_fasta)
+
   # Compute cpu_threads as one less than cpu_cores, with minimum of 1
   Int cpu_threads = if cpu_cores > 1 then cpu_cores - 1 else 1
 
   command <<<
   set -eo pipefail && \
-  bwa mem -v 3 -t ~{cpu_threads} -M \
-    -R '@RG\tID:~{sample_data.name}\tSM:~{sample_data.name}\tPL:illumina' \
-    ~{reference_fasta} \
-    "~{sample_data.r1}" "~{sample_data.r2}" - > ~{sample_data.name}.sam && \
-  samtools sort -@ ~{cpu_threads-1} \
-    -o ~{sample_data.name}.sorted_aligned.bam ~{sample_data.name}.sam
+  echo "Extracting BWA reference..." && \
+  tar -xvf "~{bwa_genome_tar}" && \
+  echo "Starting BWA alignment..." && \
+  bwa mem -v 3 -t ~{cpu_threads} -M -R '@RG\tID:~{sample_data.name}\tSM:~{sample_data.name}\tPL:illumina' "bwa_index/~{ref_name}" "~{sample_data.r1}" "~{sample_data.r2}" > "~{sample_data.name}.sam" && \
+  samtools sort -@ ~{cpu_threads-1} -o ~{sample_data.name}.sorted_aligned.bam ~{sample_data.name}.sam && \
   samtools index ~{sample_data.name}.sorted_aligned.bam
   >>>
 

@@ -29,18 +29,14 @@ Builds BWA index files from reference FASTA.
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 
 **Outputs:**
-- `fasta` (File): "Reference genome FASTA file"
-- `fa_amb` (File): Text file of ambiguous bases
-- `fa_ann` (File): Text file of reference sequence information, such as name and length
-- `fa_bwt` (File): Binary file of Burrows-Wheeler transformed reference sequence
-- `fa_pac` (File): Binary file of compressed reference sequence
-- `fa_sa` (File): Binary file of the suffix array
+- `bwa_index_tar` (File): Compressed tarball containing BWA genome index
 
 ### `bwa_mem`
 
 Aligns paired-end reads to a reference using BWA-MEM.
 
 **Inputs:**
+- `bwa_genome_tar` (File): Compressed tarball containing BWA genome index
 - `reference_fasta` (File): Reference genome FASTA file (indexed and preprocessed externally)
 - `sample_data` (SampleInfo): Sample information struct containing sample name and R1/R2 FASTQ file paths
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
@@ -76,8 +72,9 @@ workflow my_alignment_pipeline {
   scatter (sample in samples) {
     call bwa_tasks.bwa_mem {
       input:
-        sample_data = sample,
-        reference_fasta = bwa_index.fasta
+        bwa_genome_tar = bwa_index.bwa_index_tar,
+        reference_fasta = reference_fasta,
+        sample_data = sample
     }
   }
 
