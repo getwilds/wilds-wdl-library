@@ -18,6 +18,7 @@ workflow bwa_example {
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-bwa"
     outputs: {
         bwa_bam: "Sorted BWA-MEM alignment output BAM files for each sample"
+        bwa_bai: "Index files for the sorted BWA-MEM alignment BAM files"
     }
   }
 
@@ -52,6 +53,7 @@ workflow bwa_example {
 
   output {
     Array[File] bwa_bam = bwa_mem.sorted_bam
+    Array[File] bwa_bai = bwa_mem.sorted_bai
   }
 }
 
@@ -104,6 +106,7 @@ task bwa_mem {
     description: "Task for aligning sequence reads using BWA-MEM"
     outputs: {
         sorted_bam: "Sorted BWA-MEM alignment output BAM file"
+        sorted_bai: "Index files for the sorted BWA-MEM alignment BAM files"
     }
   }
 
@@ -125,10 +128,12 @@ task bwa_mem {
   set -eo pipefail && \
   bwa mem -v 3 -t max(1, ~{cpu_cores-1}) -M -R '@RG\tID:~{sample_data.name}\tSM:~{sample_data.name}\tPL:illumina' ~{reference_fasta} "~{sample_data.r1}" "~{sample_data.r2}" - > ~{sample_data.name}.sam && \
   samtools sort -@ max(1, ~{cpu_cores-1}) -o ~{sample_data.name}.sorted_aligned.bam ~{sample_data.name}.sam
+  samtools index ~{sample_data.name}.sorted_aligned.bam
   >>>
 
   output {
     File sorted_bam = "~{sample_data.name}.sorted_aligned.bam"
+    File sorted_bai = "~{sample_data.name}.sorted_aligned.bam.bai"
   }
 
   runtime {
