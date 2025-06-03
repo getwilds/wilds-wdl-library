@@ -30,11 +30,11 @@ Builds BWA index files from reference FASTA.
 
 **Outputs:**
 - `fasta` (File): "Reference genome FASTA file"
-- `amb` (File): Text file of ambiguous bases
-- `ann` (File): Text file of reference sequence information, such as name and length
-- `bwt` (File): Binary file of Burrows-Wheeler transformed reference sequence
-- `pac` (File): Binary file of compressed reference sequence
-- `sa` (File): Binary file of the suffix array
+- `fa_amb` (File): Text file of ambiguous bases
+- `fa_ann` (File): Text file of reference sequence information, such as name and length
+- `fa_bwt` (File): Binary file of Burrows-Wheeler transformed reference sequence
+- `fa_pac` (File): Binary file of compressed reference sequence
+- `fa_sa` (File): Binary file of the suffix array
 
 ### `bwa_mem`
 

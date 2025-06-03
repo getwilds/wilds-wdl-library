@@ -9,7 +9,7 @@ struct SampleInfo {
     File r1
     File r2
 }
- 
+
 workflow bwa_example {
   meta {
     author: "Emma Bishop"
@@ -62,11 +62,11 @@ task bwa_index {
     description: "Task for building BWA index files from a reference FASTA"
     outputs: {
         fasta: "Reference genome FASTA file",
-        amb: "Text file of ambiguous bases",
-        ann: "Text file of reference sequence information, such as name and length",
-        bwt: "Binary file of Burrows-Wheeler transformed reference sequence",
-        pac: "Binary file of compressed reference sequence",
-        sa: "Binary file of the suffix array"
+        fa_amb: "Text file of ambiguous bases",
+        fa_ann: "Text file of reference sequence information, such as name and length",
+        fa_bwt: "Binary file of Burrows-Wheeler transformed reference sequence",
+        fa_pac: "Binary file of compressed reference sequence",
+        fa_sa: "Binary file of the suffix array"
     }
   }
 
@@ -84,16 +84,16 @@ task bwa_index {
 
   command <<<
   set -eo pipefail && \
-  bwa index ~{reference_fasta}
+  bwa index "~{reference_fasta}"
   >>>
 
   output {
     File fasta = "~{reference_fasta}"
-    File amb = "~{reference_fasta}.amb"
-    File ann = "~{reference_fasta}.ann"
-    File bwt = "~{reference_fasta}.bwt"
-    File pac = "~{reference_fasta}.pac"
-    File sa = "~{reference_fasta}.sa"
+    File fa_amb = "~{reference_fasta}.amb"
+    File fa_ann = "~{reference_fasta}.ann"
+    File fa_bwt = "~{reference_fasta}.bwt"
+    File fa_pac = "~{reference_fasta}.pac"
+    File fa_sa = "~{reference_fasta}.sa"
   }
 
   runtime {
