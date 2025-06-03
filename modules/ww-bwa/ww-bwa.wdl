@@ -126,10 +126,17 @@ task bwa_mem {
     Int memory_gb = 16
   }
 
+  # Compute cpu_threads as one less than cpu_cores, with minimum of 1
+  Int cpu_threads = if cpu_cores > 1 then cpu_cores - 1 else 1
+
   command <<<
   set -eo pipefail && \
-  bwa mem -v 3 -t max(1, ~{cpu_cores-1}) -M -R '@RG\tID:~{sample_data.name}\tSM:~{sample_data.name}\tPL:illumina' ~{reference_fasta} "~{sample_data.r1}" "~{sample_data.r2}" - > ~{sample_data.name}.sam && \
-  samtools sort -@ max(1, ~{cpu_cores-1}) -o ~{sample_data.name}.sorted_aligned.bam ~{sample_data.name}.sam
+  bwa mem -v 3 -t ~{cpu_threads} -M \
+    -R '@RG\tID:~{sample_data.name}\tSM:~{sample_data.name}\tPL:illumina' \
+    ~{reference_fasta} \
+    "~{sample_data.r1}" "~{sample_data.r2}" - > ~{sample_data.name}.sam && \
+  samtools sort -@ ~{cpu_threads-1} \
+    -o ~{sample_data.name}.sorted_aligned.bam ~{sample_data.name}.sam
   samtools index ~{sample_data.name}.sorted_aligned.bam
   >>>
 
