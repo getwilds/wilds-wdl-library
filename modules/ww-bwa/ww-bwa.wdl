@@ -9,17 +9,6 @@ struct SampleInfo {
     File r1
     File r2
 }
-
-struct RefGenome {
-    File ref_dict
-    File ref_fasta
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_fasta_index
-    File ref_pac
-    File ref_sa
-}
  
 workflow bwa_example {
   meta {
@@ -41,15 +30,21 @@ workflow bwa_example {
 
   input {
     Array[SampleInfo] samples
-    RefGenome reference_genome
+    File reference_fasta
     Int cpus = 8
-    Int memory_gb = 64
+    Int memory_gb = 32
+  }
+
+  call bwa_index { input:
+      reference_fasta = reference_fasta
+      cpu_cores = cpus,
+      memory_gb = memory_gb
   }
 
   scatter (sample in samples) {
     call bwa_mem { input:
         sample_data = sample,
-        reference_fasta = reference_genome.ref_fasta,
+        reference_fasta = reference_fasta,
         cpu_cores = cpus,
         memory_gb = memory_gb
     }
@@ -57,6 +52,50 @@ workflow bwa_example {
 
   output {
     Array[File] bwa_bam = bwa_mem.sorted_bam
+  }
+}
+
+task bwa_index {
+  meta {
+    description: "Task for building BWA index files from a reference FASTA"
+    outputs: {
+        amb: "Text file of ambiguous bases"
+        ann: "Text file of reference sequence information, such as name and length"
+        bwt: "Binary file of Burrows-Wheeler transformed reference sequence"
+        pac: "Binary file of compressed reference sequence"
+        sa: "Binary file of the suffix array"
+    }
+  }
+
+  parameter_meta {
+    reference_fasta: "Reference genome FASTA file"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+  }
+
+  input {
+    File reference_fasta
+    Int cpu_cores = 8
+    Int memory_gb = 32
+  }
+
+  command <<<
+  set -eo pipefail && \
+  bwa index ~{reference_fasta}
+  >>>
+
+  output {
+    File amb = "~{reference_fasta}.amb"
+    File ann = "~{reference_fasta}.ann"
+    File bwt = "~{reference_fasta}.bwt"
+    File pac = "~{reference_fasta}.pac"
+    File sa = "~{reference_fasta}.sa"
+  }
+
+  runtime {
+    docker: "getwilds/bwa:0.7.17"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
   }
 }
 
