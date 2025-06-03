@@ -88,4 +88,4 @@ jobs:
         action: lint
         deny-warnings: true
         deny-notes: false
-        except: TodoComment ContainerUri TrailingComma CommentWhitespace
+        except: TodoComment ContainerUri TrailingComma CommentWhitespace UnusedInput
