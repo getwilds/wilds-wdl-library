@@ -68,7 +68,7 @@ workflow ww_leukemia {
     String base_file_name = sample_name + "_" + molecular_id + "." + ref_name
 
     # Map reads to reference directly from paired FASTQ files
-    call BwaMem { input:
+    call bwa_mem { input:
         r1_fastq = sample_r1,
         r2_fastq = sample_r2,
         sample_name = sample_name,
@@ -86,15 +86,15 @@ workflow ww_leukemia {
 
     # Aggregate aligned+merged flowcell BAM files and mark duplicates
     call MarkDuplicates { input:
-        input_bam = BwaMem.output_bam,
-        input_bai = BwaMem.output_bai,
+        input_bam = bwa_mem.output_bam,
+        input_bai = bwa_mem.output_bai,
         output_bam_basename = base_file_name + ".aligned.duplicates_marked",
         metrics_filename = base_file_name + ".duplicate_metrics",
         docker = gatk_docker
     }
 
     # Generate the recalibration model by interval and apply it
-    call ApplyBaseRecalibrator { input:
+    call apply_base_recal { input:
         input_bam = MarkDuplicates.output_bam,
         input_bam_index = MarkDuplicates.output_bai,
         base_file_name = base_file_name,
@@ -109,16 +109,16 @@ workflow ww_leukemia {
         docker = gatk_docker
     }
 
-    call bedToolsQC { input:
-        input_bam = ApplyBaseRecalibrator.recalibrated_bam,
-        genome_sort_order = ApplyBaseRecalibrator.sortOrder,
+    call bedtools_qc { input:
+        input_bam = apply_base_recal.recalibrated_bam,
+        genome_sort_order = apply_base_recal.sortOrder,
         bed_file = SortBed.sorted_bed,
         base_file_name = base_file_name,
         docker = bedtools_docker
     }
 
-    call CollectHsMetrics { input:
-        input_bam = ApplyBaseRecalibrator.recalibrated_bam,
+    call collect_hs_metrics { input:
+        input_bam = apply_base_recal.recalibrated_bam,
         base_file_name = base_file_name,
         ref_fasta = ref_fasta,
         ref_fasta_index = ref_fasta_index,
@@ -127,9 +127,9 @@ workflow ww_leukemia {
     }
 
     # Generate haplotype caller vcf
-    call HaplotypeCaller { input:
-        input_bam = ApplyBaseRecalibrator.recalibrated_bam,
-        input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
+    call haplotype_caller { input:
+        input_bam = apply_base_recal.recalibrated_bam,
+        input_bam_index = apply_base_recal.recalibrated_bai,
         intervals = SortBed.intervals,
         base_file_name = base_file_name,
         ref_dict = ref_dict,
@@ -141,9 +141,9 @@ workflow ww_leukemia {
     }
 
     # Generate mutect2 vcf
-    call Mutect2TumorOnly { input:
-        input_bam = ApplyBaseRecalibrator.recalibrated_bam,
-        input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
+    call mutect2_tumoronly { input:
+        input_bam = apply_base_recal.recalibrated_bam,
+        input_bam_index = apply_base_recal.recalibrated_bai,
         intervals = SortBed.intervals,
         base_file_name = base_file_name,
         ref_dict = ref_dict,
@@ -155,9 +155,9 @@ workflow ww_leukemia {
     }
 
     # Generate bcftools vcf
-    call bcftoolsMpileup { input:
-        input_bam = ApplyBaseRecalibrator.recalibrated_bam,
-        input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
+    call bcftools_mpileup { input:
+        input_bam = apply_base_recal.recalibrated_bam,
+        input_bam_index = apply_base_recal.recalibrated_bai,
         sorted_bed = SortBed.sorted_bed,
         base_file_name = base_file_name,
         ref_dict = ref_dict,
@@ -168,7 +168,7 @@ workflow ww_leukemia {
 
     # Annotate variants
     call annovar as annotateSAM { input:
-        input_vcf = bcftoolsMpileup.output_vcf,
+        input_vcf = bcftools_mpileup.output_vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
         annovar_protocols = annovar_protocols,
@@ -177,7 +177,7 @@ workflow ww_leukemia {
 
     # Annotate variants
     call annovar as annotateMutect { input:
-        input_vcf = Mutect2TumorOnly.output_vcf,
+        input_vcf = mutect2_tumoronly.output_vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
         annovar_protocols = annovar_protocols,
@@ -186,14 +186,14 @@ workflow ww_leukemia {
 
     # Annotate variants
     call annovar as annotateHaplotype { input:
-        input_vcf = HaplotypeCaller.output_vcf,
+        input_vcf = haplotype_caller.output_vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
         annovar_protocols = annovar_protocols,
         docker = annovar_docker
     }
 
-    call consensusProcessingR { input:
+    call consensus_processing { input:
         GATKVars = annotateHaplotype.output_annotated_table,
         MutectVars = annotateMutect.output_annotated_table,
         SAMVars = annotateSAM.output_annotated_table,
@@ -204,22 +204,22 @@ workflow ww_leukemia {
 
   # Outputs that will be retained when execution is complete
   output {
-    Array[File] analysis_ready_bam = ApplyBaseRecalibrator.recalibrated_bam
-    Array[File] analysis_ready_bai = ApplyBaseRecalibrator.recalibrated_bai
-    Array[File] gatk_vcf = HaplotypeCaller.output_vcf
-    Array[File] sam_vcf = bcftoolsMpileup.output_vcf
-    Array[File] mutect_vcf = Mutect2TumorOnly.output_vcf
-    Array[File] mutect_vcf_index = Mutect2TumorOnly.output_vcf_index
+    Array[File] analysis_ready_bam = apply_base_recal.recalibrated_bam
+    Array[File] analysis_ready_bai = apply_base_recal.recalibrated_bai
+    Array[File] gatk_vcf = haplotype_caller.output_vcf
+    Array[File] sam_vcf = bcftools_mpileup.output_vcf
+    Array[File] mutect_vcf = mutect2_tumoronly.output_vcf
+    Array[File] mutect_vcf_index = mutect2_tumoronly.output_vcf_index
     Array[File] mutect_annotated_vcf = annotateMutect.output_annotated_vcf
-    Array[File] Mutect_annotated_table = annotateMutect.output_annotated_table
+    Array[File] mutect_annotated_table = annotateMutect.output_annotated_table
     Array[File] gatk_annotated_vcf = annotateHaplotype.output_annotated_vcf
     Array[File] gatk_annotated = annotateHaplotype.output_annotated_table
     Array[File] sam_annotated_vcf = annotateSAM.output_annotated_vcf
     Array[File] sam_annotated = annotateSAM.output_annotated_table
-    Array[File] panel_qc = bedToolsQC.meanQC
-    Array[File] picard_qc = CollectHsMetrics.picardMetrics
-    Array[File] picard_qc_per_target = CollectHsMetrics.picardPerTarget
-    Array[File] consensus_variants = consensusProcessingR.consensusTSV
+    Array[File] panel_qc = bedtools_qc.meanQC
+    Array[File] picard_qc = collect_hs_metrics.picardMetrics
+    Array[File] picard_qc_per_target = collect_hs_metrics.picardPerTarget
+    Array[File] consensus_variants = consensus_processing.consensusTSV
   }
 } # End workflow
 
@@ -262,7 +262,7 @@ task annovar {
 }
 
 # Generate Base Quality Score Recalibration (BQSR) model and apply it
-task ApplyBaseRecalibrator {
+task apply_base_recal {
   input {
     File input_bam
     File intervals 
@@ -317,7 +317,7 @@ task ApplyBaseRecalibrator {
 }
 
 # bcftools Mpileup variant calling
-task bcftoolsMpileup {
+task bcftools_mpileup {
   input {
     File input_bam
     File input_bam_index
@@ -355,7 +355,7 @@ task bcftoolsMpileup {
 }
 
 # use bedtools to find basic QC data
-task bedToolsQC {
+task bedtools_qc {
   input {
     File input_bam
     File bed_file
@@ -383,7 +383,7 @@ task bedToolsQC {
 }
 
 # align to genome using paired FASTQ files
-task BwaMem {
+task bwa_mem {
   input {
     File r1_fastq
     File r2_fastq
@@ -422,7 +422,7 @@ task BwaMem {
 }
 
 # get hybrid capture based QC metrics via Picard
-task CollectHsMetrics {
+task collect_hs_metrics {
   input {
     File input_bam
     String base_file_name
@@ -458,7 +458,7 @@ task CollectHsMetrics {
   }
 }
 
-task consensusProcessingR {
+task consensus_processing {
   input {
     File GATKVars
     File SAMVars
@@ -484,7 +484,7 @@ task consensusProcessingR {
 }
 
 # HaplotypeCaller per-sample
-task HaplotypeCaller {
+task haplotype_caller {
   input {
     File input_bam
     File input_bam_index
@@ -524,7 +524,7 @@ task HaplotypeCaller {
 }
 
 # Mutect 2 calling
-task Mutect2TumorOnly {
+task mutect2_tumoronly {
   input {
     File input_bam
     File input_bam_index
