@@ -20,10 +20,56 @@ struct SampleInfo {
 }
 
 workflow ww_leukemia {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing with focus on leukemia analysis"
+    url: "https://github.com/getwilds/wilds-wdl-library"
+    version: "1.0.0"
+    outputs: {
+        analysis_ready_bam: "Array of recalibrated BAM files ready for downstream analysis",
+        analysis_ready_bai: "Array of index files for the recalibrated BAM files",
+        gatk_vcf: "Array of variant calls from GATK HaplotypeCaller",
+        sam_vcf: "Array of variant calls from samtools/bcftools mpileup",
+        mutect_vcf: "Array of variant calls from GATK Mutect2 (tumor-only mode)",
+        mutect_vcf_index: "Array of index files for Mutect2 VCF files",
+        mutect_annotated_vcf: "Array of Mutect2 VCF files annotated with Annovar",
+        mutect_annotated_table: "Array of Mutect2 variants in tabular format with annotations",
+        gatk_annotated_vcf: "Array of GATK HaplotypeCaller VCF files annotated with Annovar",
+        gatk_annotated: "Array of GATK HaplotypeCaller variants in tabular format with annotations",
+        sam_annotated_vcf: "Array of samtools/bcftools VCF files annotated with Annovar",
+        sam_annotated: "Array of samtools/bcftools variants in tabular format with annotations",
+        panel_qc: "Array of quality control metrics from bedtools showing mean coverage over target regions",
+        picard_qc: "Array of hybrid selection metrics from Picard CollectHsMetrics",
+        picard_qc_per_target: "Array of per-target coverage metrics from Picard",
+        consensus_variants: "Array of consensus variant calls combining results from all three variant callers"
+    }
+  }
+
+  parameter_meta {
+    bed_location: "BED file defining target regions for panel sequencing"
+    ref_fasta: "Reference genome FASTA file"
+    ref_fasta_index: "Index file (.fai) for the reference genome FASTA"
+    ref_dict: "Sequence dictionary (.dict) for the reference genome"
+    ref_amb: "BWA index file (.amb) for the reference genome"
+    ref_ann: "BWA index file (.ann) for the reference genome"
+    ref_bwt: "BWA index file (.bwt) for the reference genome"
+    ref_pac: "BWA index file (.pac) for the reference genome"
+    ref_sa: "BWA index file (.sa) for the reference genome"
+    dbsnp_vcf: "dbSNP VCF file for base quality score recalibration and variant annotation"
+    dbsnp_vcf_index: "Index file for the dbSNP VCF"
+    af_only_gnomad: "gnomAD allele frequency VCF file for Mutect2 germline resource"
+    af_only_gnomad_index: "Index file for the gnomAD allele frequency VCF"
+    known_indels_sites_vcfs: "Array of VCF files containing known indel sites for base quality score recalibration"
+    known_indels_sites_indices: "Array of index files for the known indels VCF files"
+    samples: "Array of sample information structs containing sample names, molecular IDs, and paired FASTQ files"
+    ref_name: "Reference genome build name (e.g., 'hg38', 'hg19') used for Annovar annotation"
+    annovar_protocols: "Comma-separated list of Annovar annotation protocols to apply"
+    annovar_operation: "Comma-separated list of Annovar operations corresponding to the protocols"
+  }
+
   input {
-    Array[SampleInfo] samples
     File bed_location
-    String ref_name
     File ref_fasta
     File ref_fasta_index
     File ref_dict
@@ -34,10 +80,12 @@ workflow ww_leukemia {
     File ref_sa
     File dbsnp_vcf
     File dbsnp_vcf_index
-    Array[File] known_indels_sites_vcfs
-    Array[File] known_indels_sites_indices
     File af_only_gnomad
     File af_only_gnomad_index
+    Array[File] known_indels_sites_vcfs
+    Array[File] known_indels_sites_indices
+    Array[SampleInfo] samples
+    String ref_name
     String annovar_protocols
     String annovar_operation
   }
@@ -227,6 +275,22 @@ workflow ww_leukemia {
 
 # annotate with annovar
 task annovar {
+  meta {
+    description: "Annotate variants using Annovar with customizable protocols and operations"
+    outputs: {
+        annotated_vcf: "VCF file with Annovar annotations added",
+        annotated_table: "Tab-delimited table with variant annotations"
+    }
+  }
+
+  parameter_meta {
+    vcf_to_annotate: "Input VCF file to be annotated"
+    ref_name: "Reference genome build name for Annovar annotation (e.g., 'hg38', 'hg19')"
+    annovar_protocols: "Comma-separated list of annotation protocols to apply"
+    annovar_operation: "Comma-separated list of operations corresponding to the protocols"
+    docker: "Docker container image for Annovar"
+  }
+
   input {
     File vcf_to_annotate
     String ref_name
@@ -263,6 +327,30 @@ task annovar {
 
 # Generate Base Quality Score Recalibration (BQSR) model and apply it
 task apply_base_recal {
+  meta {
+    description: "Generate Base Quality Score Recalibration (BQSR) model and apply it to improve base quality scores"
+    outputs: {
+        recalibrated_bam: "BAM file with recalibrated base quality scores",
+        recalibrated_bai: "Index file for the recalibrated BAM",
+        sort_order: "Text file containing the chromosome sort order of the BAM file"
+    }
+  }
+
+  parameter_meta {
+    aligned_bam: "Input aligned BAM file to be recalibrated"
+    aligned_bam_index: "Index file for the input BAM"
+    intervals: "Interval list file defining target regions"
+    dbsnp_vcf: "dbSNP VCF file for known variant sites"
+    dbsnp_vcf_index: "Index file for the dbSNP VCF"
+    ref_dict: "Reference genome sequence dictionary"
+    ref_fasta: "Reference genome FASTA file"
+    ref_fasta_index: "Index file for the reference FASTA"
+    known_indels_sites_vcfs: "Array of VCF files with known indel sites"
+    known_indels_sites_indices: "Array of index files for known indels VCFs"
+    base_file_name: "Base name for output files"
+    docker: "Docker container image for GATK"
+  }
+
   input {
     File aligned_bam
     File aligned_bam_index
@@ -319,6 +407,24 @@ task apply_base_recal {
 
 # bcftools Mpileup variant calling
 task bcftools_mpileup {
+  meta {
+    description: "Call variants using bcftools mpileup and call pipeline"
+    outputs: {
+        mpileup_vcf: "Compressed VCF file containing variant calls from bcftools"
+    }
+  }
+
+  parameter_meta {
+    aligned_bam: "Input aligned BAM file"
+    aligned_bam_index: "Index file for the input BAM"
+    sorted_bed: "BED file defining target regions for variant calling"
+    ref_dict: "Reference genome sequence dictionary"
+    ref_fasta: "Reference genome FASTA file"
+    ref_fasta_index: "Index file for the reference FASTA"
+    base_file_name: "Base name for output files"
+    docker: "Docker container image for bcftools"
+  }
+
   input {
     File aligned_bam
     File aligned_bam_index
@@ -357,6 +463,21 @@ task bcftools_mpileup {
 
 # use bedtools to find basic QC data
 task bedtools_qc {
+  meta {
+    description: "Generate quality control metrics using bedtools to calculate mean coverage over target regions"
+    outputs: {
+        mean_qc: "Tab-delimited file with mean coverage statistics for each target region"
+    }
+  }
+
+  parameter_meta {
+    aligned_bam: "Input aligned BAM file"
+    bed_file: "BED file defining target regions"
+    genome_sort_order: "File containing chromosome sort order information"
+    base_file_name: "Base name for output files"
+    docker: "Docker container image for bedtools"
+  }
+
   input {
     File aligned_bam
     File bed_file
@@ -385,6 +506,30 @@ task bedtools_qc {
 
 # align to genome using paired FASTQ files
 task bwa_mem {
+  meta {
+    description: "Align paired-end reads to reference genome using BWA-MEM algorithm"
+    outputs: {
+        aligned_bam: "Coordinate-sorted BAM file containing aligned reads",
+        aligned_bai: "Index file for the aligned BAM"
+    }
+  }
+
+  parameter_meta {
+    r1_fastq: "Read 1 FASTQ file"
+    r2_fastq: "Read 2 FASTQ file"
+    ref_fasta: "Reference genome FASTA file"
+    ref_amb: "BWA index file (.amb) for the reference genome"
+    ref_ann: "BWA index file (.ann) for the reference genome"
+    ref_bwt: "BWA index file (.bwt) for the reference genome"
+    ref_pac: "BWA index file (.pac) for the reference genome"
+    ref_sa: "BWA index file (.sa) for the reference genome"
+    sample_name: "Sample name for read group assignment"
+    library_name: "Library name for read group assignment"
+    base_file_name: "Base name for output files"
+    docker: "Docker container image for BWA and samtools"
+    threads: "Number of threads to use for alignment"
+  }
+
   input {
     File r1_fastq
     File r2_fastq
@@ -425,6 +570,23 @@ task bwa_mem {
 
 # get hybrid capture based QC metrics via Picard
 task collect_hs_metrics {
+  meta {
+    description: "Collect hybrid selection metrics using Picard to assess target enrichment performance"
+    outputs: {
+        picard_metrics: "Picard hybrid selection metrics summary file",
+        picard_pertarget: "Per-target coverage metrics file"
+    }
+  }
+
+  parameter_meta {
+    aligned_bam: "Input aligned BAM file"
+    ref_fasta: "Reference genome FASTA file"
+    ref_fasta_index: "Index file for the reference FASTA"
+    intervals: "Interval list file defining bait and target regions"
+    base_file_name: "Base name for output files"
+    docker: "Docker container image for GATK/Picard"
+  }
+
   input {
     File aligned_bam
     File ref_fasta
@@ -461,6 +623,21 @@ task collect_hs_metrics {
 }
 
 task consensus_processing {
+  meta {
+    description: "Generate consensus variant calls by combining results from multiple variant callers"
+    outputs: {
+        consensus_tsv: "Tab-separated file containing consensus variant calls with evidence from all callers"
+    }
+  }
+
+  parameter_meta {
+    gatk_vars: "Annotated variant table from GATK HaplotypeCaller"
+    sam_vars: "Annotated variant table from samtools/bcftools"
+    mutect_vars: "Annotated variant table from GATK Mutect2"
+    base_file_name: "Base name for output files"
+    docker: "Docker container image with R and consensus calling script"
+  }
+
   input {
     File gatk_vars
     File sam_vars
@@ -488,6 +665,27 @@ task consensus_processing {
 
 # HaplotypeCaller per-sample
 task haplotype_caller {
+  meta {
+    description: "Call germline variants using GATK HaplotypeCaller"
+    outputs: {
+        haplotype_vcf: "Compressed VCF file containing germline variant calls",
+        haplotype_vcf_index: "Index file for the VCF output"
+    }
+  }
+
+  parameter_meta {
+    aligned_bam: "Input aligned BAM file"
+    aligned_bam_index: "Index file for the input BAM"
+    intervals: "Interval list file defining target regions"
+    ref_dict: "Reference genome sequence dictionary"
+    ref_fasta: "Reference genome FASTA file"
+    ref_fasta_index: "Index file for the reference FASTA"
+    dbsnp_vcf: "dbSNP VCF file for variant annotation"
+    dbsnp_index: "Index file for the dbSNP VCF"
+    base_file_name: "Base name for output files"
+    docker: "Docker container image for GATK"
+  }
+
   input {
     File aligned_bam
     File aligned_bam_index
@@ -528,6 +726,27 @@ task haplotype_caller {
 
 # Mutect 2 calling
 task mutect2_tumoronly {
+  meta {
+    description: "Call somatic variants using GATK Mutect2 in tumor-only mode with filtering"
+    outputs: {
+        mutect2_vcf: "Compressed VCF file containing filtered somatic variant calls",
+        mutect2_vcf_index: "Index file for the Mutect2 VCF output"
+    }
+  }
+
+  parameter_meta {
+    aligned_bam: "Input aligned BAM file"
+    aligned_bam_index: "Index file for the input BAM"
+    intervals: "Interval list file defining target regions"
+    ref_dict: "Reference genome sequence dictionary"
+    ref_fasta: "Reference genome FASTA file"
+    ref_fasta_index: "Index file for the reference FASTA"
+    genome_ref: "gnomAD population allele frequency VCF for germline resource"
+    genome_ref_index: "Index file for the gnomAD VCF"
+    base_file_name: "Base name for output files"
+    docker: "Docker container image for GATK"
+  }
+
   input {
     File aligned_bam
     File aligned_bam_index
@@ -575,6 +794,20 @@ task mutect2_tumoronly {
 
 # Prepare bed file and check sorting
 task sort_bed {
+  meta {
+    description: "Sort BED file and convert to GATK interval list format for consistent interval processing"
+    outputs: {
+        intervals: "GATK interval list file sorted by genomic coordinates",
+        sorted_bed: "BED file sorted by genomic coordinates"
+    }
+  }
+
+  parameter_meta {
+    unsorted_bed: "Input BED file defining target regions (may be unsorted)"
+    ref_dict: "Reference genome sequence dictionary for interval list conversion"
+    docker: "Docker container image for GATK"
+  }
+
   input {
     File unsorted_bed
     File ref_dict
@@ -604,6 +837,23 @@ task sort_bed {
 }
 
 task mark_duplicates {
+  meta {
+    description: "Mark duplicate reads in aligned BAM file to improve variant calling accuracy"
+    outputs: {
+        markdup_bam: "BAM file with duplicate reads marked",
+        markdup_bai: "Index file for the duplicate-marked BAM",
+        duplicate_metrics: "Metrics file containing duplicate marking statistics"
+    }
+  }
+
+  parameter_meta {
+    raw_bam: "Input aligned BAM file"
+    raw_bai: "Index file for the input BAM"
+    markdup_bam_basename: "Base name for the output duplicate-marked BAM file"
+    metrics_filename: "Name for the duplicate metrics output file"
+    docker: "Docker container image for GATK"
+  }
+
   input {
     File raw_bam
     File raw_bai
