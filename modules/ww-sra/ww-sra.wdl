@@ -144,10 +144,10 @@ task validate_outputs {
     echo "" >> validation_report.txt
     
     # Arrays for bash processing
-    sra_ids=(~{sep=" " sra_ids})
-    r1_files=(~{sep=" " r1_files})
-    r2_files=(~{sep=" " r2_files})
-    is_paired=(~{sep=" " is_paired_flags})
+    sra_ids=~{sep=" " sra_ids}
+    r1_files=~{sep=" " r1_files}
+    r2_files=~{sep=" " r2_files}
+    is_paired=~{sep=" " is_paired_flags}
     
     validation_passed=true
     
