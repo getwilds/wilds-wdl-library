@@ -61,10 +61,10 @@ task bwa_index {
   meta {
     description: "Task for building BWA index files from a reference FASTA"
     outputs: {
-        amb: "Text file of ambiguous bases"
-        ann: "Text file of reference sequence information, such as name and length"
-        bwt: "Binary file of Burrows-Wheeler transformed reference sequence"
-        pac: "Binary file of compressed reference sequence"
+        amb: "Text file of ambiguous bases",
+        ann: "Text file of reference sequence information, such as name and length",
+        bwt: "Binary file of Burrows-Wheeler transformed reference sequence",
+        pac: "Binary file of compressed reference sequence",
         sa: "Binary file of the suffix array"
     }
   }
@@ -105,7 +105,7 @@ task bwa_mem {
   meta {
     description: "Task for aligning sequence reads using BWA-MEM"
     outputs: {
-        sorted_bam: "Sorted BWA-MEM alignment output BAM file"
+        sorted_bam: "Sorted BWA-MEM alignment output BAM file",
         sorted_bai: "Index files for the sorted BWA-MEM alignment BAM files"
     }
   }
