@@ -1,4 +1,3 @@
-version 1.0
 ## Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing.
 ## Input requirements:
 ## - Pair-end sequencing data in FASTQ format
@@ -11,17 +10,19 @@ version 1.0
 ## - Annovar annotated vcfs and tabular variant list for each variant caller
 ## - Basic QC stats from bedtools for mean coverage over regions in panel
 
+version 1.0
+
 struct SampleInfo {
     String omics_sample_name
     String molecular_id
     File r1_fastq
     File r2_fastq
 }
- 
-workflow ww_vc_trio {
+
+workflow ww_leukemia {
   input {
     Array[SampleInfo] samples
-    File bedLocation
+    File bed_location
     String ref_name
     File ref_fasta
     File ref_fasta_index
@@ -31,9 +32,9 @@ workflow ww_vc_trio {
     File ref_bwt
     File ref_pac
     File ref_sa
-    File dbSNP_vcf
-    File dbSNP_vcf_index
-    Array[File] known_indels_sites_VCFs
+    File dbsnp_vcf
+    File dbsnp_vcf_index
+    Array[File] known_indels_sites_vcfs
     Array[File] known_indels_sites_indices
     File af_only_gnomad
     File af_only_gnomad_index
@@ -42,38 +43,36 @@ workflow ww_vc_trio {
   }
 
   # Docker containers this workflow has been designed for
-  String GATKDocker = "getwilds/gatk:4.3.0.0"
-  String bwaDocker = "getwilds/bwa:0.7.17"
-  String bedtoolsDocker = "getwilds/bedtools:2.31.1" 
-  String bcftoolsDocker = "getwilds/bcftools:1.19"
-  String annovarDocker = "getwilds/annovar:~{ref_name}"
-  String RDocker = "getwilds/consensus:0.1.1"
+  String gatk_docker = "getwilds/gatk:4.3.0.0"
+  String bwa_docker = "getwilds/bwa:0.7.17"
+  String bedtools_docker = "getwilds/bedtools:2.31.1"
+  String bcftools_docker = "getwilds/bcftools:1.19"
+  String annovar_docker = "getwilds/annovar:~{ref_name}"
+  String r_docker = "getwilds/consensus:0.1.1"
 
-  Int bwaThreads = 16
+  Int bwa_threads = 16
 
   # Prepare bed file and check sorting
-  call SortBed {
-    input:
-      unsorted_bed = bedLocation,
+  call SortBed { input:
+      unsorted_bed = bed_location,
       ref_dict = ref_dict,
-      docker = GATKDocker
+      docker = gatk_docker
   }
-  
-  scatter (sample in samples){
-    String sampleName = sample.omics_sample_name
-    String molecularID = sample.molecular_id
-    File sampleR1 = sample.r1_fastq
-    File sampleR2 = sample.r2_fastq
 
-    String base_file_name = sampleName + "_" + molecularID + "." + ref_name
+  scatter (sample in samples){
+    String sample_name = sample.omics_sample_name
+    String molecular_id = sample.molecular_id
+    File sample_r1 = sample.r1_fastq
+    File sample_r2 = sample.r2_fastq
+
+    String base_file_name = sample_name + "_" + molecular_id + "." + ref_name
 
     # Map reads to reference directly from paired FASTQ files
-    call BwaMem {
-      input:
-        r1_fastq = sampleR1,
-        r2_fastq = sampleR2,
-        sample_name = sampleName,
-        library_name = molecularID,
+    call BwaMem { input:
+        r1_fastq = sample_r1,
+        r2_fastq = sample_r2,
+        sample_name = sample_name,
+        library_name = molecular_id,
         base_file_name = base_file_name,
         ref_fasta = ref_fasta,
         ref_amb = ref_amb,
@@ -81,59 +80,54 @@ workflow ww_vc_trio {
         ref_bwt = ref_bwt,
         ref_pac = ref_pac,
         ref_sa = ref_sa,
-        threads = bwaThreads,
-        docker = bwaDocker
+        threads = bwa_threads,
+        docker = bwa_docker
     }
-  
+
     # Aggregate aligned+merged flowcell BAM files and mark duplicates
-    call MarkDuplicates {
-      input:
+    call MarkDuplicates { input:
         input_bam = BwaMem.output_bam,
         input_bai = BwaMem.output_bai,
         output_bam_basename = base_file_name + ".aligned.duplicates_marked",
         metrics_filename = base_file_name + ".duplicate_metrics",
-        docker = GATKDocker
+        docker = gatk_docker
     }
 
     # Generate the recalibration model by interval and apply it
-    call ApplyBaseRecalibrator {
-      input:
+    call ApplyBaseRecalibrator { input:
         input_bam = MarkDuplicates.output_bam,
         input_bam_index = MarkDuplicates.output_bai,
         base_file_name = base_file_name,
         intervals = SortBed.intervals,
-        dbSNP_vcf = dbSNP_vcf,
-        dbSNP_vcf_index = dbSNP_vcf_index,
-        known_indels_sites_VCFs = known_indels_sites_VCFs,
+        dbsnp_vcf = dbsnp_vcf,
+        dbsnp_vcf_index = dbsnp_vcf_index,
+        known_indels_sites_vcfs = known_indels_sites_vcfs,
         known_indels_sites_indices = known_indels_sites_indices,
         ref_dict = ref_dict,
         ref_fasta = ref_fasta,
         ref_fasta_index = ref_fasta_index,
-        docker = GATKDocker
+        docker = gatk_docker
     }
 
-    call bedToolsQC {
-      input: 
+    call bedToolsQC { input:
         input_bam = ApplyBaseRecalibrator.recalibrated_bam,
         genome_sort_order = ApplyBaseRecalibrator.sortOrder,
         bed_file = SortBed.sorted_bed,
         base_file_name = base_file_name,
-        docker = bedtoolsDocker
+        docker = bedtools_docker
     }
 
-    call CollectHsMetrics {
-      input: 
+    call CollectHsMetrics { input:
         input_bam = ApplyBaseRecalibrator.recalibrated_bam,
         base_file_name = base_file_name,
         ref_fasta = ref_fasta,
         ref_fasta_index = ref_fasta_index,
         intervals = SortBed.intervals,
-        docker = GATKDocker
+        docker = gatk_docker
     }
 
     # Generate haplotype caller vcf
-    call HaplotypeCaller {
-      input:
+    call HaplotypeCaller { input:
         input_bam = ApplyBaseRecalibrator.recalibrated_bam,
         input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
         intervals = SortBed.intervals,
@@ -141,14 +135,13 @@ workflow ww_vc_trio {
         ref_dict = ref_dict,
         ref_fasta = ref_fasta,
         ref_fasta_index = ref_fasta_index,
-        dbSNP_vcf = dbSNP_vcf,
-        dbSNP_index = dbSNP_vcf_index,
-        docker = GATKDocker
+        dbsnp_vcf = dbsnp_vcf,
+        dbsnp_index = dbsnp_vcf_index,
+        docker = gatk_docker
     }
 
     # Generate mutect2 vcf
-    call Mutect2TumorOnly {
-      input:
+    call Mutect2TumorOnly { input:
         input_bam = ApplyBaseRecalibrator.recalibrated_bam,
         input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
         intervals = SortBed.intervals,
@@ -158,12 +151,11 @@ workflow ww_vc_trio {
         ref_fasta_index = ref_fasta_index,
         genomeReference = af_only_gnomad,
         genomeReferenceIndex = af_only_gnomad_index,
-        docker = GATKDocker
+        docker = gatk_docker
     }
 
     # Generate bcftools vcf
-    call bcftoolsMpileup {
-      input:
+    call bcftoolsMpileup { input:
         input_bam = ApplyBaseRecalibrator.recalibrated_bam,
         input_bam_index = ApplyBaseRecalibrator.recalibrated_bai,
         sorted_bed = SortBed.sorted_bed,
@@ -171,67 +163,63 @@ workflow ww_vc_trio {
         ref_dict = ref_dict,
         ref_fasta = ref_fasta,
         ref_fasta_index = ref_fasta_index,
-        docker = bcftoolsDocker
+        docker = bcftools_docker
     }
 
     # Annotate variants
-    call annovar as annotateSAM {
-      input:
+    call annovar as annotateSAM { input:
         input_vcf = bcftoolsMpileup.output_vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
         annovar_protocols = annovar_protocols,
-        docker = annovarDocker
+        docker = annovar_docker
     }
 
     # Annotate variants
-    call annovar as annotateMutect {
-      input:
+    call annovar as annotateMutect { input:
         input_vcf = Mutect2TumorOnly.output_vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
         annovar_protocols = annovar_protocols,
-        docker = annovarDocker
+        docker = annovar_docker
     }
-    
+
     # Annotate variants
-    call annovar as annotateHaplotype {
-      input:
+    call annovar as annotateHaplotype { input:
         input_vcf = HaplotypeCaller.output_vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
         annovar_protocols = annovar_protocols,
-        docker = annovarDocker
+        docker = annovar_docker
     }
 
-    call consensusProcessingR {
-      input:
+    call consensusProcessingR { input:
         GATKVars = annotateHaplotype.output_annotated_table,
         MutectVars = annotateMutect.output_annotated_table,
         SAMVars = annotateSAM.output_annotated_table,
         base_file_name = base_file_name,
-        docker = RDocker
+        docker = r_docker
     }
-  } # End scatter 
+  } # End scatter
 
   # Outputs that will be retained when execution is complete
   output {
-    Array[File] analysis_ready_bam = ApplyBaseRecalibrator.recalibrated_bam 
+    Array[File] analysis_ready_bam = ApplyBaseRecalibrator.recalibrated_bam
     Array[File] analysis_ready_bai = ApplyBaseRecalibrator.recalibrated_bai
-    Array[File] GATK_vcf = HaplotypeCaller.output_vcf
-    Array[File] SAM_vcf = bcftoolsMpileup.output_vcf
-    Array[File] Mutect_Vcf = Mutect2TumorOnly.output_vcf
-    Array[File] Mutect_VcfIndex = Mutect2TumorOnly.output_vcf_index
-    Array[File] Mutect_AnnotatedVcf = annotateMutect.output_annotated_vcf
-    Array[File] Mutect_AnnotatedTable = annotateMutect.output_annotated_table
-    Array[File] GATK_annotated_vcf = annotateHaplotype.output_annotated_vcf
-    Array[File] GATK_annotated = annotateHaplotype.output_annotated_table
-    Array[File] SAM_annotated_vcf = annotateSAM.output_annotated_vcf
-    Array[File] SAM_annotated = annotateSAM.output_annotated_table
-    Array[File] panelQC = bedToolsQC.meanQC
-    Array[File] PicardQC = CollectHsMetrics.picardMetrics
-    Array[File] PicardQCpertarget = CollectHsMetrics.picardPerTarget
-    Array[File] consensusVariants = consensusProcessingR.consensusTSV
+    Array[File] gatk_vcf = HaplotypeCaller.output_vcf
+    Array[File] sam_vcf = bcftoolsMpileup.output_vcf
+    Array[File] mutect_vcf = Mutect2TumorOnly.output_vcf
+    Array[File] mutect_vcf_index = Mutect2TumorOnly.output_vcf_index
+    Array[File] mutect_annotated_vcf = annotateMutect.output_annotated_vcf
+    Array[File] Mutect_annotated_table = annotateMutect.output_annotated_table
+    Array[File] gatk_annotated_vcf = annotateHaplotype.output_annotated_vcf
+    Array[File] gatk_annotated = annotateHaplotype.output_annotated_table
+    Array[File] sam_annotated_vcf = annotateSAM.output_annotated_vcf
+    Array[File] sam_annotated = annotateSAM.output_annotated_table
+    Array[File] panel_qc = bedToolsQC.meanQC
+    Array[File] picard_qc = CollectHsMetrics.picardMetrics
+    Array[File] picard_qc_per_target = CollectHsMetrics.picardPerTarget
+    Array[File] consensus_variants = consensusProcessingR.consensusTSV
   }
 } # End workflow
 
@@ -280,9 +268,9 @@ task ApplyBaseRecalibrator {
     File intervals 
     File input_bam_index
     String base_file_name
-    File dbSNP_vcf
-    File dbSNP_vcf_index
-    Array[File] known_indels_sites_VCFs
+    File dbsnp_vcf
+    File dbsnp_vcf_index
+    Array[File] known_indels_sites_vcfs
     Array[File] known_indels_sites_indices
     File ref_dict
     File ref_fasta
@@ -297,8 +285,8 @@ task ApplyBaseRecalibrator {
         -R "~{ref_fasta}" \
         -I "~{input_bam}" \
         -O "~{base_file_name}.recal_data.csv" \
-        --known-sites "~{dbSNP_vcf}" \
-        --known-sites ~{sep=" --known-sites " known_indels_sites_VCFs} \
+        --known-sites "~{dbsnp_vcf}" \
+        --known-sites ~{sep=" --known-sites " known_indels_sites_vcfs} \
         --intervals ~{intervals} \
         --interval-padding 100 \
         --verbosity WARNING
@@ -429,7 +417,7 @@ task BwaMem {
   runtime {
     docker: docker
     memory: "32GB"
-    cpu: "~{threads}"
+    cpu: threads
   }
 }
 
@@ -505,8 +493,8 @@ task HaplotypeCaller {
     File ref_dict
     File ref_fasta
     File ref_fasta_index
-    File dbSNP_vcf
-    File dbSNP_index
+    File dbsnp_vcf
+    File dbsnp_index
     String docker
   }
 
@@ -517,7 +505,7 @@ task HaplotypeCaller {
       -R "~{ref_fasta}" \
       -I "~{input_bam}" \
       -O "~{base_file_name}.GATK.vcf.gz" \
-      --dbsnp "~{dbSNP_vcf}" \
+      --dbsnp "~{dbsnp_vcf}" \
       --intervals "~{intervals}" \
       --interval-padding 100 \
       --verbosity WARNING 
@@ -710,4 +698,3 @@ task SortSam {
     cpu: 1
   }
 }
-

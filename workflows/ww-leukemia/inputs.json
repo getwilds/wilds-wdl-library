@@ -1,5 +1,5 @@
 {
-  "ww_vc_trio.samples": [
+  "ww_leukemia.samples": [
     {
       "omics_sample_name": "TESTDATA",
       "molecular_id": "TEST",
@@ -7,27 +7,27 @@
       "r2_fastq": "/path_to_inputs/TESTDATA_R2.fastq.gz"
     }
   ],
-  "ww_vc_trio.bedLocation": "/path_to_inputs/regions_of_interest.bed",
-  "ww_vc_trio.ref_name": "hg19",
-  "ww_vc_trio.ref_fasta": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta",
-  "ww_vc_trio.ref_fasta_index": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.fai",
-  "ww_vc_trio.ref_dict": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.dict",
-  "ww_vc_trio.ref_pac": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.pac",
-  "ww_vc_trio.ref_sa": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.sa",
-  "ww_vc_trio.ref_amb": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.amb",
-  "ww_vc_trio.ref_ann": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.ann",
-  "ww_vc_trio.ref_alt": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.alt",
-  "ww_vc_trio.ref_bwt": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.bwt",
-  "ww_vc_trio.dbSNP_vcf_index": "s3://broad-references/hg19/v0/dbsnp_138.b37.vcf.gz.tbi",
-  "ww_vc_trio.dbSNP_vcf": "s3://broad-references/hg19/v0/dbsnp_138.b37.vcf.gz",
-  "ww_vc_trio.known_indels_sites_indices": [
+  "ww_leukemia.bedLocation": "/path_to_inputs/regions_of_interest.bed",
+  "ww_leukemia.ref_name": "hg19",
+  "ww_leukemia.ref_fasta": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta",
+  "ww_leukemia.ref_fasta_index": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.fai",
+  "ww_leukemia.ref_dict": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.dict",
+  "ww_leukemia.ref_pac": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.pac",
+  "ww_leukemia.ref_sa": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.sa",
+  "ww_leukemia.ref_amb": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.amb",
+  "ww_leukemia.ref_ann": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.ann",
+  "ww_leukemia.ref_alt": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.alt",
+  "ww_leukemia.ref_bwt": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.bwt",
+  "ww_leukemia.dbSNP_vcf_index": "s3://broad-references/hg19/v0/dbsnp_138.b37.vcf.gz.tbi",
+  "ww_leukemia.dbSNP_vcf": "s3://broad-references/hg19/v0/dbsnp_138.b37.vcf.gz",
+  "ww_leukemia.known_indels_sites_indices": [
     "s3://broad-references/hg19/v0/Mills_and_1000G_gold_standard.indels.b37.sites.vcf.idx"
   ],
-  "ww_vc_trio.known_indels_sites_VCFs": [
+  "ww_leukemia.known_indels_sites_VCFs": [
     "s3://broad-references/hg19/v0/Mills_and_1000G_gold_standard.indels.b37.sites.vcf"
   ],
-  "ww_vc_trio.af_only_gnomad": "/path_to_references/af-only-gnomad.raw.sites.b37.vcf.gz",
-  "ww_vc_trio.af_only_gnomad_index": "/path_to_references/af-only-gnomad.raw.sites.b37.vcf.gz.tbi",
-  "ww_vc_trio.annovar_protocols": "refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome",
-  "ww_vc_trio.annovar_operation": "g,f,f,f,f,f"
+  "ww_leukemia.af_only_gnomad": "/path_to_references/af-only-gnomad.raw.sites.b37.vcf.gz",
+  "ww_leukemia.af_only_gnomad_index": "/path_to_references/af-only-gnomad.raw.sites.b37.vcf.gz.tbi",
+  "ww_leukemia.annovar_protocols": "refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome",
+  "ww_leukemia.annovar_operation": "g,f,f,f,f,f"
 }
