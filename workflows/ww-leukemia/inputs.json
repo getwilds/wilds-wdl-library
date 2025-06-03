@@ -1,5 +1,12 @@
 {
-  "ww_vc_trio.batchFile": "batch_file.tsv",
+  "ww_vc_trio.samples": [
+    {
+      "omics_sample_name": "TESTDATA",
+      "molecular_id": "TEST",
+      "r1_fastq": "/path_to_inputs/TESTDATA_R1.fastq.gz",
+      "r2_fastq": "/path_to_inputs/TESTDATA_R2.fastq.gz"
+    }
+  ],
   "ww_vc_trio.bedLocation": "/path_to_inputs/regions_of_interest.bed",
   "ww_vc_trio.ref_name": "hg19",
   "ww_vc_trio.ref_fasta": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta",

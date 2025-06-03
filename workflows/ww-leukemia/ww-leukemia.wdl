@@ -1,11 +1,8 @@
 version 1.0
 ## Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing.
 ## Input requirements:
-## - Pair-end sequencing data in unmapped BAM (uBAM) format that comply with the following requirements:
-## - - filenames all have the same suffix (we use ".unmapped.bam")
-## - - files must pass validation by ValidateSamFile (a Picard tool)
-## - - reads are provided in query-sorted order (not 100% sure if this is required as of 6/24/2019)
-## - - all reads must have an RG tag
+## - Pair-end sequencing data in FASTQ format
+## - Sample information provided as structs in the input JSON
 ##
 ## Output Files:
 ## - recalibrated bam and it's index
@@ -13,10 +10,17 @@ version 1.0
 ## - samtools/bcftools vcf
 ## - Annovar annotated vcfs and tabular variant list for each variant caller
 ## - Basic QC stats from bedtools for mean coverage over regions in panel
-## 
+
+struct SampleInfo {
+    String omics_sample_name
+    String molecular_id
+    File r1_fastq
+    File r2_fastq
+}
+ 
 workflow ww_vc_trio {
   input {
-    File batchFile
+    Array[SampleInfo] samples
     File bedLocation
     String ref_name
     File ref_fasta
@@ -42,10 +46,8 @@ workflow ww_vc_trio {
     String annovar_operation
   }
 
-  Array[Object] batchInfo = read_objects(batchFile)
   # Docker containers this workflow has been designed for
   String GATKDocker = "getwilds/gatk:4.3.0.0"
-  # String GATKDocker = "tefirman/gatk:latest"
   String bwaDocker = "getwilds/bwa:0.7.17"
   String bedtoolsDocker = "getwilds/bedtools:2.31.1" 
   String bcftoolsDocker = "getwilds/bcftools:1.19"
@@ -61,26 +63,22 @@ workflow ww_vc_trio {
       ref_dict = ref_dict,
       docker = GATKDocker
   }
-  scatter (job in batchInfo){
-    String sampleName = job.omics_sample_name
-    String molecularID = job.molecular_id
-    File sampleBam = job.bamLocation
+  
+  scatter (sample in samples){
+    String sampleName = sample.omics_sample_name
+    String molecularID = sample.molecular_id
+    File sampleR1 = sample.r1_fastq
+    File sampleR2 = sample.r2_fastq
 
     String base_file_name = sampleName + "_" + molecularID + "." + ref_name
-    String bam_basename = basename(sampleBam, ".unmapped.bam")
 
-    # Convert unmapped bam to interleaved fastq
-    call SamToFastq {
-      input:
-        input_bam = sampleBam,
-        base_file_name = base_file_name,
-        docker = GATKDocker
-    }
-
-    # Map reads to reference
+    # Map reads to reference directly from paired FASTQ files
     call BwaMem {
       input:
-        input_fastq = SamToFastq.output_fastq,
+        r1_fastq = sampleR1,
+        r2_fastq = sampleR2,
+        sample_name = sampleName,
+        library_name = molecularID,
         base_file_name = base_file_name,
         ref_fasta = ref_fasta,
         ref_fasta_index = ref_fasta_index,
@@ -95,22 +93,11 @@ workflow ww_vc_trio {
         docker = bwaDocker
     }
   
-    # Merge original uBAM and BWA-aligned BAM
-    call MergeBamAlignment {
-      input:
-        unmapped_bam = sampleBam,
-        aligned_bam = BwaMem.output_bam,
-        base_file_name = base_file_name,
-        ref_fasta = ref_fasta,
-        ref_fasta_index = ref_fasta_index,
-        ref_dict = ref_dict,
-        docker = GATKDocker
-    }
-
     # Aggregate aligned+merged flowcell BAM files and mark duplicates
     call MarkDuplicates {
       input:
-        input_bam = MergeBamAlignment.output_bam,
+        input_bam = BwaMem.output_bam,
+        input_bai = BwaMem.output_bai,
         output_bam_basename = base_file_name + ".aligned.duplicates_marked",
         metrics_filename = base_file_name + ".duplicate_metrics",
         docker = GATKDocker
@@ -417,10 +404,13 @@ task bedToolsQC {
   }
 }
 
-# align to genome
+# align to genome using paired FASTQ files
 task BwaMem {
   input {
-    File input_fastq
+    File r1_fastq
+    File r2_fastq
+    String sample_name
+    String library_name
     String base_file_name
     File ref_fasta
     File ref_fasta_index
@@ -438,12 +428,15 @@ task BwaMem {
   command <<<
     set -eo pipefail
     bwa mem \
-      -p -v 2 -t ~{threads - 1} \
-      "~{ref_fasta}" "~{input_fastq}" | samtools view -1b > "~{base_file_name}.aligned.bam"
+      -t ~{threads - 1} \
+      -R "@RG\tID:~{library_name}\tSM:~{sample_name}\tLB:~{library_name}\tPU:~{library_name}\tPL:ILLUMINA" \
+      "~{ref_fasta}" "~{r1_fastq}" "~{r2_fastq}" | samtools sort -o "~{base_file_name}.aligned.bam"
+    samtools index "~{base_file_name}.aligned.bam"
   >>>
 
   output {
     File output_bam = "~{base_file_name}.aligned.bam"
+    File output_bai = "~{base_file_name}.aligned.bam.bai"
   }
 
   runtime {
@@ -551,44 +544,6 @@ task HaplotypeCaller {
   runtime {
     docker: docker
     memory: "12 GB"
-    cpu: 1
-  }
-}
-
-# Merge original input uBAM file with BWA-aligned BAM file
-task MergeBamAlignment {
-  input {
-    File unmapped_bam
-    File aligned_bam
-    String base_file_name
-    File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    String docker
-  }
-
-  command <<<
-    set -eo pipefail
-    gatk --java-options "-Dsamjdk.compression_level=5 -XX:-UseGCOverheadLimit -Xms12g -Xmx12g" \
-      MergeBamAlignment \
-     --ALIGNED_BAM "~{aligned_bam}" \
-     --UNMAPPED_BAM "~{unmapped_bam}" \
-     --OUTPUT "~{base_file_name}.merged.bam" \
-     --REFERENCE_SEQUENCE "~{ref_fasta}" \
-     --PAIRED_RUN true \
-     --CREATE_INDEX false \
-     --CLIP_ADAPTERS true \
-     --MAX_RECORDS_IN_RAM 5000000 \
-     --VERBOSITY WARNING
-  >>>
-
-  output {
-    File output_bam = "~{base_file_name}.merged.bam"
-  }
-
-  runtime {
-    docker: docker
-    memory: "16 GB"
     cpu: 1
   }
 }
@@ -710,14 +665,12 @@ task SortBed {
 task MarkDuplicates {
   input {
     File input_bam
+    File input_bai
     String output_bam_basename
     String metrics_filename
     String docker
   }
 
-  # Task is assuming query-sorted input so that the Secondary and Supplementary reads get marked correctly.
-  # This works because the output of BWA is query-grouped and therefore, so is the output of MergeBamAlignment.
-  # While query-grouped isn't actually query-sorted, it's good enough for MarkDuplicates with ASSUME_SORT_ORDER="queryname"
   command <<<
     gatk --java-options "-Dsamjdk.compression_level=5 -Xms16g -Xmx16g" \
       MarkDuplicates \
