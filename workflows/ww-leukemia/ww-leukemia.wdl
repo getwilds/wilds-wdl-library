@@ -53,7 +53,7 @@ workflow ww_leukemia {
   Int bwa_threads = 16
 
   # Prepare bed file and check sorting
-  call SortBed { input:
+  call sort_bed { input:
       unsorted_bed = bed_location,
       ref_dict = ref_dict,
       docker = gatk_docker
@@ -85,20 +85,20 @@ workflow ww_leukemia {
     }
 
     # Aggregate aligned+merged flowcell BAM files and mark duplicates
-    call MarkDuplicates { input:
-        input_bam = bwa_mem.output_bam,
-        input_bai = bwa_mem.output_bai,
-        output_bam_basename = base_file_name + ".aligned.duplicates_marked",
+    call mark_duplicates { input:
+        raw_bam = bwa_mem.aligned_bam,
+        raw_bai = bwa_mem.aligned_bai,
+        markdup_bam_basename = base_file_name + ".aligned.duplicates_marked",
         metrics_filename = base_file_name + ".duplicate_metrics",
         docker = gatk_docker
     }
 
     # Generate the recalibration model by interval and apply it
     call apply_base_recal { input:
-        input_bam = MarkDuplicates.output_bam,
-        input_bam_index = MarkDuplicates.output_bai,
+        aligned_bam = mark_duplicates.markdup_bam,
+        aligned_bam_index = mark_duplicates.markdup_bai,
         base_file_name = base_file_name,
-        intervals = SortBed.intervals,
+        intervals = sort_bed.intervals,
         dbsnp_vcf = dbsnp_vcf,
         dbsnp_vcf_index = dbsnp_vcf_index,
         known_indels_sites_vcfs = known_indels_sites_vcfs,
@@ -110,27 +110,27 @@ workflow ww_leukemia {
     }
 
     call bedtools_qc { input:
-        input_bam = apply_base_recal.recalibrated_bam,
-        genome_sort_order = apply_base_recal.sortOrder,
-        bed_file = SortBed.sorted_bed,
+        aligned_bam = apply_base_recal.recalibrated_bam,
+        genome_sort_order = apply_base_recal.sort_order,
+        bed_file = sort_bed.sorted_bed,
         base_file_name = base_file_name,
         docker = bedtools_docker
     }
 
     call collect_hs_metrics { input:
-        input_bam = apply_base_recal.recalibrated_bam,
+        aligned_bam = apply_base_recal.recalibrated_bam,
         base_file_name = base_file_name,
         ref_fasta = ref_fasta,
         ref_fasta_index = ref_fasta_index,
-        intervals = SortBed.intervals,
+        intervals = sort_bed.intervals,
         docker = gatk_docker
     }
 
     # Generate haplotype caller vcf
     call haplotype_caller { input:
-        input_bam = apply_base_recal.recalibrated_bam,
-        input_bam_index = apply_base_recal.recalibrated_bai,
-        intervals = SortBed.intervals,
+        aligned_bam = apply_base_recal.recalibrated_bam,
+        aligned_bam_index = apply_base_recal.recalibrated_bai,
+        intervals = sort_bed.intervals,
         base_file_name = base_file_name,
         ref_dict = ref_dict,
         ref_fasta = ref_fasta,
@@ -142,23 +142,23 @@ workflow ww_leukemia {
 
     # Generate mutect2 vcf
     call mutect2_tumoronly { input:
-        input_bam = apply_base_recal.recalibrated_bam,
-        input_bam_index = apply_base_recal.recalibrated_bai,
-        intervals = SortBed.intervals,
+        aligned_bam = apply_base_recal.recalibrated_bam,
+        aligned_bam_index = apply_base_recal.recalibrated_bai,
+        intervals = sort_bed.intervals,
         base_file_name = base_file_name,
         ref_dict = ref_dict,
         ref_fasta = ref_fasta,
         ref_fasta_index = ref_fasta_index,
-        genomeReference = af_only_gnomad,
-        genomeReferenceIndex = af_only_gnomad_index,
+        genome_ref = af_only_gnomad,
+        genome_ref_index = af_only_gnomad_index,
         docker = gatk_docker
     }
 
     # Generate bcftools vcf
     call bcftools_mpileup { input:
-        input_bam = apply_base_recal.recalibrated_bam,
-        input_bam_index = apply_base_recal.recalibrated_bai,
-        sorted_bed = SortBed.sorted_bed,
+        aligned_bam = apply_base_recal.recalibrated_bam,
+        aligned_bam_index = apply_base_recal.recalibrated_bai,
+        sorted_bed = sort_bed.sorted_bed,
         base_file_name = base_file_name,
         ref_dict = ref_dict,
         ref_fasta = ref_fasta,
@@ -168,7 +168,7 @@ workflow ww_leukemia {
 
     # Annotate variants
     call annovar as annotateSAM { input:
-        input_vcf = bcftools_mpileup.output_vcf,
+        vcf_to_annotate = bcftools_mpileup.mpileup_vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
         annovar_protocols = annovar_protocols,
@@ -177,7 +177,7 @@ workflow ww_leukemia {
 
     # Annotate variants
     call annovar as annotateMutect { input:
-        input_vcf = mutect2_tumoronly.output_vcf,
+        vcf_to_annotate = mutect2_tumoronly.mutect2_vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
         annovar_protocols = annovar_protocols,
@@ -186,7 +186,7 @@ workflow ww_leukemia {
 
     # Annotate variants
     call annovar as annotateHaplotype { input:
-        input_vcf = haplotype_caller.output_vcf,
+        vcf_to_annotate = haplotype_caller.haplotype_vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
         annovar_protocols = annovar_protocols,
@@ -194,9 +194,9 @@ workflow ww_leukemia {
     }
 
     call consensus_processing { input:
-        GATKVars = annotateHaplotype.output_annotated_table,
-        MutectVars = annotateMutect.output_annotated_table,
-        SAMVars = annotateSAM.output_annotated_table,
+        gatk_vars = annotateHaplotype.annotated_table,
+        sam_vars = annotateSAM.annotated_table,
+        mutect_vars = annotateMutect.annotated_table,
         base_file_name = base_file_name,
         docker = r_docker
     }
@@ -206,20 +206,20 @@ workflow ww_leukemia {
   output {
     Array[File] analysis_ready_bam = apply_base_recal.recalibrated_bam
     Array[File] analysis_ready_bai = apply_base_recal.recalibrated_bai
-    Array[File] gatk_vcf = haplotype_caller.output_vcf
-    Array[File] sam_vcf = bcftools_mpileup.output_vcf
-    Array[File] mutect_vcf = mutect2_tumoronly.output_vcf
-    Array[File] mutect_vcf_index = mutect2_tumoronly.output_vcf_index
-    Array[File] mutect_annotated_vcf = annotateMutect.output_annotated_vcf
-    Array[File] mutect_annotated_table = annotateMutect.output_annotated_table
-    Array[File] gatk_annotated_vcf = annotateHaplotype.output_annotated_vcf
-    Array[File] gatk_annotated = annotateHaplotype.output_annotated_table
-    Array[File] sam_annotated_vcf = annotateSAM.output_annotated_vcf
-    Array[File] sam_annotated = annotateSAM.output_annotated_table
-    Array[File] panel_qc = bedtools_qc.meanQC
-    Array[File] picard_qc = collect_hs_metrics.picardMetrics
-    Array[File] picard_qc_per_target = collect_hs_metrics.picardPerTarget
-    Array[File] consensus_variants = consensus_processing.consensusTSV
+    Array[File] gatk_vcf = haplotype_caller.haplotype_vcf
+    Array[File] sam_vcf = bcftools_mpileup.mpileup_vcf
+    Array[File] mutect_vcf = mutect2_tumoronly.mutect2_vcf
+    Array[File] mutect_vcf_index = mutect2_tumoronly.mutect2_vcf_index
+    Array[File] mutect_annotated_vcf = annotateMutect.annotated_vcf
+    Array[File] mutect_annotated_table = annotateMutect.annotated_table
+    Array[File] gatk_annotated_vcf = annotateHaplotype.annotated_vcf
+    Array[File] gatk_annotated = annotateHaplotype.annotated_table
+    Array[File] sam_annotated_vcf = annotateSAM.annotated_vcf
+    Array[File] sam_annotated = annotateSAM.annotated_table
+    Array[File] panel_qc = bedtools_qc.mean_qc
+    Array[File] picard_qc = collect_hs_metrics.picard_metrics
+    Array[File] picard_qc_per_target = collect_hs_metrics.picard_pertarget
+    Array[File] consensus_variants = consensus_processing.consensus_tsv
   }
 } # End workflow
 
@@ -228,18 +228,18 @@ workflow ww_leukemia {
 # annotate with annovar
 task annovar {
   input {
-    File input_vcf
+    File vcf_to_annotate
     String ref_name
     String annovar_protocols
     String annovar_operation
     String docker
   }
 
-  String base_vcf_name = basename(input_vcf, ".vcf.gz")
+  String base_vcf_name = basename(vcf_to_annotate, ".vcf.gz")
 
   command <<<
     set -eo pipefail
-    perl /annovar/table_annovar.pl "~{input_vcf}" /annovar/humandb/ \
+    perl /annovar/table_annovar.pl "~{vcf_to_annotate}" /annovar/humandb/ \
       -buildver "~{ref_name}" \
       -outfile "~{base_vcf_name}" \
       -remove \
@@ -250,8 +250,8 @@ task annovar {
   >>>
 
   output {
-    File output_annotated_vcf = "~{base_vcf_name}.~{ref_name}_multianno.vcf"
-    File output_annotated_table = "~{base_vcf_name}.~{ref_name}_multianno.txt"
+    File annotated_vcf = "~{base_vcf_name}.~{ref_name}_multianno.vcf"
+    File annotated_table = "~{base_vcf_name}.~{ref_name}_multianno.txt"
   }
 
   runtime {
@@ -264,17 +264,17 @@ task annovar {
 # Generate Base Quality Score Recalibration (BQSR) model and apply it
 task apply_base_recal {
   input {
-    File input_bam
-    File intervals 
-    File input_bam_index
-    String base_file_name
+    File aligned_bam
+    File aligned_bam_index
+    File intervals
     File dbsnp_vcf
     File dbsnp_vcf_index
-    Array[File] known_indels_sites_vcfs
-    Array[File] known_indels_sites_indices
     File ref_dict
     File ref_fasta
     File ref_fasta_index
+    Array[File] known_indels_sites_vcfs
+    Array[File] known_indels_sites_indices
+    String base_file_name
     String docker
   }
 
@@ -283,30 +283,31 @@ task apply_base_recal {
     gatk --java-options "-Xms8g -Xmx8g" \
       BaseRecalibrator \
         -R "~{ref_fasta}" \
-        -I "~{input_bam}" \
+        -I "~{aligned_bam}" \
         -O "~{base_file_name}.recal_data.csv" \
         --known-sites "~{dbsnp_vcf}" \
         --known-sites ~{sep=" --known-sites " known_indels_sites_vcfs} \
-        --intervals ~{intervals} \
+        --intervals "~{intervals}" \
         --interval-padding 100 \
         --verbosity WARNING
     gatk --java-options "-Xms48g -Xmx48g" \
       ApplyBQSR \
         -bqsr "~{base_file_name}.recal_data.csv" \
-        -I "~{input_bam}" \
+        -I "~{aligned_bam}" \
         -O "~{base_file_name}.recal.bam" \
         -R "~{ref_fasta}" \
-        --intervals ~{intervals} \
+        --intervals "~{intervals}" \
         --interval-padding 100 \
         --verbosity WARNING
     # finds the current sort order of this bam file
-    samtools view -H "~{base_file_name}.recal.bam" | grep @SQ|sed 's/@SQ\tSN:\|LN://g' > "~{base_file_name}.sortOrder.txt"
+    samtools view -H "~{base_file_name}.recal.bam" | \
+      grep @SQ|sed 's/@SQ\tSN:\|LN://g' > "~{base_file_name}.sortOrder.txt"
   >>>
 
   output {
     File recalibrated_bam = "~{base_file_name}.recal.bam"
     File recalibrated_bai = "~{base_file_name}.recal.bai"
-    File sortOrder = "~{base_file_name}.sortOrder.txt"
+    File sort_order = "~{base_file_name}.sortOrder.txt"
   }
 
   runtime {
@@ -319,13 +320,13 @@ task apply_base_recal {
 # bcftools Mpileup variant calling
 task bcftools_mpileup {
   input {
-    File input_bam
-    File input_bam_index
-    String base_file_name
+    File aligned_bam
+    File aligned_bam_index
     File sorted_bed
     File ref_dict
     File ref_fasta
     File ref_fasta_index
+    String base_file_name
     String docker
   }
 
@@ -339,12 +340,12 @@ task bcftools_mpileup {
       --regions-file "~{sorted_bed}" \
       --ignore-RG \
       --no-BAQ \
-      "~{input_bam}" | bcftools call -Oz -mv \
+      "~{aligned_bam}" | bcftools call -Oz -mv \
           -o "~{base_file_name}.SAM.vcf.gz"
   >>>
 
   output {
-    File output_vcf = "~{base_file_name}.SAM.vcf.gz"
+    File mpileup_vcf = "~{base_file_name}.SAM.vcf.gz"
   }
 
   runtime {
@@ -357,7 +358,7 @@ task bcftools_mpileup {
 # use bedtools to find basic QC data
 task bedtools_qc {
   input {
-    File input_bam
+    File aligned_bam
     File bed_file
     File genome_sort_order
     String base_file_name
@@ -368,11 +369,11 @@ task bedtools_qc {
     set -eo pipefail
     bedtools sort -g "~{genome_sort_order}" -i "~{bed_file}" > correctly.sorted.bed
     bedtools coverage -mean -sorted -g "~{genome_sort_order}" -a correctly.sorted.bed \
-        -b "~{input_bam}" > "~{base_file_name}.bedtoolsQCMean.txt"
+        -b "~{aligned_bam}" > "~{base_file_name}.bedtoolsQCMean.txt"
   >>>
 
   output {
-    File meanQC = "~{base_file_name}.bedtoolsQCMean.txt"
+    File mean_qc = "~{base_file_name}.bedtoolsQCMean.txt"
   }
 
   runtime {
@@ -387,17 +388,17 @@ task bwa_mem {
   input {
     File r1_fastq
     File r2_fastq
-    String sample_name
-    String library_name
-    String base_file_name
     File ref_fasta
     File ref_amb
     File ref_ann
     File ref_bwt
     File ref_pac
     File ref_sa
-    Int threads
+    String sample_name
+    String library_name
+    String base_file_name
     String docker
+    Int threads
   }
 
   command <<<
@@ -405,13 +406,14 @@ task bwa_mem {
     bwa mem \
       -t ~{threads - 1} \
       -R "@RG\tID:~{library_name}\tSM:~{sample_name}\tLB:~{library_name}\tPU:~{library_name}\tPL:ILLUMINA" \
-      "~{ref_fasta}" "~{r1_fastq}" "~{r2_fastq}" | samtools sort -o "~{base_file_name}.aligned.bam"
+      "~{ref_fasta}" "~{r1_fastq}" "~{r2_fastq}" | \
+      samtools sort -o "~{base_file_name}.aligned.bam"
     samtools index "~{base_file_name}.aligned.bam"
   >>>
 
   output {
-    File output_bam = "~{base_file_name}.aligned.bam"
-    File output_bai = "~{base_file_name}.aligned.bam.bai"
+    File aligned_bam = "~{base_file_name}.aligned.bam"
+    File aligned_bai = "~{base_file_name}.aligned.bam.bai"
   }
 
   runtime {
@@ -424,11 +426,11 @@ task bwa_mem {
 # get hybrid capture based QC metrics via Picard
 task collect_hs_metrics {
   input {
-    File input_bam
-    String base_file_name
+    File aligned_bam
     File ref_fasta
     File ref_fasta_index
     File intervals
+    String base_file_name
     String docker
   }
 
@@ -436,7 +438,7 @@ task collect_hs_metrics {
     set -eo pipefail
     gatk --java-options "-Xms64g -Xmx64g" \
       CollectHsMetrics \
-      --INPUT "~{input_bam}" \
+      --INPUT "~{aligned_bam}" \
       --OUTPUT "~{base_file_name}.picard.metrics.txt" \
       --REFERENCE_SEQUENCE "~{ref_fasta}" \
       --ALLELE_FRACTION 0.01 \
@@ -447,8 +449,8 @@ task collect_hs_metrics {
   >>>
 
   output {
-    File picardMetrics = "~{base_file_name}.picard.metrics.txt"
-    File picardPerTarget = "~{base_file_name}.picard.pertarget.txt"
+    File picard_metrics = "~{base_file_name}.picard.metrics.txt"
+    File picard_pertarget = "~{base_file_name}.picard.pertarget.txt"
   }
 
   runtime {
@@ -460,20 +462,21 @@ task collect_hs_metrics {
 
 task consensus_processing {
   input {
-    File GATKVars
-    File SAMVars
-    File MutectVars
+    File gatk_vars
+    File sam_vars
+    File mutect_vars
     String base_file_name
     String docker
   }
 
   command <<<
     set -eo pipefail
-    Rscript /consensus-trio-unpaired.R "~{GATKVars}" "~{SAMVars}" "~{MutectVars}" "~{base_file_name}"
+    Rscript /consensus-trio-unpaired.R \
+      "~{gatk_vars}" "~{sam_vars}" "~{mutect_vars}" "~{base_file_name}"
   >>>
 
   output {
-    File consensusTSV = "~{base_file_name}.consensus.tsv"
+    File consensus_tsv = "~{base_file_name}.consensus.tsv"
   }
 
   runtime {
@@ -486,15 +489,15 @@ task consensus_processing {
 # HaplotypeCaller per-sample
 task haplotype_caller {
   input {
-    File input_bam
-    File input_bam_index
-    String base_file_name
+    File aligned_bam
+    File aligned_bam_index
     File intervals
     File ref_dict
     File ref_fasta
     File ref_fasta_index
     File dbsnp_vcf
     File dbsnp_index
+    String base_file_name
     String docker
   }
 
@@ -503,7 +506,7 @@ task haplotype_caller {
     gatk --java-options "-Xms8g -Xmx8g" \
       HaplotypeCaller \
       -R "~{ref_fasta}" \
-      -I "~{input_bam}" \
+      -I "~{aligned_bam}" \
       -O "~{base_file_name}.GATK.vcf.gz" \
       --dbsnp "~{dbsnp_vcf}" \
       --intervals "~{intervals}" \
@@ -512,8 +515,8 @@ task haplotype_caller {
   >>>
 
   output {
-    File output_vcf = "~{base_file_name}.GATK.vcf.gz"
-    File output_vcf_index = "~{base_file_name}.GATK.vcf.gz.tbi"
+    File haplotype_vcf = "~{base_file_name}.GATK.vcf.gz"
+    File haplotype_vcf_index = "~{base_file_name}.GATK.vcf.gz.tbi"
   }
 
   runtime {
@@ -526,15 +529,15 @@ task haplotype_caller {
 # Mutect 2 calling
 task mutect2_tumoronly {
   input {
-    File input_bam
-    File input_bam_index
-    String base_file_name
+    File aligned_bam
+    File aligned_bam_index
     File intervals
     File ref_dict
     File ref_fasta
     File ref_fasta_index
-    File genomeReference
-    File genomeReferenceIndex
+    File genome_ref
+    File genome_ref_index
+    String base_file_name
     String docker
   }
 
@@ -543,11 +546,11 @@ task mutect2_tumoronly {
     gatk --java-options "-Xms16g -Xmx16g" \
       Mutect2 \
         -R "~{ref_fasta}" \
-        -I "~{input_bam}" \
+        -I "~{aligned_bam}" \
         -O preliminary.vcf.gz \
         --intervals "~{intervals}" \
         --interval-padding 100 \
-        --germline-resource "~{genomeReference}" \
+        --germline-resource "~{genome_ref}" \
         --verbosity WARNING
     gatk --java-options "-Xms16g -Xmx16g" \
       FilterMutectCalls \
@@ -559,8 +562,8 @@ task mutect2_tumoronly {
   >>>
 
   output {
-    File output_vcf = "~{base_file_name}.mutect2.vcf.gz"
-    File output_vcf_index = "~{base_file_name}.mutect2.vcf.gz.tbi"
+    File mutect2_vcf = "~{base_file_name}.mutect2.vcf.gz"
+    File mutect2_vcf_index = "~{base_file_name}.mutect2.vcf.gz.tbi"
   }
 
   runtime {
@@ -570,45 +573,8 @@ task mutect2_tumoronly {
   }
 }
 
-# Read unmapped BAM, convert to FASTQ
-task SamToFastq {
-  input {
-    File input_bam
-    String base_file_name
-    String docker
-  }
-
-  # this now sorts first in case the original bam is not queryname sorted or mark dup spark will complain
-  command <<<
-    set -eo pipefail
-    gatk --java-options "-Dsamjdk.compression_level=5 -Xms12g -Xmx12g" \
-      SortSam \
-     --INPUT "~{input_bam}" \
-     --OUTPUT sorted.bam \
-     --SORT_ORDER queryname \
-     --VERBOSITY WARNING
-    gatk --java-options "-Dsamjdk.compression_level=5 -Xms8g -Xmx8g" \
-      SamToFastq \
-      --INPUT sorted.bam \
-      --FASTQ "~{base_file_name}.fastq" \
-      --INTERLEAVE true \
-      --INCLUDE_NON_PF_READS true \
-      --VERBOSITY WARNING
-  >>>
-
-  output {
-    File output_fastq = "~{base_file_name}.fastq"
-  }
-
-  runtime {
-    docker: docker
-    memory: "16 GB"
-    cpu: 1
-  }
-}
-
 # Prepare bed file and check sorting
-task SortBed {
+task sort_bed {
   input {
     File unsorted_bed
     File ref_dict
@@ -637,11 +603,11 @@ task SortBed {
   }
 }
 
-task MarkDuplicates {
+task mark_duplicates {
   input {
-    File input_bam
-    File input_bai
-    String output_bam_basename
+    File raw_bam
+    File raw_bai
+    String markdup_bam_basename
     String metrics_filename
     String docker
   }
@@ -649,52 +615,23 @@ task MarkDuplicates {
   command <<<
     gatk --java-options "-Dsamjdk.compression_level=5 -Xms16g -Xmx16g" \
       MarkDuplicates \
-      --INPUT "~{input_bam}" \
-      --OUTPUT "~{output_bam_basename}.bam" \
+      --INPUT "~{raw_bam}" \
+      --OUTPUT "~{markdup_bam_basename}.bam" \
       --METRICS_FILE "~{metrics_filename}" \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 2500 \
       --VERBOSITY WARNING
-    samtools index "~{output_bam_basename}.bam"
+    samtools index "~{markdup_bam_basename}.bam"
   >>>
 
   output {
-    File output_bam = "~{output_bam_basename}.bam"
-    File output_bai = "~{output_bam_basename}.bam.bai"
+    File markdup_bam = "~{markdup_bam_basename}.bam"
+    File markdup_bai = "~{markdup_bam_basename}.bam.bai"
     File duplicate_metrics = "~{metrics_filename}"
   }
 
   runtime {
     docker: docker
     memory: "24 GB"
-    cpu: 1
-  }
-}
-
-# Sort to queryname when needed for a dataset so that markduplicatesSpark can be used. 
-task SortSam {
-  input {
-    File input_bam
-    String base_file_name
-    String docker
-  }
-
-  command <<<
-    set -eo pipefail
-    gatk --java-options "-Dsamjdk.compression_level=5 -Xms12g -Xmx12g" \
-      SortSam \
-     --INPUT "~{input_bam}" \
-     --OUTPUT "~{base_file_name}.sorted.bam" \
-     --SORT_ORDER queryname \
-     --VERBOSITY WARNING
-  >>>
-
-  output {
-    File output_bam = "~{base_file_name}.sorted.bam"
-  }
-
-  runtime {
-    docker: docker
-    memory: "16 GB"
     cpu: 1
   }
 }
