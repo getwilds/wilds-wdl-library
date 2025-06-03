@@ -45,7 +45,7 @@ workflow bwa_example {
   scatter (sample in samples) {
     call bwa_mem { input:
         sample_data = sample,
-        reference_fasta = reference_fasta,
+        reference_fasta = bwa_index.fasta,
         cpu_cores = cpus,
         memory_gb = memory_gb
     }
@@ -61,6 +61,7 @@ task bwa_index {
   meta {
     description: "Task for building BWA index files from a reference FASTA"
     outputs: {
+        fasta: "Reference genome FASTA file",
         amb: "Text file of ambiguous bases",
         ann: "Text file of reference sequence information, such as name and length",
         bwt: "Binary file of Burrows-Wheeler transformed reference sequence",
@@ -87,6 +88,7 @@ task bwa_index {
   >>>
 
   output {
+    File fasta = "~{reference_fasta}"
     File amb = "~{reference_fasta}.amb"
     File ann = "~{reference_fasta}.ann"
     File bwt = "~{reference_fasta}.bwt"

@@ -29,6 +29,7 @@ Builds BWA index files from reference FASTA.
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 
 **Outputs:**
+- `fasta` (File): "Reference genome FASTA file"
 - `amb` (File): Text file of ambiguous bases
 - `ann` (File): Text file of reference sequence information, such as name and length
 - `bwt` (File): Binary file of Burrows-Wheeler transformed reference sequence
@@ -76,7 +77,7 @@ workflow my_alignment_pipeline {
     call bwa_tasks.bwa_mem {
       input:
         sample_data = sample,
-        reference_fasta = reference_fasta
+        reference_fasta = bwa_index.fasta
     }
   }
 
