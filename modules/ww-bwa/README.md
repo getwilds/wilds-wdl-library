@@ -14,7 +14,7 @@ The module is designed to be a foundational component within the WILDS ecosystem
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Task**: `bwa_index`, `bwa_mem`
+- **Task**: `bwa_index`, `bwa_mem`, `validate_outputs`
 - **Workflow**: `bwa_example` (demonstration workflow that executes all tasks)
 - **Container**: `getwilds/bwa:0.7.17`
 
@@ -45,6 +45,17 @@ Aligns paired-end reads to a reference using BWA-MEM.
 **Outputs:**
 - `sorted_bam` (File): Sorted BAM alignment file
 - `sorted_bai` (File): BAM index file
+
+### `validate_outputs`
+Validates alignment outputs and generates a comprehensive report.
+
+**Inputs:**
+- `bam_files` (File): BAM file to validate
+- `bai_files` (File): BAM index file to validate
+- `sample_names` (String): Sample name that was processed
+
+**Outputs:**
+- `report` (File): Validation summary with alignment statistics
 
 ## Usage as a Module
 
@@ -145,6 +156,7 @@ sprocket run ww-bwa.wdl inputs.json
 
 - **BWA-MEM alignment**: Fast and accurate for reads 70bp to 1Mbp
 - **Sorted BAM output**: Ready for downstream analysis (variant calling, QC, etc.)
+- **Validation**: Built-in output validation and reporting
 - **Modular design**: Integrates with other WILDS workflows and tools
 - **Scalable**: Supports batch alignment across many samples
 - **Flexible**: Customizable resource settings per task
@@ -155,6 +167,7 @@ sprocket run ww-bwa.wdl inputs.json
 This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
 - Real RNA-seq data (chromosome 22 subset for efficiency)
+- Comprehensive validation of all outputs
 
 For questions specific to this module or to contribute improvements, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).
 
