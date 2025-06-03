@@ -123,8 +123,8 @@ task bwa_mem {
 
   command <<<
   set -eo pipefail && \
-  bwa mem -p -v 3 -t ~{cpu_cores} -M -R '@RG\tID:~{sample_data.name}\tSM:~{sample_data.name}\tPL:illumina' ~{reference_fasta} "~{sample_data.r1}" "~{sample_data.r2}" - > ~{sample_data.name}.sam && \
-  samtools sort -@ ~{cpu_cores-1} -o ~{sample_data.name}.sorted_aligned.bam ~{sample_data.name}.sam
+  bwa mem -v 3 -t max(1, ~{cpu_cores-1}) -M -R '@RG\tID:~{sample_data.name}\tSM:~{sample_data.name}\tPL:illumina' ~{reference_fasta} "~{sample_data.r1}" "~{sample_data.r2}" - > ~{sample_data.name}.sam && \
+  samtools sort -@ max(1, ~{cpu_cores-1}) -o ~{sample_data.name}.sorted_aligned.bam ~{sample_data.name}.sam
   >>>
 
   output {
