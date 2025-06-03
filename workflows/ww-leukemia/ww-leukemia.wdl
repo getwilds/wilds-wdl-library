@@ -26,10 +26,6 @@ workflow ww_vc_trio {
     File ref_fasta
     File ref_fasta_index
     File ref_dict
-    # This is the .alt file from bwa-kit (https://github.com/lh3/bwa/tree/master/bwakit),
-    # listing the reference contigs that are "alternative". Leave blank in JSON for legacy
-    # references such as b37 and hg19.
-    File? ref_alt
     File ref_amb
     File ref_ann
     File ref_bwt
@@ -41,7 +37,6 @@ workflow ww_vc_trio {
     Array[File] known_indels_sites_indices
     File af_only_gnomad
     File af_only_gnomad_index
-    # Note:  For Annovar, please reference: Wang K, Li M, Hakonarson H. ANNOVAR: Functional annotation of genetic variants from next-generation sequencing data Nucleic Acids Research, 38:e164, 2010
     String annovar_protocols
     String annovar_operation
   }
@@ -81,9 +76,6 @@ workflow ww_vc_trio {
         library_name = molecularID,
         base_file_name = base_file_name,
         ref_fasta = ref_fasta,
-        ref_fasta_index = ref_fasta_index,
-        ref_dict = ref_dict,
-        ref_alt = ref_alt,
         ref_amb = ref_amb,
         ref_ann = ref_ann,
         ref_bwt = ref_bwt,
@@ -179,7 +171,6 @@ workflow ww_vc_trio {
         ref_dict = ref_dict,
         ref_fasta = ref_fasta,
         ref_fasta_index = ref_fasta_index,
-        dbSNP_vcf = dbSNP_vcf,
         docker = bcftoolsDocker
     }
 
@@ -347,7 +338,6 @@ task bcftoolsMpileup {
     File ref_dict
     File ref_fasta
     File ref_fasta_index
-    File dbSNP_vcf
     String docker
   }
 
@@ -413,9 +403,6 @@ task BwaMem {
     String library_name
     String base_file_name
     File ref_fasta
-    File ref_fasta_index
-    File ref_dict
-    File? ref_alt
     File ref_amb
     File ref_ann
     File ref_bwt
