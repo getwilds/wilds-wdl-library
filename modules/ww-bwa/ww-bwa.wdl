@@ -33,8 +33,8 @@ workflow bwa_example {
   }
 
   parameter_meta {
-    samples: "List of sample objects, each containing name and r1/r2 fastq files"
-    reference_genome: "Reference genome object containing name, fasta, and related files"
+    samples: "List of sample objects, each containing sample name and R1/R2 FASTQ files"
+    reference_fasta: "Reference genome FASTA file"
     cpus: "Number of CPU cores allocated for each task in the workflow"
     memory_gb: "Memory allocated for each task in the workflow in GB"
   }
@@ -69,9 +69,9 @@ task bwa_mem {
   }
 
   parameter_meta {
-    sample_data: "Sample object containing name and r1/r2 fastq files"
-    reference_fasta: "Reference genome FASTA file"
-    cpu_cores: "Total number of CPU cores allocated for the task"
+    sample_data: "Sample object containing sample name and R1/R2 FASTQ files"
+    reference_fasta: "BWA indexed reference genome FASTA file"
+    cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
 
@@ -79,7 +79,7 @@ task bwa_mem {
     SampleInfo sample_data
     File reference_fasta
     Int cpu_cores = 8
-    Int memory_gb = 62
+    Int memory_gb = 16
   }
 
   command <<<
@@ -91,7 +91,7 @@ task bwa_mem {
   output {
     File sorted_bam = "~{sample_data.name}.sorted_aligned.bam"
   }
-  
+
   runtime {
     docker: "getwilds/bwa:0.7.17"
     cpu: cpu_cores
