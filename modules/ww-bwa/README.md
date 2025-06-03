@@ -41,8 +41,8 @@ Builds BWA index files from reference FASTA.
 Aligns paired-end reads to a reference using BWA-MEM.
 
 **Inputs:**
-- `sample_data` (SampleInfo): Sample information struct containing sample name and R1/R2 FASTQ file paths
 - `reference_fasta` (File): Reference genome FASTA file (indexed and preprocessed externally)
+- `sample_data` (SampleInfo): Sample information struct containing sample name and R1/R2 FASTQ file paths
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
 

@@ -23,15 +23,15 @@ workflow bwa_example {
   }
 
   parameter_meta {
-    samples: "List of sample objects, each containing sample name and R1/R2 FASTQ files"
     reference_fasta: "Reference genome FASTA file"
+    samples: "List of sample objects, each containing sample name and R1/R2 FASTQ files"
     cpus: "Number of CPU cores allocated for each task in the workflow"
     memory_gb: "Memory allocated for each task in the workflow in GB"
   }
 
   input {
-    Array[SampleInfo] samples
     File reference_fasta
+    Array[SampleInfo] samples
     Int cpus = 8
     Int memory_gb = 32
   }
@@ -113,15 +113,15 @@ task bwa_mem {
   }
 
   parameter_meta {
-    sample_data: "Sample object containing sample name and R1/R2 FASTQ files"
     reference_fasta: "BWA indexed reference genome FASTA file"
+    sample_data: "Sample object containing sample name and R1/R2 FASTQ files"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
 
   input {
-    SampleInfo sample_data
     File reference_fasta
+    SampleInfo sample_data
     Int cpu_cores = 8
     Int memory_gb = 16
   }
