@@ -17,7 +17,7 @@ workflow bwa_example {
     description: "WDL workflow for sequence alignment via BWA-MEM"
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-bwa"
     outputs: {
-        bwa_bam: "Sorted BWA-MEM alignment output BAM files for each sample"
+        bwa_bam: "Sorted BWA-MEM alignment output BAM files for each sample",
         bwa_bai: "Index files for the sorted BWA-MEM alignment BAM files"
     }
   }
@@ -37,7 +37,7 @@ workflow bwa_example {
   }
 
   call bwa_index { input:
-      reference_fasta = reference_fasta
+      reference_fasta = reference_fasta,
       cpu_cores = cpus,
       memory_gb = memory_gb
   }
