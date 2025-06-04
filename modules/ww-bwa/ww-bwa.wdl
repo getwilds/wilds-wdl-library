@@ -18,7 +18,8 @@ workflow bwa_example {
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-bwa"
     outputs: {
         bwa_bam: "Sorted BWA-MEM alignment output BAM files for each sample",
-        bwa_bai: "Index files for the sorted BWA-MEM alignment BAM files"
+        bwa_bai: "Index files for the sorted BWA-MEM alignment BAM files",
+        validation_report: "Validation report summarizing file checks and alignment statistics"
     }
   }
 
@@ -90,7 +91,7 @@ task bwa_index {
   command <<<
   set -eo pipefail && \
   mkdir -p bwa_index && \
-  cp ~{reference_fasta} bwa_index/~{ref_name} && \
+  cp "~{reference_fasta}" bwa_index/"~{ref_name}" && \
   echo "Building BWA index..." && \
   bwa index "bwa_index/~{ref_name}" && \
   tar -czf bwa_index.tar.gz bwa_index/*
@@ -111,6 +112,7 @@ task bwa_mem {
   meta {
     description: "Task for aligning sequence reads using BWA-MEM"
     outputs: {
+        name: "Sample name that was processed",
         sorted_bam: "Sorted BWA-MEM alignment output BAM file",
         sorted_bai: "Index files for the sorted BWA-MEM alignment BAM files"
     }
@@ -132,10 +134,10 @@ task bwa_mem {
     Int memory_gb = 16
   }
 
-  # Name of reference FASTA file, which should be in bwa_genome_tar
+   # Name of reference FASTA file, which should be in bwa_genome_tar
   String ref_name = basename(reference_fasta)
 
-  # Compute cpu_threads as one less than cpu_cores, with minimum of 1
+   # Compute cpu_threads as one less than cpu_cores, with minimum of 1
   Int cpu_threads = if cpu_cores > 1 then cpu_cores - 1 else 1
 
   command <<<
@@ -144,8 +146,8 @@ task bwa_mem {
   tar -xvf "~{bwa_genome_tar}" && \
   echo "Starting BWA alignment..." && \
   bwa mem -v 3 -t ~{cpu_threads} -M -R '@RG\tID:~{sample_data.name}\tSM:~{sample_data.name}\tPL:illumina' "bwa_index/~{ref_name}" "~{sample_data.r1}" "~{sample_data.r2}" > "~{sample_data.name}.sam" && \
-  samtools sort -@ ~{cpu_threads-1} -o ~{sample_data.name}.sorted_aligned.bam ~{sample_data.name}.sam && \
-  samtools index ~{sample_data.name}.sorted_aligned.bam
+  samtools sort -@ ~{cpu_threads-1} -o "~{sample_data.name}".sorted_aligned.bam "~{sample_data.name}".sam && \
+  samtools index "~{sample_data.name}".sorted_aligned.bam
   >>>
 
   output {
@@ -188,9 +190,9 @@ task validate_outputs {
     echo "" >> validation_report.txt
 
     # Arrays for bash processing
-    sample_names=(~{sep=" " sample_names})
-    bam_files=(~{sep=" " bam_files})
-    bai_files=(~{sep=" " bai_files})
+    sample_names=("~{sep=" " sample_names}")
+    bam_files=("~{sep=" " bam_files}")
+    bai_files=("~{sep=" " bai_files}")
 
     validation_passed=true
     total_mapped_reads=0
