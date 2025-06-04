@@ -261,7 +261,7 @@ workflow ww_leukemia {
     Array[File] mutect_annotated_vcf = annotateMutect.annotated_vcf
     Array[File] mutect_annotated_table = annotateMutect.annotated_table
     Array[File] gatk_annotated_vcf = annotateHaplotype.annotated_vcf
-    Array[File] gatk_annotated = annotateHaplotype.annotated_table
+    Array[File] gatk_annotated_table = annotateHaplotype.annotated_table
     Array[File] sam_annotated_vcf = annotateSAM.annotated_vcf
     Array[File] sam_annotated = annotateSAM.annotated_table
     Array[File] panel_qc = bedtools_qc.mean_qc
