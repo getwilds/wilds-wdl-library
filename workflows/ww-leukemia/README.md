@@ -122,6 +122,7 @@ The workflow produces comprehensive outputs from each analysis step:
 | `gatk_vcf` | GATK HaplotypeCaller variant calls |
 | `sam_vcf` | samtools/bcftools variant calls |
 | `mutect_vcf` | GATK Mutect2 variant calls |
+| `mutect_vcf_index` | Index files for Mutect2 VCF files |
 | `*_annotated_vcf` | Annovar-annotated VCF files |
 | `*_annotated_table` | Tabular variant annotations |
 | `consensus_variants` | **Consensus variant calls combining all callers** |
