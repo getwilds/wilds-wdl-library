@@ -1,5 +1,3 @@
-# WILDS WDL Vignettes
-
 # WILDS WDL Workflows
 
 **Work in Progress** - This section is under active development and not yet complete.

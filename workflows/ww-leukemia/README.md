@@ -50,25 +50,7 @@ The workflow is designed for targeted sequencing panels commonly used in leukemi
 
 ### Basic Usage
 
-1. Prepare your input JSON file with sample information and reference files:
-
-```json
-{
-  "ww_leukemia.samples": [
-    {
-      "omics_sample_name": "SAMPLE001",
-      "molecular_id": "LIB001",
-      "r1_fastq": "/path/to/sample_R1.fastq.gz",
-      "r2_fastq": "/path/to/sample_R2.fastq.gz"
-    }
-  ],
-  "ww_leukemia.bed_location": "/path/to/target_regions.bed",
-  "ww_leukemia.ref_name": "hg38",
-  "ww_leukemia.ref_fasta": "/path/to/reference.fasta",
-  "ww_leukemia.annovar_protocols": "refGene,gnomad211_exome,cosmic70",
-  "ww_leukemia.annovar_operation": "g,f,f"
-}
-```
+1. Prepare your input JSON file with sample information and reference files. We recommend using the `inputs.json` file provided in this directory as a starting point and modifying the parameters/file paths accordingly.
 
 2. Run the workflow:
 
