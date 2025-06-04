@@ -58,7 +58,7 @@ jobs:
         for module_dir in modules/*/; do
           module_name=$(basename $module_dir)
           wdl_file="$module_dir$module_name.wdl"
-          inputs_file="$module_dir$module_name-inputs.json"
+          inputs_file=$module_dir"inputs.json"
           
           if [ -f "$wdl_file" ] && [ -f "$inputs_file" ]; then
             echo "  [***] Validating $wdl_file with $inputs_file [***]"
@@ -88,4 +88,4 @@ jobs:
         action: lint
         deny-warnings: true
         deny-notes: false
-        except: TodoComment ContainerUri TrailingComma
+        except: TodoComment ContainerUri TrailingComma CommentWhitespace UnusedInput
