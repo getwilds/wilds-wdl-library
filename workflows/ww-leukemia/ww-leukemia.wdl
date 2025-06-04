@@ -36,7 +36,7 @@ workflow ww_leukemia {
         mutect_annotated_vcf: "Array of Mutect2 VCF files annotated with Annovar",
         mutect_annotated_table: "Array of Mutect2 variants in tabular format with annotations",
         gatk_annotated_vcf: "Array of GATK HaplotypeCaller VCF files annotated with Annovar",
-        gatk_annotated: "Array of GATK HaplotypeCaller variants in tabular format with annotations",
+        gatk_annotated_table: "Array of GATK HaplotypeCaller variants in tabular format with annotations",
         sam_annotated_vcf: "Array of samtools/bcftools VCF files annotated with Annovar",
         sam_annotated: "Array of samtools/bcftools variants in tabular format with annotations",
         panel_qc: "Array of quality control metrics from bedtools showing mean coverage over target regions",
