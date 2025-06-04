@@ -2,6 +2,10 @@
 ## Input requirements:
 ## - Pair-end sequencing data in FASTQ format
 ## - Sample information provided as structs in the input JSON
+## - BED file of regions of interest
+## - Reference genome files
+## - VCF files of known variant information
+## - Lists of settings to use for Annovar
 ##
 ## Output Files:
 ## - recalibrated bam and it's index
