@@ -202,8 +202,7 @@ task align_two_pass {
       --quantTranscriptomeBAMcompression 5 
 
     # Clean up temporary directories
-    rm -rf star_index _STARtmp
-    rm -rf _STARpass1 _STARgenome 2>/dev/null || true
+    rm -rf star_index _STARpass1 _STARgenome 2>/dev/null || true
 
     mv Aligned.sortedByCoord.out.bam \
       "~{sample_data.name}.~{ref_genome_name}.Aligned.sortedByCoord.out.bam"
@@ -263,10 +262,10 @@ task validate_outputs {
     echo "" >> validation_report.txt
     
     # Arrays for bash processing
-    sample_names=(~{sep=" " sample_names})
-    bam_files=(~{sep=" " bam_files})
-    bai_files=(~{sep=" " bai_files})
-    gene_count_files=(~{sep=" " gene_count_files})
+    sample_names=~{sep=" " sample_names}
+    bam_files=~{sep=" " bam_files}
+    bai_files=~{sep=" " bai_files}
+    gene_count_files=~{sep=" " gene_count_files}
     
     validation_passed=true
     total_mapped_reads=0
