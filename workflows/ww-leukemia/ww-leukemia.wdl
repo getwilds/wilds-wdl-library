@@ -263,7 +263,7 @@ workflow ww_leukemia {
     Array[File] gatk_annotated_vcf = annotateHaplotype.annotated_vcf
     Array[File] gatk_annotated_table = annotateHaplotype.annotated_table
     Array[File] sam_annotated_vcf = annotateSAM.annotated_vcf
-    Array[File] sam_annotated = annotateSAM.annotated_table
+    Array[File] sam_annotated_table = annotateSAM.annotated_table
     Array[File] panel_qc = bedtools_qc.mean_qc
     Array[File] picard_qc = collect_hs_metrics.picard_metrics
     Array[File] picard_qc_per_target = collect_hs_metrics.picard_pertarget
