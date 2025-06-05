@@ -64,7 +64,7 @@ modules/module-name/
 Modules are designed to be imported into other workflows:
 
 ```wdl
-import "path/to/modules/ww-star/ww-star.wdl" as star_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as star_tasks
 
 workflow my_pipeline {
   call star_tasks.build_star_index { 
@@ -72,6 +72,13 @@ workflow my_pipeline {
   }
 }
 ```
+
+We recommend using GitHub URLs when importing WILDS WDL modules for a few reasons:
+
+- **No local cloning required**: Use modules directly without downloading the repository
+- **Version control**: Pin to specific commits or tags for reproducibility
+- **Easy updates**: Switch between versions by changing the URL
+- **Modular usage**: Import only the modules you need
 
 ### **Running Demo Workflows**
 

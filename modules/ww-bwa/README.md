@@ -62,7 +62,7 @@ Validates alignment outputs and generates a comprehensive report.
 ### Importing into Your Workflow
 
 ```wdl
-import "path/to/ww-bwa.wdl" as bwa_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as bwa_tasks
 
 struct SampleInfo {
     String name
