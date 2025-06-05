@@ -49,8 +49,7 @@ workflow bcftools_example {
   }
 
   scatter (sample in samples) {
-    call mpileup_call {
-      input:
+    call mpileup_call { input:
         sample_data = sample,
         reference_fasta = reference_genome.fasta,
         reference_fasta_index = reference_genome.fasta_index,
@@ -62,14 +61,13 @@ workflow bcftools_example {
     }
   }
 
-  call validate_outputs {
-    input:
+  call validate_outputs { input:
       sample_names = mpileup_call.sample_name,
-      vcf_files = mpileup_call.output_vcf
+      vcf_files = mpileup_call.mpileup_vcf
   }
 
   output {
-    Array[File] variant_vcfs = mpileup_call.output_vcf
+    Array[File] variant_vcfs = mpileup_call.mpileup_vcf
     File validation_report = validate_outputs.report
   }
 }
@@ -79,34 +77,35 @@ task mpileup_call {
     description: "Call variants using bcftools mpileup and call"
     outputs: {
         sample_name: "Sample name from input data",
-        output_vcf: "Compressed VCF file containing called variants"
+        mpileup_vcf: "Compressed VCF file containing variants called by mpileup",
+        mpileup_vcf_index: "Index file for the mpileup VCF"
     }
   }
 
   parameter_meta {
-    sample_data: "Sample information including name, BAM file, and BAM index"
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Reference genome FASTA index file"
+    sample_data: "Sample information including name, BAM file, and BAM index"
     regions_bed: "Optional BED file specifying regions to analyze"
-    max_depth: "Maximum read depth for mpileup"
-    max_idepth: "Maximum per-sample depth for indel calling"
     annotate_format: "FORMAT annotations to add (default: AD,DP)"
     ignore_rg: "Ignore read groups during analysis"
     disable_baq: "Disable BAQ (per-Base Alignment Quality) computation"
+    max_depth: "Maximum read depth for mpileup"
+    max_idepth: "Maximum per-sample depth for indel calling"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
   }
 
   input {
-    SampleInfo sample_data
     File reference_fasta
     File reference_fasta_index
+    SampleInfo sample_data
     File? regions_bed
-    Int max_depth = 10000
-    Int max_idepth = 10000
     String annotate_format = "FORMAT/AD,FORMAT/DP"
     Boolean ignore_rg = true
     Boolean disable_baq = true
+    Int max_depth = 10000
+    Int max_idepth = 10000
     Int memory_gb = 8
     Int cpu_cores = 2
   }
@@ -147,8 +146,8 @@ task mpileup_call {
 
   output {
     String sample_name = sample_data.name
-    File output_vcf = "~{sample_data.name}.bcftools.vcf.gz"
-    File output_vcf_index = "~{sample_data.name}.bcftools.vcf.gz.csi"
+    File mpileup_vcf = "~{sample_data.name}.bcftools.vcf.gz"
+    File mpileup_vcf_index = "~{sample_data.name}.bcftools.vcf.gz.csi"
   }
 
   runtime {
@@ -183,8 +182,8 @@ task validate_outputs {
     echo "" >> validation_report.txt
     
     # Arrays for bash processing
-    sample_names=(~{sep=" " sample_names})
-    vcf_files=(~{sep=" " vcf_files})
+    sample_names=~{sep=" " sample_names}
+    vcf_files=~{sep=" " vcf_files}
     
     validation_passed=true
     total_variants=0
@@ -211,8 +210,10 @@ task validate_outputs {
           fi
           
           # Get basic statistics
-          snp_count=$(bcftools view -H -v snps "$vcf_file" | wc -l 2>/dev/null || echo "N/A")
-          indel_count=$(bcftools view -H -v indels "$vcf_file" | wc -l 2>/dev/null || echo "N/A")
+          snp_count=$(bcftools view -H -v snps "$vcf_file" | \
+                      wc -l 2>/dev/null || echo "N/A")
+          indel_count=$(bcftools view -H -v indels "$vcf_file" | \
+                      wc -l 2>/dev/null || echo "N/A")
           echo "  SNPs: $snp_count" >> validation_report.txt
           echo "  Indels: $indel_count" >> validation_report.txt
         fi
