@@ -96,6 +96,31 @@ jobs:
         # Download a small test RNA-seq sample (SRR13008264 - mouse RNA-seq, ~100MB)
         fasterq-dump --split-files SRR13008264 -O test-data/
         gzip test-data/SRR13008264_1.fastq test-data/SRR13008264_2.fastq
+        
+        # Generate a small aligned BAM file for testing workflows that need pre-aligned data
+        # This is a minimal example - for real testing, use the actual alignment modules
+        echo "Generating test BAM file..."
+        
+        # Install bwa for alignment
+        sudo apt-get install -y bwa
+        
+        # Create BWA index
+        bwa index test-data/chr22.fa
+        
+        # Align reads and create sorted BAM (using a subset of reads for speed)
+        zcat test-data/SRR13008264_1.fastq.gz | head -40000 > test-data/subset_1.fastq
+        zcat test-data/SRR13008264_2.fastq.gz | head -40000 > test-data/subset_2.fastq
+        
+        bwa mem -t 2 -R '@RG\tID:test\tSM:SRR13008264\tPL:illumina' \
+          test-data/chr22.fa test-data/subset_1.fastq test-data/subset_2.fastq | \
+          samtools sort -o test-data/SRR13008264.chr22.aligned.bam
+        
+        # Index the BAM file
+        samtools index test-data/SRR13008264.chr22.aligned.bam
+        
+        # Clean up temporary files
+        rm test-data/subset_1.fastq test-data/subset_2.fastq
+        
         ls -la test-data/
     - 
       name: Upload test data
