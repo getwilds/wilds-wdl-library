@@ -64,9 +64,16 @@ jobs:
       run: |
         mkdir -p test-data
 
+        # Install samtools for creating FASTA index
+        sudo apt-get update
+        sudo apt-get install -y samtools
+
         # Download chromosome 22 fasta
         wget -q -O test-data/chr22.fa.gz http://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/chr22.fa.gz
         gunzip test-data/chr22.fa.gz
+
+        # Create FASTA index file (.fai) for bcftools and other tools
+        samtools faidx test-data/chr22.fa
 
         # Download chromosome 22 GTF file
         wget -q -O test-data/hg38.ncbiRefSeq.gtf.gz http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/genes/hg38.ncbiRefSeq.gtf.gz
@@ -79,7 +86,7 @@ jobs:
         # Get chromosome length from the FASTA file
         CHR22_LENGTH=$(grep -v "^>" test-data/chr22.fa | tr -d '\n' | wc -c)
         echo -e "chr22\t0\t${CHR22_LENGTH}" > test-data/chr22.bed
-        
+
         # Download a specific version (3.1.1) of the SRA toolkit
         wget -q https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.1.1/sratoolkit.3.1.1-ubuntu64.tar.gz
         tar -xzf sratoolkit.3.1.1-ubuntu64.tar.gz
