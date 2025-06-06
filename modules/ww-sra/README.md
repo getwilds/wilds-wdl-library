@@ -46,7 +46,7 @@ Validates downloaded files and generates a report.
 ### Importing into Your Workflow
 
 ```wdl
-import "path/to/ww-sra.wdl" as sra_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as sra_tasks
 
 workflow my_workflow {
   input {

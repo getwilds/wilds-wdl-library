@@ -25,7 +25,7 @@ Compact workflows demonstrating common bioinformatics patterns.
 - **Testing**: Integration tests verify modules work together seamlessly
 - **Usage**: Templates for common workflows or learning examples
 
-### **Workflows** *(Coming Soon)*
+### **Workflows** (`workflows/`)
 Complete, publication-ready analysis pipelines.
 - **Purpose**: End-to-end analyses suitable for research publications
 - **Content**: Complex workflows combining multiple modules and custom logic
@@ -41,11 +41,11 @@ Complete, publication-ready analysis pipelines.
 git clone https://github.com/getwilds/wilds-wdl-library.git
 cd wilds-wdl-library
 
-# Run a module demonstration
+# Run a module demonstration (update inputs json as needed)
 cd modules/ww-star
 miniwdl run ww-star.wdl -i inputs.json
 
-# Run a complete vignette
+# Run a complete vignette (update inputs json as needed)
 cd ../vignettes/ww-sra-star
 miniwdl run ww-sra-star.wdl -i inputs.json
 ```
@@ -53,8 +53,8 @@ miniwdl run ww-sra-star.wdl -i inputs.json
 ### Importing into Your Workflows
 
 ```wdl
-import "path/to/wilds-wdl-library/modules/ww-star/ww-star.wdl" as star_tasks
-import "path/to/wilds-wdl-library/modules/ww-sra/ww-sra.wdl" as sra_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as sra_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as star_tasks
 
 workflow my_analysis {
   call sra_tasks.fastqdump { input: sra_id = "SRR12345678" }
@@ -63,6 +63,13 @@ workflow my_analysis {
   }
 }
 ```
+
+WILDS vignettes and workflows use GitHub URLs for imports, providing several advantages:
+
+- **No local cloning required**: Use modules directly without downloading the repository
+- **Version control**: Pin to specific commits or tags for reproducibility
+- **Easy updates**: Switch between versions by changing the URL
+- **Modular usage**: Import only the modules you need
 
 ## Available Components
 
@@ -77,6 +84,11 @@ workflow my_analysis {
 |----------|---------|-------------|
 | `ww-sra-star` | `ww-sra` + `ww-star` | Complete RNA-seq pipeline from SRA download to alignment |
 
+### Workflows
+| Workflow | Description |
+|----------|-------------|
+| `ww-leukemia` | Consensus variant calling workflow for targeted DNA sequencing. |
+
 ## Supported Executors
 
 All components are tested with multiple WDL executors:
@@ -84,9 +96,9 @@ All components are tested with multiple WDL executors:
 - **[miniWDL](https://github.com/chanzuckerberg/miniwdl)**: Lightweight local execution
 - **[Sprocket](https://sprocket.bio/)**: Modern WDL executor with enhanced features
 
-<!-- ## For Fred Hutch Users
+## For Fred Hutch Users
 
-Fred Hutch researchers can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/) to submit workflows directly to the on-premise HPC cluster. This provides a user-friendly interface for researchers unfamiliar with command-line tools while leveraging the power of the institutional computing resources. -->
+Fred Hutch researchers can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/) to submit workflows directly to the on-premise HPC cluster. This provides a user-friendly interface for researchers unfamiliar with command-line tools while leveraging the power of the institutional computing resources.
 
 ## Quality Assurance
 
