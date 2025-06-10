@@ -50,7 +50,7 @@ Validates variant calling outputs and generates comprehensive statistics.
 ### Importing into Your Workflow
 
 ```wdl
-import "path/to/ww-bcftools.wdl" as bcftools_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bcftools/ww-bcftools.wdl" as bcftools_tasks
 
 struct SampleInfo {
     String name
