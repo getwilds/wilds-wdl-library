@@ -122,6 +122,7 @@ sprocket run ww-bcftools.wdl inputs.json
   },
   "bcftools_example.regions_bed": "/path/to/regions.bed",
   "bcftools_example.max_depth": 10000,
+  "bcftools_example.max_idepth": 10000,
   "bcftools_example.memory_gb": 8,
   "bcftools_example.cpu_cores": 2
 }
