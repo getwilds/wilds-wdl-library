@@ -49,8 +49,7 @@ workflow manta_example {
   }
 
   scatter (sample in samples) {
-    call manta_call {
-      input:
+    call manta_call { input:
         sample_data = sample,
         reference_fasta = reference_genome.fasta,
         reference_fasta_index = reference_genome.fasta_index,
@@ -61,8 +60,7 @@ workflow manta_example {
     }
   }
 
-  call validate_outputs {
-    input:
+  call validate_outputs { input:
       sample_names = manta_call.sample_name,
       vcf_files = manta_call.vcf,
       vcf_index_files = manta_call.vcf_index
@@ -127,22 +125,12 @@ task manta_call {
     # Copy outputs to working directory
     cp results/variants/diploidSV.vcf.gz "../~{sample_data.name}.manta.vcf.gz"
     cp results/variants/diploidSV.vcf.gz.tbi "../~{sample_data.name}.manta.vcf.gz.tbi"
-    
-    # Generate basic statistics
-    echo "Sample: ~{sample_data.name}" > "../~{sample_data.name}.manta.stats.txt"
-    echo "Total variants: $(zcat ../~{sample_data.name}.manta.vcf.gz | grep -v '^#' | wc -l)" >> "../~{sample_data.name}.manta.stats.txt"
-    echo "Deletions: $(zcat ../~{sample_data.name}.manta.vcf.gz | grep -v '^#' | grep 'SVTYPE=DEL' | wc -l)" >> "../~{sample_data.name}.manta.stats.txt"
-    echo "Insertions: $(zcat ../~{sample_data.name}.manta.vcf.gz | grep -v '^#' | grep 'SVTYPE=INS' | wc -l)" >> "../~{sample_data.name}.manta.stats.txt"
-    echo "Duplications: $(zcat ../~{sample_data.name}.manta.vcf.gz | grep -v '^#' | grep 'SVTYPE=DUP' | wc -l)" >> "../~{sample_data.name}.manta.stats.txt"
-    echo "Inversions: $(zcat ../~{sample_data.name}.manta.vcf.gz | grep -v '^#' | grep 'SVTYPE=INV' | wc -l)" >> "../~{sample_data.name}.manta.stats.txt"
-    echo "Translocations: $(zcat ../~{sample_data.name}.manta.vcf.gz | grep -v '^#' | grep 'SVTYPE=BND' | wc -l)" >> "../~{sample_data.name}.manta.stats.txt"
   >>>
 
   output {
     String sample_name = sample_data.name
     File vcf = "~{sample_data.name}.manta.vcf.gz"
     File vcf_index = "~{sample_data.name}.manta.vcf.gz.tbi"
-    File stats = "~{sample_data.name}.manta.stats.txt"
   }
 
   runtime {
@@ -198,18 +186,18 @@ task validate_outputs {
         
         # Check if VCF file exists and is not empty
         if [[ -f "$vcf" && -s "$vcf" ]]; then
-            echo "  ✓ VCF file present and non-empty" >> validation_report.txt
+            echo "VCF file present and non-empty" >> validation_report.txt
             variant_count=$(zcat "$vcf" | grep -v '^#' | wc -l)
-            echo "  ✓ Variants called: $variant_count" >> validation_report.txt
+            echo "Variants called: $variant_count" >> validation_report.txt
         else
-            echo "  ✗ VCF file missing or empty" >> validation_report.txt
+            echo "VCF file missing or empty" >> validation_report.txt
         fi
         
         # Check if VCF index exists
         if [[ -f "$vcf_index" ]]; then
-            echo "  ✓ VCF index file present" >> validation_report.txt
+            echo "VCF index file present" >> validation_report.txt
         else
-            echo "  ✗ VCF index file missing" >> validation_report.txt
+            echo "VCF index file missing" >> validation_report.txt
         fi
         
         echo "" >> validation_report.txt

@@ -1,23 +1,17 @@
 {
   "manta_example.samples": [
     {
-      "name": "sample1",
-      "bam": "/path/to/sample1.sorted.bam",
-      "bai": "/path/to/sample1.sorted.bam.bai"
-    },
-    {
-      "name": "sample2",
-      "bam": "/path/to/sample2.sorted.bam",
-      "bai": "/path/to/sample2.sorted.bam.bai"
+      "name": "SRR13008264",
+      "bam": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/SRR13008264.chr22.aligned.bam",
+      "bai": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/SRR13008264.chr22.aligned.bam.bai"
     }
   ],
   "manta_example.reference_genome": {
-    "name": "hg38",
-    "fasta": "/path/to/Homo_sapiens_assembly38.fasta",
-    "fasta_index": "/path/to/Homo_sapiens_assembly38.fasta.fai"
+    "name": "chr22",
+    "fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.fa",
+    "fasta_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.fa.fai"
   },
-  "manta_example.call_regions_bed": "/path/to/target_regions.bed",
   "manta_example.is_rna": false,
-  "manta_example.cpus": 8,
-  "manta_example.memory_gb": 16
+  "manta_example.cpus": 2,
+  "manta_example.memory_gb": 4
 }
