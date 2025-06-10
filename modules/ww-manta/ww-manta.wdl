@@ -1,0 +1,230 @@
+## WILDS WDL module for structural variant calling using Manta.
+## Designed to be a modular component within the WILDS ecosystem that can be used
+## independently or integrated with other WILDS workflows.
+
+version 1.0
+
+struct SampleInfo {
+    String name
+    File bam
+    File bai
+}
+
+struct RefGenome {
+    String name
+    File fasta
+    File fasta_index
+}
+
+workflow manta_example {
+  meta {
+    author: "Your Name"
+    email: "your.email@institution.org"
+    description: "WDL workflow for structural variant calling via Manta"
+    url: "https://github.com/getwilds/ww-manta"
+    outputs: {
+        manta_vcf: "Structural variant calls in VCF format",
+        manta_vcf_index: "Index file for the VCF output",
+        manta_stats: "Statistics summary from Manta analysis",
+        validation_report: "Validation report confirming all expected outputs were generated"
+    }
+  }
+
+  parameter_meta {
+    samples: "List of sample objects, each containing name, BAM file, and BAM index"
+    reference_genome: "Reference genome object containing name, fasta, and fasta index files"
+    call_regions_bed: "Optional BED file to restrict calling to specific regions"
+    is_rna: "Boolean flag indicating if input data is RNA-seq (default: false for DNA)"
+    cpus: "Number of CPU cores allocated for each task in the workflow"
+    memory_gb: "Memory allocated for each task in the workflow in GB"
+  }
+
+  input {
+    Array[SampleInfo] samples
+    RefGenome reference_genome
+    File? call_regions_bed
+    Boolean is_rna = false
+    Int cpus = 8
+    Int memory_gb = 16
+  }
+
+  scatter (sample in samples) {
+    call manta_call {
+      input:
+        sample_data = sample,
+        reference_fasta = reference_genome.fasta,
+        reference_fasta_index = reference_genome.fasta_index,
+        call_regions_bed = call_regions_bed,
+        is_rna = is_rna,
+        cpu_cores = cpus,
+        memory_gb = memory_gb
+    }
+  }
+
+  call validate_outputs {
+    input:
+      sample_names = manta_call.sample_name,
+      vcf_files = manta_call.vcf,
+      vcf_index_files = manta_call.vcf_index
+  }
+
+  output {
+    Array[File] manta_vcf = manta_call.vcf
+    Array[File] manta_vcf_index = manta_call.vcf_index
+    Array[File] manta_stats = manta_call.stats
+    File validation_report = validate_outputs.report
+  }
+}
+
+task manta_call {
+  meta {
+    description: "Call structural variants using Manta on a single sample"
+    outputs: {
+        vcf: "Structural variant calls in compressed VCF format",
+        vcf_index: "Index file for the VCF output",
+        stats: "Statistics and summary metrics from Manta analysis"
+    }
+  }
+
+  parameter_meta {
+    sample_data: "Sample information struct containing name, BAM, and BAI files"
+    reference_fasta: "Reference genome FASTA file"
+    reference_fasta_index: "Index file for the reference FASTA"
+    call_regions_bed: "Optional BED file to restrict variant calling to specific regions"
+    is_rna: "Boolean flag for RNA-seq mode (enables RNA-specific settings)"
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    SampleInfo sample_data
+    File reference_fasta
+    File reference_fasta_index
+    File? call_regions_bed
+    Boolean is_rna = false
+    Int cpu_cores = 8
+    Int memory_gb = 16
+  }
+
+  command <<<
+    set -eo pipefail
+    
+    # Create working directory
+    mkdir -p manta_work
+    
+    # Configure Manta workflow
+    configManta.py \
+      --bam "~{sample_data.bam}" \
+      --referenceFasta "~{reference_fasta}" \
+      ~{if defined(call_regions_bed) then "--callRegions " + call_regions_bed else ""} \
+      ~{true="--rna" false="" is_rna} \
+      --runDir manta_work
+    
+    # Execute Manta workflow
+    cd manta_work
+    ./runWorkflow.py -m local -j ~{cpu_cores}
+    
+    # Copy outputs to working directory
+    cp results/variants/diploidSV.vcf.gz "../~{sample_data.name}.manta.vcf.gz"
+    cp results/variants/diploidSV.vcf.gz.tbi "../~{sample_data.name}.manta.vcf.gz.tbi"
+    
+    # Generate basic statistics
+    echo "Sample: ~{sample_data.name}" > "../~{sample_data.name}.manta.stats.txt"
+    echo "Total variants: $(zcat ../~{sample_data.name}.manta.vcf.gz | grep -v '^#' | wc -l)" >> "../~{sample_data.name}.manta.stats.txt"
+    echo "Deletions: $(zcat ../~{sample_data.name}.manta.vcf.gz | grep -v '^#' | grep 'SVTYPE=DEL' | wc -l)" >> "../~{sample_data.name}.manta.stats.txt"
+    echo "Insertions: $(zcat ../~{sample_data.name}.manta.vcf.gz | grep -v '^#' | grep 'SVTYPE=INS' | wc -l)" >> "../~{sample_data.name}.manta.stats.txt"
+    echo "Duplications: $(zcat ../~{sample_data.name}.manta.vcf.gz | grep -v '^#' | grep 'SVTYPE=DUP' | wc -l)" >> "../~{sample_data.name}.manta.stats.txt"
+    echo "Inversions: $(zcat ../~{sample_data.name}.manta.vcf.gz | grep -v '^#' | grep 'SVTYPE=INV' | wc -l)" >> "../~{sample_data.name}.manta.stats.txt"
+    echo "Translocations: $(zcat ../~{sample_data.name}.manta.vcf.gz | grep -v '^#' | grep 'SVTYPE=BND' | wc -l)" >> "../~{sample_data.name}.manta.stats.txt"
+  >>>
+
+  output {
+    String sample_name = sample_data.name
+    File vcf = "~{sample_data.name}.manta.vcf.gz"
+    File vcf_index = "~{sample_data.name}.manta.vcf.gz.tbi"
+    File stats = "~{sample_data.name}.manta.stats.txt"
+  }
+
+  runtime {
+    docker: "getwilds/manta:1.6.0"
+    memory: "~{memory_gb}GB"
+    cpu: cpu_cores
+  }
+}
+
+task validate_outputs {
+  meta {
+    description: "Validate Manta outputs and generate a comprehensive report"
+    outputs: {
+        report: "Validation summary with structural variant calling statistics"
+    }
+  }
+
+  parameter_meta {
+    sample_names: "Array of sample names processed"
+    vcf_files: "Array of VCF files to validate"
+    vcf_index_files: "Array of VCF index files to validate"
+  }
+
+  input {
+    Array[String] sample_names
+    Array[File] vcf_files
+    Array[File] vcf_index_files
+  }
+
+  command <<<
+    set -eo pipefail
+    
+    echo "Manta Structural Variant Calling Validation Report" > validation_report.txt
+    echo "=================================================" >> validation_report.txt
+    echo "Generated on: $(date)" >> validation_report.txt
+    echo "" >> validation_report.txt
+    
+    echo "Sample Summary:" >> validation_report.txt
+    echo "Total samples processed: ~{length(sample_names)}" >> validation_report.txt
+    echo "" >> validation_report.txt
+    
+    # Validate each sample's outputs
+    sample_names=(~{sep=' ' sample_names})
+    vcf_files=(~{sep=' ' vcf_files})
+    vcf_index_files=(~{sep=' ' vcf_index_files})
+    
+    for i in "${!sample_names[@]}"; do
+        sample="${sample_names[$i]}"
+        vcf="${vcf_files[$i]}"
+        vcf_index="${vcf_index_files[$i]}"
+        
+        echo "Sample: $sample" >> validation_report.txt
+        
+        # Check if VCF file exists and is not empty
+        if [[ -f "$vcf" && -s "$vcf" ]]; then
+            echo "  ✓ VCF file present and non-empty" >> validation_report.txt
+            variant_count=$(zcat "$vcf" | grep -v '^#' | wc -l)
+            echo "  ✓ Variants called: $variant_count" >> validation_report.txt
+        else
+            echo "  ✗ VCF file missing or empty" >> validation_report.txt
+        fi
+        
+        # Check if VCF index exists
+        if [[ -f "$vcf_index" ]]; then
+            echo "  ✓ VCF index file present" >> validation_report.txt
+        else
+            echo "  ✗ VCF index file missing" >> validation_report.txt
+        fi
+        
+        echo "" >> validation_report.txt
+    done
+    
+    echo "Validation completed successfully" >> validation_report.txt
+  >>>
+
+  output {
+    File report = "validation_report.txt"
+  }
+
+  runtime {
+    docker: "getwilds/manta:1.6.0"
+    memory: "4GB"
+    cpu: 1
+  }
+}
