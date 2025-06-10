@@ -69,7 +69,6 @@ workflow manta_example {
   output {
     Array[File] manta_vcf = manta_call.vcf
     Array[File] manta_vcf_index = manta_call.vcf_index
-    Array[File] manta_stats = manta_call.stats
     File validation_report = validate_outputs.report
   }
 }
@@ -79,8 +78,7 @@ task manta_call {
     description: "Call structural variants using Manta on a single sample"
     outputs: {
         vcf: "Structural variant calls in compressed VCF format",
-        vcf_index: "Index file for the VCF output",
-        stats: "Statistics and summary metrics from Manta analysis"
+        vcf_index: "Index file for the VCF output"
     }
   }
 
