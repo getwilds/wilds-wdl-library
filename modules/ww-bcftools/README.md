@@ -167,6 +167,7 @@ The module supports various bcftools mpileup/call parameters for fine-tuning var
 call bcftools_tasks.mpileup_call {
   input:
     sample_data = my_sample,
+    regions_bed = my_bedfile,
     reference_fasta = ref_fasta,
     reference_fasta_index = ref_fasta.fai
     max_depth = 1000,
