@@ -167,6 +167,7 @@ call bcftools_tasks.mpileup_call {
   input:
     sample_data = my_sample,
     reference_fasta = ref_fasta,
+    reference_fasta_index = ref_fasta.fai
     max_depth = 1000,
     max_idepth = 1000,
     annotate_format = "FORMAT/AD,FORMAT/DP,FORMAT/SP",
