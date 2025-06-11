@@ -25,7 +25,6 @@ workflow manta_example {
     outputs: {
         manta_vcf: "Structural variant calls in VCF format",
         manta_vcf_index: "Index file for the VCF output",
-        manta_stats: "Statistics summary from Manta analysis",
         validation_report: "Validation report confirming all expected outputs were generated"
     }
   }
@@ -77,15 +76,16 @@ task manta_call {
   meta {
     description: "Call structural variants using Manta on a single sample"
     outputs: {
+        sample_name: "Sample name from input data",
         vcf: "Structural variant calls in compressed VCF format",
         vcf_index: "Index file for the VCF output"
     }
   }
 
   parameter_meta {
-    sample_data: "Sample information struct containing name, BAM, and BAI files"
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Index file for the reference FASTA"
+    sample_data: "Sample information struct containing name, BAM, and BAI files"
     call_regions_bed: "Optional BED file to restrict variant calling to specific regions"
     is_rna: "Boolean flag for RNA-seq mode (enables RNA-specific settings)"
     cpu_cores: "Number of CPU cores to use"
@@ -93,9 +93,9 @@ task manta_call {
   }
 
   input {
-    SampleInfo sample_data
     File reference_fasta
     File reference_fasta_index
+    SampleInfo sample_data
     File? call_regions_bed
     Boolean is_rna = false
     Int cpu_cores = 8
@@ -147,15 +147,15 @@ task validate_outputs {
   }
 
   parameter_meta {
-    sample_names: "Array of sample names processed"
     vcf_files: "Array of VCF files to validate"
     vcf_index_files: "Array of VCF index files to validate"
+    sample_names: "Array of sample names processed"
   }
 
   input {
-    Array[String] sample_names
     Array[File] vcf_files
     Array[File] vcf_index_files
+    Array[String] sample_names
   }
 
   command <<<
@@ -171,9 +171,9 @@ task validate_outputs {
     echo "" >> validation_report.txt
     
     # Validate each sample's outputs
-    sample_names=(~{sep=' ' sample_names})
-    vcf_files=(~{sep=' ' vcf_files})
-    vcf_index_files=(~{sep=' ' vcf_index_files})
+    sample_names=(~{sep=" " sample_names})
+    vcf_files=(~{sep=" " vcf_files})
+    vcf_index_files=(~{sep=" " vcf_index_files})
     
     for i in "${!sample_names[@]}"; do
         sample="${sample_names[$i]}"
