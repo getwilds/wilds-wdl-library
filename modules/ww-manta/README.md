@@ -35,7 +35,7 @@ Calls structural variants using Manta for a single sample.
 **Outputs:**
 - `vcf` (File): Compressed VCF file with structural variant calls
 - `vcf_index` (File): Index file for the VCF
-- `stats` (File): Summary statistics file
+- `sample_name` (String): Sample name from input data
 
 ### `validate_outputs`
 Validates Manta outputs and generates a comprehensive report.
