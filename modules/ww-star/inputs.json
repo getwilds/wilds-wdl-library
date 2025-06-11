@@ -1,15 +1,15 @@
 {
   "star_example.samples": [
     {
-      "name": "SRR13008264",
-      "r1": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/SRR13008264_1.fastq.gz",
-      "r2": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/SRR13008264_2.fastq.gz"
+      "name": "ERR1258306",
+      "r1": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306_1.fastq.gz",
+      "r2": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306_2.fastq.gz"
     }
   ],
   "star_example.reference_genome": {
-    "name": "chr22",
-    "fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.fa",
-    "gtf": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.gtf"
+    "name": "chr1",
+    "fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
+    "gtf": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.gtf"
   },
   "star_example.genome_sa_index_nbases": 11,
   "star_example.cpus": 2,
