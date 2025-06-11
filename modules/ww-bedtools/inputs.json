@@ -1,0 +1,20 @@
+{
+  "bedtools_example.bed_file": "TBD",
+  "bedtools_example.samples": [
+    {
+      "name": "SRR13008264",
+      "bam_file": "TBD",
+      "bam_index": "TBD"
+    }
+  ],
+  "bedtools_example.reference_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.fa",
+  "bedtools_example.reference_index": "TBD",
+  "bedtools_example.intersect_flags": "-header -wo",
+  "bedtools_example.chromosomes": [
+      "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", 
+      "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", 
+      "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"],
+  "bedtools_example.tmp_dir": "/tmp",
+  "bedtools_example.cpus": 2,
+  "bedtools_example.memory_gb": 8
+}
