@@ -29,7 +29,7 @@ Calculates average read coverage over given BED intervals for a sample.
 - `bed_file` (File): BED file containing genomic intervals  
 - `sample_data` (SampleInfo): Struct with sample name, BAM file, and BAM index
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
-- `cpu_cores` (Int): Number of CPU cores (default: 8)
+- `cpu_cores` (Int): Number of CPU cores (default: 2)
 
 **Outputs:**
 
@@ -45,8 +45,8 @@ Uses BEDTools to find overlaps between the sample's BAM and a BED file.
 - `bed_file` (File): BED file to intersect with  
 - `sample_data` (SampleInfo): Struct with sample name, BAM file, and BAM index  
 - `flags` (String): BEDTools intersect flags (default: `-header -wo`)  
-- `memory_gb` (Int): Memory allocation in GB (default: 32)
-- `cpu_cores` (Int): Number of CPU cores (default: 6)
+- `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `cpu_cores` (Int): Number of CPU cores (default: 2)
 
 **Outputs:**
 
@@ -184,8 +184,8 @@ sprocket run ww-bedtools.wdl inputs.json
 
 ### Resource Allocation
 
-- **Memory**: 16-32 GB recommended for human genomes; can be tuned for smaller references
-- **CPUs**: 8 cores typically sufficient for most samples
+- **Memory**: 16-24 GB recommended for full human genomes; can be tuned for smaller input data (such as just one chromosome).
+- **CPUs**: 2-10 cores for full human genomes. `makewindows` requires 10 cores, for the others 2 cores should be sufficient.
 
 ### Advanced Parameters
 

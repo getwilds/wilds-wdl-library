@@ -49,8 +49,8 @@ workflow bedtools_example {
       "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", 
       "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"]
     String tmp_dir = "/tmp"
-    Int cpus = 8
-    Int memory_gb = 32
+    Int cpus = 10
+    Int memory_gb = 24
   }
 
   scatter (sample in samples) {
@@ -121,7 +121,7 @@ task coverage {
   input {
     File bed_file
     SampleInfo sample_data
-    Int cpu_cores = 8
+    Int cpu_cores = 2
     Int memory_gb = 16
   }
 
@@ -169,8 +169,8 @@ task intersect {
     File bed_file
     SampleInfo sample_data
     String flags = "-header -wo"
-    Int cpu_cores = 6
-    Int memory_gb = 32
+    Int cpu_cores = 2
+    Int memory_gb = 16
   }
 
   command <<<
