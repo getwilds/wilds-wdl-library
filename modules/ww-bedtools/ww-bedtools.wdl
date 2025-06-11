@@ -1,4 +1,4 @@
-## WILDS WDL for working with genomics files using BEDTools.
+## WILDS WDL for working with genomic intervals using BEDTools.
 ## Designed to be a modular component within the WILDS ecosystem that can be used
 ## independently or integrated with other WILDS workflows.
 
@@ -16,7 +16,7 @@ workflow bedtools_example {
   meta {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
-    description: "WDL workflow for manipulating genomic files via BEDTools."
+    description: "WDL workflow for working with genomic intervals using BEDTools."
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-bedtools"
     version: "1.0"
     outputs: {

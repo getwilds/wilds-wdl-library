@@ -6,7 +6,7 @@ A WILDS WDL module for using BEDTools utilities.
 
 ## Overview
 
-This module provides reusable WDL tasks for using **BEDTools** to manipulate genomic files.
+This module provides reusable WDL tasks for using **BEDTools** to work with genomic intervals.
 
 The module is designed to be a foundational component within the WILDS ecosystem, suitable for use in larger sequence analysis pipelines.
 
