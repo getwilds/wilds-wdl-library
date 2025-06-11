@@ -3,8 +3,8 @@
   "bwa_example.samples": [
     {
       "name": "ERR1258306",
-      "r1": "/home/tfirman/wgs_1000gp/ERR1258306_1.fastq.gz",
-      "r2": "/home/tfirman/wgs_1000gp/ERR1258306_2.fastq.gz"
+      "r1": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306_1.fastq.gz",
+      "r2": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306_2.fastq.gz"
     }
   ],
   "bwa_example.cpus": 2,

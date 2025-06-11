@@ -1,17 +1,17 @@
 {
   "bcftools_example.samples": [
     {
-      "name": "SRR13008264",
-      "bam": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/SRR13008264.chr22.aligned.bam",
-      "bai": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/SRR13008264.chr22.aligned.bam.bai"
+      "name": "ERR1258306",
+      "bam": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam",
+      "bai": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam.bai"
     }
   ],
   "bcftools_example.reference_genome": {
-    "name": "chr22",
-    "fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.fa",
-    "fasta_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.fa.fai"
+    "name": "chr1",
+    "fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
+    "fasta_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa.fai"
   },
-  "bcftools_example.regions_bed": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.bed",
+  "bcftools_example.regions_bed": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.bed",
   "bcftools_example.max_depth": 1000,
   "bcftools_example.max_idepth": 1000,
   "bcftools_example.memory_gb": 4,
