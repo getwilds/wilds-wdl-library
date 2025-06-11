@@ -18,8 +18,8 @@ struct RefGenome {
 
 workflow manta_example {
   meta {
-    author: "Your Name"
-    email: "your.email@institution.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "WDL workflow for structural variant calling via Manta"
     url: "https://github.com/getwilds/ww-manta"
     outputs: {
