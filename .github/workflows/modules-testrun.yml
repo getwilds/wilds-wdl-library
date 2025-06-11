@@ -109,14 +109,11 @@ jobs:
         
         # Align reads and create sorted BAM
         bwa mem -t 2 -R '@RG\tID:test\tSM:ERR1258306\tPL:illumina' \
-          test-data/chr1.fa test-data/ERR1258306_1.fastq test-data/ERR1258306_2.fastq | \
+          test-data/chr1.fa test-data/ERR1258306_1.fastq.gz test-data/ERR1258306_2.fastq.gz | \
           samtools sort -o test-data/ERR1258306.chr1.aligned.bam
         
         # Index the BAM file
         samtools index test-data/ERR1258306.chr1.aligned.bam
-        
-        # Clean up temporary files
-        rm test-data/ERR1258306_1.fastq test-data/ERR1258306_2.fastq
         
         ls -la test-data/
     - 
