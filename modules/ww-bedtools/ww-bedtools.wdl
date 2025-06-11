@@ -22,7 +22,8 @@ workflow bedtools_example {
     outputs: {
         intersect_results: "BEDTools intersect output files for each sample",
         coverage_results: "Read coverage results across BED intervals",
-        window_counts: "Tarballs of per-chromosome BED files of read counts"
+        window_counts: "Tarballs of per-chromosome BED files of read counts",
+        validation_report: "Validation report summarizing file check results"
     }
   }
 
@@ -40,30 +41,31 @@ workflow bedtools_example {
 
   input {
     File bed_file
-    Array[SampleInfo] samples
     File reference_fasta
     File reference_index
-    String intersect_flags = "-header -wo"
+    Array[SampleInfo] samples
     Array[String] chromosomes = [
-      "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", 
-      "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", 
-      "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"]
+      "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
+      "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
+      "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"
+      ]
+    String intersect_flags = "-header -wo"
     String tmp_dir = "/tmp"
     Int cpus = 10
     Int memory_gb = 24
   }
 
   scatter (sample in samples) {
-    call coverage { 
-      input:
+    call coverage {
+     input:
         bed_file = bed_file,
         sample_data = sample,
         cpu_cores = cpus,
         memory_gb = memory_gb
     }
 
-    call intersect { 
-      input:
+    call intersect {
+     input:
         bed_file = bed_file,
         sample_data = sample,
         flags = intersect_flags,
@@ -71,8 +73,8 @@ workflow bedtools_example {
         memory_gb = memory_gb
     }
 
-    call makewindows { 
-      input:
+    call makewindows {
+     input:
         bed_file = bed_file,
         sample_data = sample,
         reference_fasta = reference_fasta,
@@ -84,8 +86,8 @@ workflow bedtools_example {
     }
   }
 
-  call validate_outputs { 
-    input:
+  call validate_outputs {
+   input:
       intersect_files = intersect.intersect_output,
       coverage_files = coverage.mean_coverage,
       window_count_files = makewindows.counts_bed,
@@ -95,8 +97,8 @@ workflow bedtools_example {
   output {
     Array[File] intersect_results = intersect.intersect_output
     Array[File] coverage_results = coverage.mean_coverage
-    Array[File] window_count_results = makewindows.counts_bed
-    File bedtools_validation_report = validate_outputs.report
+    Array[File] window_counts = makewindows.counts_bed
+    File validation_report = validate_outputs.report
   }
 }
 
@@ -175,14 +177,14 @@ task intersect {
 
   command <<<
     set -eo pipefail && \
-    bedtools intersect ~{flags} -a "~{bed_file}" -b "~{sample_data.bam}" > "~{sample_data.name}.intersect.txt"
+    bedtools intersect "~{flags}" -a "~{bed_file}" -b "~{sample_data.bam}" > "~{sample_data.name}.intersect.txt"
   >>>
 
   output {
     String name = sample_data.name
     File intersect_output = "~{sample_data.name}.intersect.txt"
   }
-  
+
   runtime {
     docker: "getwilds/bedtools:2.31.1"
     cpu: cpu_cores
@@ -201,10 +203,10 @@ task makewindows {
 
   parameter_meta {
     bed_file: "BED file containing genomic intervals"
-    sample_data: "Sample object containing sample name, BAM, and BAM index (.bai) files"
     reference_fasta: "Reference genome FASTA file"
     reference_index: "Reference genome index file"
     list_chr: "Array of chromosome names to process"
+    sample_data: "Sample object containing sample name, BAM, and BAM index (.bai) files"
     tmp_dir: "Path to a temporary directory"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
@@ -212,28 +214,28 @@ task makewindows {
 
   input {
     File bed_file
-    SampleInfo sample_data
     File reference_fasta
     File reference_index
     Array[String] list_chr
+    SampleInfo sample_data
     String tmp_dir
     Int cpu_cores = 10
     Int memory_gb = 24
   }
-  
+
  command <<<
     set -eo pipefail
-    mkdir -p ~{sample_data.name}
+    mkdir -p "~{sample_data.name}"
     
     for Chrom in ~{sep=' ' list_chr}
     do
       # Create windows for this chromosome
       bedtools makewindows -b ~{bed_file} -w 500000 | \
-        awk -v OFS="\t" -v C="${Chrom}" '$1==C && NF==3' > ~{tmp_dir}/${Chrom}.windows.bed
+        awk -v OFS="\t" -v C="${Chrom}" '$1==C && NF==3' > "~{tmp_dir}"/"${Chrom}".windows.bed
       
       # Count reads in windows for this chromosome (run in background for parallelization)
-      samtools view -@ 5 -b -f 0x2 -F 0x400 -q 20 -T ~{reference_fasta} ~{sample_data.bam} ${Chrom} | \
-        bedtools intersect -sorted -c -a ~{tmp_dir}/${Chrom}.windows.bed -b stdin > "~{sample_data.name}/${Chrom}.counts.bed" &
+      samtools view -@ 5 -b -f 0x2 -F 0x400 -q 20 -T "~{reference_fasta}"" ~{sample_data.bam}" "${Chrom}" | \
+        bedtools intersect -sorted -c -a "~{tmp_dir}"/"${Chrom}".windows.bed -b stdin > "~{sample_data.name}/${Chrom}.counts.bed" &
     done
 
     wait
@@ -241,15 +243,15 @@ task makewindows {
     tar -czf "~{sample_data.name}.tar.gz" "~{sample_data.name}"
   >>>
 
+  output {
+    String name = sample_data.name
+    File counts_bed = "${sample_data.name}.tar.gz"
+  }
+
   runtime {
     docker: "getwilds/bedtools:2.31.1"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-  }
-
-  output {
-    String name = sample_data.name
-    File counts_bed = "${sample_data.name}.tar.gz"
   }
 }
 
