@@ -86,7 +86,7 @@ workflow my_sv_pipeline {
   
   output {
     Array[File] sv_vcfs = manta_call.vcf
-    Array[File] sv_stats = manta_call.stats
+    Array[File] sv_vcf_indexes = manta_call.vcf_index
     File validation_report = validate_outputs.report
   }
 }
