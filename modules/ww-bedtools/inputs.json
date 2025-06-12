@@ -3,12 +3,12 @@
   "bedtools_example.samples": [
     {
       "name": "ERR1258306",
-      "bam_file": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam",
+      "bam": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam",
       "bam_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam.bai"
     }
   ],
   "bedtools_example.reference_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
-  "bedtools_example.reference_index": "TBD",
+  "bedtools_example.reference_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa.fai",
   "bedtools_example.intersect_flags": "-header -wo",
   "bedtools_example.chromosomes": ["chr1"],
   "bedtools_example.tmp_dir": "/tmp",
