@@ -24,10 +24,13 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 Calls structural variants using Manta for a single sample.
 
 **Inputs:**
-- `sample_data` (SampleInfo): Sample information struct containing name, BAM, and BAI files
+- `aligned_bam` (File): Input aligned BAM file containing reads for variant calling
+- `aligned_bam_index` (File): Index file for the aligned BAM above
+- `sample_name` (String): Name of the sample provided for output files
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Index file for the reference FASTA
 - `call_regions_bed` (File, optional): BED file to restrict calling to specific regions
+- `call_regions_index` (File, optional): Index file for the optional BED file
 - `is_rna` (Boolean): Flag for RNA-seq mode (default: false)
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
@@ -35,13 +38,11 @@ Calls structural variants using Manta for a single sample.
 **Outputs:**
 - `vcf` (File): Compressed VCF file with structural variant calls
 - `vcf_index` (File): Index file for the VCF
-- `sample_name` (String): Sample name from input data
 
 ### `validate_outputs`
 Validates Manta outputs and generates a comprehensive report.
 
 **Inputs:**
-- `sample_names` (Array[String]): Array of sample names processed
 - `vcf_files` (Array[File]): Array of VCF files to validate
 - `vcf_index_files` (Array[File]): Array of VCF index files to validate
 
@@ -71,7 +72,9 @@ workflow my_sv_pipeline {
   scatter (sample in samples) {
     call manta_tasks.manta_call {
       input:
-        sample_data = sample,
+        aligned_bam = sample.bam,
+        aligned_bam_index = sample.bai,
+        sample_name = sample.name,
         reference_fasta = reference_fasta,
         reference_fasta_index = reference_fasta_index
     }
@@ -79,7 +82,6 @@ workflow my_sv_pipeline {
   
   call manta_tasks.validate_outputs {
     input:
-      sample_names = manta_call.sample_name,
       vcf_files = manta_call.vcf,
       vcf_index_files = manta_call.vcf_index
   }
