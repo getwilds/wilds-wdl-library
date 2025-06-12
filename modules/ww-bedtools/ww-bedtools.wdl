@@ -177,7 +177,7 @@ task intersect {
 
   command <<<
     set -eo pipefail && \
-    bedtools intersect "~{flags}" -a "~{bed_file}" -b "~{sample_data.bam}" > "~{sample_data.name}.intersect.txt"
+    bedtools intersect ~{flags} -a "~{bed_file}" -b "~{sample_data.bam}" > "~{sample_data.name}.intersect.txt"
   >>>
 
   output {
