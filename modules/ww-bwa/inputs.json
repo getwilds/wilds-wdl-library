@@ -1,10 +1,10 @@
 {
-  "bwa_example.reference_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.fa",
+  "bwa_example.reference_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
   "bwa_example.samples": [
     {
-      "name": "SRR13008264",
-      "r1": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/SRR13008264_1.fastq.gz",
-      "r2": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/SRR13008264_2.fastq.gz"
+      "name": "ERR1258306",
+      "r1": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306_1.fastq.gz",
+      "r2": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306_2.fastq.gz"
     }
   ],
   "bwa_example.cpus": 2,

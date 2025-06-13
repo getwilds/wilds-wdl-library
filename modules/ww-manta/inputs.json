@@ -1,19 +1,17 @@
 {
-  "bcftools_example.samples": [
+  "manta_example.samples": [
     {
       "name": "ERR1258306",
       "bam": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam",
       "bai": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam.bai"
     }
   ],
-  "bcftools_example.reference_genome": {
+  "manta_example.reference_genome": {
     "name": "chr1",
     "fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
     "fasta_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa.fai"
   },
-  "bcftools_example.regions_bed": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.bed",
-  "bcftools_example.max_depth": 1000,
-  "bcftools_example.max_idepth": 1000,
-  "bcftools_example.memory_gb": 4,
-  "bcftools_example.cpu_cores": 2
+  "manta_example.is_rna": false,
+  "manta_example.cpus": 2,
+  "manta_example.memory_gb": 4
 }
