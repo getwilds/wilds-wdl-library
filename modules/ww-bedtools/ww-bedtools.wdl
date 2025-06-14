@@ -59,7 +59,8 @@ workflow bedtools_example {
     call coverage {
      input:
         bed_file = bed_file,
-        sample_data = sample,
+        aligned_bam = sample.bam,
+        sample_name = sample.name,
         cpu_cores = cpus,
         memory_gb = memory_gb
     }
@@ -67,7 +68,8 @@ workflow bedtools_example {
     call intersect {
      input:
         bed_file = bed_file,
-        sample_data = sample,
+        aligned_bam = sample.bam,
+        sample_name = sample.name,
         flags = intersect_flags,
         cpu_cores = cpus,
         memory_gb = memory_gb
@@ -76,7 +78,8 @@ workflow bedtools_example {
     call makewindows {
      input:
         bed_file = bed_file,
-        sample_data = sample,
+        aligned_bam = sample.bam,
+        sample_name = sample.name,
         reference_fasta = reference_fasta,
         reference_index = reference_index,
         list_chr = chromosomes,
@@ -115,14 +118,16 @@ task coverage {
 
   parameter_meta {
     bed_file:  "BED file containing genomic intervals"
-    sample_data: "Sample object containing sample name, BAM, and BAM index (.bai) files"
+    aligned_bam: "Input aligned and indexed BAM file"
+    sample_name: "Name of the sample provided for output files"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
 
   input {
     File bed_file
-    SampleInfo sample_data
+    File aligned_bam
+    String sample_name
     Int cpu_cores = 2
     Int memory_gb = 16
   }
@@ -130,17 +135,17 @@ task coverage {
   command <<<
     set -eo pipefail && \
     # Find the current sort order of this bam file
-    samtools view -H "~{sample_data.bam}" | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > "~{sample_data.name}.sortOrder.txt" && \
+    samtools view -H "~{aligned_bam}" | grep @SQ | sed 's/@SQ\tSN:\|LN://g' > "~{sample_name}.sortOrder.txt" && \
     # Sort the BED file according to BAM sort order
-    bedtools sort -g "~{sample_data.name}.sortOrder.txt" -i "~{bed_file}" > correctly.sorted.bed && \
+    bedtools sort -g "~{sample_name}.sortOrder.txt" -i "~{bed_file}" > correctly.sorted.bed && \
     # Calculate mean coverage
-    bedtools coverage -mean -sorted -g "~{sample_data.name}.sortOrder.txt" \
-        -a correctly.sorted.bed -b "~{sample_data.bam}" > "~{sample_data.name}.bedtools_mean_covg.txt"
+    bedtools coverage -mean -sorted -g "~{sample_name}.sortOrder.txt" \
+        -a correctly.sorted.bed -b "~{aligned_bam}" > "~{sample_name}.bedtools_mean_covg.txt"
   >>>
 
   output {
-    String name = sample_data.name
-    File mean_coverage = "~{sample_data.name}.bedtools_mean_covg.txt"
+    String name = sample_name
+    File mean_coverage = "~{sample_name}.bedtools_mean_covg.txt"
   }
 
   runtime {
@@ -161,7 +166,8 @@ task intersect {
 
   parameter_meta {
     bed_file: "BED file containing genomic intervals"
-    sample_data: "Sample object containing sample name, BAM, and BAM index (.bai) files"
+    aligned_bam: "Input aligned and indexed BAM file"
+    sample_name: "Name of the sample provided for output files"
     flags: "BEDTools intersect command flags"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
@@ -169,7 +175,8 @@ task intersect {
 
   input {
     File bed_file
-    SampleInfo sample_data
+    File aligned_bam
+    String sample_name
     String flags = "-header -wo"
     Int cpu_cores = 2
     Int memory_gb = 16
@@ -177,12 +184,12 @@ task intersect {
 
   command <<<
     set -eo pipefail && \
-    bedtools intersect ~{flags} -a "~{bed_file}" -b "~{sample_data.bam}" > "~{sample_data.name}.intersect.txt"
+    bedtools intersect ~{flags} -a "~{bed_file}" -b "~{aligned_bam}" > "~{sample_name}.intersect.txt"
   >>>
 
   output {
-    String name = sample_data.name
-    File intersect_output = "~{sample_data.name}.intersect.txt"
+    String name = sample_name
+    File intersect_output = "~{sample_name}.intersect.txt"
   }
 
   runtime {
@@ -205,8 +212,9 @@ task makewindows {
     bed_file: "BED file containing genomic intervals"
     reference_fasta: "Reference genome FASTA file"
     reference_index: "Reference genome index file"
+    aligned_bam: "Input aligned and indexed BAM file"
     list_chr: "Array of chromosome names to process"
-    sample_data: "Sample object containing sample name, BAM, and BAM index (.bai) files"
+    sample_name: "Name of the sample provided for output files"
     tmp_dir: "Path to a temporary directory"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
@@ -216,8 +224,9 @@ task makewindows {
     File bed_file
     File reference_fasta
     File reference_index
+    File aligned_bam
     Array[String] list_chr
-    SampleInfo sample_data
+    String sample_name
     String tmp_dir
     Int cpu_cores = 10
     Int memory_gb = 24
@@ -225,7 +234,7 @@ task makewindows {
 
  command <<<
     set -eo pipefail
-    mkdir -p "~{sample_data.name}"
+    mkdir -p "~{sample_name}"
     
     for Chrom in ~{sep=' ' list_chr}
     do
@@ -234,18 +243,18 @@ task makewindows {
         awk -v OFS="\t" -v C="${Chrom}" '$1==C && NF==3' > "~{tmp_dir}"/"${Chrom}".windows.bed
       
       # Count reads in windows for this chromosome (run in background for parallelization)
-      samtools view -@ 5 -b -f 0x2 -F 0x400 -q 20 -T "~{reference_fasta}"" ~{sample_data.bam}" "${Chrom}" | \
-        bedtools intersect -sorted -c -a "~{tmp_dir}"/"${Chrom}".windows.bed -b stdin > "~{sample_data.name}/${Chrom}.counts.bed" &
+      samtools view -@ 5 -b -f 0x2 -F 0x400 -q 20 -T "~{reference_fasta}"" ~{aligned_bam}" "${Chrom}" | \
+        bedtools intersect -sorted -c -a "~{tmp_dir}"/"${Chrom}".windows.bed -b stdin > "~{sample_name}/${Chrom}.counts.bed" &
     done
 
     wait
 
-    tar -czf "~{sample_data.name}.tar.gz" "~{sample_data.name}"
+    tar -czf "~{sample_name}.tar.gz" "~{sample_name}"
   >>>
 
   output {
-    String name = sample_data.name
-    File counts_bed = "${sample_data.name}.tar.gz"
+    String name = sample_name
+    File counts_bed = "${sample_name}.tar.gz"
   }
 
   runtime {
