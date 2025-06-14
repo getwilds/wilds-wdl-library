@@ -54,6 +54,8 @@ modules/module-name/
 
 | Module | Tool/Process | Container | Description |
 |--------|--------------|-----------|-------------|
+| `ww-bedtools` | BEDTools Utilities | `getwilds/bedtools:2.31.1` | Work with genomic intervals |
+| `ww-bwa` | BWA Aligner | `getwilds/bwa:0.7.17` | Sequences alignment with BWA-MEM |
 | `ww-sra` | SRA Toolkit | `getwilds/sra-tools:3.1.1` | Download sequencing data from NCBI SRA |
 | `ww-star` | STAR Aligner | `getwilds/star:2.7.6a` | RNA-seq alignment with two-pass methodology |
 

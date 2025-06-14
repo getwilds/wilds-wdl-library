@@ -84,7 +84,7 @@ jobs:
         
         # Create a BED file covering the entire chromosome 1
         # Get chromosome length from the FASTA file
-        CHR1_LENGTH=$(grep -v "^>" test-data/chr1.fa | tr -d '\n' | wc -c)
+        CHR1_LENGTH=$(($(grep -v "^>" test-data/chr1.fa | tr -d '\n' | wc -c)))
         echo -e "chr1\t0\t${CHR1_LENGTH}" > test-data/chr1.bed
 
         # Download a specific version (3.1.1) of the SRA toolkit
