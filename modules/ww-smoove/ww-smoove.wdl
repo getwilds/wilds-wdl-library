@@ -54,8 +54,8 @@ workflow smoove_example {
         sample_name = sample.name,
         reference_fasta = reference_genome.fasta,
         reference_fasta_index = reference_genome.fasta_index,
+        target_regions_bed = include_bed,
         exclude_bed = exclude_bed,
-        include_bed = include_bed,
         cpu_cores = cpus,
         memory_gb = memory_gb
     }
