@@ -88,8 +88,9 @@ task smoove_call {
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Index file for the reference FASTA"
     sample_name: "Name of the sample provided for output files"
+    target_regions_bed: "Optional BED file defining target regions to include in final output"
     exclude_bed: "Optional BED file defining regions to exclude from calling"
-    include_bed: "Optional BED file defining regions to include for calling"
+    exclude_chroms: "Optional comma-separated list of chromosomes to exclude"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
   }
@@ -100,8 +101,9 @@ task smoove_call {
     File reference_fasta
     File reference_fasta_index
     String sample_name
+    File? target_regions_bed
     File? exclude_bed
-    File? include_bed
+    String? exclude_chroms
     Int cpu_cores = 8
     Int memory_gb = 16
   }
@@ -122,26 +124,28 @@ task smoove_call {
       --fasta "~{reference_fasta}" \
       --processes ~{cpu_cores} \
       ~{if defined(exclude_bed) then "--exclude " + exclude_bed else ""} \
-      ~{if defined(include_bed) then "--include " + include_bed else ""} \
+      ~{if defined(exclude_chroms) then "--excludechroms " + exclude_chroms else ""} \
       "~{aligned_bam}"
+    
+    # Index the raw output
     tabix -p vcf "results/~{sample_name}-smoove.vcf.gz"
 
-    # Move and rename output files for consistency
-    mv "results/~{sample_name}-smoove.vcf.gz" "~{vcf_filename}"
-    mv "results/~{sample_name}-smoove.vcf.gz.tbi" "~{vcf_index_filename}"
-
-    # Verify outputs exist
-    if [[ ! -f "~{vcf_filename}" ]]; then
-      echo "ERROR: Expected VCF output file not found: ~{vcf_filename}" >&2
-      exit 1
+    # Filter to target regions if provided, otherwise use raw output
+    if [ -n "~{target_regions_bed}" ]; then
+      # Filter VCF to only include variants overlapping target regions
+      bcftools view \
+        -R "~{target_regions_bed}" \
+        -Oz \
+        -o "~{vcf_filename}" \
+        "results/~{sample_name}-smoove.vcf.gz"
+      
+      # Index the filtered VCF
+      tabix -p vcf "~{vcf_filename}"
+    else
+      # Move and rename output files for consistency
+      mv "results/~{sample_name}-smoove.vcf.gz" "~{vcf_filename}"
+      mv "results/~{sample_name}-smoove.vcf.gz.tbi" "~{vcf_index_filename}"
     fi
-
-    if [[ ! -f "~{vcf_index_filename}" ]]; then
-      echo "ERROR: Expected VCF index file not found: ~{vcf_index_filename}" >&2
-      exit 1
-    fi
-
-    echo "Smoove completed successfully for sample: ~{sample_name}"
   >>>
 
   output {
