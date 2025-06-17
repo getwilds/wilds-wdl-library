@@ -258,15 +258,15 @@ task validate_outputs {
       
       # Check if file exists and is not empty
       if [ -f "$vcf_file" ] && [ -s "$vcf_file" ]; then
-        echo "  ✓ File exists and is not empty" >> validation_report.txt
+        echo "  File exists and is not empty" >> validation_report.txt
         
         # Count variants in VCF
         if command -v zcat >/dev/null 2>&1; then
           VARIANT_COUNT=$(zcat "$vcf_file" | grep -v "^#" | wc -l)
-          echo "  ✓ Contains $VARIANT_COUNT variants" >> validation_report.txt
+          echo "  Contains $VARIANT_COUNT variants" >> validation_report.txt
         fi
       else
-        echo "  ✗ File missing or empty" >> validation_report.txt
+        echo "  File missing or empty" >> validation_report.txt
       fi
     done
     
@@ -284,29 +284,29 @@ task validate_outputs {
       
       # Check if file exists and is not empty
       if [ -f "$tsv_file" ] && [ -s "$tsv_file" ]; then
-        echo "  ✓ File exists and is not empty" >> validation_report.txt
+        echo "  File exists and is not empty" >> validation_report.txt
         
         # Count annotations
         ANNOTATION_COUNT=$(tail -n +2 "$tsv_file" | wc -l)
         TOTAL_ANNOTATIONS=$((TOTAL_ANNOTATIONS + ANNOTATION_COUNT))
-        echo "  ✓ Contains $ANNOTATION_COUNT annotations" >> validation_report.txt
+        echo "  Contains $ANNOTATION_COUNT annotations" >> validation_report.txt
         
         # Check for key AnnotSV columns
         HEADER=$(head -1 "$tsv_file")
         if echo "$HEADER" | grep -q "AnnotSV_ID"; then
-          echo "  ✓ Contains AnnotSV_ID column" >> validation_report.txt
+          echo "  Contains AnnotSV_ID column" >> validation_report.txt
         fi
         if echo "$HEADER" | grep -q "SV_chrom"; then
-          echo "  ✓ Contains SV_chrom column" >> validation_report.txt
+          echo "  Contains SV_chrom column" >> validation_report.txt
         fi
         if echo "$HEADER" | grep -q "SV_type"; then
-          echo "  ✓ Contains SV_type column" >> validation_report.txt
+          echo "  Contains SV_type column" >> validation_report.txt
         fi
         if echo "$HEADER" | grep -q "AnnotSV_ranking_score"; then
-          echo "  ✓ Contains AnnotSV ranking score" >> validation_report.txt
+          echo "  Contains AnnotSV ranking score" >> validation_report.txt
         fi
       else
-        echo "  ✗ File missing or empty" >> validation_report.txt
+        echo "  File missing or empty" >> validation_report.txt
       fi
     done
     
@@ -319,9 +319,9 @@ task validate_outputs {
     
     # Check if all files were processed successfully
     if [ $VCF_COUNT -eq ${#annotated_vcf_files[@]} ] && [ $TSV_COUNT -eq ${#annotated_tsv_files[@]} ]; then
-      echo "✓ All expected output files were generated successfully" >> validation_report.txt
+      echo "All expected output files were generated successfully" >> validation_report.txt
     else
-      echo "✗ Some expected output files were missing" >> validation_report.txt
+      echo "Some expected output files were missing" >> validation_report.txt
     fi
     
     echo "" >> validation_report.txt
