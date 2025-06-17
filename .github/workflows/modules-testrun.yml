@@ -84,7 +84,7 @@ jobs:
         
         # Create a BED file covering the entire chromosome 1
         # Get chromosome length from the FASTA file
-        CHR1_LENGTH=$(grep -v "^>" test-data/chr1.fa | tr -d '\n' | wc -c)
+        CHR1_LENGTH=$(($(grep -v "^>" test-data/chr1.fa | tr -d '\n' | wc -c)))
         echo -e "chr1\t0\t${CHR1_LENGTH}" > test-data/chr1.bed
 
         # Download a specific version (3.1.1) of the SRA toolkit
@@ -165,7 +165,7 @@ jobs:
       name: Display validation report
       run: |
         echo "=== MiniWDL Validation Report ==="
-        find test-output/miniwdl -name "validation_report.txt" -exec cat {} \;
+        find test-output/miniwdl -name "validation_report.txt" -exec cat {} \; 2>/dev/null || true
   
   cromwell-test:
     needs: [discover-modules, download-test-data]
@@ -209,7 +209,7 @@ jobs:
       name: Display validation report
       run: |
         echo "=== Cromwell Validation Report ==="
-        find . -name "validation_report.txt" -exec cat {} \;
+        find . -name "validation_report.txt" -exec cat {} \; 2>/dev/null || true
   
   sprocket-test:
     needs: [discover-modules, download-test-data]
@@ -253,4 +253,4 @@ jobs:
       name: Display validation report
       run: |
         echo "=== Sprocket Validation Report ==="
-        find test-output/sprocket -name "validation_report.txt" -exec cat {} \;
+        find test-output/sprocket -name "validation_report.txt" -exec cat {} \; 2>/dev/null || true
