@@ -23,8 +23,8 @@ workflow smoove_example {
     description: "WDL workflow for structural variant calling via Smoove"
     url: "https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-smoove"
     outputs: {
-        smoove_vcf: "Structural variant calls in VCF format from Smoove",
-        smoove_vcf_index: "Index file for the VCF output",
+        smoove_vcfs: "Structural variant calls in VCF format from Smoove",
+        smoove_vcf_indexes: "Index file for the VCF output",
         validation_report: "Validation report confirming all expected outputs were generated"
     }
   }
@@ -48,8 +48,7 @@ workflow smoove_example {
   }
 
   scatter (sample in samples) {
-    call smoove_call {
-      input:
+    call smoove_call { input:
         aligned_bam = sample.bam,
         aligned_bam_index = sample.bai,
         sample_name = sample.name,
@@ -62,8 +61,7 @@ workflow smoove_example {
     }
   }
 
-  call validate_outputs {
-    input:
+  call validate_outputs { input:
       vcf_files = smoove_call.vcf,
       vcf_index_files = smoove_call.vcf_index
   }
@@ -78,32 +76,34 @@ workflow smoove_example {
 task smoove_call {
   meta {
     description: "Call structural variants using Smoove for a single sample"
+    outputs: {
+        vcf: "Structural variant calls in compressed VCF format",
+        vcf_index: "Index file for the VCF output"
+    }
   }
 
   parameter_meta {
     aligned_bam: "Input aligned BAM file containing reads for variant calling"
     aligned_bam_index: "Index file for the aligned BAM above"
-    sample_name: "Name of the sample provided for output files"
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Index file for the reference FASTA"
+    sample_name: "Name of the sample provided for output files"
     exclude_bed: "Optional BED file defining regions to exclude from calling"
     include_bed: "Optional BED file defining regions to include for calling"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
-    docker_image: "Docker image containing Smoove and dependencies"
   }
 
   input {
     File aligned_bam
     File aligned_bam_index
-    String sample_name
     File reference_fasta
     File reference_fasta_index
+    String sample_name
     File? exclude_bed
     File? include_bed
     Int cpu_cores = 8
     Int memory_gb = 16
-    String docker_image = "getwilds/smoove:0.2.8"
   }
 
   String vcf_filename = "${sample_name}.smoove.vcf.gz"
@@ -118,16 +118,17 @@ task smoove_call {
     # Build smoove command
     smoove call \
       --outdir results \
-      --name ~{sample_name} \
-      --fasta ~{reference_fasta} \
+      --name "~{sample_name}" \
+      --fasta "~{reference_fasta}" \
       --processes ~{cpu_cores} \
       ~{if defined(exclude_bed) then "--exclude " + exclude_bed else ""} \
       ~{if defined(include_bed) then "--include " + include_bed else ""} \
-      ~{aligned_bam}
+      "~{aligned_bam}"
+    tabix -p vcf "results/~{sample_name}-smoove.vcf.gz"
 
     # Move and rename output files for consistency
-    mv results/~{sample_name}-smoove.genotyped.vcf.gz ~{vcf_filename}
-    mv results/~{sample_name}-smoove.genotyped.vcf.gz.tbi ~{vcf_index_filename}
+    mv "results/~{sample_name}-smoove.vcf.gz" "~{vcf_filename}"
+    mv "results/~{sample_name}-smoove.vcf.gz.tbi" "~{vcf_index_filename}"
 
     # Verify outputs exist
     if [[ ! -f "~{vcf_filename}" ]]; then
@@ -149,7 +150,7 @@ task smoove_call {
   }
 
   runtime {
-    docker: docker_image
+    docker: "brentp/smoove:latest"
     cpu: cpu_cores
     memory: "${memory_gb}GB"
   }
@@ -158,6 +159,9 @@ task smoove_call {
 task validate_outputs {
   meta {
     description: "Validate Smoove outputs and generate a comprehensive report"
+    outputs: {
+        report: "Validation report confirming all expected outputs were generated"
+    }
   }
 
   parameter_meta {
@@ -180,7 +184,7 @@ task validate_outputs {
     # Validate VCF files
     echo "VCF File Validation:" >> validation_report.txt
     vcf_count=0
-    for vcf in ~{sep=' ' vcf_files}; do
+    for vcf in ~{sep=" " vcf_files}; do
       vcf_count=$((vcf_count + 1))
       echo "  File $vcf_count: $(basename $vcf)" >> validation_report.txt
       
@@ -207,14 +211,14 @@ task validate_outputs {
     # Validate index files
     echo "VCF Index File Validation:" >> validation_report.txt
     index_count=0
-    for index in ~{sep=' ' vcf_index_files}; do
+    for index in ~{sep=" " vcf_index_files}; do
       index_count=$((index_count + 1))
       echo "  Index $index_count: $(basename $index)" >> validation_report.txt
       
       if [[ -f "$index" && -s "$index" ]]; then
-        echo "    Status: PASS - Index file exists and is not empty" >> validation_report.txt
+        echo "    Status: PASS - Index file exists" >> validation_report.txt
       else
-        echo "    Status: FAIL - Index file missing or empty" >> validation_report.txt
+        echo "    Status: FAIL - Index file missing" >> validation_report.txt
       fi
       echo "" >> validation_report.txt
     done
