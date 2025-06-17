@@ -31,7 +31,6 @@ workflow annotsv_example {
 
   parameter_meta {
     samples: "List of sample objects, each containing name and VCF file with structural variants"
-    reference_genome: "Reference genome object containing name and optional reference files"
     genome_build: "Reference genome build (hg19, hg38, mm9, mm10, etc.)"
     sv_min_size: "Minimum SV size to consider for annotation (default: 50)"
     annotation_mode: "Annotation mode: 'full' (one line per annotation) or 'split' (one line per SV)"
@@ -103,7 +102,6 @@ task annotsv_annotate {
     input_vcf: "Input VCF file containing structural variants to annotate"
     input_vcf_index: "Index file for the input VCF (optional but recommended)"
     sample_name: "Name of the sample for output file naming"
-    reference_genome: "Reference genome object (optional, mainly for consistency)"
     genome_build: "Reference genome build (hg19, hg38, mm9, mm10, etc.)"
     sv_min_size: "Minimum SV size in bp to consider for annotation"
     annotation_mode: "Annotation mode: 'full' (comprehensive) or 'split' (one line per SV)"
