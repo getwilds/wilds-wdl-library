@@ -16,7 +16,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 - **Tasks**: `smoove_call`, `validate_outputs`
 - **Workflow**: `smoove_example` (demonstration workflow that executes all tasks)
-- **Container**: `getwilds/smoove:0.2.8`
+- **Container**: `brentp/smoove:latest`
 
 ## Tasks
 
@@ -26,11 +26,12 @@ Calls structural variants using Smoove for a single sample.
 **Inputs:**
 - `aligned_bam` (File): Input aligned BAM file containing reads for variant calling
 - `aligned_bam_index` (File): Index file for the aligned BAM above
-- `sample_name` (String): Name of the sample provided for output files
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Index file for the reference FASTA
+- `sample_name` (String): Name of the sample provided for output files
+- `target_regions_bed` (File, optional): BED file defining regions to include for calling
 - `exclude_bed` (File, optional): BED file defining regions to exclude from calling
-- `include_bed` (File, optional): BED file defining regions to include for calling
+- `exclude_chromosomes` (Array[String], optional): List of chromosomes to exclude from calling
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
 
@@ -142,13 +143,14 @@ sprocket run ww-smoove.wdl inputs.json
 ### Data Type Considerations
 
 - **Whole genome sequencing**: Use default settings for comprehensive SV detection
-- **Exome sequencing**: Consider using `include_bed` to focus on exonic regions
-- **Targeted panels**: Use `include_bed` to restrict analysis to regions of interest
+- **Exome sequencing**: Consider using `target_regions_bed` to focus on exonic regions
+- **Targeted panels**: Use `target_regions_bed` to restrict analysis to regions of interest
 
 ### Advanced Parameters
 
+- **target_regions_bed**: Restrict calling to specific genomic regions for targeted sequencing
 - **exclude_bed**: Exclude problematic regions (centromeres, telomeres, repetitive sequences)
-- **include_bed**: Restrict calling to specific genomic regions for targeted sequencing
+- **exclude_chroms**: Exclude specific chromosome(s)
 - Resource allocation can be tuned for different compute environments
 
 ## Requirements
@@ -162,7 +164,7 @@ sprocket run ww-smoove.wdl inputs.json
 
 - **Comprehensive SV detection**: Detects deletions, insertions, duplications, inversions, and translocations
 - **Multi-sample support**: Process multiple samples in parallel
-- **Targeted analysis**: Support for include/exclude BED files
+- **Targeted analysis**: Support for include/exclude BED files and entire chromosomes
 - **Validation**: Built-in output validation and reporting
 - **Scalable**: Configurable resource allocation
 - **Robust**: Extensive error handling and cleanup
