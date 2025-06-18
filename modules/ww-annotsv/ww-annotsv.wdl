@@ -214,7 +214,7 @@ task annotsv_annotate {
   }
 
   runtime {
-    docker: "getwilds/annotsv:3.4.6"
+    docker: "getwilds/annotsv:3.4.4"
     memory: "~{memory_gb}GB"
     cpu: cpu_cores
     disks: "local-disk 50 SSD"
