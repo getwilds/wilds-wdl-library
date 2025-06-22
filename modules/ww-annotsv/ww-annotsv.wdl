@@ -111,16 +111,14 @@ task annotsv_annotate {
   String ci_flag = if include_ci then "-includeCI 1" else "-includeCI 0"
   String benign_flag = if exclude_benign then "-benignAF 0.01" else ""
   String tx_flag = if tx_source == "ENSEMBL" then "-tx ENSEMBL" else "-tx RefSeq"
+  # Sticking with default promoter size for now
+  # Can't write the necessary bedfiles for custom values in the Apptainer container
 
   command <<<
     set -eo pipefail
     
     # Create output directory
     mkdir -p annotsv_output
-
-    # Debug: check filesystem permissions
-    touch /tmp/test_write 2>&1 || echo "Cannot write to /tmp"
-    touch /AnnotSV-3.4.4/test_write 2>&1 || echo "Cannot write to AnnotSV dir"
 
     # Run AnnotSV
     AnnotSV \
@@ -131,7 +129,7 @@ task annotsv_annotate {
       ~{mode_flag} \
       ~{ci_flag} \
       -overlap ~{overlap_threshold} \
-      -promoterSize 500 \ # Sticking with default value for now, Apptainer issues
+      -promoterSize 500 \
       ~{benign_flag} \
       ~{tx_flag}
     
