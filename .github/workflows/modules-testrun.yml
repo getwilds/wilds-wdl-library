@@ -114,6 +114,9 @@ jobs:
         
         # Index the BAM file
         samtools index test-data/ERR1258306.chr1.aligned.bam
+
+        # Download an example SV VCF file for AnnotSV
+        wget -q -O test-data/annotsv_test.vcf https://raw.githubusercontent.com/lgmgeo/AnnotSV/refs/heads/master/share/doc/AnnotSV/Example/test.vcf
         
         ls -la test-data/
     - 
