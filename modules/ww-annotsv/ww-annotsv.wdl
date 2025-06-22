@@ -181,6 +181,10 @@ task validate_outputs {
       TSV_COUNT=$((TSV_COUNT + 1))
       echo "TSV $TSV_COUNT: $(basename $tsv_file)" >> validation_report.txt
       
+      # Count annotations in the TSV file
+      ANNOTATION_COUNT=$(wc -l < "$tsv_file")
+      TOTAL_ANNOTATIONS=$((TOTAL_ANNOTATIONS + ANNOTATION_COUNT))
+      
       # Check if file exists and is not empty
       if [ -f "$tsv_file" ] && [ -s "$tsv_file" ]; then
         echo "  File exists and is not empty" >> validation_report.txt
