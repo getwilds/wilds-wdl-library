@@ -16,7 +16,6 @@ workflow annotsv_example {
     description: "WDL workflow for structural variant annotation via AnnotSV"
     url: "https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-annotsv"
     outputs: {
-        annotated_vcf: "Annotated VCF file with AnnotSV annotations",
         annotated_tsv: "Tab-delimited annotation file with comprehensive SV annotations",
         validation_report: "Validation report confirming all expected outputs were generated"
     }
@@ -24,32 +23,31 @@ workflow annotsv_example {
 
   parameter_meta {
     samples: "List of sample objects, each containing name and VCF file with structural variants"
-    genome_build: "Reference genome build (GRCh37, GRCh38, mm9, mm10, etc.)"
-    sv_min_size: "Minimum SV size to consider for annotation (default: 50)"
+    genome_build: "Reference genome build (GRCh37, GRCh38)"
     annotation_mode: "Annotation mode: 'full' (one line per annotation) or 'split' (one line per SV)"
     include_ci: "Include confidence intervals in breakpoint coordinates"
-    overlap_threshold: "Minimum overlap with genomic features (default: 70)"
     exclude_benign: "Exclude likely benign variants from output"
+    sv_min_size: "Minimum SV size to consider for annotation (default: 50)"
+    overlap_threshold: "Minimum overlap with genomic features (default: 70)"
     cpus: "Number of CPU cores allocated for each task"
     memory_gb: "Memory allocated for each task in GB"
   }
 
   input {
     Array[SampleInfo] samples
-    String genome_build = "GRCh38" # GRCh38 or GRCh37 or mm9 or mm10
-    Int sv_min_size = 50
+    String genome_build = "GRCh38" # GRCh38 or GRCh37
     String annotation_mode = "full"
     Boolean include_ci = true
-    Int overlap_threshold = 70
     Boolean exclude_benign = false
+    Int sv_min_size = 50
+    Int overlap_threshold = 70
     Int cpus = 4
     Int memory_gb = 8
   }
 
   scatter (sample in samples) {
-    call annotsv_annotate {
-      input:
-        input_vcf = sample.vcf,
+    call annotsv_annotate { input:
+        raw_vcf = sample.vcf,
         sample_name = sample.name,
         genome_build = genome_build,
         sv_min_size = sv_min_size,
@@ -62,8 +60,7 @@ workflow annotsv_example {
     }
   }
 
-  call validate_outputs {
-    input:
+  call validate_outputs { input:
       annotated_tsv_files = annotsv_annotate.annotated_tsv
   }
 
@@ -82,28 +79,29 @@ task annotsv_annotate {
   }
 
   parameter_meta {
-    input_vcf: "Input VCF file containing structural variants to annotate"
+    raw_vcf: "Input VCF file containing structural variants to annotate"
     sample_name: "Name of the sample for output file naming"
-    genome_build: "Reference genome build (GRCh37, GRCh38, mm9, mm10, etc.)"
-    sv_min_size: "Minimum SV size in bp to consider for annotation"
+    genome_build: "Reference genome build (GRCh37, GRCh38)"
+    tx_source: "Transcript annotation source (ENSEMBL, RefSeq)"
     annotation_mode: "Annotation mode: 'full' (comprehensive) or 'split' (one line per SV)"
     include_ci: "Include confidence intervals in breakpoint coordinates"
-    overlap_threshold: "Minimum percentage overlap with genomic features"
     exclude_benign: "Filter out likely benign variants from output"
+    sv_min_size: "Minimum SV size in bp to consider for annotation"
+    overlap_threshold: "Minimum percentage overlap with genomic features"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
   }
 
   input {
-    File input_vcf
+    File raw_vcf
     String sample_name
-    String genome_build = "GRCh38" # GRCh38 or GRCh37 or mm9 or mm10
-    String tx = "RefSeq" # ENSEMBL or RefSeq
-    Int sv_min_size = 50
+    String genome_build = "GRCh38" # GRCh38 or GRCh37
+    String tx_source = "RefSeq" # ENSEMBL or RefSeq
     String annotation_mode = "full" # full or split
     Boolean include_ci = true
-    Int overlap_threshold = 70
     Boolean exclude_benign = false
+    Int sv_min_size = 50
+    Int overlap_threshold = 70
     Int cpu_cores = 4
     Int memory_gb = 8
   }
@@ -112,7 +110,7 @@ task annotsv_annotate {
   String mode_flag = if annotation_mode == "split" then "-annotationMode split" else "-annotationMode full"
   String ci_flag = if include_ci then "-includeCI 1" else "-includeCI 0"
   String benign_flag = if exclude_benign then "-benignAF 0.01" else ""
-  String tx_flag = if tx == "ENSEMBL" then "-tx ENSEMBL" else "-tx RefSeq"
+  String tx_flag = if tx_source == "ENSEMBL" then "-tx ENSEMBL" else "-tx RefSeq"
 
   command <<<
     set -eo pipefail
@@ -126,7 +124,7 @@ task annotsv_annotate {
 
     # Run AnnotSV
     AnnotSV \
-      -SVinputFile "~{input_vcf}" \
+      -SVinputFile "~{raw_vcf}" \
       -genomeBuild "~{genome_build}" \
       -outputFile "annotsv_output/~{output_prefix}" \
       -SVminSize ~{sv_min_size} \
@@ -181,7 +179,7 @@ task validate_outputs {
     
     TSV_COUNT=0
     TOTAL_ANNOTATIONS=0
-    for tsv_file in ~{sep=' ' annotated_tsv_files}; do
+    for tsv_file in ~{sep=" " annotated_tsv_files}; do
       TSV_COUNT=$((TSV_COUNT + 1))
       echo "TSV $TSV_COUNT: $(basename $tsv_file)" >> validation_report.txt
       
