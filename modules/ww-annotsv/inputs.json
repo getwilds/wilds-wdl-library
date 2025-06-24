@@ -1,9 +1,6 @@
 {
-  "annotsv_example.samples": [
-    {
-      "name": "ERR1258306",
-      "vcf": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/annotsv_test.vcf"
-    }
+  "annotsv_example.vcfs": [
+    "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/annotsv_test.vcf"
   ],
   "annotsv_example.genome_build": "GRCh37",
   "annotsv_example.sv_min_size": 50,

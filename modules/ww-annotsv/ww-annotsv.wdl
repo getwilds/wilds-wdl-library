@@ -4,11 +4,6 @@
 
 version 1.0
 
-struct SampleInfo {
-    String name
-    File vcf
-}
-
 workflow annotsv_example {
   meta {
     author: "WILDS Team"
@@ -22,7 +17,7 @@ workflow annotsv_example {
   }
 
   parameter_meta {
-    samples: "List of sample objects, each containing name and VCF file with structural variants"
+    vcfs: "List of VCF files with structural variants"
     genome_build: "Reference genome build (GRCh37, GRCh38)"
     annotation_mode: "Annotation mode: 'full' (one line per annotation) or 'split' (one line per SV)"
     include_ci: "Include confidence intervals in breakpoint coordinates"
@@ -34,7 +29,7 @@ workflow annotsv_example {
   }
 
   input {
-    Array[SampleInfo] samples
+    Array[File] vcfs
     String genome_build = "GRCh38" # GRCh38 or GRCh37
     String annotation_mode = "full"
     Boolean include_ci = true
@@ -45,10 +40,9 @@ workflow annotsv_example {
     Int memory_gb = 8
   }
 
-  scatter (sample in samples) {
+  scatter (vcf in vcfs) {
     call annotsv_annotate { input:
-        raw_vcf = sample.vcf,
-        sample_name = sample.name,
+        raw_vcf = vcf,
         genome_build = genome_build,
         sv_min_size = sv_min_size,
         annotation_mode = annotation_mode,
@@ -80,7 +74,6 @@ task annotsv_annotate {
 
   parameter_meta {
     raw_vcf: "Input VCF file containing structural variants to annotate"
-    sample_name: "Name of the sample for output file naming"
     genome_build: "Reference genome build (GRCh37, GRCh38)"
     tx_source: "Transcript annotation source (ENSEMBL, RefSeq)"
     annotation_mode: "Annotation mode: 'full' (comprehensive) or 'split' (one line per SV)"
@@ -94,7 +87,6 @@ task annotsv_annotate {
 
   input {
     File raw_vcf
-    String sample_name
     String genome_build = "GRCh38" # GRCh38 or GRCh37
     String tx_source = "RefSeq" # ENSEMBL or RefSeq
     String annotation_mode = "full" # full or split
@@ -106,6 +98,7 @@ task annotsv_annotate {
     Int memory_gb = 8
   }
 
+  String sample_name = basename(basename(raw_vcf, ".gz"), ".vcf")
   String output_prefix = "~{sample_name}.annotsv"
   String mode_flag = if annotation_mode == "split" then "-annotationMode split" else "-annotationMode full"
   String ci_flag = if include_ci then "-includeCI 1" else "-includeCI 0"
@@ -133,7 +126,13 @@ task annotsv_annotate {
       ~{benign_flag} \
       ~{tx_flag}
     
-    mv "annotsv_output/~{output_prefix}.tsv" "~{output_prefix}.tsv"
+    # Check if there were any SVs to annotate
+    if grep -q "no SV to annotate" stdout; then
+      echo "No SV's found in the input VCF. Creating empty output file."
+      touch "~{output_prefix}.tsv"
+    else
+      mv "annotsv_output/~{output_prefix}.tsv" "~{output_prefix}.tsv"
+    fi
   >>>
 
   output {
@@ -213,4 +212,3 @@ task validate_outputs {
     cpu: 1
   }
 }
-
