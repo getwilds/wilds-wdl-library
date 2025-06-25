@@ -1,0 +1,12 @@
+{
+  "annotsv_example.vcfs": [
+    "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/annotsv_test.vcf"
+  ],
+  "annotsv_example.genome_build": "GRCh37",
+  "annotsv_example.sv_min_size": 50,
+  "annotsv_example.annotation_mode": "full",
+  "annotsv_example.include_ci": true,
+  "annotsv_example.overlap_threshold": 70,
+  "annotsv_example.cpus": 2,
+  "annotsv_example.memory_gb": 8
+}
