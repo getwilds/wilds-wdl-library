@@ -14,7 +14,7 @@ workflow ichorcna_example {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "WDL workflow for cfDNA tumor fraction estimation via ichorCNA"
-    url: "https://github.com/getwilds/ww-ichorcna"
+    url: "https://github.com/getwilds/modules/ww-ichorcna"
     outputs: {
         params: "Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions",
         seg: "Segments called by the Viterbi algorithm, including subclonal status of segments (0=clonal, 1=subclonal), and filtered fo exclude Y chromosome segments if not male",
@@ -29,7 +29,7 @@ workflow ichorcna_example {
   parameter_meta {
     wig_gc: "GC-content WIG file"
     wig_map: "Mappability score WIG file"
-    norm_depth: "RDS file of median corrected depth from panel of normals"
+    panel_of_norm_rds: "RDS file of median corrected depth from panel of normals"
     centromeres: "Text file containing Centromere locations"
     samples: "Array of sample information containing name and tarball of per-chromosome BED files of read counts"
     sex: "User-specified: male or female"
@@ -42,7 +42,7 @@ workflow ichorcna_example {
   input {
     File wig_gc
     File wig_map
-    File norm_depth
+    File panel_of_norm_rds
     File centromeres
     Array[SampleInfo] samples
     String sex
@@ -54,9 +54,9 @@ workflow ichorcna_example {
 
   scatter (sample in samples) {
     call ichorcna_call { input:
-          wig_gc = wig_gc,
+      wig_gc = wig_gc,
       wig_map = wig_map,
-      norm_depth = norm_depth,
+      panel_of_norm_rds = panel_of_norm_rds,
       centromeres = centromeres,
       counts_bed = sample.counts_bed,
       name = sample.name,
@@ -99,10 +99,10 @@ task ichorcna_call {
   }
 
   parameter_meta {
-    counts_bed: "Tarball of per-chromosome BED files of read counts. Used to make tumor WIG fileq"
+    counts_bed: "Tarball of per-chromosome BED files of read counts. Used to make tumor WIG file"
     wig_gc: "GC-content WIG file"
     wig_map: "Mappability score WIG file"
-    norm_depth: "RDS file of median corrected depth from panel of normals"
+    panel_of_norm_rds: "RDS file of median corrected depth from panel of normals"
     centromeres: "Text file containing Centromere locations"
     name: "Sample ID"
     sex: "User-specified: male or female"
@@ -116,7 +116,7 @@ task ichorcna_call {
     File counts_bed
     File wig_gc
     File wig_map
-    File norm_depth
+    File panel_of_norm_rds
     File centromeres
     String name
     String sex
@@ -134,7 +134,7 @@ task ichorcna_call {
     awk -v window=500000 \
     'BEGIN { chr=""; } { if ($1!=chr){ printf("fixedStep chrom=%s start=1 step=%d span=%d\n",$1,window,window); chr=$1; } print $4; }' \
     > "~{name}.ichor.tumor.wig" && \
-    /usr/local/bin/Rscript /usr/local/bin/ichorCNA/scripts/runIchorCNA.R \
+    Rscript /usr/local/bin/ichorCNA/scripts/runIchorCNA.R \
     --id "~{name}" \
     --WIG "~{name}.ichor.tumor.wig" \
     --ploidy "c(2)" \
@@ -143,7 +143,7 @@ task ichorcna_call {
     --gcWig "~{wig_gc}" \
     --mapWig "~{wig_map}" \
     --centromere "~{centromeres}" \
-    --normalPanel "~{norm_depth}" \
+    --normalPanel "~{panel_of_norm_rds}" \
     --genomeBuild "~{genome}" \
     --sex "~{sex}" \
     --chrs "c(1:22, \"X\", \"Y\")" \
