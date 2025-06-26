@@ -34,7 +34,8 @@ workflow ichorcna_example {
     centromeres: "Text file containing Centromere locations"
     samples: "Array of sample information containing name and tarball of per-chromosome BED files of read counts"
     sex: "User-specified: male or female"
-    genome: "Genome build (e.g. hg19)"
+    chrs: "Chromosomes to analyze (default: chr 1-22, X, and Y)"
+    genome: "Genome build (e.g. hg38)"
     genome_style: "Chromosome naming convention (use UCSC if desired output is to have 'chr' string): NCBI or UCSC"
     memory_gb: "Memory allocated for each task in the workflow in GB"
     cpus: "Number of CPU cores allocated for each task in the workflow"
@@ -47,6 +48,7 @@ workflow ichorcna_example {
     File centromeres
     Array[SampleInfo] samples
     String sex
+    String chrs = "c(1:22, \"X\", \"Y\")"
     String genome
     String genome_style
     Int memory_gb
@@ -62,6 +64,7 @@ workflow ichorcna_example {
       counts_bed = sample.counts_bed,
       name = sample.name,
       sex = sex,
+      chrs = chrs,
       genome = genome,
       genome_style = genome_style,
       cpus = cpus,
@@ -116,6 +119,7 @@ task ichorcna_call {
     centromeres: "Text file containing Centromere locations"
     name: "Sample ID"
     sex: "User-specified: male or female"
+    chrs: "Chromosomes to analyze (default: chr 1-22, X, and Y)"
     genome: "Genome build (e.g. hg19)"
     genome_style: "Chromosome naming convention (use UCSC if desired output is to have 'chr' string): NCBI or UCSC"
     memory_gb: "Memory allocated for each task in the workflow in GB"
@@ -130,6 +134,7 @@ task ichorcna_call {
     File centromeres
     String name
     String sex
+    String chrs = "c(1:22, \"X\", \"Y\")"
     String genome
     String genome_style
     Int memory_gb
@@ -156,7 +161,7 @@ task ichorcna_call {
     --normalPanel "~{panel_of_norm_rds}" \
     --genomeBuild "~{genome}" \
     --sex "~{sex}" \
-    --chrs "c(1:22, \"X\", \"Y\")" \
+    --chrs "~{chrs}" \
     --fracReadsInChrYForMale 0.0005 \
     --txnE 0.999999 \
     --txnStrength 1000000 \
