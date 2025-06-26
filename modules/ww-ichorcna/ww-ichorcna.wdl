@@ -135,8 +135,8 @@ task ichorcna_call {
     String sex
     String genome
     String genome_style
-    Int memory_gb
-    Int cpus
+    Int memory_gb = 16
+    Int cpus = 6
     String chrs = "c(1:22, \"X\", \"Y\")"
   }
 
