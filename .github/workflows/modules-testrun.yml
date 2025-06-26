@@ -18,10 +18,10 @@ jobs:
     outputs:
       modules: ${{ steps.find-modules.outputs.modules }}
     steps:
-    - 
+    -
       name: Checkout
       uses: actions/checkout@v4
-    - 
+    -
       name: Find WDL modules
       id: find-modules
       run: |
@@ -32,7 +32,7 @@ jobs:
             module_name=$(basename "$module_dir")
             wdl_file="$module_dir$module_name.wdl"
             inputs_file="$module_dir/inputs.json"
-            
+
             if [ -f "$wdl_file" ] && [ -f "$inputs_file" ]; then
               modules+=("$module_name")
               echo "Found module: $module_name"
@@ -43,7 +43,7 @@ jobs:
             fi
           fi
         done
-        
+
         # Convert array to JSON format for matrix strategy
         if [ ${#modules[@]} -eq 0 ]; then
           modules_json="[]"
@@ -56,10 +56,10 @@ jobs:
   download-test-data:
     runs-on: ubuntu-latest
     steps:
-    - 
+    -
       name: Checkout
       uses: actions/checkout@v4
-    - 
+    -
       name: Download test data
       run: |
         mkdir -p test-data
@@ -81,7 +81,7 @@ jobs:
         # Extract only chromosome 1 annotations
         grep "^chr1[[:space:]]" test-data/hg38.ncbiRefSeq.gtf > test-data/chr1.gtf
         rm test-data/hg38.ncbiRefSeq.gtf
-        
+
         # Create a BED file covering the entire chromosome 1
         # Get chromosome length from the FASTA file
         CHR1_LENGTH=$(($(grep -v "^>" test-data/chr1.fa | tr -d '\n' | wc -c)))
@@ -92,31 +92,31 @@ jobs:
         tar -xzf sratoolkit.3.1.1-ubuntu64.tar.gz
         echo "$PWD/sratoolkit.3.1.1-ubuntu64/bin" >> $GITHUB_PATH
         export PATH="$PWD/sratoolkit.3.1.1-ubuntu64/bin:$PATH"
-        
+
         # Download a small WGS sample (ERR1258306)
         fasterq-dump --split-files ERR1258306 -O test-data/
         gzip test-data/ERR1258306_1.fastq test-data/ERR1258306_2.fastq
-        
+
         # Generate a small aligned BAM file for testing workflows that need pre-aligned data
         # This is a minimal example - for real testing, use the actual alignment modules
         echo "Generating test BAM file..."
-        
+
         # Install bwa for alignment
         sudo apt-get install -y bwa
-        
+
         # Create BWA index
         bwa index test-data/chr1.fa
-        
+
         # Align reads and create sorted BAM
         bwa mem -t 2 -R '@RG\tID:test\tSM:ERR1258306\tPL:illumina' \
           test-data/chr1.fa test-data/ERR1258306_1.fastq.gz test-data/ERR1258306_2.fastq.gz | \
           samtools sort -o test-data/ERR1258306.chr1.aligned.bam
-        
+
         # Index the BAM file
         samtools index test-data/ERR1258306.chr1.aligned.bam
         
         ls -la test-data/
-    - 
+    -
       name: Upload test data
       uses: actions/upload-artifact@v4
       with:
@@ -132,41 +132,41 @@ jobs:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
       fail-fast: false
     steps:
-    - 
+    -
       name: Checkout
       uses: actions/checkout@v4
-    - 
+    -
       name: Download test data
       uses: actions/download-artifact@v4
       with:
         name: test-data
         path: test-data/
-    - 
+    -
       name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: 3.13
-    - 
+    -
       name: Install miniwdl
       run: |
         python -m pip install --upgrade pip
         pip3 install miniwdl
-    - 
+    -
       name: Run workflow with miniwdl
       run: |
         mkdir -p test-output/miniwdl/${{ matrix.module }}
         module_dir="modules/${{ matrix.module }}"
         wdl_file="$module_dir/${{ matrix.module }}.wdl"
         inputs_file="$module_dir/inputs.json"
-        
+
         echo "Running ${{ matrix.module }} with miniwdl..."
         miniwdl run "$wdl_file" -i "$inputs_file" --dir "test-output/miniwdl/${{ matrix.module }}"
-    - 
+    -
       name: Display validation report
       run: |
         echo "=== MiniWDL Validation Report ==="
         find test-output/miniwdl -name "validation_report.txt" -exec cat {} \;
-  
+
   cromwell-test:
     needs: [discover-modules, download-test-data]
     runs-on: ubuntu-latest
@@ -175,26 +175,26 @@ jobs:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
       fail-fast: false
     steps:
-    - 
+    -
       name: Checkout
       uses: actions/checkout@v4
-    - 
+    -
       name: Download test data
       uses: actions/download-artifact@v4
       with:
         name: test-data
         path: test-data/
-    - 
+    -
       name: Set Up Java
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: '21'
-    - 
+    -
       name: Download Cromwell
       run: |
         wget -q https://github.com/broadinstitute/cromwell/releases/download/86/cromwell-86.jar
-    - 
+    -
       name: Run workflow with Cromwell
       run: |
         mkdir -p test-output/cromwell/${{ matrix.module }}
@@ -202,15 +202,15 @@ jobs:
         wdl_file="$module_dir/${{ matrix.module }}.wdl"
         inputs_file="$module_dir/inputs.json"
         options_file="$module_dir/options.json"
-        
+
         echo "Running ${{ matrix.module }} with Cromwell..."
         java -jar cromwell-86.jar run "$wdl_file" -i "$inputs_file" -o "$options_file"
-    - 
+    -
       name: Display validation report
       run: |
         echo "=== Cromwell Validation Report ==="
         find . -name "validation_report.txt" -exec cat {} \;
-  
+
   sprocket-test:
     needs: [discover-modules, download-test-data]
     runs-on: ubuntu-latest
@@ -219,37 +219,37 @@ jobs:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
       fail-fast: false
     steps:
-    - 
+    -
       name: Checkout
       uses: actions/checkout@v4
-    - 
+    -
       name: Download test data
       uses: actions/download-artifact@v4
       with:
         name: test-data
         path: test-data/
-    - 
+    -
       name: Set Up Rust
       uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
         override: true
-    - 
+    -
       name: Install cargo-binstall
       run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-    - 
+    -
       name: Install Sprocket
       run: cargo-binstall sprocket --version 0.12.2
-    - 
+    -
       name: Run workflow with Sprocket
       run: |
         module_dir="modules/${{ matrix.module }}"
         wdl_file="$module_dir/${{ matrix.module }}.wdl"
         inputs_file="$module_dir/inputs.json"
-        
+
         echo "Running ${{ matrix.module }} with Sprocket..."
         sprocket run --output "test-output/sprocket/${{ matrix.module }}" "$wdl_file" "$inputs_file"
-    - 
+    -
       name: Display validation report
       run: |
         echo "=== Sprocket Validation Report ==="
