@@ -34,11 +34,11 @@ workflow ichorcna_example {
     centromeres: "Text file containing Centromere locations"
     samples: "Array of sample information containing name and tarball of per-chromosome BED files of read counts"
     sex: "User-specified: male or female"
-    chrs: "Chromosomes to analyze (default: chr 1-22, X, and Y)"
     genome: "Genome build (e.g. hg38)"
     genome_style: "Chromosome naming convention (use UCSC if desired output is to have 'chr' string): NCBI or UCSC"
     memory_gb: "Memory allocated for each task in the workflow in GB"
     cpus: "Number of CPU cores allocated for each task in the workflow"
+    chrs: "Chromosomes to analyze (default: chr 1-22, X, and Y)"
   }
 
   input {
@@ -48,11 +48,11 @@ workflow ichorcna_example {
     File centromeres
     Array[SampleInfo] samples
     String sex
-    String chrs = "c(1:22, \"X\", \"Y\")"
     String genome
     String genome_style
     Int memory_gb
     Int cpus
+    String chrs = "c(1:22, \"X\", \"Y\")"
   }
 
   scatter (sample in samples) {
@@ -72,13 +72,12 @@ workflow ichorcna_example {
     }
   }
 
-  call validate_outputs {
-   input:
+  call validate_outputs { input:
       params_files = ichorcna_call.params,
       seg_files = ichorcna_call.seg,
       genome_pdfs = ichorcna_call.genomewide_pdf,
       allgenome_pdfs = ichorcna_call.allgenomewide_pdf,
-      correct_pdfs = ichorcna_call.correct_pdf ,
+      correct_pdfs = ichorcna_call.correct_pdf,
       rdata_files = ichorcna_call.rdata,
       wig_files = ichorcna_call.wig,
       sample_names = ichorcna_call.sample_name
@@ -119,11 +118,11 @@ task ichorcna_call {
     centromeres: "Text file containing Centromere locations"
     name: "Sample ID"
     sex: "User-specified: male or female"
-    chrs: "Chromosomes to analyze (default: chr 1-22, X, and Y)"
     genome: "Genome build (e.g. hg19)"
     genome_style: "Chromosome naming convention (use UCSC if desired output is to have 'chr' string): NCBI or UCSC"
     memory_gb: "Memory allocated for each task in the workflow in GB"
     cpus: "Number of CPU cores allocated for each task in the workflow"
+    chrs: "Chromosomes to analyze (default: chr 1-22, X, and Y)"
   }
 
   input {
@@ -134,11 +133,11 @@ task ichorcna_call {
     File centromeres
     String name
     String sex
-    String chrs = "c(1:22, \"X\", \"Y\")"
     String genome
     String genome_style
     Int memory_gb
     Int cpus
+    String chrs = "c(1:22, \"X\", \"Y\")"
   }
 
   command <<<
@@ -167,8 +166,8 @@ task ichorcna_call {
     --txnStrength 1000000 \
     --genomeStyle "~{genome_style}" \
     --libdir /usr/local/bin/ichorCNA/ && \
-    # Keep only biologically relevant segments by keeping all Y segments if male
-    # and only non-Y segments if female
+    # Keep only biologically relevant segments by keeping all Y segments if
+    # male and only non-Y segments if female
     awk -v G="~{sex}" '$2!~/Y/ || G=="male"' "~{name}.seg.txt" \
     > "~{name}.ichor.segs.txt" && \
     mv "~{name}"/*.pdf .
@@ -191,7 +190,6 @@ task ichorcna_call {
     memory: "~{memory_gb} GB"
   }
 }
-
 
 task validate_outputs {
   meta {
@@ -225,7 +223,7 @@ task validate_outputs {
 
   command <<<
   set -eo pipefail
-  echo "=== IchorCNA Analysis Validation Report ===" > ichor_validation_report.txt
+  echo "=== IchorCNA Validation Report ===" > ichor_validation_report.txt
   echo "" >> ichor_validation_report.txt
 
   params_files=("~{sep=" " params_files}")
@@ -255,9 +253,11 @@ task validate_outputs {
       if [[ -f "$params" && -s "$params" ]]; then
           size=$(stat -c%s "$params")
           lines=$(wc -l < "$params")
-          echo " Parameters: PASS (${size} bytes, ${lines} lines)" >> ichor_validation_report.txt
+          echo " Parameters: PASS (${size} bytes, ${lines} lines)" \
+            >> ichor_validation_report.txt
       else
-          echo " Parameters: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
+          echo " Parameters: FAIL - MISSING OR EMPTY" \
+            >> ichor_validation_report.txt
           validation_passed=false
       fi
 
@@ -265,7 +265,8 @@ task validate_outputs {
       if [[ -f "$seg" && -s "$seg" ]]; then
           size=$(stat -c%s "$seg")
           lines=$(wc -l < "$seg")
-          echo " Segments: PASS (${size} bytes, ${lines} lines)" >> ichor_validation_report.txt
+          echo " Segments: PASS (${size} bytes, ${lines} lines)" \
+            >> ichor_validation_report.txt
       else
           echo " Segments: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
           validation_passed=false
@@ -274,27 +275,33 @@ task validate_outputs {
       # Genome-wide PDF
       if [[ -f "$genomewide_pdf" && -s "$genomewide_pdf" ]]; then
           size=$(stat -c%s "$genomewide_pdf")
-          echo " Genome-wide PDF: PASS (${size} bytes)" >> ichor_validation_report.txt
+          echo " Genome-wide PDF: PASS (${size} bytes)" \
+            >> ichor_validation_report.txt
       else
-          echo " Genome-wide PDF: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
+          echo " Genome-wide PDF: FAIL - MISSING OR EMPTY" \
+            >> ichor_validation_report.txt
           validation_passed=false
       fi
 
       # All genome-wide solutions PDF
       if [[ -f "$allgenomewide_pdf" && -s "$allgenomewide_pdf" ]]; then
           size=$(stat -c%s "$allgenomewide_pdf")
-          echo " All Solutions PDF: PASS (${size} bytes)" >> ichor_validation_report.txt
+          echo " All Solutions PDF: PASS (${size} bytes)" \
+            >> ichor_validation_report.txt
       else
-          echo " All Solutions PDF: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
+          echo " All Solutions PDF: FAIL - MISSING OR EMPTY" \
+            >> ichor_validation_report.txt
           validation_passed=false
       fi
 
       # Correction PDF
       if [[ -f "$correct_pdf" && -s "$correct_pdf" ]]; then
           size=$(stat -c%s "$correct_pdf")
-          echo " Correction PDF: PASS (${size} bytes)" >> ichor_validation_report.txt
+          echo " Correction PDF: PASS (${size} bytes)" \
+            >> ichor_validation_report.txt
       else
-          echo " Correction PDF: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
+          echo " Correction PDF: FAIL - MISSING OR EMPTY" \
+            >> ichor_validation_report.txt
           validation_passed=false
       fi
 
@@ -311,7 +318,8 @@ task validate_outputs {
       if [[ -f "$wig" && -s "$wig" ]]; then
           size=$(stat -c%s "$wig")
           lines=$(wc -l < "$wig")
-          echo " WIG: PASS (${size} bytes, ${lines} lines)" >> ichor_validation_report.txt
+          echo " WIG: PASS (${size} bytes, ${lines} lines)" \
+            >> ichor_validation_report.txt
       else
           echo " WIG: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
           validation_passed=false
@@ -321,7 +329,8 @@ task validate_outputs {
   done
 
   echo "=== Validation Summary ===" >> ichor_validation_report.txt
-  echo "Total samples processed: ${#sample_names[@]}" >> ichor_validation_report.txt
+  echo "Total samples processed: ${#sample_names[@]}" \
+    >> ichor_validation_report.txt
 
   if [[ "$validation_passed" == "true" ]]; then
       echo "Overall Status: PASSED" >> ichor_validation_report.txt
