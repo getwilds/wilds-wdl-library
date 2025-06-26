@@ -23,6 +23,7 @@ workflow ichorcna_example {
         correct_pdf:  "Genome wide correction comparisons",
         rdata: "Saved R image after ichorCNA has finished. Results for all solutions will be included",
         wig: "WIG file created from binned read count data within input BED files",
+        validation_report: "Validation report summarizing file check results"
     }
   }
 
@@ -68,10 +69,17 @@ workflow ichorcna_example {
     }
   }
 
-    # call validate_outputs { input:
-    #     vcf_files = manta_call.vcf,
-    #     vcf_index_files = manta_call.vcf_index
-    # }
+  call validate_outputs {
+   input:
+      params_files = ichorcna_call.params,
+      seg_files = ichorcna_call.seg,
+      genome_pdfs = ichorcna_call.genomewide_pdf,
+      allgenome_pdfs = ichorcna_call.allgenomewide_pdf,
+      correct_pdfs = ichorcna_call.correct_pdf ,
+      rdata_files = ichorcna_call.rdata,
+      wig_files = ichorcna_call.wig,
+      sample_names = ichorcna_call.sample_name
+  }
 
   output {
     Array[File] params = ichorcna_call.params
@@ -81,6 +89,7 @@ workflow ichorcna_example {
     Array[File] correct_pdf = ichorcna_call.correct_pdf
     Array[File] rdata = ichorcna_call.rdata
     Array[File] wig = ichorcna_call.wig
+    File validation_report = validate_outputs.report
   }
 }
 
@@ -95,6 +104,7 @@ task ichorcna_call {
         correct_pdf:  "Genome wide correction comparisons",
         rdata: "Saved R image after ichorCNA has finished. Results for all solutions will be included",
         wig: "WIG file created from binned read count data within input BED files",
+        sample_name: "Sample ID that was processed"
     }
   }
 
@@ -167,84 +177,165 @@ task ichorcna_call {
     File correct_pdf = "${name}_genomeWideCorrection.pdf"
     File rdata = "${name}.RData"
     File wig = "${name}.ichor.tumor.wig"
+    String sample_name = name
   }
 
   runtime {
-    docker: "fredhutch/ichorcna:0.5.0"
+    docker: "ichorcna:latest"
     cpu: cpus
     memory: "~{memory_gb} GB"
   }
 }
 
-# task validate_outputs {
-#   meta {
-#     description: "Validate Manta outputs and generate a comprehensive report"
-#     outputs: {
-#         report: "Validation summary with structural variant calling statistics"
-#     }
-#   }
 
-#   parameter_meta {
-#     vcf_files: "Array of VCF files to validate"
-#     vcf_index_files: "Array of VCF index files to validate"
-#   }
+task validate_outputs {
+  meta {
+    description: "Validate that ichorCNA outputs are non-empty and generate report"
+    outputs: {
+        report: "Validation report summarizing file check results"
+    }
+  }
 
-#   input {
-#     Array[File] vcf_files
-#     Array[File] vcf_index_files
-#   }
+  parameter_meta {
+    params_files: ""
+    seg_files: ""
+    genome_pdfs: ""
+    allgenome_pdfs: ""
+    correct_pdfs: ""
+    rdata_files: ""
+    wig_files: ""
+    sample_names: ""
+  }
 
-#   command <<<
-#     set -eo pipefail
+  input {
+    Array[File] params_files
+    Array[File] seg_files
+    Array[File] genome_pdfs
+    Array[File] allgenome_pdfs
+    Array[File] correct_pdfs
+    Array[File] rdata_files
+    Array[File] wig_files
+    Array[String] sample_names
+  }
 
-#     echo "Manta Structural Variant Calling Validation Report" > validation_report.txt
-#     echo "=================================================" >> validation_report.txt
-#     echo "Generated on: $(date)" >> validation_report.txt
-#     echo "" >> validation_report.txt
+  command <<<
+  set -eo pipefail
+  echo "=== IchorCNA Analysis Validation Report ===" > ichor_validation_report.txt
+  echo "" >> ichor_validation_report.txt
 
-#     echo "Sample Summary:" >> validation_report.txt
-#     echo "Total samples processed: ~{length(vcf_files)}" >> validation_report.txt
-#     echo "" >> validation_report.txt
+  params_files=("~{sep=" " params_files}")
+  seg_files=("~{sep=" " seg_files}")
+  genome_pdfs=("~{sep=" " genome_pdfs}")
+  allgenome_pdfs=("~{sep=" " allgenome_pdfs}")
+  correct_pdfs=("~{sep=" " correct_pdfs}")
+  rdata_files=("~{sep=" " rdata_files}")
+  wig_files=("~{sep=" " wig_files}")
+  sample_names=("~{sep=" " sample_names}")
 
-#     # Validate each sample's outputs
-#     vcf_files=(~{sep=" " vcf_files})
-#     vcf_index_files=(~{sep=" " vcf_index_files})
+  validation_passed=true
 
-#     for i in "${!vcf_files[@]}"; do
-#         vcf="${vcf_files[$i]}"
-#         vcf_index="${vcf_index_files[$i]}"
+  for i in "${!sample_names[@]}"; do
+      sample="${sample_names[$i]}"
+      params="${params_files[$i]}"
+      seg="${seg_files[$i]}"
+      genomewide_pdf="${genome_pdfs[$i]}"
+      allgenomewide_pdf="${allgenome_pdfs[$i]}"
+      correct_pdf="${correct_pdfs[$i]}"
+      rdata="${rdata_files[$i]}"
+      wig="${wig_files[$i]}"
 
-#         echo "Sample: $vcf" >> validation_report.txt
+      echo "--- Sample: $sample ---" >> ichor_validation_report.txt
 
-#         # Check if VCF file exists and is not empty
-#         if [[ -f "$vcf" && -s "$vcf" ]]; then
-#             echo "VCF file present and non-empty" >> validation_report.txt
-#             variant_count=$(zcat "$vcf" | grep -v '^#' | wc -l)
-#             echo "Variants called: $variant_count" >> validation_report.txt
-#         else
-#             echo "VCF file missing or empty" >> validation_report.txt
-#         fi
+      # Parameters file
+      if [[ -f "$params" && -s "$params" ]]; then
+          size=$(stat -c%s "$params")
+          lines=$(wc -l < "$params")
+          echo " Parameters: PASS (${size} bytes, ${lines} lines)" >> ichor_validation_report.txt
+      else
+          echo " Parameters: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
+          validation_passed=false
+      fi
 
-#         # Check if VCF index exists
-#         if [[ -f "$vcf_index" ]]; then
-#             echo "VCF index file present" >> validation_report.txt
-#         else
-#             echo "VCF index file missing" >> validation_report.txt
-#         fi
+      # Segments file
+      if [[ -f "$seg" && -s "$seg" ]]; then
+          size=$(stat -c%s "$seg")
+          lines=$(wc -l < "$seg")
+          echo " Segments: PASS (${size} bytes, ${lines} lines)" >> ichor_validation_report.txt
+      else
+          echo " Segments: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
+          validation_passed=false
+      fi
 
-#         echo "" >> validation_report.txt
-#     done
+      # Genome-wide PDF
+      if [[ -f "$genomewide_pdf" && -s "$genomewide_pdf" ]]; then
+          size=$(stat -c%s "$genomewide_pdf")
+          echo " Genome-wide PDF: PASS (${size} bytes)" >> ichor_validation_report.txt
+      else
+          echo " Genome-wide PDF: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
+          validation_passed=false
+      fi
 
-#     echo "Validation completed successfully" >> validation_report.txt
-#   >>>
+      # All genome-wide solutions PDF
+      if [[ -f "$allgenomewide_pdf" && -s "$allgenomewide_pdf" ]]; then
+          size=$(stat -c%s "$allgenomewide_pdf")
+          echo " All Solutions PDF: PASS (${size} bytes)" >> ichor_validation_report.txt
+      else
+          echo " All Solutions PDF: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
+          validation_passed=false
+      fi
 
-#   output {
-#     File report = "validation_report.txt"
-#   }
+      # Correction PDF
+      if [[ -f "$correct_pdf" && -s "$correct_pdf" ]]; then
+          size=$(stat -c%s "$correct_pdf")
+          echo " Correction PDF: PASS (${size} bytes)" >> ichor_validation_report.txt
+      else
+          echo " Correction PDF: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
+          validation_passed=false
+      fi
 
-#   runtime {
-#     docker: "getwilds/manta:1.6.0"
-#     memory: "4GB"
-#     cpu: 1
-#   }
-# }
+      # RData file
+      if [[ -f "$rdata" && -s "$rdata" ]]; then
+          size=$(stat -c%s "$rdata")
+          echo " RData: PASS (${size} bytes)" >> ichor_validation_report.txt
+      else
+          echo " RData: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
+          validation_passed=false
+      fi
+
+      # WIG file
+      if [[ -f "$wig" && -s "$wig" ]]; then
+          size=$(stat -c%s "$wig")
+          lines=$(wc -l < "$wig")
+          echo " WIG: PASS (${size} bytes, ${lines} lines)" >> ichor_validation_report.txt
+      else
+          echo " WIG: FAIL - MISSING OR EMPTY" >> ichor_validation_report.txt
+          validation_passed=false
+      fi
+
+      echo "" >> ichor_validation_report.txt
+  done
+
+  echo "=== Validation Summary ===" >> ichor_validation_report.txt
+  echo "Total samples processed: ${#sample_names[@]}" >> ichor_validation_report.txt
+
+  if [[ "$validation_passed" == "true" ]]; then
+      echo "Overall Status: PASSED" >> ichor_validation_report.txt
+  else
+      echo "Overall Status: FAILED" >> ichor_validation_report.txt
+      exit 1
+  fi
+
+  # Also output to stdout for immediate feedback
+  cat ichor_validation_report.txt
+  >>>
+
+  output {
+    File report = "ichor_validation_report.txt"
+  }
+
+  runtime {
+    docker: "ichorcna:latest"
+    memory: "4GB"
+    cpu: 1
+  }
+}
