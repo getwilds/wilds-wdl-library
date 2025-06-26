@@ -186,7 +186,7 @@ task ichorcna_call {
   }
 
   runtime {
-    docker: "ichorcna:latest"
+    docker: "getwilds/ichorcna:0.2.0"
     cpu: cpus
     memory: "~{memory_gb} GB"
   }
@@ -339,7 +339,7 @@ task validate_outputs {
   }
 
   runtime {
-    docker: "ichorcna:latest"
+    docker: "getwilds/ichorcna:0.2.0"
     memory: "4GB"
     cpu: 1
   }
