@@ -200,14 +200,14 @@ task validate_outputs {
   }
 
   parameter_meta {
-    params_files: ""
-    seg_files: ""
-    genome_pdfs: ""
-    allgenome_pdfs: ""
-    correct_pdfs: ""
-    rdata_files: ""
-    wig_files: ""
-    sample_names: ""
+    params_files: "Array of parameter files"
+    seg_files: "Array of segment files"
+    genome_pdfs: "Array of genome wide plot PDFs"
+    allgenome_pdfs: "Array of combined plot PDFs"
+    correct_pdfs: "Array of correction comparison PDFs"
+    rdata_files: "Array of ichorCNA RData files"
+    wig_files: "Array of WIG files generated from BED file data"
+    sample_names: "Array of Sample ID strings"
   }
 
   input {
