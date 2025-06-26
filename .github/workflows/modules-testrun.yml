@@ -114,7 +114,14 @@ jobs:
 
         # Index the BAM file
         samtools index test-data/ERR1258306.chr1.aligned.bam
-        
+
+        # Download data for ichorCNA
+        wget -q -O test-data/gc_hg38_500kb.wig https://github.com/GavinHaLab/ichorCNA/raw/b2bbce0a9997f31733f0f0ea4278cfba937ded41/inst/extdata/gc_hg38_500kb.wig
+        wget -q -O test-data/map_hg38_500kb.wig https://github.com/GavinHaLab/ichorCNA/raw/b2bbce0a9997f31733f0f0ea4278cfba937ded41/inst/extdata/map_hg38_500kb.wig
+        wget -q -O test-data/GRCh38.GCA_000001405.2_centromere_acen.txt https://github.com/GavinHaLab/ichorCNA/raw/b2bbce0a9997f31733f0f0ea4278cfba937ded41/inst/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt
+        wget -q -O test-data/nextera_hg38_500kb_median_normAutosome_median.rds_median.n9.gr.rds https://github.com/genome/docker-basespace_chromoseq/raw/master/workflow_files/nextera_hg38_500kb_median_normAutosome_median.rds_median.n9.gr.rds
+        wget -q -O test-data/ERR1258306.tar.gz https://github.com/emjbishop/data-for-tests/raw/main/ERR1258306.tar.gz
+
         ls -la test-data/
     -
       name: Upload test data
