@@ -14,5 +14,5 @@
   "ichorcna_example.genome": "hg38",
   "ichorcna_example.genome_style": "UCSC",
   "ichorcna_example.memory_gb": 16,
-  "ichorcna_example.cpus": 6
+  "ichorcna_example.cpus": 4
 }
