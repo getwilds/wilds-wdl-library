@@ -121,6 +121,9 @@ jobs:
         wget -q -O test-data/GRCh38.GCA_000001405.2_centromere_acen.txt https://github.com/GavinHaLab/ichorCNA/raw/b2bbce0a9997f31733f0f0ea4278cfba937ded41/inst/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt
         wget -q -O test-data/nextera_hg38_500kb_median_normAutosome_median.rds_median.n9.gr.rds https://github.com/genome/docker-basespace_chromoseq/raw/master/workflow_files/nextera_hg38_500kb_median_normAutosome_median.rds_median.n9.gr.rds
         wget -q -O test-data/ERR1258306.tar.gz https://github.com/emjbishop/data-for-tests/raw/main/ERR1258306.tar.gz
+    
+        # Download an example SV VCF file for AnnotSV
+        wget -q -O test-data/annotsv_test.vcf https://raw.githubusercontent.com/lgmgeo/AnnotSV/refs/heads/master/share/doc/AnnotSV/Example/test.vcf
 
         ls -la test-data/
     -
@@ -172,7 +175,7 @@ jobs:
       name: Display validation report
       run: |
         echo "=== MiniWDL Validation Report ==="
-        find test-output/miniwdl -name "validation_report.txt" -exec cat {} \;
+        find test-output/miniwdl -name "validation_report.txt" -exec cat {} \; 2>/dev/null || true
 
   cromwell-test:
     needs: [discover-modules, download-test-data]
@@ -216,7 +219,7 @@ jobs:
       name: Display validation report
       run: |
         echo "=== Cromwell Validation Report ==="
-        find . -name "validation_report.txt" -exec cat {} \;
+        find . -name "validation_report.txt" -exec cat {} \; 2>/dev/null || true
 
   sprocket-test:
     needs: [discover-modules, download-test-data]
@@ -260,4 +263,4 @@ jobs:
       name: Display validation report
       run: |
         echo "=== Sprocket Validation Report ==="
-        find test-output/sprocket -name "validation_report.txt" -exec cat {} \;
+        find test-output/sprocket -name "validation_report.txt" -exec cat {} \; 2>/dev/null || true
