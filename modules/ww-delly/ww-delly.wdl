@@ -23,8 +23,8 @@ workflow delly_example {
     description: "WDL workflow for structural variant calling via Delly"
     url: "https://github.com/getwilds/ww-delly"
     outputs: {
-        delly_vcf: "Structural variant calls in BCF/VCF format",
-        delly_vcf_index: "Index file for the BCF/VCF output",
+        delly_vcfs: "Structural variant calls in BCF/VCF format",
+        delly_vcf_indices: "Index files for the BCF/VCF output",
         validation_report: "Validation report confirming all expected outputs were generated"
     }
   }
@@ -49,8 +49,7 @@ workflow delly_example {
 
   # Call structural variants using Delly for each sample
   scatter (sample in samples) {
-    call delly_call {
-      input:
+    call delly_call { input:
         aligned_bam = sample.bam,
         aligned_bam_index = sample.bai,
         reference_fasta = reference_genome.fasta,
@@ -63,8 +62,7 @@ workflow delly_example {
   }
 
   # Validate all outputs at the end
-  call validate_outputs {
-    input:
+  call validate_outputs { input:
       delly_bcfs = delly_call.bcf,
       delly_bcf_indices = delly_call.bcf_index
   }
@@ -79,6 +77,11 @@ workflow delly_example {
 task delly_call {
   meta {
     description: "Calls structural variants using Delly for a single sample"
+    outputs: {
+        bcf: "BCF file containing structural variant calls",
+        bcf_index: "Index file for the BCF output",
+        summary: "Summary text file with Delly run details and statistics"
+    }
   }
 
   parameter_meta {
@@ -118,20 +121,20 @@ task delly_call {
     delly call \
       ~{sv_type_arg} \
       ~{exclude_arg} \
-      -g ~{reference_fasta} \
-      -o ~{output_prefix}.bcf \
-      ~{aligned_bam}
+      -g "~{reference_fasta}" \
+      -o "~{output_prefix}.bcf" \
+      "~{aligned_bam}"
 
     # Generate summary statistics
-    echo "Delly SV calling completed for sample: ~{sample_name}" > ~{output_prefix}.summary.txt
-    echo "SV type filter: ~{if sv_type != "" then sv_type else "ALL"}" >> ~{output_prefix}.summary.txt
-    echo "Reference genome: ~{basename(reference_fasta)}" >> ~{output_prefix}.summary.txt
-    echo "Exclude regions: ~{if defined(exclude_regions_bed) then "YES" else "NO"}" >> ~{output_prefix}.summary.txt
+    echo "Delly SV calling completed for sample: ~{sample_name}" > "~{output_prefix}.summary.txt"
+    echo "SV type filter: ~{if sv_type != "" then sv_type else "ALL"}" >> "~{output_prefix}.summary.txt"
+    echo "Reference genome: ~{basename(reference_fasta)}" >> "~{output_prefix}.summary.txt"
+    echo "Exclude regions: ~{if defined(exclude_regions_bed) then "YES" else "NO"}" >> "~{output_prefix}.summary.txt"
     
     # Count variants if bcftools is available
     if command -v bcftools &> /dev/null; then
-      VARIANT_COUNT=$(bcftools view -H ~{output_prefix}.bcf | wc -l)
-      echo "Total variants called: $VARIANT_COUNT" >> ~{output_prefix}.summary.txt
+      VARIANT_COUNT=$(bcftools view -H "~{output_prefix}.bcf" | wc -l)
+      echo "Total variants called: $VARIANT_COUNT" >> "~{output_prefix}.summary.txt"
     fi
   >>>
 
@@ -151,6 +154,9 @@ task delly_call {
 task validate_outputs {
   meta {
     description: "Validates Delly outputs and generates a comprehensive report"
+    outputs: {
+        report: "Validation report summarizing file checks and variant statistics"
+    }
   }
 
   parameter_meta {
@@ -172,8 +178,8 @@ task validate_outputs {
     echo "" >> validation_report.txt
 
     # Validate each BCF file
-    BCF_FILES=(~{sep=' ' delly_bcfs})
-    INDEX_FILES=(~{sep=' ' delly_bcf_indices})
+    BCF_FILES=(~{sep=" " delly_bcfs})
+    INDEX_FILES=(~{sep=" " delly_bcf_indices})
 
     for i in "${!BCF_FILES[@]}"; do
       BCF="${BCF_FILES[$i]}"
