@@ -66,8 +66,7 @@ workflow delly_example {
   call validate_outputs {
     input:
       delly_bcfs = delly_call.bcf,
-      delly_bcf_indices = delly_call.bcf_index,
-      sample_names = delly_call.sample_name
+      delly_bcf_indices = delly_call.bcf_index
   }
 
   output {
@@ -123,9 +122,6 @@ task delly_call {
       -o ~{output_prefix}.bcf \
       ~{aligned_bam}
 
-    # Index the output BCF file
-    bcftools index ~{output_prefix}.bcf
-
     # Generate summary statistics
     echo "Delly SV calling completed for sample: ~{sample_name}" > ~{output_prefix}.summary.txt
     echo "SV type filter: ~{if sv_type != "" then sv_type else "ALL"}" >> ~{output_prefix}.summary.txt
@@ -143,7 +139,6 @@ task delly_call {
     File bcf = "~{output_prefix}.bcf"
     File bcf_index = "~{output_prefix}.bcf.csi"
     File summary = "~{output_prefix}.summary.txt"
-    String sample_name = sample_name
   }
 
   runtime {
@@ -161,13 +156,11 @@ task validate_outputs {
   parameter_meta {
     delly_bcfs: "Array of BCF files from Delly calling"
     delly_bcf_indices: "Array of index files for the BCFs"
-    sample_names: "Array of sample names for validation"
   }
 
   input {
     Array[File] delly_bcfs
     Array[File] delly_bcf_indices
-    Array[String] sample_names
   }
 
   command <<<
@@ -175,20 +168,18 @@ task validate_outputs {
 
     echo "=== Delly Workflow Validation Report ===" > validation_report.txt
     echo "Generated on: $(date)" >> validation_report.txt
-    echo "Total samples processed: ~{length(sample_names)}" >> validation_report.txt
+    echo "Total samples processed: ~{length(delly_bcfs)}" >> validation_report.txt
     echo "" >> validation_report.txt
 
     # Validate each BCF file
-    SAMPLE_NAMES=(~{sep=' ' sample_names})
     BCF_FILES=(~{sep=' ' delly_bcfs})
     INDEX_FILES=(~{sep=' ' delly_bcf_indices})
 
-    for i in "${!SAMPLE_NAMES[@]}"; do
-      SAMPLE="${SAMPLE_NAMES[$i]}"
+    for i in "${!BCF_FILES[@]}"; do
       BCF="${BCF_FILES[$i]}"
       INDEX="${INDEX_FILES[$i]}"
       
-      echo "=== Sample: $SAMPLE ===" >> validation_report.txt
+      echo "=====================" >> validation_report.txt
       echo "- BCF file: $BCF" >> validation_report.txt
       echo "  Size: $(ls -lh "$BCF" | awk '{print $5}')" >> validation_report.txt
       echo "- BCF index: $INDEX" >> validation_report.txt

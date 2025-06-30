@@ -206,6 +206,13 @@ For questions specific to this module or to contribute improvements, please see 
 
 For questions, bugs, and/or feature requests, reach out to the Fred Hutch Data Science Lab (DaSL) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
 
+For questions specific to Delly usage or configuration, please refer to the documentation present in the [Delly GitHub repository](https://github.com/dellytools/delly). Please make sure to cite their work if you use Delly in your analyses:
+
+Tobias Rausch, Thomas Zichner, Andreas Schlattl, Adrian M. Stuetz, Vladimir Benes, Jan O. Korbel.
+DELLY: structural variant discovery by integrated paired-end and split-read analysis.
+Bioinformatics. 2012 Sep 15;28(18):i333-i339.
+https://doi.org/10.1093/bioinformatics/bts378
+
 ## Contributing
 
 If you would like to contribute to this WILDS WDL module, please see our [WILDS Contributor Guide](https://getwilds.org/guide/) and the [WILDS WDL Library contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
