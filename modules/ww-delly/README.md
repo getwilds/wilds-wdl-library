@@ -8,7 +8,7 @@ A WILDS WDL module for structural variant calling using Delly.
 
 This module provides reusable WDL tasks for structural variant (SV) calling from aligned BAM files using Delly. It supports detection of all major structural variant types including deletions, duplications, inversions, translocations, and insertions. The module includes built-in validation and comprehensive reporting for quality assurance.
 
-The module uses the latest Delly algorithms for precise breakpoint detection and supports optional region exclusion for problematic genomic areas like centromeres and telomeres.
+The module uses the latest Delly algorithms for precise breakpoint detection and supports optional region targeting and exclusion for focused analysis of specific genomic areas.
 
 ## Module Structure
 
@@ -28,24 +28,23 @@ Calls structural variants from aligned BAM files using Delly.
 - `aligned_bam_index` (File): Index file for the aligned BAM file
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Index file for the reference FASTA
+- `target_regions_bed` (File, optional): BED file to target specific regions for calling
 - `exclude_regions_bed` (File, optional): BED file to exclude problematic regions
 - `sv_type` (String): Structural variant type to call (DEL, DUP, INV, TRA, INS) or empty for all types
 - `cpu_cores` (Int): Number of CPU cores to use (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
 
 **Outputs:**
-- `bcf` (File): Structural variants in BCF format
-- `bcf_index` (File): Index file for the BCF output
+- `vcf` (File): Structural variants in compressed VCF format
+- `vcf_index` (File): Index file for the VCF output
 - `summary` (File): Summary statistics and run information
-- `sample_name` (String): Extracted sample name from input BAM
 
 ### `validate_outputs`
 Validates Delly outputs and generates a comprehensive report.
 
 **Inputs:**
-- `delly_bcfs` (Array[File]): Array of BCF files from Delly calling
-- `delly_bcf_indices` (Array[File]): Array of index files for the BCFs
-- `sample_names` (Array[String]): Array of sample names for validation
+- `delly_vcfs` (Array[File]): Array of VCF files from Delly calling
+- `delly_vcf_indices` (Array[File]): Array of index files for the VCFs
 
 **Outputs:**
 - `report` (File): Comprehensive validation report with statistics
@@ -77,8 +76,8 @@ workflow my_sv_workflow {
   }
   
   output {
-    File sv_calls = delly_call.bcf
-    File sv_index = delly_call.bcf_index
+    File sv_calls = delly_call.vcf
+    File sv_index = delly_call.vcf_index
     File summary_stats = delly_call.summary
   }
 }
@@ -93,6 +92,15 @@ call delly_tasks.delly_call {
     sv_type = "DEL",  # Only deletions
     # or "DUP" for duplications, "INV" for inversions, etc.
     # Leave empty ("") for all SV types
+}
+```
+
+**Targeting specific regions:**
+```wdl
+call delly_tasks.delly_call {
+  input:
+    target_regions_bed = exons.bed,
+    # Focus calling on specific genomic regions
 }
 ```
 
@@ -155,6 +163,7 @@ sprocket run ww-delly.wdl inputs.json
     "fasta": "/path/to/chr1.fa",
     "fasta_index": "/path/to/chr1.fa.fai"
   },
+  "delly_example.target_regions_bed": "/path/to/chr1.bed",
   "delly_example.sv_type": "",
   "delly_example.cpus": 2,
   "delly_example.memory_gb": 4
@@ -173,10 +182,11 @@ sprocket run ww-delly.wdl inputs.json
 
 - **Comprehensive SV detection**: Supports all major structural variant types
 - **Flexible filtering**: Call specific SV types or all types
+- **Region targeting**: Focus calling on specific genomic regions of interest
 - **Region exclusion**: Skip problematic genomic regions
 - **Parallel processing**: Multi-threaded execution for improved performance
 - **Quality validation**: Built-in output validation and statistics
-- **Standardized output**: BCF format compatible with downstream tools
+- **Standardized output**: Compressed VCF format compatible with downstream tools
 - **Detailed reporting**: Comprehensive summaries with variant counts
 
 ## Performance Considerations
@@ -188,8 +198,8 @@ sprocket run ww-delly.wdl inputs.json
 
 ## Output Description
 
-- **BCF files**: Contain structural variant calls in compressed binary VCF format
-- **BCF indices**: Enable rapid random access to variant regions
+- **VCF files**: Contain structural variant calls in compressed VCF format
+- **VCF indices**: Enable rapid random access to variant regions
 - **Summary files**: Include variant counts, parameters used, and basic statistics
 - **Validation report**: Comprehensive validation with file integrity checks and overall statistics
 

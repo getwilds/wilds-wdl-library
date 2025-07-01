@@ -11,6 +11,7 @@
     "fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
     "fasta_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa.fai"
   },
+  "delly_example.target_regions_bed": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.bed",
   "delly_example.sv_type": "",
   "delly_example.cpus": 2,
   "delly_example.memory_gb": 4
