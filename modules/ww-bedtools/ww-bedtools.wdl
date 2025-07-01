@@ -243,7 +243,7 @@ task makewindows {
         awk -v OFS="\t" -v C="${Chrom}" '$1==C && NF==3' > "~{tmp_dir}"/"${Chrom}".windows.bed
 
       # Count reads in windows for this chromosome (run in background for parallelization)
-      samtools view -@ 5 -b -f 0x2 -F 0x400 -q 20 -T "~{reference_fasta}"" ~{aligned_bam}" "${Chrom}" | \
+      samtools view -@ 5 -b -f 0x2 -F 0x400 -q 20 -T "~{reference_fasta}" "~{aligned_bam}" "${Chrom}" | \
         bedtools intersect -sorted -c -a "~{tmp_dir}"/"${Chrom}".windows.bed -b stdin > "~{sample_name}/${Chrom}.counts.bed" &
     done
 
