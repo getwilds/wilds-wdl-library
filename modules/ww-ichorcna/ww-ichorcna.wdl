@@ -141,6 +141,7 @@ task ichorcna_call {
   }
 
   parameter_meta {
+    # TODO: Take a user-generated WIG file as input, instead of making one from BED files
     counts_bed: "Tarball of per-chromosome BED files of read counts. Used to make tumor WIG file"
     wig_gc: "GC-content WIG file"
     wig_map: "Mappability score WIG file"
@@ -150,9 +151,9 @@ task ichorcna_call {
     sex: "User-specified: male or female"
     genome: "Genome build (e.g. hg19)"
     genome_style: "Chromosome naming convention (use UCSC if desired output is to have 'chr' string): NCBI or UCSC"
+    chrs: "Chromosomes to analyze (default: chr 1-22, X, and Y)"
     memory_gb: "Memory allocated for each task in the workflow in GB"
     cpus: "Number of CPU cores allocated for each task in the workflow"
-    chrs: "Chromosomes to analyze (default: chr 1-22, X, and Y)"
   }
 
   input {
@@ -165,9 +166,9 @@ task ichorcna_call {
     String sex
     String genome
     String genome_style
+    String chrs = "c(1:22, \"X\", \"Y\")"
     Int memory_gb = 16
     Int cpus = 6
-    String chrs = "c(1:22, \"X\", \"Y\")"
   }
 
   command <<<
@@ -222,6 +223,7 @@ task ichorcna_call {
 }
 
 task validate_outputs {
+  # TODO: Do a basic check of the file contents too
   meta {
     description: "Validate that ichorCNA outputs are non-empty and generate report"
     outputs: {
