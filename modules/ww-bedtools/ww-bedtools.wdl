@@ -268,6 +268,7 @@ task makewindows {
 }
 
 task validate_outputs {
+  # TODO: Do a basic check of the file contents too
   meta {
     description: "Validate that BEDTools output files exist and are non-empty"
     outputs: {
