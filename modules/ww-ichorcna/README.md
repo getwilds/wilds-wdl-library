@@ -157,20 +157,20 @@ sprocket run ww-ichorcna.wdl inputs.json
 
 ```json
 {
-  "manta_example.samples": [
+  "ichorcna_example.samples": [
     {
       "name": "sample1",
       "bam": "/path/to/sample1.bam",
       "bai": "/path/to/sample1.bam.bai"
     }
   ],
-  "manta_example.reference_genome": {
+  "ichorcna_example.reference_genome": {
     "name": "hg38",
     "fasta": "/path/to/genome.fasta",
     "fasta_index": "/path/to/genome.fasta.fai"
   },
-  "manta_example.cpus": 8,
-  "manta_example.memory_gb": 16
+  "ichorcna_example.cpus": 8,
+  "ichorcna_example.memory_gb": 16
 }
 ```
 
