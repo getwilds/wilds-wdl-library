@@ -1,5 +1,5 @@
 # ww-bedtools
-[![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)  
+[![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A WILDS WDL module for using BEDTools utilities.
@@ -26,14 +26,15 @@ Calculates average read coverage over given BED intervals for a sample.
 
 **Inputs:**
 
-- `bed_file` (File): BED file containing genomic intervals  
-- `sample_data` (SampleInfo): Struct with sample name, BAM file, and BAM index
+- `bed_file` (File): BED file containing genomic intervals
+- `aligned_bam` (File): Input aligned and indexed BAM file
+- `sample_name` (String): Name of the sample provided for output files
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
 - `cpu_cores` (Int): Number of CPU cores (default: 2)
 
 **Outputs:**
 
-- `name` (String): Sample name  
+- `name` (String): Sample name
 - `mean_coverage` (File): Output file with mean coverage values
 
 ### `intersect`
@@ -42,15 +43,16 @@ Uses BEDTools to find overlaps between the sample's BAM and a BED file.
 
 **Inputs:**
 
-- `bed_file` (File): BED file to intersect with  
-- `sample_data` (SampleInfo): Struct with sample name, BAM file, and BAM index  
-- `flags` (String): BEDTools intersect flags (default: `-header -wo`)  
+- `bed_file` (File): BED file to intersect with
+- `aligned_bam` (File): Input aligned and indexed BAM file
+- `sample_name` (String): Name of the sample provided for output files
+- `flags` (String): BEDTools intersect flags (default: `-header -wo`)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
 - `cpu_cores` (Int): Number of CPU cores (default: 2)
 
 **Outputs:**
 
-- `name` (String): Sample name  
+- `name` (String): Sample name
 - `intersect_output` (File): `bedtools intersect` result file
 
 ### `makewindows`
@@ -59,18 +61,20 @@ Creates genomic windows by chromosome and counts reads overlapping each window.
 
 **Inputs:**
 
-- `bed_file` (File): BED file of input intervals  
-- `sample_data` (SampleInfo): Struct with sample name, BAM file, and BAM index  
-- `reference_fasta` (File): Reference genome FASTA  
-- `reference_index` (File): Reference genome index  
-- `list_chr` (Array[String]): List of chromosomes to analyze  
-- `tmp_dir` (String): Temporary directory path  
+- `bed_file` (File): BED file of input intervals
+- `aligned_bam` (File): Input aligned BAM file
+- `bam_index` (File): Index of aligned BAM file
+- `reference_fasta` (File): Reference genome FASTA
+- `reference_index` (File): Reference genome index
+- `list_chr` (Array[String]): List of chromosomes to analyze
+- `sample_name` (String): "Name of the sample provided for output files"
+- `tmp_dir` (String): Temporary directory path
 - `memory_gb` (Int): Memory allocation in GB (default: 24)
 - `cpu_cores` (Int): Number of CPU cores (default: 10)
 
 **Outputs:**
 
-- `name` (String): Sample name  
+- `name` (String): Sample name
 - `counts_bed` (File): `.tar.gz` archive of per-chromosome BED files with read counts
 
 
@@ -80,9 +84,9 @@ Checks existence and content of all output files by sample.
 
 **Inputs:**
 
-- `intersect_files` (Array[File]): Intersect output files  
-- `coverage_files` (Array[File]): Mean coverage files  
-- `window_count_files` (Array[File]): BED file tarballs with read counts  
+- `intersect_files` (Array[File]): Intersect output files
+- `coverage_files` (Array[File]): Mean coverage files
+- `window_count_files` (Array[File]): BED file tarballs with read counts
 - `sample_names` (Array[String]): Sample names corresponding to each file
 
 **Outputs:**
@@ -95,21 +99,21 @@ The included example workflow processes BAM files using all BEDTools tasks and v
 
 **Inputs:**
 
-- `bed_file` (File): BED file of intervals  
-- `samples` (Array[SampleInfo]): Structs containing BAM, index, and sample name  
-- `reference_fasta` (File): Genome reference FASTA  
-- `reference_index` (File): FAI index for reference  
-- `intersect_flags` (String): Flags for `bedtools intersect` (default: `-header -wo`)  
-- `chromosomes` (Array[String]): Chromosomes for `makewindows`  
-- `tmp_dir` (String): Temporary path for intermediate files  
-- `cpus` (Int): Threads for each task (default: 8)  
+- `bed_file` (File): BED file of intervals
+- `samples` (Array[SampleInfo]): Structs containing BAM, index, and sample name
+- `reference_fasta` (File): Genome reference FASTA
+- `reference_index` (File): FAI index for reference
+- `intersect_flags` (String): Flags for `bedtools intersect` (default: `-header -wo`)
+- `chromosomes` (Array[String]): Chromosomes for `makewindows`
+- `tmp_dir` (String): Temporary path for intermediate files
+- `cpus` (Int): Threads for each task (default: 8)
 - `memory_gb` (Int): Memory for each task (default: 32)
 
 **Outputs:**
 
-- `intersect_results` (Array[File]): Output from `intersect`  
-- `coverage_results` (Array[File]): Output from `coverage`  
-- `window_count_results` (Array[File]): Output tarballs from `makewindows`  
+- `intersect_results` (Array[File]): Output from `intersect`
+- `coverage_results` (Array[File]): Output from `coverage`
+- `window_count_results` (Array[File]): Output tarballs from `makewindows`
 - `bedtools_validation_report` (File): Output report from `validate_outputs`
 
 ## Usage as a Module
