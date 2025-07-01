@@ -4,9 +4,12 @@
 
 version 1.0
 
+import "https://github.com/getwilds/wilds-wdl-library/raw/add-ichor/modules/ww-bedtools/ww-bedtools.wdl" as bedtools_tasks
+
 struct SampleInfo {
     String name
-    File counts_bed
+    File bam
+    File bam_index
 }
 
 workflow ichorcna_example {
@@ -28,6 +31,9 @@ workflow ichorcna_example {
   }
 
   parameter_meta {
+    bed_file: "BED file containing genomic intervals of interest"
+    reference_fasta: "Reference genome FASTA file used for analysis"
+    reference_index: "Index file for the reference genome"
     wig_gc: "GC-content WIG file"
     wig_map: "Mappability score WIG file"
     panel_of_norm_rds: "RDS file of median corrected depth from panel of normals"
@@ -38,10 +44,14 @@ workflow ichorcna_example {
     genome_style: "Chromosome naming convention (use UCSC if desired output is to have 'chr' string): NCBI or UCSC"
     memory_gb: "Memory allocated for each task in the workflow in GB"
     cpus: "Number of CPU cores allocated for each task in the workflow"
-    chrs: "Chromosomes to analyze (default: chr 1-22, X, and Y)"
+    chrs_list: "Chromosomes to analyze as an array of strings (default: chr 1-22, X, and Y)"
+    chrs_vec: "Chromosomes to analyze as an R vector (default: chr 1-22, X, and Y)"
   }
 
   input {
+    File bed_file
+    File reference_fasta
+    File reference_index
     File wig_gc
     File wig_map
     File panel_of_norm_rds
@@ -52,23 +62,43 @@ workflow ichorcna_example {
     String genome_style
     Int memory_gb
     Int cpus
-    String chrs = "c(1:22, \"X\", \"Y\")"
+    Array[String] chrs_list = [
+      "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
+      "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
+      "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"
+      ]
+    String chrs_vec = "c(1:22, \"X\", \"Y\")"
   }
 
+  String tmp_dir = "/tmp"
+
   scatter (sample in samples) {
+    call bedtools_tasks.makewindows { input:
+        bed_file = bed_file,
+        aligned_bam = sample.bam,
+        bam_index = sample.bam_index,
+        sample_name = sample.name,
+        reference_fasta = reference_fasta,
+        reference_index = reference_index,
+        list_chr = chrs_list,
+        tmp_dir = tmp_dir,
+        cpu_cores = cpus,
+        memory_gb = memory_gb
+    }
+
     call ichorcna_call { input:
       wig_gc = wig_gc,
       wig_map = wig_map,
       panel_of_norm_rds = panel_of_norm_rds,
       centromeres = centromeres,
-      counts_bed = sample.counts_bed,
+      counts_bed = makewindows.counts_bed,
       name = sample.name,
       sex = sex,
-      chrs = chrs,
+      chrs = chrs_vec,
       genome = genome,
       genome_style = genome_style,
       cpus = cpus,
-      memory_gb = memory_gb,
+      memory_gb = memory_gb
     }
   }
 
