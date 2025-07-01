@@ -134,8 +134,8 @@ workflow my_tumor_fract_pipeline {
 This module integrates seamlessly with other WILDS components:
 
 - **ww-sra**: Download sequencing data prior to alignment
-- **ww-bwa**: Align sequences
-- **ww-bedtools**: Generate genomic interval data
+- **ww-bwa**: Align sequencing data
+- **ww-bedtools**: Generate BED files of aligned read counts with `makewindows`
 - **Comprehensive genomics pipelines**: Combine with SNV/indel callers for complete variant analysis
 
 ## Testing the Module
@@ -160,17 +160,18 @@ sprocket run ww-ichorcna.wdl inputs.json
   "ichorcna_example.samples": [
     {
       "name": "sample1",
-      "bam": "/path/to/sample1.bam",
-      "bai": "/path/to/sample1.bam.bai"
+      "counts_bed": "/path/to/sample1.tar.gz"
     }
   ],
-  "ichorcna_example.reference_genome": {
-    "name": "hg38",
-    "fasta": "/path/to/genome.fasta",
-    "fasta_index": "/path/to/genome.fasta.fai"
-  },
-  "ichorcna_example.cpus": 8,
-  "ichorcna_example.memory_gb": 16
+  "ichorcna_example.wig_gc": "/path/to/gc_hg38_500kb.wig",
+  "ichorcna_example.wig_map": "/path/to/map_hg38_500kb.wig",
+  "ichorcna_example.panel_of_norm_rds": "/path/to/nextera_hg38_500kb_median_normAutosome_median.rds_median.n9.gr.rds",
+  "ichorcna_example.centromeres": "/path/to/GRCh38.GCA_000001405.2_centromere_acen.txt",
+  "ichorcna_example.sex": "male",
+  "ichorcna_example.genome": "hg38",
+  "ichorcna_example.genome_style": "UCSC",
+  "ichorcna_example.memory_gb": 16,
+  "ichorcna_example.cpus": 4
 }
 ```
 
@@ -196,7 +197,7 @@ The module supports flexible resource configuration:
 
 ## Features
 
-- **Takes BED files as input**: Takes a tarball of BED files and genrates a WIG file from those.
+- **Takes BED files as input**: Takes a tarball of BED files with read counts. Generates a WIG file for you from those.
 - **Designed for low coverage data**: Built for ultra-low-pass whole genome sequencing (ULP-WGS, 0.1x coverage)
 - **Set up for low tumor fractions**: Settings have been adjusted from default for the best performace with expected tumor fractions of < 5%
 
