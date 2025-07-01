@@ -79,6 +79,7 @@ workflow bedtools_example {
      input:
         bed_file = bed_file,
         aligned_bam = sample.bam,
+        bam_index = sample.bam_index,
         sample_name = sample.name,
         reference_fasta = reference_fasta,
         reference_index = reference_index,
@@ -212,7 +213,8 @@ task makewindows {
     bed_file: "BED file containing genomic intervals"
     reference_fasta: "Reference genome FASTA file"
     reference_index: "Reference genome index file"
-    aligned_bam: "Input aligned and indexed BAM file"
+    aligned_bam: "Input aligned BAM file"
+    bam_index: "Index of aligned BAM file"
     list_chr: "Array of chromosome names to process"
     sample_name: "Name of the sample provided for output files"
     tmp_dir: "Path to a temporary directory"
@@ -225,6 +227,7 @@ task makewindows {
     File reference_fasta
     File reference_index
     File aligned_bam
+    File bam_index
     Array[String] list_chr
     String sample_name
     String tmp_dir
