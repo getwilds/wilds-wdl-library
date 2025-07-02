@@ -4,7 +4,7 @@
 
 version 1.0
 
-import "https://github.com/getwilds/wilds-wdl-library/raw/add-ichor/modules/ww-bedtools/ww-bedtools.wdl" as bedtools_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedtools/ww-bedtools.wdl" as bedtools_tasks
 
 struct SampleInfo {
     String name
