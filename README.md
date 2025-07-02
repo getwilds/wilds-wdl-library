@@ -58,7 +58,7 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow my_analysis {
   call sra_tasks.fastqdump { input: sra_id = "SRR12345678" }
-  call star_tasks.star_align_two_pass { 
+  call star_tasks.star_align_two_pass {
     input: sample_data = { "name": "sample1", "r1": fastqdump.r1_end, "r2": fastqdump.r2_end }
   }
 }
@@ -76,6 +76,13 @@ WILDS vignettes and workflows use GitHub URLs for imports, providing several adv
 ### Modules
 | Module | Tool | Container | Description |
 |--------|------|-----------|-------------|
+| `ww-annotsv` | Structural Variant Annotator | `getwilds/annotsv:3.4.4` | Annotate stuctural variants with AnnotSV |
+| `ww-bcftools` | Utilities for Variant Calls | `getwilds/bcftools:1.19`| Call and analyze variants with BCFtools |
+| `ww-bedtools` | Utilities for Genomic Intervals | `getwilds/bedtools:2.31.1` | Work with genomic intervals |
+| `ww-bwa` | BWA Aligner | `getwilds/bwa:0.7.17` | Alignment with the Burrows-Wheeler Aligner |
+| `ww-ichorcna` | Tumor Fraction Estimator | `getwilds/ichorcna:0.2.0` | Estimate tumor fraction with ichorCNA |
+| `ww-manta` | Structural Variant Caller | `getwilds/manta:1.6.0` | Call structural variants with Manta |
+| `ww-smoove` | Structural Variant Caller | `brentp/smoove:latest` | Call structural variants with Smoove |
 | `ww-sra` | SRA Toolkit | `getwilds/sra-tools:3.1.1` | Download sequencing data from NCBI SRA |
 | `ww-star` | STAR Aligner | `getwilds/star:2.7.6a` | RNA-seq alignment with two-pass methodology |
 
@@ -104,7 +111,7 @@ Fred Hutch researchers can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/p
 
 ### Automated Testing
 - **Continuous Integration**: All components tested on every pull request
-- **Multi-Executor Validation**: Ensures compatibility across different WDL engines  
+- **Multi-Executor Validation**: Ensures compatibility across different WDL engines
 - **Real Data Testing**: Uses authentic bioinformatics datasets for validation
 - **Scheduled Monitoring**: Weekly checks detect infrastructure changes
 

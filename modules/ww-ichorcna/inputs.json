@@ -1,0 +1,23 @@
+{
+  "ichorcna_example.samples": [
+    {
+      "name": "ERR1258306",
+      "bam": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam",
+      "bam_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam.bai"
+    }
+  ],
+  "ichorcna_example.bed_file": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.bed",
+  "ichorcna_example.reference_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
+  "ichorcna_example.reference_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa.fai",
+  "ichorcna_example.wig_gc": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/gc_hg38_500kb.wig",
+  "ichorcna_example.wig_map": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/map_hg38_500kb.wig",
+  "ichorcna_example.panel_of_norm_rds": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/nextera_hg38_500kb_median_normAutosome_median.rds_median.n9.gr.rds",
+  "ichorcna_example.centromeres": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/GRCh38.GCA_000001405.2_centromere_acen.txt",
+  "ichorcna_example.sex": "male",
+  "ichorcna_example.chrs_vec": "c(1)",
+  "ichorcna_example.chrs_list": ["chr1"],
+  "ichorcna_example.genome": "hg38",
+  "ichorcna_example.genome_style": "UCSC",
+  "ichorcna_example.memory_gb": 16,
+  "ichorcna_example.cpus": 4
+}

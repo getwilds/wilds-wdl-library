@@ -79,6 +79,7 @@ workflow bedtools_example {
      input:
         bed_file = bed_file,
         aligned_bam = sample.bam,
+        bam_index = sample.bam_index,
         sample_name = sample.name,
         reference_fasta = reference_fasta,
         reference_index = reference_index,
@@ -212,7 +213,8 @@ task makewindows {
     bed_file: "BED file containing genomic intervals"
     reference_fasta: "Reference genome FASTA file"
     reference_index: "Reference genome index file"
-    aligned_bam: "Input aligned and indexed BAM file"
+    aligned_bam: "Input aligned BAM file"
+    bam_index: "Index of aligned BAM file"
     list_chr: "Array of chromosome names to process"
     sample_name: "Name of the sample provided for output files"
     tmp_dir: "Path to a temporary directory"
@@ -225,6 +227,7 @@ task makewindows {
     File reference_fasta
     File reference_index
     File aligned_bam
+    File bam_index
     Array[String] list_chr
     String sample_name
     String tmp_dir
@@ -235,15 +238,15 @@ task makewindows {
  command <<<
     set -eo pipefail
     mkdir -p "~{sample_name}"
-    
+
     for Chrom in ~{sep=' ' list_chr}
     do
       # Create windows for this chromosome
       bedtools makewindows -b ~{bed_file} -w 500000 | \
         awk -v OFS="\t" -v C="${Chrom}" '$1==C && NF==3' > "~{tmp_dir}"/"${Chrom}".windows.bed
-      
+
       # Count reads in windows for this chromosome (run in background for parallelization)
-      samtools view -@ 5 -b -f 0x2 -F 0x400 -q 20 -T "~{reference_fasta}"" ~{aligned_bam}" "${Chrom}" | \
+      samtools view -@ 5 -b -f 0x2 -F 0x400 -q 20 -T "~{reference_fasta}" "~{aligned_bam}" "${Chrom}" | \
         bedtools intersect -sorted -c -a "~{tmp_dir}"/"${Chrom}".windows.bed -b stdin > "~{sample_name}/${Chrom}.counts.bed" &
     done
 
@@ -265,6 +268,7 @@ task makewindows {
 }
 
 task validate_outputs {
+  # TODO: Do a basic check of the file contents too
   meta {
     description: "Validate that BEDTools output files exist and are non-empty"
     outputs: {
