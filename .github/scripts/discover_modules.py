@@ -48,9 +48,9 @@ def find_valid_modules():
         
         if wdl_file.exists() and inputs_file.exists():
             modules.append(module_name)
-            print(f"✓ Found valid module: {module_name}")
+            print(f"Found valid module: {module_name}")
         else:
-            print(f"✗ Skipping {module_name} - missing required files")
+            print(f"Skipping {module_name} - missing required files")
             if not wdl_file.exists():
                 print(f"    Missing: {wdl_file}")
             if not inputs_file.exists():
@@ -62,7 +62,8 @@ def filter_modules_by_changes(modules, changed_files):
     """Filter modules to only those with changes"""
     if changed_files is None:
         print("No file filtering applied (workflow_dispatch or git error)")
-        return modules
+        # return modules
+        return [] # Bailing out for now, need to add workflow_dispatch support later...
         
     if not changed_files:
         print("No files changed in this PR")
@@ -98,7 +99,7 @@ def main():
     
     print(f"\nFinal selection: {len(final_modules)} modules")
     for module in final_modules:
-        print(f"  • {module}")
+        print(f"  - {module}")
     
     # Output for GitHub Actions
     modules_json = json.dumps(final_modules)
