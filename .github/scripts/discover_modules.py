@@ -12,6 +12,7 @@
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 def get_changed_files():
@@ -61,9 +62,8 @@ def find_valid_modules():
 def filter_modules_by_changes(modules, changed_files):
     """Filter modules to only those with changes"""
     if changed_files is None:
-        print("No file filtering applied (workflow_dispatch or git error)")
-        # return modules
-        return [] # Bailing out for now, need to add workflow_dispatch support later...
+        print("No file filtering applied (potential git error), skipping...")
+        return []
         
     if not changed_files:
         print("No files changed in this PR")
@@ -86,16 +86,50 @@ def filter_modules_by_changes(modules, changed_files):
             
     return filtered
 
+def handle_workflow_dispatch_input(modules, dispatch_module=None):
+    """Handle manual workflow dispatch input for specific module"""
+    if dispatch_module is None:
+        dispatch_module = ''
+    dispatch_module = dispatch_module.strip()
+    
+    if not dispatch_module:
+        print("No specific module requested for workflow_dispatch, running all modules")
+        return modules
+    
+    # Check if the requested module exists and is valid
+    if dispatch_module in modules:
+        print(f"Running specific module from workflow_dispatch: {dispatch_module}")
+        return [dispatch_module]
+    else:
+        print(f"ERROR: Requested module '{dispatch_module}' not found or invalid")
+        print(f"Available modules: {', '.join(modules)}")
+        # Return empty list to fail gracefully rather than running wrong modules
+        return []
+
 def main():
     print("=== WILDS Module Discovery ===")
+    
+    # Parse command line arguments
+    dispatch_module = None
+    if len(sys.argv) > 1:
+        dispatch_module = sys.argv[1]
+        print(f"Workflow dispatch module argument: '{dispatch_module}'")
     
     # Find all valid modules
     all_modules = find_valid_modules()
     print(f"\nFound {len(all_modules)} valid modules")
     
-    # Filter by changes if this is a PR
-    changed_files = get_changed_files()
-    final_modules = filter_modules_by_changes(all_modules, changed_files)
+    # Check event type
+    event_name = os.environ.get('GITHUB_EVENT_NAME', '')
+    print(f"GitHub event: {event_name}")
+    
+    if event_name == 'workflow_dispatch':
+        # Handle manual workflow dispatch
+        final_modules = handle_workflow_dispatch_input(all_modules, dispatch_module)
+    else:
+        # Handle PR - filter by changes
+        changed_files = get_changed_files()
+        final_modules = filter_modules_by_changes(all_modules, changed_files)
     
     print(f"\nFinal selection: {len(final_modules)} modules")
     for module in final_modules:

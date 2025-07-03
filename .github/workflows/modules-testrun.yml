@@ -2,6 +2,12 @@ name: Module Test Run
 
 on:
   workflow_dispatch:
+    inputs:
+      module_name:
+        description: 'Specific module to test (leave empty to test all modules)'
+        required: false
+        type: string
+        default: ''
   pull_request:
     types: [opened, reopened, synchronize]
     paths:
@@ -26,7 +32,7 @@ jobs:
     -
       name: Find modified WDL modules
       id: find-modules
-      run: python3 .github/scripts/discover_modules.py
+      run: python3 .github/scripts/discover_modules.py "${{ github.event.inputs.module_name }}"
 
   download-test-data:
     runs-on: ubuntu-latest
