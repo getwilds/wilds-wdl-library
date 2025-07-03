@@ -186,7 +186,7 @@ task download_annotsv_vcf {
     set -euo pipefail
 
     # Download AnnotSV test VCF file
-    wget -q -O annotsv_test.vcf https://raw.githubusercontent.com/lgmgeo/AnnotSV/refs/heads/master/share/doc/AnnotSV/Example/test.vcf
+    wget -q --no-check-certificate -O annotsv_test.vcf https://raw.githubusercontent.com/lgmgeo/AnnotSV/refs/heads/master/share/doc/AnnotSV/Example/test.vcf
   >>>
 
   output {
