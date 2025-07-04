@@ -4,6 +4,8 @@
 
 version 1.0
 
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
 struct SampleInfo {
     String name
     File bam
@@ -30,8 +32,8 @@ workflow bcftools_example {
 
   parameter_meta {
     samples: "List of sample objects, each containing name, BAM file, and BAM index"
-    reference_genome: "Reference genome object containing name, fasta, and fasta index files"
     regions_bed: "Optional BED file specifying regions to analyze"
+    reference_genome: "Optional reference genome object containing name, fasta, and fasta index files. If not provided, test data will be used."
     max_depth: "Maximum read depth for mpileup (default: 10000)"
     max_idepth: "Maximum per-sample depth for indel calling (default: 10000)"
     memory_gb: "Memory allocated for each task in the workflow in GB"
@@ -40,19 +42,28 @@ workflow bcftools_example {
 
   input {
     Array[SampleInfo] samples
-    RefGenome reference_genome
     File? regions_bed
+    RefGenome? reference_genome
     Int max_depth = 10000
     Int max_idepth = 10000
     Int memory_gb = 8
     Int cpu_cores = 2
   }
 
+  # If no reference genome provided, download test data
+  if (!defined(reference_genome)) {
+    call ww_testdata.download_ref_data { }
+  }
+
+  # Determine which genome files to use
+  File genome_fasta = select_first([reference_genome.fasta, download_ref_data.fasta])
+  File genome_fasta_index = select_first([reference_genome.fasta_index, download_ref_data.fasta_index])
+
   scatter (sample in samples) {
     call mpileup_call { input:
         sample_data = sample,
-        reference_fasta = reference_genome.fasta,
-        reference_fasta_index = reference_genome.fasta_index,
+        reference_fasta = genome_fasta,
+        reference_fasta_index = genome_fasta_index,
         regions_bed = regions_bed,
         max_depth = max_depth,
         max_idepth = max_idepth,
@@ -135,7 +146,8 @@ task mpileup_call {
     fi
     
     # Complete the command with input BAM and piping to bcftools call
-    bcftools_cmd="$bcftools_cmd \"~{sample_data.bam}\" | bcftools call -Oz -mv -o \"~{sample_data.name}.bcftools.vcf.gz\""
+    bcftools_cmd="$bcftools_cmd \"~{sample_data.bam}\" | \
+      bcftools call -Oz -mv -o \"~{sample_data.name}.bcftools.vcf.gz\""
     
     echo "Running: $bcftools_cmd"
     eval "$bcftools_cmd"
