@@ -47,8 +47,8 @@ workflow annotsv_example {
     call ww_testdata.download_annotsv_vcf { }
   }
 
-  # Determine which VCFs to use: provided ones or test data
-  Array[File] vcfs_to_process = select_first([vcfs, [download_annotsv_vcf.test_vcf]])
+  # Determine which VCFs to use
+  Array[File] vcfs_to_process = if defined(vcfs) then select_first([vcfs]) else [select_first([download_annotsv_vcf.test_vcf])]
 
   scatter (vcf in vcfs_to_process) {
     call annotsv_annotate { input:
