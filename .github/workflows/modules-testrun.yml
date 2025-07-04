@@ -2,6 +2,12 @@ name: Module Test Run
 
 on:
   workflow_dispatch:
+    inputs:
+      module_name:
+        description: 'Specific module to test (leave empty to test all modules)'
+        required: false
+        type: string
+        default: ''
   pull_request:
     types: [opened, reopened, synchronize]
     paths:
@@ -21,37 +27,12 @@ jobs:
     -
       name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Need full history for git diff
     -
-      name: Find WDL modules
+      name: Find modified WDL modules
       id: find-modules
-      run: |
-        # Find all directories in modules/ that contain both a .wdl file and inputs.json
-        modules=()
-        for module_dir in modules/*/; do
-          if [ -d "$module_dir" ]; then
-            module_name=$(basename "$module_dir")
-            wdl_file="$module_dir$module_name.wdl"
-            inputs_file="$module_dir/inputs.json"
-
-            if [ -f "$wdl_file" ] && [ -f "$inputs_file" ]; then
-              modules+=("$module_name")
-              echo "Found module: $module_name"
-            else
-              echo "Skipping $module_name - missing required files"
-              [ ! -f "$wdl_file" ] && echo "  Missing: $wdl_file"
-              [ ! -f "$inputs_file" ] && echo "  Missing: $inputs_file"
-            fi
-          fi
-        done
-
-        # Convert array to JSON format for matrix strategy
-        if [ ${#modules[@]} -eq 0 ]; then
-          modules_json="[]"
-        else
-          modules_json=$(printf '%s\n' "${modules[@]}" | jq -R . | jq -s -c .)
-        fi
-        echo "modules=$modules_json" >> $GITHUB_OUTPUT
-        echo "Found modules: $modules_json"
+      run: python3 .github/scripts/discover_modules.py "${{ github.event.inputs.module_name }}"
 
   download-test-data:
     runs-on: ubuntu-latest
