@@ -166,7 +166,7 @@ task download_ichor_data {
 
 task download_annotsv_vcf {
   meta {
-    description: "Downloads reference data for ichorCNA analysis on hg38"
+    description: "Downloads test VCF files for structural variant annotation workflows"
     outputs: {
         test_vcf: "Test VCF file for AnnotSV"
     }

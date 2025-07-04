@@ -84,10 +84,13 @@ sprocket run ww-testdata.wdl inputs.json
 **RNA-seq analysis**:
 ```wdl
 call testdata.download_ref_data { 
-  input: chromo = "chr22", version = "hg38" 
+  input: 
+    chromo = "chr22",
+    version = "hg38" 
 }
 call star_tasks.build_star_index { 
-  input: reference_fasta = download_ref_data.fasta 
+  input: 
+    reference_fasta = download_ref_data.fasta 
 }
 ```
 
@@ -105,7 +108,8 @@ call ichor_tasks.run_ichor {
 ```wdl
 call testdata.download_annotsv_vcf { }
 call annotsv_tasks.annotate_variants { 
-  input: test_vcf = download_annotsv_vcf.test_vcf 
+  input: 
+    test_vcf = download_annotsv_vcf.test_vcf 
 }
 ```
 
@@ -120,10 +124,10 @@ call annotsv_tasks.annotate_variants {
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
-- `fasta`: Reference chromosome FASTA file
-- `fasta_index`: Samtools FASTA index (.fai)
-- `gtf`: Chromosome-specific gene annotations
-- `bed`: BED file covering entire chromosome
+- `fasta` (File): Reference chromosome FASTA file
+- `fasta_index` (File): Samtools FASTA index (.fai)
+- `gtf` (File): Chromosome-specific gene annotations
+- `bed` (File): BED file covering entire chromosome
 
 ### download_ichor_data
 
@@ -132,10 +136,10 @@ call annotsv_tasks.annotate_variants {
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
-- `wig_gc`: GC content in 500kb bins
-- `wig_map`: Mappability in 500kb bins
-- `centromeres`: Centromere coordinates
-- `panel_of_norm_rds`: Panel of normals for normalization
+- `wig_gc` (File): GC content in 500kb bins
+- `wig_map` (File): Mappability in 500kb bins
+- `centromeres` (File): Centromere coordinates
+- `panel_of_norm_rds` (File): Panel of normals for normalization
 
 ### download_annotsv_vcf
 
@@ -144,7 +148,7 @@ call annotsv_tasks.annotate_variants {
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
-- `test_vcf`: Example VCF file for testing
+- `test_vcf` (File): Example VCF file for testing
 
 ## Data Sources
 
@@ -174,7 +178,7 @@ This module is specifically designed to support other WILDS modules:
 
 - **ww-star**: RNA-seq alignment (requires reference FASTA + GTF)
 - **ww-bwa**: DNA alignment (requires reference FASTA)
-- **ww-ichor**: Copy number analysis (requires ichorCNA reference files)
+- **ww-ichorcna**: Copy number analysis (requires ichorCNA reference files)
 - **ww-annotsv**: Structural variant annotation (requires test VCF)
 
 By centralizing test data downloads, `ww-testdata` enables:
@@ -188,7 +192,6 @@ By centralizing test data downloads, `ww-testdata` enables:
 This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
 - Network connectivity validation
-- Output file integrity checks
 - Cross-platform compatibility testing
 
 ## Support

@@ -25,9 +25,9 @@ def get_changed_files():
             ], capture_output=True, text=True, check=True)
             return result.stdout.strip().split('\n') if result.stdout.strip() else []
         except subprocess.CalledProcessError as e:
-            print(f"Warning: Could not get changed files: {e}")
-            print("Running all modules as fallback")
-            return None
+            print(f"ERROR: Could not get changed files: {e}")
+            print("This is a critical error - we cannot safely determine what to test")
+            raise SystemExit(1)
     return None
 
 def find_valid_modules():
