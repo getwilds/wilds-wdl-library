@@ -5,8 +5,6 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-sra.wdl" as ww_sra
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-bwa.wdl" as ww_bwa
 
 struct SampleInfo {
     String name
@@ -43,7 +41,7 @@ workflow bcftools_example {
   }
 
   input {
-    Array[SampleInfo]? samples
+    Array[SampleInfo] samples
     File? regions_bed
     RefGenome? reference_genome
     Int max_depth = 10000
@@ -60,39 +58,6 @@ workflow bcftools_example {
   # Determine which genome files to use
   File genome_fasta = select_first([reference_genome.fasta, download_ref_data.fasta])
   File genome_fasta_index = select_first([reference_genome.fasta_index, download_ref_data.fasta_index])
-
-  # If no sample data provided, download test data
-  if (!defined(samples)) {
-    call ww_sra.fastqdump { input:
-        sra_id = "ERR1258306",
-        ncpu = cpu_cores,
-    }
-    call ww_bwa.bwa_index { input:
-        reference_fasta = genome_fasta,
-        cpu_cores = cpu_cores,
-        memory_gb = memory_gb
-    }
-    call ww_bwa.bwa_mem { input:
-        bwa_genome_tar = bwa_index.bwa_index_tar,
-        reference_fasta = genome_fasta,
-        sample_data = {
-            name: "test_sample",
-            r1: fastqdump.r1_end[0],
-            r2: fastqdump.r2_end[0]
-        },
-        cpu_cores = cpu_cores,
-        memory_gb = memory_gb
-    }
-  }
-
-  # Use provided samples or the test sample if none were specified
-  Array[SampleInfo] samples = if defined(samples) then samples else [
-    SampleInfo(
-      name: "test_sample",
-      bam: select_first([bwa_mem.sorted_bam]),
-      bai: select_first([bwa_mem.sorted_bai])
-    )
-  ]
 
   scatter (sample in samples) {
     call mpileup_call { input:
@@ -122,7 +87,6 @@ task mpileup_call {
   meta {
     description: "Call variants using bcftools mpileup and call"
     outputs: {
-        sample_name: "Sample name from input data",
         mpileup_vcf: "Compressed VCF file containing variants called by mpileup",
         mpileup_vcf_index: "Index file for the mpileup VCF"
     }
@@ -240,7 +204,7 @@ task validate_outputs {
     for i in "${!vcf_files[@]}"; do
       vcf_file="${vcf_files[$i]}"
       
-      echo "--- Sample: $vcf ---" >> validation_report.txt
+      echo "--- Sample: $vcf_file ---" >> validation_report.txt
       
       # Check VCF file exists and is not empty
       if [[ -f "$vcf_file" && -s "$vcf_file" ]]; then
