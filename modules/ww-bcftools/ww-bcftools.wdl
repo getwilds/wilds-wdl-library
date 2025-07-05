@@ -5,6 +5,8 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-sra.wdl" as ww_sra
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-bwa.wdl" as ww_bwa
 
 struct SampleInfo {
     String name
@@ -41,7 +43,7 @@ workflow bcftools_example {
   }
 
   input {
-    Array[SampleInfo] samples
+    Array[SampleInfo]? samples
     File? regions_bed
     RefGenome? reference_genome
     Int max_depth = 10000
@@ -59,9 +61,43 @@ workflow bcftools_example {
   File genome_fasta = select_first([reference_genome.fasta, download_ref_data.fasta])
   File genome_fasta_index = select_first([reference_genome.fasta_index, download_ref_data.fasta_index])
 
+  # If no sample data provided, download test data
+  if (!defined(samples)) {
+    call ww_sra.fastqdump { input:
+        sra_id = "ERR1258306",
+        ncpu = cpu_cores,
+    }
+    call ww_bwa.bwa_index { input:
+        reference_fasta = genome_fasta,
+        cpu_cores = cpu_cores,
+        memory_gb = memory_gb
+    }
+    call ww_bwa.bwa_mem { input:
+        bwa_genome_tar = bwa_index.bwa_index_tar,
+        reference_fasta = genome_fasta,
+        sample_data = {
+            name: "test_sample",
+            r1: fastqdump.r1_end[0],
+            r2: fastqdump.r2_end[0]
+        },
+        cpu_cores = cpu_cores,
+        memory_gb = memory_gb
+    }
+  }
+
+  # Use provided samples or the test sample if none were specified
+  Array[SampleInfo] samples = if defined(samples) then samples else [
+    SampleInfo(
+      name: "test_sample",
+      bam: select_first([bwa_mem.sorted_bam]),
+      bai: select_first([bwa_mem.sorted_bai])
+    )
+  ]
+
   scatter (sample in samples) {
     call mpileup_call { input:
-        sample_data = sample,
+        bam_file = sample.bam,
+        bam_index = sample.bai,
         reference_fasta = genome_fasta,
         reference_fasta_index = genome_fasta_index,
         regions_bed = regions_bed,
@@ -73,7 +109,6 @@ workflow bcftools_example {
   }
 
   call validate_outputs { input:
-      sample_names = mpileup_call.sample_name,
       vcf_files = mpileup_call.mpileup_vcf
   }
 
@@ -96,7 +131,8 @@ task mpileup_call {
   parameter_meta {
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Reference genome FASTA index file"
-    sample_data: "Sample information including name, BAM file, and BAM index"
+    bam_file: "Input BAM file for the sample"
+    bam_index: "Index file for the input BAM"
     regions_bed: "Optional BED file specifying regions to analyze"
     annotate_format: "FORMAT annotations to add (default: AD,DP)"
     ignore_rg: "Ignore read groups during analysis"
@@ -110,7 +146,8 @@ task mpileup_call {
   input {
     File reference_fasta
     File reference_fasta_index
-    SampleInfo sample_data
+    File bam_file
+    File bam_index
     File? regions_bed
     String annotate_format = "FORMAT/AD,FORMAT/DP"
     Boolean ignore_rg = true
@@ -123,6 +160,9 @@ task mpileup_call {
 
   command <<<
     set -eo pipefail
+    
+    # Get the basename of the BAM file (without path and extension)
+    sample_name=$(basename "~{bam_file}" .bam)
     
     # Build the bcftools mpileup command
     bcftools_cmd="bcftools mpileup \
@@ -146,20 +186,19 @@ task mpileup_call {
     fi
     
     # Complete the command with input BAM and piping to bcftools call
-    bcftools_cmd="$bcftools_cmd \"~{sample_data.bam}\" | \
-      bcftools call -Oz -mv -o \"~{sample_data.name}.bcftools.vcf.gz\""
+    bcftools_cmd="$bcftools_cmd \"~{bam_file}\" | \
+      bcftools call -Oz -mv -o \"${sample_name}.bcftools.vcf.gz\""
     
     echo "Running: $bcftools_cmd"
     eval "$bcftools_cmd"
     
     # Create index for the output VCF
-    bcftools index "~{sample_data.name}.bcftools.vcf.gz"
+    bcftools index "${sample_name}.bcftools.vcf.gz"
   >>>
 
   output {
-    String sample_name = sample_data.name
-    File mpileup_vcf = "~{sample_data.name}.bcftools.vcf.gz"
-    File mpileup_vcf_index = "~{sample_data.name}.bcftools.vcf.gz.csi"
+    File mpileup_vcf = "~{basename(bam_file, '.bam')}.bcftools.vcf.gz"
+    File mpileup_vcf_index = "~{basename(bam_file, '.bam')}.bcftools.vcf.gz.csi"
   }
 
   runtime {
@@ -179,12 +218,10 @@ task validate_outputs {
 
   parameter_meta {
     vcf_files: "Array of VCF files to validate"
-    sample_names: "Array of sample names that were processed"
   }
 
   input {
     Array[File] vcf_files
-    Array[String] sample_names
   }
 
   command <<<
@@ -194,18 +231,16 @@ task validate_outputs {
     echo "" >> validation_report.txt
     
     # Arrays for bash processing
-    sample_names=~{sep=" " sample_names}
     vcf_files=~{sep=" " vcf_files}
     
     validation_passed=true
     total_variants=0
     
     # Check each sample
-    for i in "${!sample_names[@]}"; do
-      sample_name="${sample_names[$i]}"
+    for i in "${!vcf_files[@]}"; do
       vcf_file="${vcf_files[$i]}"
       
-      echo "--- Sample: $sample_name ---" >> validation_report.txt
+      echo "--- Sample: $vcf ---" >> validation_report.txt
       
       # Check VCF file exists and is not empty
       if [[ -f "$vcf_file" && -s "$vcf_file" ]]; then
