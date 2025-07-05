@@ -34,88 +34,8 @@ jobs:
       id: find-modules
       run: python3 .github/scripts/discover_modules.py "${{ github.event.inputs.module_name }}"
 
-  download-test-data:
-    runs-on: ubuntu-latest
-    steps:
-    -
-      name: Checkout
-      uses: actions/checkout@v4
-    -
-      name: Download test data
-      run: |
-        mkdir -p test-data
-
-        # Install samtools for creating FASTA index
-        sudo apt-get update
-        sudo apt-get install -y samtools
-
-        # Download chromosome 1 fasta
-        wget -q -O test-data/chr1.fa.gz http://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/chr1.fa.gz
-        gunzip test-data/chr1.fa.gz
-
-        # Create FASTA index file (.fai) for bcftools and other tools
-        samtools faidx test-data/chr1.fa
-
-        # Download chromosome 1 GTF file
-        wget -q -O test-data/hg38.ncbiRefSeq.gtf.gz http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/genes/hg38.ncbiRefSeq.gtf.gz
-        gunzip test-data/hg38.ncbiRefSeq.gtf.gz
-        # Extract only chromosome 1 annotations
-        grep "^chr1[[:space:]]" test-data/hg38.ncbiRefSeq.gtf > test-data/chr1.gtf
-        rm test-data/hg38.ncbiRefSeq.gtf
-
-        # Create a BED file covering the entire chromosome 1
-        # Get chromosome length from the FASTA file
-        CHR1_LENGTH=$(($(grep -v "^>" test-data/chr1.fa | tr -d '\n' | wc -c)))
-        echo -e "chr1\t0\t${CHR1_LENGTH}" > test-data/chr1.bed
-
-        # Download a specific version (3.1.1) of the SRA toolkit
-        wget -q https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.1.1/sratoolkit.3.1.1-ubuntu64.tar.gz
-        tar -xzf sratoolkit.3.1.1-ubuntu64.tar.gz
-        echo "$PWD/sratoolkit.3.1.1-ubuntu64/bin" >> $GITHUB_PATH
-        export PATH="$PWD/sratoolkit.3.1.1-ubuntu64/bin:$PATH"
-
-        # Download a small WGS sample (ERR1258306)
-        fasterq-dump --split-files ERR1258306 -O test-data/
-        gzip test-data/ERR1258306_1.fastq test-data/ERR1258306_2.fastq
-
-        # Generate a small aligned BAM file for testing workflows that need pre-aligned data
-        # This is a minimal example - for real testing, use the actual alignment modules
-        echo "Generating test BAM file..."
-
-        # Install bwa for alignment
-        sudo apt-get install -y bwa
-
-        # Create BWA index
-        bwa index test-data/chr1.fa
-
-        # Align reads and create sorted BAM
-        bwa mem -t 2 -R '@RG\tID:test\tSM:ERR1258306\tPL:illumina' \
-          test-data/chr1.fa test-data/ERR1258306_1.fastq.gz test-data/ERR1258306_2.fastq.gz | \
-          samtools sort -o test-data/ERR1258306.chr1.aligned.bam
-
-        # Index the BAM file
-        samtools index test-data/ERR1258306.chr1.aligned.bam
-
-        # Download data for ichorCNA
-        wget -q -O test-data/gc_hg38_500kb.wig https://github.com/GavinHaLab/ichorCNA/raw/b2bbce0a9997f31733f0f0ea4278cfba937ded41/inst/extdata/gc_hg38_500kb.wig
-        wget -q -O test-data/map_hg38_500kb.wig https://github.com/GavinHaLab/ichorCNA/raw/b2bbce0a9997f31733f0f0ea4278cfba937ded41/inst/extdata/map_hg38_500kb.wig
-        wget -q -O test-data/GRCh38.GCA_000001405.2_centromere_acen.txt https://github.com/GavinHaLab/ichorCNA/raw/b2bbce0a9997f31733f0f0ea4278cfba937ded41/inst/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt
-        wget -q -O test-data/nextera_hg38_500kb_median_normAutosome_median.rds_median.n9.gr.rds https://github.com/genome/docker-basespace_chromoseq/raw/master/workflow_files/nextera_hg38_500kb_median_normAutosome_median.rds_median.n9.gr.rds
-
-        # Download an example SV VCF file for AnnotSV
-        wget -q -O test-data/annotsv_test.vcf https://raw.githubusercontent.com/lgmgeo/AnnotSV/refs/heads/master/share/doc/AnnotSV/Example/test.vcf
-
-        ls -la test-data/
-    -
-      name: Upload test data
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-data
-        path: test-data/
-        retention-days: 1
-
   miniwdl-test:
-    needs: [discover-modules, download-test-data]
+    needs: [discover-modules]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -125,12 +45,6 @@ jobs:
     -
       name: Checkout
       uses: actions/checkout@v4
-    -
-      name: Download test data
-      uses: actions/download-artifact@v4
-      with:
-        name: test-data
-        path: test-data/
     -
       name: Set up Python
       uses: actions/setup-python@v5
@@ -150,7 +64,7 @@ jobs:
         inputs_file="$module_dir/inputs.json"
 
         echo "Running ${{ matrix.module }} with miniwdl..."
-        miniwdl run "$wdl_file" -i "$inputs_file" --dir "test-output/miniwdl/${{ matrix.module }}"
+        miniwdl run "$wdl_file" --dir "test-output/miniwdl/${{ matrix.module }}"
     -
       name: Display validation report
       run: |
@@ -158,7 +72,7 @@ jobs:
         find test-output/miniwdl -name "validation_report.txt" -exec cat {} \; 2>/dev/null || true
 
   cromwell-test:
-    needs: [discover-modules, download-test-data]
+    needs: [discover-modules]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -168,12 +82,6 @@ jobs:
     -
       name: Checkout
       uses: actions/checkout@v4
-    -
-      name: Download test data
-      uses: actions/download-artifact@v4
-      with:
-        name: test-data
-        path: test-data/
     -
       name: Set Up Java
       uses: actions/setup-java@v4
@@ -194,7 +102,7 @@ jobs:
         options_file="$module_dir/options.json"
 
         echo "Running ${{ matrix.module }} with Cromwell..."
-        java -jar cromwell-86.jar run "$wdl_file" -i "$inputs_file" -o "$options_file"
+        java -jar cromwell-86.jar run "$wdl_file" -o "$options_file"
     -
       name: Display validation report
       run: |
@@ -202,7 +110,7 @@ jobs:
         find . -name "validation_report.txt" -exec cat {} \; 2>/dev/null || true
 
   sprocket-test:
-    needs: [discover-modules, download-test-data]
+    needs: [discover-modules]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -212,12 +120,6 @@ jobs:
     -
       name: Checkout
       uses: actions/checkout@v4
-    -
-      name: Download test data
-      uses: actions/download-artifact@v4
-      with:
-        name: test-data
-        path: test-data/
     -
       name: Set Up Rust
       uses: actions-rs/toolchain@v1
@@ -238,7 +140,7 @@ jobs:
         inputs_file="$module_dir/inputs.json"
 
         echo "Running ${{ matrix.module }} with Sprocket..."
-        sprocket run --output "test-output/sprocket/${{ matrix.module }}" "$wdl_file" "$inputs_file"
+        sprocket run --output "test-output/sprocket/${{ matrix.module }}" "$wdl_file"
     -
       name: Display validation report
       run: |
