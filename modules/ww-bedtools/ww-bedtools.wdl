@@ -4,7 +4,11 @@
 
 version 1.0
 
-struct SampleInfo {
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
+struct BedtoolsSample {
     String name
     File bam
     File bam_index
@@ -33,6 +37,7 @@ workflow bedtools_example {
     reference_fasta: "Reference genome FASTA file used for analysis"
     reference_index: "Index file for the reference genome"
     intersect_flags: "Flags for BEDTools intersect command"
+    demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
     chromosomes: "List of chromosomes to analyze for window-based counting"
     tmp_dir : "Path to a temporary directory"
     cpus: "Number of CPU cores allocated for each task in the workflow"
@@ -40,10 +45,11 @@ workflow bedtools_example {
   }
 
   input {
-    File bed_file
-    File reference_fasta
-    File reference_index
-    Array[SampleInfo] samples
+    File? bed_file
+    Array[BedtoolsSample]? samples
+    File? reference_fasta
+    File? reference_index
+    String demo_sra_id = "ERR1258306"
     Array[String] chromosomes = [
       "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
       "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
@@ -51,23 +57,68 @@ workflow bedtools_example {
       ]
     String intersect_flags = "-header -wo"
     String tmp_dir = "/tmp"
-    Int cpus = 10
-    Int memory_gb = 24
+    Int cpus = 2
+    Int memory_gb = 16
   }
 
-  scatter (sample in samples) {
-    call coverage {
-     input:
-        bed_file = bed_file,
+  # If no reference genome provided, download test data
+  if (!defined(reference_fasta) || !defined(reference_index) || !defined(bed_file)) {
+    call ww_testdata.download_ref_data { }
+  }
+
+  # Determine which genome files to use
+  File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
+  File genome_fasta_index = select_first([reference_index, download_ref_data.fasta_index])
+  File bed_file_final = select_first([bed_file, download_ref_data.bed])
+
+  # If no samples provided, download demonstration data from SRA and align with BWA
+  if (!defined(samples)) {
+    call ww_sra.fastqdump { input:
+        sra_id = demo_sra_id,
+        ncpu = cpus
+    }
+
+    # Build BWA index for alignment
+    call ww_bwa.bwa_index { input:
+        reference_fasta = genome_fasta,
+        cpu_cores = cpus,
+        memory_gb = memory_gb * 2
+    }
+
+    # Align the SRA sample using BWA
+    call ww_bwa.bwa_mem { input:
+        bwa_genome_tar = bwa_index.bwa_index_tar,
+        reference_fasta = genome_fasta,
+        sample_data = {
+          "name": demo_sra_id,
+          "r1": fastqdump.r1_end,
+          "r2": fastqdump.r2_end
+        },
+        cpu_cores = cpus,
+        memory_gb = memory_gb * 2
+    }
+  }
+
+  # Create samples array - either from input or from BWA alignment
+  Array[BedtoolsSample] final_samples = if defined(samples) then select_first([samples]) else [
+    {
+      "name": demo_sra_id,
+      "bam": select_first([bwa_mem.sorted_bam]),
+      "bai": select_first([bwa_mem.sorted_bai])
+    }
+  ]
+
+  scatter (sample in final_samples) {
+    call coverage { input:
+        bed_file = bed_file_final,
         aligned_bam = sample.bam,
         sample_name = sample.name,
         cpu_cores = cpus,
         memory_gb = memory_gb
     }
 
-    call intersect {
-     input:
-        bed_file = bed_file,
+    call intersect { input:
+        bed_file = bed_file_final,
         aligned_bam = sample.bam,
         sample_name = sample.name,
         flags = intersect_flags,
@@ -75,14 +126,13 @@ workflow bedtools_example {
         memory_gb = memory_gb
     }
 
-    call makewindows {
-     input:
-        bed_file = bed_file,
+    call makewindows { input:
+        bed_file = bed_file_final,
         aligned_bam = sample.bam,
         bam_index = sample.bam_index,
         sample_name = sample.name,
-        reference_fasta = reference_fasta,
-        reference_index = reference_index,
+        reference_fasta = genome_fasta,
+        reference_index = genome_fasta_index,
         list_chr = chromosomes,
         tmp_dir = tmp_dir,
         cpu_cores = cpus,
@@ -90,8 +140,7 @@ workflow bedtools_example {
     }
   }
 
-  call validate_outputs {
-   input:
+  call validate_outputs { input:
       intersect_files = intersect.intersect_output,
       coverage_files = coverage.mean_coverage,
       window_count_files = makewindows.counts_bed,
@@ -239,10 +288,10 @@ task makewindows {
     set -eo pipefail
     mkdir -p "~{sample_name}"
 
-    for Chrom in ~{sep=' ' list_chr}
+    for Chrom in ~{sep=" " list_chr}
     do
       # Create windows for this chromosome
-      bedtools makewindows -b ~{bed_file} -w 500000 | \
+      bedtools makewindows -b "~{bed_file}" -w 500000 | \
         awk -v OFS="\t" -v C="${Chrom}" '$1==C && NF==3' > "~{tmp_dir}"/"${Chrom}".windows.bed
 
       # Count reads in windows for this chromosome (run in background for parallelization)
@@ -272,7 +321,7 @@ task validate_outputs {
   meta {
     description: "Validate that BEDTools output files exist and are non-empty"
     outputs: {
-      report: "Validation report summarizing file check results"
+        report: "Validation report summarizing file check results"
     }
   }
 
