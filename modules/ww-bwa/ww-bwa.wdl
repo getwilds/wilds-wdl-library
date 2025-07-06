@@ -4,8 +4,8 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct BwaSample {
     String name
@@ -28,7 +28,7 @@ workflow bwa_example {
 
   parameter_meta {
     samples: "Optional list of BwaSample objects, each containing sample name and R1/R2 FASTQ files. If not provided, workflow will download a demonstration sample from SRA"
-    reference_fasta: "Reference genome FASTA file"
+    reference_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
     demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
     cpus: "Number of CPU cores allocated for each task in the workflow"
     memory_gb: "Memory allocated for each task in the workflow in GB"
