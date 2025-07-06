@@ -4,9 +4,11 @@
 
 version 1.0
 
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
-struct SampleInfo {
+struct BcftoolsSample {
     String name
     File bam
     File bai
@@ -31,9 +33,10 @@ workflow bcftools_example {
   }
 
   parameter_meta {
-    samples: "List of sample objects, each containing name, BAM file, and BAM index"
+    samples: "Optional list of sample objects, each containing name, BAM file, and BAM index. If not provided, workflow will download and align demonstration sample from SRA"
     regions_bed: "Optional BED file specifying regions to analyze"
     reference_genome: "Optional reference genome object containing name, fasta, and fasta index files. If not provided, test data will be used."
+    demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
     max_depth: "Maximum read depth for mpileup (default: 10000)"
     max_idepth: "Maximum per-sample depth for indel calling (default: 10000)"
     memory_gb: "Memory allocated for each task in the workflow in GB"
@@ -41,9 +44,10 @@ workflow bcftools_example {
   }
 
   input {
-    Array[SampleInfo] samples
+    Array[BcftoolsSample]? samples
     File? regions_bed
     RefGenome? reference_genome
+    String demo_sra_id = "ERR1258306"
     Int max_depth = 10000
     Int max_idepth = 10000
     Int memory_gb = 8
@@ -59,7 +63,44 @@ workflow bcftools_example {
   File genome_fasta = select_first([reference_genome.fasta, download_ref_data.fasta])
   File genome_fasta_index = select_first([reference_genome.fasta_index, download_ref_data.fasta_index])
 
-  scatter (sample in samples) {
+  # If no samples provided, download demonstration data from SRA and align with BWA
+  if (!defined(samples)) {
+    call ww_sra.fastqdump { input:
+        sra_id = demo_sra_id,
+        ncpu = cpu_cores
+    }
+
+    # Build BWA index for alignment
+    call ww_bwa.bwa_index { input:
+        reference_fasta = genome_fasta,
+        cpu_cores = cpu_cores,
+        memory_gb = memory_gb * 2
+    }
+
+    # Align the SRA sample using BWA
+    call ww_bwa.bwa_mem { input:
+        bwa_genome_tar = bwa_index.bwa_index_tar,
+        reference_fasta = genome_fasta,
+        sample_data = {
+          "name": demo_sra_id,
+          "r1": fastqdump.r1_end,
+          "r2": fastqdump.r2_end
+        },
+        cpu_cores = cpu_cores,
+        memory_gb = memory_gb * 2
+    }
+  }
+
+  # Create samples array - either from input or from BWA alignment
+  Array[BcftoolsSample] final_samples = if defined(samples) then select_first([samples]) else [
+    {
+      "name": demo_sra_id,
+      "bam": select_first([bwa_mem.sorted_bam]),
+      "bai": select_first([bwa_mem.sorted_bai])
+    }
+  ]
+
+  scatter (sample in final_samples) {
     call mpileup_call { input:
         bam_file = sample.bam,
         bam_index = sample.bai,
