@@ -4,9 +4,12 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedtools/ww-bedtools.wdl" as bedtools_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedtools/ww-bedtools.wdl" as ww_bedtools
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
-struct SampleInfo {
+struct IchorSample {
     String name
     File bam
     File bam_index
@@ -49,19 +52,19 @@ workflow ichorcna_example {
   }
 
   input {
-    File bed_file
-    File reference_fasta
-    File reference_index
-    File wig_gc
-    File wig_map
-    File panel_of_norm_rds
-    File centromeres
-    Array[SampleInfo] samples
-    String sex
-    String genome
-    String genome_style
-    Int memory_gb
-    Int cpus
+    Array[IchorSample]? samples
+    File? bed_file
+    File? reference_fasta
+    File? reference_index
+    File? wig_gc
+    File? wig_map
+    File? panel_of_norm_rds
+    File? centromeres
+    String sex = "male"
+    String genome = "hg38"
+    String genome_style = "UCSC"
+    Int memory_gb = 8
+    Int cpus = 2
     Array[String] chrs_list = [
       "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
       "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
@@ -72,14 +75,68 @@ workflow ichorcna_example {
 
   String tmp_dir = "/tmp"
 
-  scatter (sample in samples) {
-    call bedtools_tasks.makewindows { input:
-        bed_file = bed_file,
+  # Determine which genome files to use
+  if (!defined(reference_fasta) || !defined(reference_index) || !defined(bed_file)) {
+    call ww_testdata.download_ref_data { }
+  }
+  File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
+  File genome_fasta_index = select_first([reference_index, download_ref_data.fasta_index])
+  File final_bed_file = select_first([bed_file, download_ref_data.bed])
+
+  # Determine which ichorCNA data files to use
+  if (!defined(wig_gc) || !defined(wig_map) || !defined(panel_of_norm_rds) || !defined(centromeres)) {
+    call ww_testdata.download_ichor_data { }
+  }
+  File final_wig_gc = select_first([wig_gc, download_ichor_data.wig_gc])
+  File final_wig_map = select_first([wig_map, download_ichor_data.wig_map])
+  File final_panel_of_norm = select_first([panel_of_norm_rds, download_ichor_data.panel_of_norm_rds])
+  File final_centromeres = select_first([centromeres, download_ichor_data.centromeres])
+
+  # If no samples provided, download demonstration data from SRA and align with BWA
+  if (!defined(samples)) {
+    call ww_sra.fastqdump { input:
+        sra_id = demo_sra_id,
+        ncpu = cpus
+    }
+
+    # Build BWA index for alignment
+    call ww_bwa.bwa_index { input:
+        reference_fasta = genome_fasta,
+        cpu_cores = cpus,
+        memory_gb = memory_gb * 2
+    }
+
+    # Align the SRA sample using BWA
+    call ww_bwa.bwa_mem { input:
+        bwa_genome_tar = bwa_index.bwa_index_tar,
+        reference_fasta = genome_fasta,
+        sample_data = {
+          "name": demo_sra_id,
+          "r1": fastqdump.r1_end,
+          "r2": fastqdump.r2_end
+        },
+        cpu_cores = cpus,
+        memory_gb = memory_gb * 2
+    }
+  }
+
+  # Create samples array - either from input or from BWA alignment
+  Array[IchorSample] final_samples = if defined(samples) then select_first([samples]) else [
+    {
+      "name": demo_sra_id,
+      "bam": select_first([bwa_mem.sorted_bam]),
+      "bai": select_first([bwa_mem.sorted_bai])
+    }
+  ]
+
+  scatter (sample in final_samples) {
+    call ww_bedtools.makewindows { input:
+        bed_file = final_bed_file,
         aligned_bam = sample.bam,
         bam_index = sample.bam_index,
         sample_name = sample.name,
-        reference_fasta = reference_fasta,
-        reference_index = reference_index,
+        reference_fasta = genome_fasta,
+        reference_index = genome_fasta_index,
         list_chr = chrs_list,
         tmp_dir = tmp_dir,
         cpu_cores = cpus,
@@ -87,10 +144,10 @@ workflow ichorcna_example {
     }
 
     call ichorcna_call { input:
-      wig_gc = wig_gc,
-      wig_map = wig_map,
-      panel_of_norm_rds = panel_of_norm_rds,
-      centromeres = centromeres,
+      wig_gc = final_wig_gc,
+      wig_map = final_wig_map,
+      panel_of_norm_rds = final_panel_of_norm,
+      centromeres = final_centromeres,
       counts_bed = makewindows.counts_bed,
       name = sample.name,
       sex = sex,
