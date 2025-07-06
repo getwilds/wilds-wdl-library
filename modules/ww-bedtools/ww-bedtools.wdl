@@ -58,7 +58,7 @@ workflow bedtools_example {
     String intersect_flags = "-header -wo"
     String tmp_dir = "/tmp"
     Int cpus = 2
-    Int memory_gb = 16
+    Int memory_gb = 8
   }
 
   # If no reference genome provided, download test data
@@ -104,7 +104,7 @@ workflow bedtools_example {
     {
       "name": demo_sra_id,
       "bam": select_first([bwa_mem.sorted_bam]),
-      "bai": select_first([bwa_mem.sorted_bai])
+      "bam_index": select_first([bwa_mem.sorted_bai])
     }
   ]
 
