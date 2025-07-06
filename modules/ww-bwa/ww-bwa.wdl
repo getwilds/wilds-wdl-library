@@ -4,7 +4,7 @@
 
 version 1.0
 
-struct SampleInfo {
+struct BwaSample {
     String name
     File r1
     File r2
@@ -32,7 +32,7 @@ workflow bwa_example {
 
   input {
     File reference_fasta
-    Array[SampleInfo] samples
+    Array[BwaSample] samples
     Int cpus = 8
     Int memory_gb = 32
   }
@@ -47,14 +47,15 @@ workflow bwa_example {
     call bwa_mem { input:
         bwa_genome_tar = bwa_index.bwa_index_tar,
         reference_fasta = reference_fasta,
-        sample_data = sample,
+        r1 = sample.r1,
+        r2 = sample.r2,
+        name = sample.name,
         cpu_cores = cpus,
         memory_gb = memory_gb
     }
   }
 
-    call validate_outputs { input:
-    sample_names = bwa_mem.name,
+  call validate_outputs { input:
     bam_files = bwa_mem.sorted_bam,
     bai_files = bwa_mem.sorted_bai
   }
@@ -89,12 +90,12 @@ task bwa_index {
   String ref_name = basename(reference_fasta)  # Name of local copy
 
   command <<<
-  set -eo pipefail && \
-  mkdir -p bwa_index && \
-  cp "~{reference_fasta}" bwa_index/"~{ref_name}" && \
-  echo "Building BWA index..." && \
-  bwa index "bwa_index/~{ref_name}" && \
-  tar -czf bwa_index.tar.gz bwa_index/*
+    set -eo pipefail && \
+    mkdir -p bwa_index && \
+    cp "~{reference_fasta}" bwa_index/"~{ref_name}" && \
+    echo "Building BWA index..." && \
+    bwa index "bwa_index/~{ref_name}" && \
+    tar -czf bwa_index.tar.gz bwa_index/*
   >>>
 
   output {
@@ -112,7 +113,6 @@ task bwa_mem {
   meta {
     description: "Task for aligning sequence reads using BWA-MEM"
     outputs: {
-        name: "Sample name that was processed",
         sorted_bam: "Sorted BWA-MEM alignment output BAM file",
         sorted_bai: "Index files for the sorted BWA-MEM alignment BAM files"
     }
@@ -121,7 +121,9 @@ task bwa_mem {
   parameter_meta {
     bwa_genome_tar: "Compressed tarball containing BWA genome index"
     reference_fasta: "Reference genome FASTA file"
-    sample_data: "Sample object containing sample name and R1/R2 FASTQ files"
+    r1: "FASTQ file for read 1"
+    r2: "FASTQ file for read 2"
+    name: "Sample name for read group information"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
@@ -129,7 +131,9 @@ task bwa_mem {
   input {
     File bwa_genome_tar
     File reference_fasta
-    SampleInfo sample_data
+    File r1
+    File r2
+    String name
     Int cpu_cores = 8
     Int memory_gb = 16
   }
@@ -141,19 +145,22 @@ task bwa_mem {
   Int cpu_threads = if cpu_cores > 1 then cpu_cores - 1 else 1
 
   command <<<
-  set -eo pipefail && \
-  echo "Extracting BWA reference..." && \
-  tar -xvf "~{bwa_genome_tar}" && \
-  echo "Starting BWA alignment..." && \
-  bwa mem -v 3 -t ~{cpu_threads} -M -R '@RG\tID:~{sample_data.name}\tSM:~{sample_data.name}\tPL:illumina' "bwa_index/~{ref_name}" "~{sample_data.r1}" "~{sample_data.r2}" > "~{sample_data.name}.sam" && \
-  samtools sort -@ ~{cpu_threads-1} -o "~{sample_data.name}".sorted_aligned.bam "~{sample_data.name}".sam && \
-  samtools index "~{sample_data.name}".sorted_aligned.bam
+    set -eo pipefail
+    
+    echo "Extracting BWA reference..."
+    tar -xvf "~{bwa_genome_tar}"
+
+    echo "Starting BWA alignment..."
+    bwa mem -v 3 -t ~{cpu_threads} -M -R "@RG\tID:~{name}\tSM:~{name}\tPL:illumina" \
+      "bwa_index/~{ref_name}" "~{r1}" "~{r2}" > "~{name}.sam"
+    
+    samtools sort -@ ~{cpu_threads - 1} -o "~{name}.sorted_aligned.bam" "~{name}.sam"
+    samtools index "~{name}.sorted_aligned.bam"
   >>>
 
   output {
-    String name = sample_data.name
-    File sorted_bam = "~{sample_data.name}.sorted_aligned.bam"
-    File sorted_bai = "~{sample_data.name}.sorted_aligned.bam.bai"
+    File sorted_bam = "~{name}.sorted_aligned.bam"
+    File sorted_bai = "~{name}.sorted_aligned.bam.bai"
   }
 
   runtime {
@@ -174,13 +181,11 @@ task validate_outputs {
   parameter_meta {
     bam_files: "Array of BAM files to validate"
     bai_files: "Array of BAM index files to validate"
-    sample_names: "Array of sample names that were processed"
   }
 
   input {
     Array[File] bam_files
     Array[File] bai_files
-    Array[String] sample_names
   }
 
   command <<<
@@ -190,7 +195,6 @@ task validate_outputs {
     echo "" >> validation_report.txt
 
     # Arrays for bash processing
-    sample_names=("~{sep=" " sample_names}")
     bam_files=("~{sep=" " bam_files}")
     bai_files=("~{sep=" " bai_files}")
 
@@ -198,12 +202,11 @@ task validate_outputs {
     total_mapped_reads=0
 
     # Check each sample
-    for i in "${!sample_names[@]}"; do
-      sample_name="${sample_names[$i]}"
+    for i in "${!bam_files[@]}"; do
       bam_file="${bam_files[$i]}"
       bai_file="${bai_files[$i]}"
 
-      echo "--- Sample: $sample_name ---" >> validation_report.txt
+      echo "--- Sample: $bam_file ---" >> validation_report.txt
 
       # Check BAM file exists and is not empty
       if [[ -f "$bam_file" && -s "$bam_file" ]]; then
@@ -240,7 +243,7 @@ task validate_outputs {
 
     # Overall summary
     echo "=== Validation Summary ===" >> validation_report.txt
-    echo "Total samples processed: ${#sample_names[@]}" >> validation_report.txt
+    echo "Total samples processed: ${#bam_files[@]}" >> validation_report.txt
     if [[ "$validation_passed" == "true" ]]; then
       echo "Overall Status: PASSED" >> validation_report.txt
     else
