@@ -47,8 +47,8 @@ workflow delly_example {
     File? exclude_regions_bed
     String demo_sra_id = "ERR1258306"
     String sv_type = ""
-    Int cpus = 8
-    Int memory_gb = 16
+    Int cpus = 2
+    Int memory_gb = 8
   }
 
   # If no reference genome provided, download test data
