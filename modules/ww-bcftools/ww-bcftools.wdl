@@ -14,12 +14,6 @@ struct BcftoolsSample {
     File bai
 }
 
-struct RefGenome {
-    String name
-    File fasta
-    File fasta_index
-}
-
 workflow bcftools_example {
   meta {
     author: "Taylor Firman"
@@ -35,7 +29,8 @@ workflow bcftools_example {
   parameter_meta {
     samples: "Optional list of sample objects, each containing name, BAM file, and BAM index. If not provided, workflow will download and align demonstration sample from SRA"
     regions_bed: "Optional BED file specifying regions to analyze"
-    reference_genome: "Optional reference genome object containing name, fasta, and fasta index files. If not provided, test data will be used."
+    ref_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
+    ref_fasta_index: "Optional reference genome FASTA index file. If not provided, test data will be used."
     demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
     max_depth: "Maximum read depth for mpileup (default: 10000)"
     max_idepth: "Maximum per-sample depth for indel calling (default: 10000)"
@@ -46,7 +41,8 @@ workflow bcftools_example {
   input {
     Array[BcftoolsSample]? samples
     File? regions_bed
-    RefGenome? reference_genome
+    File? ref_fasta
+    File? ref_fasta_index
     String demo_sra_id = "ERR1258306"
     Int max_depth = 10000
     Int max_idepth = 10000
@@ -55,13 +51,13 @@ workflow bcftools_example {
   }
 
   # If no reference genome provided, download test data
-  if (!defined(reference_genome)) {
+  if (!defined(ref_fasta) || !defined(ref_fasta_index)) {
     call ww_testdata.download_ref_data { }
   }
 
   # Determine which genome files to use
-  File genome_fasta = select_first([reference_genome.fasta, download_ref_data.fasta])
-  File genome_fasta_index = select_first([reference_genome.fasta_index, download_ref_data.fasta_index])
+  File genome_fasta = select_first([ref_fasta, download_ref_data.fasta])
+  File genome_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
 
   # If no samples provided, download demonstration data from SRA and align with BWA
   if (!defined(samples)) {
