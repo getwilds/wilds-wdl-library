@@ -4,10 +4,10 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedtools/ww-bedtools.wdl" as ww_bedtools
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-bedtools/ww-bedtools.wdl" as ww_bedtools
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-sra/ww-sra.wdl" as ww_sra
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct IchorSample {
     String name
@@ -34,6 +34,7 @@ workflow ichorcna_example {
   }
 
   parameter_meta {
+    samples: "Array of sample information containing name and tarball of per-chromosome BED files of read counts"
     bed_file: "BED file containing genomic intervals of interest"
     reference_fasta: "Reference genome FASTA file used for analysis"
     reference_index: "Index file for the reference genome"
@@ -41,7 +42,7 @@ workflow ichorcna_example {
     wig_map: "Mappability score WIG file"
     panel_of_norm_rds: "RDS file of median corrected depth from panel of normals"
     centromeres: "Text file containing Centromere locations"
-    samples: "Array of sample information containing name and tarball of per-chromosome BED files of read counts"
+    demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
     sex: "User-specified: male or female"
     genome: "Genome build (e.g. hg38)"
     genome_style: "Chromosome naming convention (use UCSC if desired output is to have 'chr' string): NCBI or UCSC"
@@ -60,6 +61,7 @@ workflow ichorcna_example {
     File? wig_map
     File? panel_of_norm_rds
     File? centromeres
+    String demo_sra_id = "ERR1258306"
     String sex = "male"
     String genome = "hg38"
     String genome_style = "UCSC"
@@ -110,11 +112,9 @@ workflow ichorcna_example {
     call ww_bwa.bwa_mem { input:
         bwa_genome_tar = bwa_index.bwa_index_tar,
         reference_fasta = genome_fasta,
-        sample_data = {
-          "name": demo_sra_id,
-          "r1": fastqdump.r1_end,
-          "r2": fastqdump.r2_end
-        },
+        r1 = fastqdump.r1_end,
+        r2 = fastqdump.r2_end,
+        name = demo_sra_id,
         cpu_cores = cpus,
         memory_gb = memory_gb * 2
     }
@@ -125,7 +125,7 @@ workflow ichorcna_example {
     {
       "name": demo_sra_id,
       "bam": select_first([bwa_mem.sorted_bam]),
-      "bai": select_first([bwa_mem.sorted_bai])
+      "bam_index": select_first([bwa_mem.sorted_bai])
     }
   ]
 

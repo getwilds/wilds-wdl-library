@@ -4,9 +4,9 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-sra/ww-sra.wdl" as ww_sra
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct BcftoolsSample {
     String name
@@ -77,11 +77,9 @@ workflow bcftools_example {
     call ww_bwa.bwa_mem { input:
         bwa_genome_tar = bwa_index.bwa_index_tar,
         reference_fasta = genome_fasta,
-        sample_data = {
-          "name": demo_sra_id,
-          "r1": fastqdump.r1_end,
-          "r2": fastqdump.r2_end
-        },
+        r1 = fastqdump.r1_end,
+        r2 = fastqdump.r2_end,
+        name = demo_sra_id,
         cpu_cores = cpu_cores,
         memory_gb = memory_gb * 2
     }
