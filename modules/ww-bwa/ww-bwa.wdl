@@ -4,6 +4,8 @@
 
 version 1.0
 
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
 struct BwaSample {
     String name
     File r1
@@ -24,21 +26,29 @@ workflow bwa_example {
   }
 
   parameter_meta {
+    samples: "List of BwaSample objects, each containing sample name and R1/R2 FASTQ files"
     reference_fasta: "Reference genome FASTA file"
-    samples: "List of sample objects, each containing sample name and R1/R2 FASTQ files"
     cpus: "Number of CPU cores allocated for each task in the workflow"
     memory_gb: "Memory allocated for each task in the workflow in GB"
   }
 
   input {
-    File reference_fasta
     Array[BwaSample] samples
+    File? reference_fasta
     Int cpus = 8
     Int memory_gb = 32
   }
 
+  # If no reference genome provided, download test data
+  if (!defined(reference_fasta)) {
+    call ww_testdata.download_ref_data { }
+  }
+
+  # Determine which genome files to use
+  File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
+
   call bwa_index { input:
-      reference_fasta = reference_fasta,
+      reference_fasta = genome_fasta,
       cpu_cores = cpus,
       memory_gb = memory_gb
   }
@@ -46,7 +56,7 @@ workflow bwa_example {
   scatter (sample in samples) {
     call bwa_mem { input:
         bwa_genome_tar = bwa_index.bwa_index_tar,
-        reference_fasta = reference_fasta,
+        reference_fasta = genome_fasta,
         r1 = sample.r1,
         r2 = sample.r2,
         name = sample.name,
