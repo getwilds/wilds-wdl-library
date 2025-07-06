@@ -4,16 +4,14 @@
 
 version 1.0
 
-struct SampleInfo {
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-sra/ww-sra.wdl" as ww_sra
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
+struct MantaSample {
     String name
     File bam
     File bai
-}
-
-struct RefGenome {
-    String name
-    File fasta
-    File fasta_index
 }
 
 workflow manta_example {
@@ -31,31 +29,77 @@ workflow manta_example {
 
   parameter_meta {
     samples: "List of sample objects, each containing name, BAM file, and BAM index"
-    reference_genome: "Reference genome object containing name, fasta, and fasta index files"
+    ref_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
+    ref_fasta_index: "Optional reference genome FASTA index file. If not provided, test data will be used."
     call_regions_bed: "Optional BED file to restrict calling to specific regions"
     call_regions_index: "Index file for the optional BED file"
+    demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
     is_rna: "Boolean flag indicating if input data is RNA-seq (default: false for DNA)"
     cpus: "Number of CPU cores allocated for each task in the workflow"
     memory_gb: "Memory allocated for each task in the workflow in GB"
   }
 
   input {
-    Array[SampleInfo] samples
-    RefGenome reference_genome
+    Array[MantaSample]? samples
+    File? ref_fasta
+    File? ref_fasta_index
     File? call_regions_bed
     File? call_regions_index
+    String demo_sra_id = "ERR1258306"
     Boolean is_rna = false
-    Int cpus = 8
-    Int memory_gb = 16
+    Int cpus = 2
+    Int memory_gb = 8
   }
+
+  # Determine which genome files to use
+  if (!defined(ref_fasta) || !defined(ref_fasta_index)) {
+    call ww_testdata.download_ref_data { }
+  }
+  File genome_fasta = select_first([ref_fasta, download_ref_data.fasta])
+  File genome_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
+
+  # If no samples provided, download demonstration data from SRA and align with BWA
+  if (!defined(samples)) {
+    call ww_sra.fastqdump { input:
+        sra_id = demo_sra_id,
+        ncpu = cpus
+    }
+
+    # Build BWA index for alignment
+    call ww_bwa.bwa_index { input:
+        reference_fasta = genome_fasta,
+        cpu_cores = cpus,
+        memory_gb = memory_gb * 2
+    }
+
+    # Align the SRA sample using BWA
+    call ww_bwa.bwa_mem { input:
+        bwa_genome_tar = bwa_index.bwa_index_tar,
+        reference_fasta = genome_fasta,
+        r1 = fastqdump.r1_end,
+        r2 = fastqdump.r2_end,
+        name = demo_sra_id,
+        cpu_cores = cpus,
+        memory_gb = memory_gb * 2
+    }
+  }
+
+  # Create samples array - either from input or from BWA alignment
+  Array[MantaSample] final_samples = if defined(samples) then select_first([samples]) else [
+    {
+      "name": demo_sra_id,
+      "bam": select_first([bwa_mem.sorted_bam]),
+      "bai": select_first([bwa_mem.sorted_bai])
+    }
+  ]
 
   scatter (sample in samples) {
     call manta_call { input:
         aligned_bam = sample.bam,
         aligned_bam_index = sample.bai,
         sample_name = sample.name,
-        reference_fasta = reference_genome.fasta,
-        reference_fasta_index = reference_genome.fasta_index,
+        reference_fasta = genome_fasta,
+        reference_fasta_index = genome_fasta_index,
         call_regions_bed = call_regions_bed,
         call_regions_index = call_regions_index,
         is_rna = is_rna,
