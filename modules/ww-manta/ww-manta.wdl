@@ -93,7 +93,7 @@ workflow manta_example {
     }
   ]
 
-  scatter (sample in samples) {
+  scatter (sample in final_samples) {
     call manta_call { input:
         aligned_bam = sample.bam,
         aligned_bam_index = sample.bai,
