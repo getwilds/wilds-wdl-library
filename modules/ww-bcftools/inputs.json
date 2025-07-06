@@ -6,11 +6,8 @@
       "bai": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam.bai"
     }
   ],
-  "bcftools_example.reference_genome": {
-    "name": "chr1",
-    "fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
-    "fasta_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa.fai"
-  },
+  "bcftools_example.ref_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
+  "bcftools_example.ref_fasta_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa.fai",
   "bcftools_example.regions_bed": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.bed",
   "bcftools_example.max_depth": 1000,
   "bcftools_example.max_idepth": 1000,
