@@ -5,6 +5,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
 
 struct BwaSample {
     String name
@@ -26,17 +27,19 @@ workflow bwa_example {
   }
 
   parameter_meta {
-    samples: "List of BwaSample objects, each containing sample name and R1/R2 FASTQ files"
+    samples: "Optional list of BwaSample objects, each containing sample name and R1/R2 FASTQ files. If not provided, workflow will download a demonstration sample from SRA"
     reference_fasta: "Reference genome FASTA file"
+    demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
     cpus: "Number of CPU cores allocated for each task in the workflow"
     memory_gb: "Memory allocated for each task in the workflow in GB"
   }
 
   input {
-    Array[BwaSample] samples
+    Array[BwaSample]? samples
     File? reference_fasta
-    Int cpus = 8
-    Int memory_gb = 32
+    String demo_sra_id = "ERR1258306"
+    Int cpus = 2
+    Int memory_gb = 8
   }
 
   # If no reference genome provided, download test data
@@ -47,13 +50,30 @@ workflow bwa_example {
   # Determine which genome files to use
   File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
 
+  # If no samples provided, download demonstration data from SRA
+  if (!defined(samples)) {
+    call ww_sra.fastqdump { input:
+        sra_id = demo_sra_id,
+        ncpu = cpus
+    }
+  }
+
+  # Create samples array - either from input or from SRA download
+  Array[BwaSample] final_samples = if defined(samples) then select_first([samples]) else [
+    {
+      "name": demo_sra_id,
+      "r1": select_first([fastqdump.r1_end]),
+      "r2": select_first([fastqdump.r2_end])
+    }
+  ]
+
   call bwa_index { input:
       reference_fasta = genome_fasta,
       cpu_cores = cpus,
       memory_gb = memory_gb
   }
 
-  scatter (sample in samples) {
+  scatter (sample in final_samples) {
     call bwa_mem { input:
         bwa_genome_tar = bwa_index.bwa_index_tar,
         reference_fasta = genome_fasta,
