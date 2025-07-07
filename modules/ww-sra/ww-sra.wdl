@@ -28,8 +28,8 @@ workflow sra_download {
   }
 
   input {
-    Array[String] sra_id_list
-    Int n_cpu = 8
+    Array[String]? sra_id_list = ["ERR1258306"]
+    Int n_cpu = 2
   }
 
   scatter (id in sra_id_list) {
