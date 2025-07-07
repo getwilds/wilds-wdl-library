@@ -33,6 +33,7 @@ workflow smoove_example {
     ref_fasta_index: "Reference genome FASTA index file"
     exclude_bed: "Optional BED file defining regions to exclude from calling"
     include_bed: "Optional BED file defining regions to include for calling"
+    demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
     cpus: "Number of CPU cores allocated for each task in the workflow"
     memory_gb: "Memory allocated for each task in the workflow in GB"
   }
@@ -43,6 +44,7 @@ workflow smoove_example {
     File? ref_fasta_index
     File? exclude_bed
     File? include_bed
+    String demo_sra_id = "ERR1258306"
     Int cpus = 2
     Int memory_gb = 8
   }
