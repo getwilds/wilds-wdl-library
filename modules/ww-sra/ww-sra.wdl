@@ -28,7 +28,7 @@ workflow sra_download {
   }
 
   input {
-    Array[String]? sra_id_list = ["ERR1258306"]
+    Array[String] sra_id_list = ["ERR1258306"]
     Int n_cpu = 2
   }
 
