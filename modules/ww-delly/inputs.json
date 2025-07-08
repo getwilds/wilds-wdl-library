@@ -1,15 +1,21 @@
 {
   "delly_example.samples": [
     {
-      "name": "ERR1258306",
-      "bam": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam",
-      "bai": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam.bai"
+      "name": "sample1",
+      "bam": "/path/to/your/sample1.aligned.bam",
+      "bai": "/path/to/your/sample1.aligned.bam.bai"
+    },
+    {
+      "name": "sample2",
+      "bam": "/path/to/your/sample2.aligned.bam",
+      "bai": "/path/to/your/sample2.aligned.bam.bai"
     }
   ],
-  "delly_example.ref_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
-  "delly_example.ref_fasta_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa.fai",
-  "delly_example.target_regions_bed": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.bed",
+  "delly_example.ref_fasta": "/path/to/your/reference_genome.fasta",
+  "delly_example.ref_fasta_index": "/path/to/your/reference_genome.fasta.fai",
+  "delly_example.target_regions_bed": "/path/to/your/target_regions.bed",
+  "delly_example.exclude_regions_bed": "/path/to/your/exclude_regions.bed",
   "delly_example.sv_type": "",
-  "delly_example.cpus": 2,
-  "delly_example.memory_gb": 4
+  "delly_example.cpus": 8,
+  "delly_example.memory_gb": 16
 }
