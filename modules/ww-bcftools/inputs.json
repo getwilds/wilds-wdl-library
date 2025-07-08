@@ -1,16 +1,21 @@
 {
   "bcftools_example.samples": [
     {
-      "name": "ERR1258306",
-      "bam": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam",
-      "bai": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam.bai"
+      "name": "sample1",
+      "bam": "/path/to/your/aligned_sample1.bam",
+      "bai": "/path/to/your/aligned_sample1.bam.bai"
+    },
+    {
+      "name": "sample2", 
+      "bam": "/path/to/your/aligned_sample2.bam",
+      "bai": "/path/to/your/aligned_sample2.bam.bai"
     }
   ],
-  "bcftools_example.ref_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
-  "bcftools_example.ref_fasta_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa.fai",
-  "bcftools_example.regions_bed": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.bed",
-  "bcftools_example.max_depth": 1000,
-  "bcftools_example.max_idepth": 1000,
-  "bcftools_example.memory_gb": 4,
+  "bcftools_example.ref_fasta": "/path/to/your/reference_genome.fasta",
+  "bcftools_example.ref_fasta_index": "/path/to/your/reference_genome.fasta.fai",
+  "bcftools_example.regions_bed": "/path/to/your/target_regions.bed",
+  "bcftools_example.max_depth": 10000,
+  "bcftools_example.max_idepth": 10000,
+  "bcftools_example.memory_gb": 8,
   "bcftools_example.cpu_cores": 2
 }
