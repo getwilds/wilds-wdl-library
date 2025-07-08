@@ -1,17 +1,26 @@
 {
-  "bedtools_example.bed_file": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.bed",
   "bedtools_example.samples": [
     {
-      "name": "ERR1258306",
-      "bam": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam",
-      "bam_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306.chr1.aligned.bam.bai"
+      "name": "sample1",
+      "bam": "/path/to/your/aligned_sample1.bam", 
+      "bam_index": "/path/to/your/aligned_sample1.bam.bai"
+    },
+    {
+      "name": "sample2",
+      "bam": "/path/to/your/aligned_sample2.bam",
+      "bam_index": "/path/to/your/aligned_sample2.bam.bai"
     }
   ],
-  "bedtools_example.reference_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
-  "bedtools_example.reference_index": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa.fai",
+  "bedtools_example.bed_file": "/path/to/your/regions_of_interest.bed",
+  "bedtools_example.reference_fasta": "/path/to/your/reference_genome.fasta",
+  "bedtools_example.reference_index": "/path/to/your/reference_genome.fasta.fai",
+  "bedtools_example.chromosomes": [
+    "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
+    "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", 
+    "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"
+  ],
   "bedtools_example.intersect_flags": "-header -wo",
-  "bedtools_example.chromosomes": ["chr1"],
   "bedtools_example.tmp_dir": "/tmp",
   "bedtools_example.cpus": 2,
-  "bedtools_example.memory_gb": 16
+  "bedtools_example.memory_gb": 8
 }
