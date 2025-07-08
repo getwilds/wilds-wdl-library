@@ -17,6 +17,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 - **Tasks**: `annotsv_annotate`, `validate_outputs`
 - **Workflow**: `annotsv_example` (demonstration workflow that executes all tasks)
 - **Container**: `getwilds/annotsv:3.4.4`
+- **Test Data**: Automatically downloads test VCF when no input files provided
 
 ## Tasks
 
@@ -59,6 +60,7 @@ workflow my_sv_annotation_pipeline {
     Array[File] sv_vcfs
     String genome_build = "GRCh38"
     String annotation_mode = "full"
+    String tx_source = "RefSeq"
   }
   
   scatter (vcf in sv_vcfs) {
@@ -67,6 +69,7 @@ workflow my_sv_annotation_pipeline {
         raw_vcf = vcf,
         genome_build = genome_build,
         annotation_mode = annotation_mode,
+        tx_source = tx_source,
         include_ci = true,
         sv_min_size = 50
     }
@@ -108,6 +111,8 @@ sprocket run ww-annotsv.wdl inputs.json
 
 ### Test Input Format
 
+When providing your own VCF files:
+
 ```json
 {
   "annotsv_example.vcfs": [
@@ -123,6 +128,8 @@ sprocket run ww-annotsv.wdl inputs.json
 }
 ```
 
+**Note**: If no `vcfs` array is provided in the inputs, the workflow will automatically download test data using the `ww-testdata` module.
+
 ## Configuration Guidelines
 
 ### Genome Build Selection
@@ -130,6 +137,11 @@ sprocket run ww-annotsv.wdl inputs.json
 Choose the appropriate genome build to match your variant calling:
 - **GRCh38**: Recommended for new analyses (current reference)
 - **GRCh37**: For compatibility with older datasets or specific requirements
+
+### Transcript Source Selection
+
+- **RefSeq**: More conservative annotation set, often preferred for clinical applications
+- **ENSEMBL**: More comprehensive annotation set, includes more transcript variants
 
 ### Annotation Modes
 
@@ -141,7 +153,7 @@ Choose the appropriate genome build to match your variant calling:
 - `overlap_threshold`: Controls the minimum overlap percentage required for annotation (70% is conservative)
 - `include_ci`: Include confidence intervals for more precise breakpoint annotation
 - `exclude_benign`: Filter variants with high population frequency (set `exclude_benign` to true)
-- `tx_source`: Choose between RefSeq (more conservative) and ENSEMBL (more comprehensive) annotations
+- `sv_min_size`: Minimum size threshold for structural variant consideration
 
 ## Output Format
 
@@ -172,7 +184,7 @@ AnnotSV generates tab-delimited files with comprehensive annotations including:
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- Input VCF files containing structural variants with proper format
+- Input VCF files containing structural variants with proper format (or use automatic test data)
 - Sufficient computational resources (8GB RAM recommended)
 
 ## Support and Documentation
