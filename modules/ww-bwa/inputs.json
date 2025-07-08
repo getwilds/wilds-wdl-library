@@ -1,12 +1,17 @@
 {
-  "bwa_example.reference_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr1.fa",
   "bwa_example.samples": [
     {
-      "name": "ERR1258306",
-      "r1": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306_1.fastq.gz",
-      "r2": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/ERR1258306_2.fastq.gz"
+      "name": "sample1",
+      "r1": "/path/to/your/sample1_R1.fastq.gz",
+      "r2": "/path/to/your/sample1_R2.fastq.gz"
+    },
+    {
+      "name": "sample2",
+      "r1": "/path/to/your/sample2_R1.fastq.gz",
+      "r2": "/path/to/your/sample2_R2.fastq.gz"
     }
   ],
-  "bwa_example.cpus": 2,
-  "bwa_example.memory_gb": 8
+  "bwa_example.reference_fasta": "/path/to/your/reference_genome.fasta",
+  "bwa_example.cpus": 8,
+  "bwa_example.memory_gb": 32
 }
