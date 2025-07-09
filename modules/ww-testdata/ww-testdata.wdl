@@ -126,16 +126,12 @@ task download_fastq_data {
   meta {
     description: "Downloads reference genome and index files for WILDS WDL test runs"
     outputs: {
-        fasta: "Reference genome FASTA file",
-        fasta_index: "Index file for the reference FASTA",
-        gtf: "GTF file containing gene annotations for the specified chromosome",
-        bed: "BED file covering the entire chromosome"
+        r1_fastq: "R1 fastq file downloaded for the sample in question",
+        r2_fastq: "R2 fastq file downloaded for the sample in question"
     }
   }
 
   parameter_meta {
-    chromo: "Chromosome to download (e.g., chr1, chr2, etc.)"
-    version: "Reference genome version (e.g., hg38, hg19)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
