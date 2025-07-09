@@ -94,7 +94,7 @@ workflow ichorcna_example {
   # Create samples array - either from input or from test data download
   Array[IchorSample] final_samples = if defined(samples) then select_first([samples]) else [
     {
-      "name": demo_sra_id,
+      "name": "demo_sample",
       "bam": select_first([download_bam_data.bam]),
       "bam_index": select_first([download_bam_data.bai])
     }
