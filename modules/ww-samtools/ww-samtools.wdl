@@ -5,7 +5,7 @@ version 1.0
 
 struct SampleInfo {
   String name
-  Array[String] cram_files
+  Array[File] cram_files
 }
 
 workflow samtools_example {
@@ -66,13 +66,15 @@ task crams_to_fastq {
 
   parameter_meta {
     cram_files: "List of CRAM/BAM/SAM files for a sample"
+    ref: "Reference genome FASTA file"
     name: "Name of the sample (used for file naming)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
   }
 
   input {
-    Array[String] cram_files
+    Array[File] cram_files
+    File ref
     String name
     Int cpu_cores = 2
     Int memory_gb = 16
@@ -94,7 +96,6 @@ task crams_to_fastq {
     cpu: "~{cpu_cores}"
     docker: "getwilds/samtools:1.11"
   }
-
 }
 
 task validate_outputs {
