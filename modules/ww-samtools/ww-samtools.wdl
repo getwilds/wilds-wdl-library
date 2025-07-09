@@ -22,12 +22,14 @@ workflow samtools_example {
 
   parameter_meta {
     samples: "Array of sample objects, each containing name and paths to CRAM/BAM/SAM files"
+    reference_fasta: "Reference genome FASTA file"
     cpus: "Number of CPU cores allocated for each non-validation task"
     memory_gb: "Memory in GB allocated for each non-validation task"
   }
 
   input {
     Array[SampleInfo] samples
+    File reference_fasta
     Int cpus = 23
     Int memory_gb = 36
   }
@@ -36,6 +38,7 @@ workflow samtools_example {
     call crams_to_fastq {
       input:
         cram_files = sample.cram_files,
+        ref = reference_fasta,
         name = sample.name,
         cpu_cores = cpus,
         memory_gb = memory_gb
@@ -82,8 +85,8 @@ task crams_to_fastq {
 
   command <<<
     # Merge CRAM/BAM/SAM files if more than one, then convert to FASTQ
-    samtools merge -f -@ ~{cpu_cores} ~{name}.merged.cram ~{sep=' ' cram_files} && \
-    samtools fastq "~{name}.merged.cram" > "~{name}.fastq.gz"
+    samtools merge -@ ~{cpu_cores} --reference "~{ref}" -f "~{name}.merged.cram" ~{sep=" " cram_files} && \
+    samtools fastq --reference "~{ref}" -o "~{name}.fastq.gz" "~{name}.merged.cram"
   >>>
 
   output {
