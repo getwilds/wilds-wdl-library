@@ -39,6 +39,8 @@ workflow testdata_example {
       version = version
   }
 
+  call download_fastq_data { }
+
   call download_ichor_data { }
 
   call download_annotsv_vcf { }
@@ -48,6 +50,8 @@ workflow testdata_example {
     File ref_fasta_index = download_ref_data.fasta_index
     File ref_gtf = download_ref_data.gtf
     File ref_bed = download_ref_data.bed
+    File r1_fastq = download_fastq_data.r1_fastq
+    File r2_fastq = download_fastq_data.r2_fastq
     File ichor_gc_wig = download_ichor_data.wig_gc
     File ichor_map_wig = download_ichor_data.wig_map
     File ichor_centromeres = download_ichor_data.centromeres
@@ -113,6 +117,45 @@ task download_ref_data {
 
   runtime {
     docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_fastq_data {
+  meta {
+    description: "Downloads reference genome and index files for WILDS WDL test runs"
+    outputs: {
+        fasta: "Reference genome FASTA file",
+        fasta_index: "Index file for the reference FASTA",
+        gtf: "GTF file containing gene annotations for the specified chromosome",
+        bed: "BED file covering the entire chromosome"
+    }
+  }
+
+  parameter_meta {
+    chromo: "Chromosome to download (e.g., chr1, chr2, etc.)"
+    version: "Reference genome version (e.g., hg38, hg19)"
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_*.fastq .
+  >>>
+
+  output {
+    File r1_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq"
+    File r2_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
