@@ -4,7 +4,6 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct BwaSample {
@@ -50,20 +49,17 @@ workflow bwa_example {
   # Determine which genome files to use
   File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
 
-  # If no samples provided, download demonstration data from SRA
+  # If no samples provided, download demonstration data
   if (!defined(samples)) {
-    call ww_sra.fastqdump { input:
-        sra_id = demo_sra_id,
-        ncpu = cpus
-    }
+    call ww_testdata.download_fastq_data { }
   }
 
-  # Create samples array - either from input or from SRA download
+  # Create samples array - either from input or from test data download
   Array[BwaSample] final_samples = if defined(samples) then select_first([samples]) else [
     {
-      "name": demo_sra_id,
-      "r1": select_first([fastqdump.r1_end]),
-      "r2": select_first([fastqdump.r2_end])
+      "name": "demo_sample",
+      "r1": select_first([download_fastq_data.r1_fastq]),
+      "r2": select_first([download_fastq_data.r2_fastq])
     }
   ]
 

@@ -5,8 +5,6 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-bedtools/ww-bedtools.wdl" as ww_bedtools
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-sra/ww-sra.wdl" as ww_sra
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct IchorSample {
@@ -42,7 +40,6 @@ workflow ichorcna_example {
     wig_map: "Mappability score WIG file"
     panel_of_norm_rds: "RDS file of median corrected depth from panel of normals"
     centromeres: "Text file containing Centromere locations"
-    demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
     sex: "User-specified: male or female"
     genome: "Genome build (e.g. hg38)"
     genome_style: "Chromosome naming convention (use UCSC if desired output is to have 'chr' string): NCBI or UCSC"
@@ -61,7 +58,6 @@ workflow ichorcna_example {
     File? wig_map
     File? panel_of_norm_rds
     File? centromeres
-    String demo_sra_id = "ERR1258306"
     String sex = "male"
     String genome = "hg38"
     String genome_style = "UCSC"
@@ -90,38 +86,17 @@ workflow ichorcna_example {
   File final_panel_of_norm = select_first([panel_of_norm_rds, download_ichor_data.panel_of_norm_rds])
   File final_centromeres = select_first([centromeres, download_ichor_data.centromeres])
 
-  # If no samples provided, download demonstration data from SRA and align with BWA
+  # If no samples provided, download demonstration data
   if (!defined(samples)) {
-    call ww_sra.fastqdump { input:
-        sra_id = demo_sra_id,
-        ncpu = cpus
-    }
-
-    # Build BWA index for alignment
-    call ww_bwa.bwa_index { input:
-        reference_fasta = genome_fasta,
-        cpu_cores = cpus,
-        memory_gb = memory_gb * 2
-    }
-
-    # Align the SRA sample using BWA
-    call ww_bwa.bwa_mem { input:
-        bwa_genome_tar = bwa_index.bwa_index_tar,
-        reference_fasta = genome_fasta,
-        r1 = fastqdump.r1_end,
-        r2 = fastqdump.r2_end,
-        name = demo_sra_id,
-        cpu_cores = cpus,
-        memory_gb = memory_gb * 2
-    }
+    call ww_testdata.download_bam_data { }
   }
 
-  # Create samples array - either from input or from BWA alignment
+  # Create samples array - either from input or from test data download
   Array[IchorSample] final_samples = if defined(samples) then select_first([samples]) else [
     {
       "name": demo_sra_id,
-      "bam": select_first([bwa_mem.sorted_bam]),
-      "bam_index": select_first([bwa_mem.sorted_bai])
+      "bam": select_first([download_bam_data.bam]),
+      "bam_index": select_first([download_bam_data.bai])
     }
   ]
 

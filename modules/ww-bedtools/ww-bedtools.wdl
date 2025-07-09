@@ -4,8 +4,6 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-sra/ww-sra.wdl" as ww_sra
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct BedtoolsSample {
@@ -37,7 +35,6 @@ workflow bedtools_example {
     reference_fasta: "Reference genome FASTA file used for analysis"
     reference_index: "Index file for the reference genome"
     intersect_flags: "Flags for BEDTools intersect command"
-    demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
     chromosomes: "List of chromosomes to analyze for window-based counting"
     tmp_dir : "Path to a temporary directory"
     cpus: "Number of CPU cores allocated for each task in the workflow"
@@ -49,7 +46,6 @@ workflow bedtools_example {
     Array[BedtoolsSample]? samples
     File? reference_fasta
     File? reference_index
-    String demo_sra_id = "ERR1258306"
     Array[String] chromosomes = [
       "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
       "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
@@ -71,38 +67,17 @@ workflow bedtools_example {
   File genome_fasta_index = select_first([reference_index, download_ref_data.fasta_index])
   File bed_file_final = select_first([bed_file, download_ref_data.bed])
 
-  # If no samples provided, download demonstration data from SRA and align with BWA
+  # If no samples provided, download demonstration data
   if (!defined(samples)) {
-    call ww_sra.fastqdump { input:
-        sra_id = demo_sra_id,
-        ncpu = cpus
-    }
-
-    # Build BWA index for alignment
-    call ww_bwa.bwa_index { input:
-        reference_fasta = genome_fasta,
-        cpu_cores = cpus,
-        memory_gb = memory_gb * 2
-    }
-
-    # Align the SRA sample using BWA
-    call ww_bwa.bwa_mem { input:
-        bwa_genome_tar = bwa_index.bwa_index_tar,
-        reference_fasta = genome_fasta,
-        r1 = fastqdump.r1_end,
-        r2 = fastqdump.r2_end,
-        name = demo_sra_id,
-        cpu_cores = cpus,
-        memory_gb = memory_gb * 2
-    }
+    call ww_testdata.download_bam_data { }
   }
 
-  # Create samples array - either from input or from BWA alignment
+  # Create samples array - either from input or from test data download
   Array[BedtoolsSample] final_samples = if defined(samples) then select_first([samples]) else [
     {
-      "name": demo_sra_id,
-      "bam": select_first([bwa_mem.sorted_bam]),
-      "bam_index": select_first([bwa_mem.sorted_bai])
+      "name": "demo_sample",
+      "bam": select_first([download_bam_data.bam]),
+      "bam_index": select_first([download_bam_data.bai])
     }
   ]
 

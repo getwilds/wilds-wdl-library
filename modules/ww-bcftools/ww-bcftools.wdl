@@ -4,8 +4,6 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-sra/ww-sra.wdl" as ww_sra
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct BcftoolsSample {
@@ -31,7 +29,6 @@ workflow bcftools_example {
     regions_bed: "Optional BED file specifying regions to analyze"
     ref_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
     ref_fasta_index: "Optional reference genome FASTA index file. If not provided, test data will be used."
-    demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
     max_depth: "Maximum read depth for mpileup (default: 10000)"
     max_idepth: "Maximum per-sample depth for indel calling (default: 10000)"
     memory_gb: "Memory allocated for each task in the workflow in GB"
@@ -43,7 +40,6 @@ workflow bcftools_example {
     File? regions_bed
     File? ref_fasta
     File? ref_fasta_index
-    String demo_sra_id = "ERR1258306"
     Int max_depth = 10000
     Int max_idepth = 10000
     Int memory_gb = 8
@@ -59,38 +55,17 @@ workflow bcftools_example {
   File genome_fasta = select_first([ref_fasta, download_ref_data.fasta])
   File genome_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
 
-  # If no samples provided, download demonstration data from SRA and align with BWA
+  # If no samples provided, download demonstration data
   if (!defined(samples)) {
-    call ww_sra.fastqdump { input:
-        sra_id = demo_sra_id,
-        ncpu = cpu_cores
-    }
-
-    # Build BWA index for alignment
-    call ww_bwa.bwa_index { input:
-        reference_fasta = genome_fasta,
-        cpu_cores = cpu_cores,
-        memory_gb = memory_gb * 2
-    }
-
-    # Align the SRA sample using BWA
-    call ww_bwa.bwa_mem { input:
-        bwa_genome_tar = bwa_index.bwa_index_tar,
-        reference_fasta = genome_fasta,
-        r1 = fastqdump.r1_end,
-        r2 = fastqdump.r2_end,
-        name = demo_sra_id,
-        cpu_cores = cpu_cores,
-        memory_gb = memory_gb * 2
-    }
+    call ww_testdata.download_bam_data { }
   }
 
-  # Create samples array - either from input or from BWA alignment
+  # Create samples array - either from input or from test data download
   Array[BcftoolsSample] final_samples = if defined(samples) then select_first([samples]) else [
     {
-      "name": demo_sra_id,
-      "bam": select_first([bwa_mem.sorted_bam]),
-      "bai": select_first([bwa_mem.sorted_bai])
+      "name": "demo_sample",
+      "bam": select_first([download_bam_data.bam]),
+      "bai": select_first([download_bam_data.bai])
     }
   ]
 

@@ -4,7 +4,6 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct StarSample {
@@ -35,7 +34,6 @@ workflow star_example {
     samples: "List of sample objects, each containing name, r1/r2 fastq files, and condition information"
     ref_fasta: "Reference genome FASTA file"
     ref_gtf: "Reference genome GTF annotation file"
-    demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
     sjdb_overhang: "Length of the genomic sequence around the annotated junction to be used in constructing the splice junctions database"
     genome_sa_index_nbases: "Length (bases) of the SA pre-indexing string, typically between 10-15 (scales with genome size)"
     cpus: "Number of CPU cores allocated for each task in the workflow"
@@ -46,7 +44,6 @@ workflow star_example {
     Array[StarSample]? samples
     File? ref_fasta
     File? ref_gtf
-    String demo_sra_id = "ERR1258306"
     Int sjdb_overhang = 100
     Int genome_sa_index_nbases = 14
     Int cpus = 2
@@ -71,18 +68,15 @@ workflow star_example {
 
   # If no samples provided, download demonstration data from SRA
   if (!defined(samples)) {
-    call ww_sra.fastqdump { input:
-        sra_id = demo_sra_id,
-        ncpu = cpus
-    }
+    call ww_testdata.download_fastq_data { }
   }
 
   # Create samples array - either from input or from SRA download
   Array[StarSample] final_samples = if defined(samples) then select_first([samples]) else [
     {
-      "name": demo_sra_id,
-      "r1": select_first([fastqdump.r1_end]),
-      "r2": select_first([fastqdump.r2_end])
+      "name": "demo_sample",
+      "r1": select_first([download_fastq_data.r1_fastq]),
+      "r2": select_first([download_fastq_data.r2_fastq])
     }
   ]
 
