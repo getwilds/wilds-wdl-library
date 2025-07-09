@@ -198,7 +198,7 @@ task download_bam_data {
 
   output {
     File bam = "NA12878_chr1.bam"
-    File bai = "NA12878_chr1.bai"
+    File bai = "NA12878_chr1.bam.bai"
   }
 
   runtime {
