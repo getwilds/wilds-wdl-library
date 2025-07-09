@@ -192,11 +192,13 @@ task download_bam_data {
   command <<<
     aws s3 cp --no-sign-request s3://gatk-test-data/wgs_bam/NA12878_20k_hg38/NA12878.bam .
     aws s3 cp --no-sign-request s3://gatk-test-data/wgs_bam/NA12878_20k_hg38/NA12878.bai .
+    samtools view -b NA12878.bam chr1 > NA12878_chr1.bam
+    samtools index NA12878_chr1.bam
   >>>
 
   output {
-    File bam = "NA12878.bam"
-    File bai = "NA12878.bai"
+    File bam = "NA12878_chr1.bam"
+    File bai = "NA12878_chr1.bai"
   }
 
   runtime {
