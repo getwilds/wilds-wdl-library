@@ -15,6 +15,10 @@ workflow testdata_example {
         ref_fasta_index: "Index file for the reference FASTA",
         ref_gtf: "GTF file containing gene annotations for the specified chromosome",
         ref_bed: "BED file covering the entire chromosome",
+        r1_fastq: "R1 fastq file downloaded for the sample in question",
+        r2_fastq: "R2 fastq file downloaded for the sample in question",
+        bam: "BAM file downloaded for the sample in question",
+        bai: "Index file for the BAM file",
         ichor_gc_wig: "GC content WIG file for hg38",
         ichor_map_wig: "Mapping quality WIG file for hg38",
         ichor_centromeres: "Centromere locations for hg38",
@@ -41,21 +45,29 @@ workflow testdata_example {
 
   call download_fastq_data { }
 
+  call download_bam_data { }
+
   call download_ichor_data { }
 
   call download_annotsv_vcf { }
 
   output {
+    # Outputs from the reference data download
     File ref_fasta = download_ref_data.fasta
     File ref_fasta_index = download_ref_data.fasta_index
     File ref_gtf = download_ref_data.gtf
     File ref_bed = download_ref_data.bed
+    # Outputs from the fastq and bam data downloads
     File r1_fastq = download_fastq_data.r1_fastq
     File r2_fastq = download_fastq_data.r2_fastq
+    File bam = download_bam_data.bam
+    File bai = download_bam_data.bai
+    # Outputs from the ichorCNA data download
     File ichor_gc_wig = download_ichor_data.wig_gc
     File ichor_map_wig = download_ichor_data.wig_map
     File ichor_centromeres = download_ichor_data.centromeres
     File ichor_panel_of_norm_rds = download_ichor_data.panel_of_norm_rds
+    # Outputs from the AnnotSV test VCF download
     File annotsv_test_vcf = download_annotsv_vcf.test_vcf
   }
 }
@@ -124,7 +136,7 @@ task download_ref_data {
 
 task download_fastq_data {
   meta {
-    description: "Downloads reference genome and index files for WILDS WDL test runs"
+    description: "Downloads small example FASTQ files for WILDS WDL test runs"
     outputs: {
         r1_fastq: "R1 fastq file downloaded for the sample in question",
         r2_fastq: "R2 fastq file downloaded for the sample in question"
@@ -142,12 +154,49 @@ task download_fastq_data {
   }
 
   command <<<
-    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_*.fastq .
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq .
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq .
   >>>
 
   output {
     File r1_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq"
     File r2_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_bam_data {
+  meta {
+    description: "Downloads small example BAM files for WILDS WDL test runs"
+    outputs: {
+        bam: "BAM file downloaded for the sample in question",
+        bai: "Index file for the BAM file"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_bam/NA12878_20k_hg38/NA12878.bam .
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_bam/NA12878_20k_hg38/NA12878.bai .
+  >>>
+
+  output {
+    File bam = "NA12878.bam"
+    File bai = "NA12878.bai"
   }
 
   runtime {
