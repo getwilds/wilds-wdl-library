@@ -28,19 +28,24 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 ### `download_ref_data`
 Downloads chromosome-specific reference genome data including:
-- Reference FASTA file (compressed)
-- FASTA index (.fai) file
-- Gene annotations (GTF format)
+- Reference FASTA file (compressed and decompressed)
+- FASTA index (.fai) file created with samtools
+- Gene annotations (GTF format, chromosome-specific)
 - Chromosome coverage BED file
 
 **Supported genomes**: hg38, hg19
 **Configurable**: Any chromosome (chr1, chr2, chrX, etc.)
 
 ### `download_fastq_data`
-Downloads small example paired-end FASTQ files for testing sequencing analysis workflows.
+Downloads small example paired-end FASTQ files for testing sequencing analysis workflows from GATK test data.
 
 ### `download_bam_data`
-Downloads small example BAM and BAI files for testing alignment-based workflows.
+Downloads and processes example BAM files for testing alignment-based workflows. This task:
+- Downloads BAM data from GATK test repository
+- Filters to chromosome 1 only
+- Removes supplementary alignments and keeps only primary alignments
+- Subsamples to 10% of reads for smaller test files
+- Creates a clean, indexed BAM file suitable for testing
 
 ### `download_ichor_data`
 Downloads specialized reference files for ichorCNA copy number analysis:
@@ -50,16 +55,13 @@ Downloads specialized reference files for ichorCNA copy number analysis:
 - Panel of normals RDS file
 
 ### `download_annotsv_vcf`
-Downloads test VCF files for structural variant annotation workflows.
+Downloads test VCF files for structural variant annotation workflows from the AnnotSV repository.
 
 ### `validate_outputs`
 Validates all downloaded test data files to ensure they exist and are non-empty.
 
-**Inputs**:
-- All output files from the download tasks
-
-**Outputs**:
-- `report` (File): Validation summary confirming file presence and basic integrity
+**Inputs**: All 13 output files from the download tasks
+**Outputs**: `report` (File): Validation summary confirming file presence and basic integrity
 
 ## Usage
 
@@ -133,6 +135,16 @@ call annotsv_tasks.annotate_variants {
 }
 ```
 
+**BAM processing workflows**:
+```wdl
+call testdata.download_bam_data { }
+call my_bam_analysis { 
+  input: 
+    input_bam = download_bam_data.bam,
+    input_bai = download_bam_data.bai
+}
+```
+
 ## Task Reference
 
 ### download_ref_data
@@ -144,7 +156,7 @@ call annotsv_tasks.annotate_variants {
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
-- `fasta` (File): Reference chromosome FASTA file
+- `fasta` (File): Reference chromosome FASTA file (decompressed)
 - `fasta_index` (File): Samtools FASTA index (.fai)
 - `gtf` (File): Chromosome-specific gene annotations
 - `bed` (File): BED file covering entire chromosome
@@ -166,7 +178,7 @@ call annotsv_tasks.annotate_variants {
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
-- `bam` (File): Example BAM alignment file
+- `bam` (File): Processed BAM alignment file (chr1 only, primary alignments, 10% subsampled)
 - `bai` (File): BAM index file
 
 ### download_ichor_data
@@ -226,8 +238,8 @@ Data integrity is maintained through the use of stable URLs and version-pinned r
 ## Requirements
 
 ### Runtime Dependencies
-- **Containers**: `getwilds/awscli:2.27.49`, `getwilds/samtools:1.11`
-- **Tools**: samtools (for FASTA indexing), wget, aws CLI
+- **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`
+- **Tools**: samtools (for FASTA indexing and BAM processing), wget, aws CLI
 - **Network**: Internet access required for data downloads
 
 ### Resource Requirements

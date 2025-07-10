@@ -25,7 +25,7 @@ Downloads FASTQ files from SRA accessions with automatic paired-end detection.
 
 **Inputs:**
 - `sra_id` (String): SRA accession ID
-- `ncpu` (Int): Number of CPUs for parallel download
+- `ncpu` (Int): Number of CPUs for parallel download (default: 8)
 
 **Outputs:**
 - `r1_end` (File): R1 FASTQ file
@@ -36,7 +36,10 @@ Downloads FASTQ files from SRA accessions with automatic paired-end detection.
 Validates downloaded files and generates a report.
 
 **Inputs:**
-- Arrays of files and metadata from `fastqdump`
+- `r1_files` (Array[File]): Array of R1 FASTQ files to validate
+- `r2_files` (Array[File]): Array of R2 FASTQ files to validate
+- `sra_ids` (Array[String]): List of SRA IDs that were processed
+- `is_paired_flags` (Array[Boolean]): Array of paired-end flags for each sample
 
 **Outputs:**
 - `report` (File): Validation summary
@@ -50,18 +53,21 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow my_workflow {
   input {
-    String sra_accession = "SRR12345678"
+    Array[String] sra_accessions = ["SRR12345678"]
   }
   
-  call sra_tasks.fastqdump {
-    input: 
-      sra_id = sra_accession,
-      ncpu = 4
+  scatter (id in sra_accessions) {
+    call sra_tasks.fastqdump {
+      input: 
+        sra_id = id,
+        ncpu = 4
+    }
   }
   
   output {
-    File r1_fastq = fastqdump.r1_end
-    File r2_fastq = fastqdump.r2_end
+    Array[File] r1_fastqs = fastqdump.r1_end
+    Array[File] r2_fastqs = fastqdump.r2_end
+    Array[Boolean] is_paired_end = fastqdump.is_paired_end
   }
 }
 ```
@@ -70,6 +76,7 @@ workflow my_workflow {
 
 This module pairs well with other WILDS modules:
 - **ww-star**: For RNA-seq alignment after SRA download
+- **ww-bwa**: For DNA-seq alignment after SRA download
 - **ww-sra-star vignette**: Complete pipeline from SRA to alignment
 
 ## Testing the Module
@@ -89,18 +96,36 @@ sprocket run ww-sra.wdl inputs.json
 
 ### Test Input Format
 
+**Custom input:**
 ```json
 {
-  "sra_download.sra_id_list": ["SRR13191702"],
-  "sra_download.n_cpu": 1
+  "sra_download.sra_id_list": ["SRR13191702", "SRR13191703"],
+  "sra_download.n_cpu": 4
 }
 ```
+
+## Configuration Guidelines
+
+### Resource Allocation
+
+The module supports flexible resource configuration:
+- **Memory**: Automatically scales with CPU count (2 * ncpu + " GB")
+- **CPUs**: Adjustable based on available resources and download speed requirements
+- **Network**: Requires stable internet connection for SRA downloads
+
+### SRA Accession Types
+
+- **SRR**: Single sample run accessions
+- **ERR**: ENA (European Nucleotide Archive) accessions
+- **DRR**: DDBJ (DNA Data Bank of Japan) accessions
+- Supports both single-end and paired-end automatically
 
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
 - Docker/Apptainer support
 - Internet access for SRA downloads
+- Sufficient storage space for downloaded FASTQ files
 
 ## Features
 
@@ -109,16 +134,36 @@ sprocket run ww-sra.wdl inputs.json
 - **Validation**: Built-in file validation and reporting
 - **Standardized output**: Consistent naming for downstream processing
 - **Error handling**: Robust error detection and reporting
+- **Cross-platform**: Works with SRA accessions from NCBI, ENA, and DDBJ
+
+## Performance Considerations
+
+- **Download speed**: Performance scales with CPU count and network bandwidth
+- **Storage requirements**: FASTQ files can be large; ensure adequate disk space
+- **Memory usage**: Scales automatically with CPU allocation
+
+## Output Description
+
+- **R1 FASTQ files**: Forward reads in gzip-compressed FASTQ format
+- **R2 FASTQ files**: Reverse reads for paired-end data (empty file for single-end)
+- **Paired-end flags**: Boolean indicators for read structure per sample
+- **Validation report**: Comprehensive validation with file integrity checks and download statistics
 
 ## Module Development
 
-This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline. Tests run on multiple WDL executors to ensure compatibility and reliability.
+This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
+- Multiple WDL executors (Cromwell, miniWDL, Sprocket)
+- Real SRA accessions for integration testing
+- Comprehensive validation of all outputs including FASTQ format validation
+- Tests with both single-end and paired-end data
 
 For questions specific to this module or to contribute improvements, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).
 
 ## Support
 
 For questions, bugs, and/or feature requests, reach out to the Fred Hutch Data Science Lab (DaSL) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
+
+For questions specific to SRA toolkit usage, please refer to the [NCBI SRA toolkit documentation](https://github.com/ncbi/sra-tools).
 
 ## Contributing
 

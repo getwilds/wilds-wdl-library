@@ -2,104 +2,91 @@
 [![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL module for using BEDTools utilities.
+A WILDS WDL module for working with genomic intervals using BEDTools.
 
 ## Overview
 
-This module provides reusable WDL tasks for using **BEDTools** to work with genomic intervals. It includes comprehensive tools for coverage analysis, intersection operations, and genomic window creation with read counting.
+This module provides reusable WDL tasks for genomic interval analysis using BEDTools, a powerful suite of utilities for comparing, manipulating, and analyzing genomic features. The module includes tasks for coverage analysis, interval intersection, and window-based read counting across chromosomes.
 
-The module is designed to be a foundational component within the WILDS ecosystem, suitable for use in larger sequence analysis pipelines. It can run completely standalone with automatic test data download and alignment, or integrate with existing BAM files.
+The module is designed to be a foundational component within the WILDS ecosystem and includes automatic test data downloading when no inputs are provided.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
 - **Tasks**: `coverage`, `intersect`, `makewindows`, `validate_outputs`
-- **Workflow**: `bedtools_example` (demonstration workflow with automatic test data support)
+- **Workflow**: `bedtools_example` (demonstration workflow that executes all tasks)
 - **Container**: `getwilds/bedtools:2.31.1`
-- **Dependencies**: Integrates with `ww-sra`, `ww-bwa`, and `ww-testdata` modules for complete workflows
-- **Test Data**: Automatically downloads reference genome, BED file, and SRA data when not provided
+- **Test Data**: Automatically downloads test data when no inputs provided using `ww-testdata` module
 
 ## Tasks
 
 ### `coverage`
-
-Calculates average read coverage over given BED intervals for a sample.
+Calculates mean read coverage across BED intervals using BEDTools coverage.
 
 **Inputs:**
-
 - `bed_file` (File): BED file containing genomic intervals
 - `aligned_bam` (File): Input aligned and indexed BAM file
-- `sample_name` (String): Name of the sample provided for output files
-- `cpu_cores` (Int): Number of CPU cores (default: 2)
-- `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `sample_name` (String): Sample name for output files
+- `cpu_cores` (Int): CPU cores (default: 2)
+- `memory_gb` (Int): Memory allocation (default: 16)
 
 **Outputs:**
-
-- `name` (String): Sample name
-- `mean_coverage` (File): Output file with mean coverage values
+- `name` (String): Sample name that was processed
+- `mean_coverage` (File): File containing mean read coverage across BED intervals
 
 ### `intersect`
-
-Uses BEDTools to find overlaps between the sample's BAM and a BED file.
+Performs BEDTools intersect between BED intervals and BAM alignments.
 
 **Inputs:**
-
-- `bed_file` (File): BED file to intersect with
+- `bed_file` (File): BED file containing genomic intervals
 - `aligned_bam` (File): Input aligned and indexed BAM file
-- `sample_name` (String): Name of the sample provided for output files
-- `flags` (String): BEDTools intersect flags (default: `-header -wo`)
-- `cpu_cores` (Int): Number of CPU cores (default: 2)
-- `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `sample_name` (String): Sample name for output files
+- `flags` (String): BEDTools intersect command flags (default: "-header -wo")
+- `cpu_cores` (Int): CPU cores (default: 2)
+- `memory_gb` (Int): Memory allocation (default: 16)
 
 **Outputs:**
-
-- `name` (String): Sample name
-- `intersect_output` (File): `bedtools intersect` result file
+- `name` (String): Sample name that was processed
+- `intersect_output` (File): BEDTools intersect results file
 
 ### `makewindows`
-
-Creates genomic windows by chromosome and counts reads overlapping each window.
+Creates genomic windows and counts reads per window across specified chromosomes.
 
 **Inputs:**
-
-- `bed_file` (File): BED file of input intervals
+- `bed_file` (File): BED file containing genomic intervals
+- `reference_fasta` (File): Reference genome FASTA file
+- `reference_index` (File): Reference genome index file
 - `aligned_bam` (File): Input aligned BAM file
 - `bam_index` (File): Index of aligned BAM file
-- `reference_fasta` (File): Reference genome FASTA
-- `reference_index` (File): Reference genome index
-- `list_chr` (Array[String]): List of chromosomes to analyze
-- `sample_name` (String): Name of the sample provided for output files
-- `tmp_dir` (String): Temporary directory path
-- `cpu_cores` (Int): Number of CPU cores (default: 10)
-- `memory_gb` (Int): Memory allocation in GB (default: 24)
+- `list_chr` (Array[String]): Array of chromosome names to process
+- `sample_name` (String): Sample name for output files
+- `tmp_dir` (String): Path to temporary directory
+- `cpu_cores` (Int): CPU cores (default: 10)
+- `memory_gb` (Int): Memory allocation (default: 24)
 
 **Outputs:**
-
-- `name` (String): Sample name
-- `counts_bed` (File): `.tar.gz` archive of per-chromosome BED files with read counts
+- `name` (String): Sample name that was processed
+- `counts_bed` (File): Tarball of per-chromosome BED files with read counts
 
 ### `validate_outputs`
-
-Checks existence and content of all output files by sample.
+Validates all BEDTools outputs and generates comprehensive statistics.
 
 **Inputs:**
-
-- `intersect_files` (Array[File]): Intersect output files
-- `coverage_files` (Array[File]): Mean coverage files
-- `window_count_files` (Array[File]): BED file tarballs with read counts
-- `sample_names` (Array[String]): Sample names corresponding to each file
+- `intersect_files` (Array[File]): BEDTools intersect output files
+- `coverage_files` (Array[File]): Coverage analysis results
+- `window_count_files` (Array[File]): Window count tarballs
+- `sample_names` (Array[String]): Sample names that were processed
 
 **Outputs:**
-
-- `report` (File): Human-readable validation report
+- `report` (File): Validation report summarizing file check results
 
 ## Usage as a Module
 
 ### Importing into Your Workflow
 
 ```wdl
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/modules/ww-bedtools/ww-bedtools.wdl" as bedtools
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedtools/ww-bedtools.wdl" as bedtools_tasks
 
 struct BedtoolsSample {
     String name
@@ -107,33 +94,56 @@ struct BedtoolsSample {
     File bam_index
 }
 
-workflow my_pipeline {
+workflow my_interval_analysis_pipeline {
   input {
     Array[BedtoolsSample] samples
     File bed_file
     File reference_fasta
     File reference_index
+    Array[String] chromosomes
   }
-
+  
   scatter (sample in samples) {
-    call bedtools.coverage {
+    call bedtools_tasks.coverage {
       input:
         bed_file = bed_file,
         aligned_bam = sample.bam,
         sample_name = sample.name
     }
-
-    call bedtools.intersect {
+    
+    call bedtools_tasks.intersect {
       input:
         bed_file = bed_file,
         aligned_bam = sample.bam,
-        sample_name = sample.name
+        sample_name = sample.name,
+        flags = "-header -wo"
+    }
+    
+    call bedtools_tasks.makewindows {
+      input:
+        bed_file = bed_file,
+        aligned_bam = sample.bam,
+        bam_index = sample.bam_index,
+        reference_fasta = reference_fasta,
+        reference_index = reference_index,
+        sample_name = sample.name,
+        list_chr = chromosomes
     }
   }
-
+  
+  call bedtools_tasks.validate_outputs {
+    input:
+      intersect_files = intersect.intersect_output,
+      coverage_files = coverage.mean_coverage,
+      window_count_files = makewindows.counts_bed,
+      sample_names = coverage.name
+  }
+  
   output {
-    Array[File] coverage_results = coverage.mean_coverage
     Array[File] intersect_results = intersect.intersect_output
+    Array[File] coverage_results = coverage.mean_coverage
+    Array[File] window_counts = makewindows.counts_bed
+    File validation_report = validate_outputs.report
   }
 }
 ```
@@ -141,18 +151,18 @@ workflow my_pipeline {
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
-- **ww-sra**: Download sequencing data prior to alignment (built into demo workflow)
-- **ww-bwa**: Sequence alignment (built into demo workflow)
-- **ww-star**: Use aligned BAM files from STAR for BEDTools analysis
-- **Custom workflows**: Combine with variant callers or other genomic analysis tools
+- **ww-testdata**: Provides reference genomes, BED files, and test BAM files
+- **ww-star**: Use aligned BAM files from STAR for interval analysis
+- **ww-bwa**: Use aligned BAM files from BWA for interval analysis
+- **Custom workflows**: Any workflow producing BAM files can use these interval analysis tasks
 
 ## Testing the Module
 
-The module includes a demonstration workflow with comprehensive testing and **automatic test data download**:
+The module includes a demonstration workflow with comprehensive testing:
 
 ```bash
-# Using Cromwell (no input files required - test data downloaded automatically)
-java -jar cromwell.jar run ww-bedtools.wdl --inputs inputs.json
+# Using Cromwell
+java -jar cromwell.jar run ww-bedtools.wdl --inputs inputs.json --options options.json
 
 # Using miniWDL
 miniwdl run ww-bedtools.wdl -i inputs.json
@@ -161,32 +171,13 @@ miniwdl run ww-bedtools.wdl -i inputs.json
 sprocket run ww-bedtools.wdl inputs.json
 ```
 
-### Automatic Demo Mode
-
-When no samples, reference files, or BED file are provided, the workflow automatically:
-1. Downloads reference genome data and BED file using `ww-testdata`
-2. Downloads SRA data (default: ERR1258306) using `ww-sra`
-3. Builds BWA index using `ww-bwa`
-4. Aligns reads using `ww-bwa`
-5. Runs all BEDTools analyses (coverage, intersect, makewindows)
-
 ### Test Input Format
 
-**Minimal input (uses automatic demo data):**
-```json
-{
-  "bedtools_example.demo_sra_id": "ERR1258306",
-  "bedtools_example.intersect_flags": "-header -wo",
-  "bedtools_example.chromosomes": ["chr22"],
-  "bedtools_example.tmp_dir": "/tmp",
-  "bedtools_example.cpus": 2,
-  "bedtools_example.memory_gb": 8
-}
-```
+When providing your own data:
 
-**Full input (provide your own data):**
 ```json
 {
+  "bedtools_example.bed_file": "/path/to/intervals.bed",
   "bedtools_example.samples": [
     {
       "name": "sample1",
@@ -194,143 +185,143 @@ When no samples, reference files, or BED file are provided, the workflow automat
       "bam_index": "/path/to/sample1.bam.bai"
     }
   ],
-  "bedtools_example.bed_file": "/path/to/regions.bed",
   "bedtools_example.reference_fasta": "/path/to/genome.fasta",
   "bedtools_example.reference_index": "/path/to/genome.fasta.fai",
+  "bedtools_example.chromosomes": ["chr1", "chr2", "chr3"],
   "bedtools_example.intersect_flags": "-header -wo",
-  "bedtools_example.chromosomes": [
-    "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
-    "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
-    "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"
-  ],
-  "bedtools_example.tmp_dir": "/tmp",
-  "bedtools_example.cpus": 2,
-  "bedtools_example.memory_gb": 8
-}
-```
-
-**Note**: You can mix and match - provide some inputs and let others use test data.
-
-## Workflow: `bedtools_example`
-
-The included example workflow processes BAM files using all BEDTools tasks and validates the results.
-
-**Inputs:**
-
-- `bed_file` (File?): Optional BED file of intervals (test data used if not provided)
-- `samples` (Array[BedtoolsSample]?): Optional structs containing BAM, index, and sample name (demo data generated if not provided)
-- `reference_fasta` (File?): Optional genome reference FASTA (test data used if not provided)
-- `reference_index` (File?): Optional FAI index for reference (test data used if not provided)
-- `demo_sra_id` (String): SRA ID for demo data (default: "ERR1258306")
-- `intersect_flags` (String): Flags for `bedtools intersect` (default: `-header -wo`)
-- `chromosomes` (Array[String]): Chromosomes for `makewindows` (default: all human chromosomes)
-- `tmp_dir` (String): Temporary path for intermediate files (default: "/tmp")
-- `cpus` (Int): Threads for each task (default: 2)
-- `memory_gb` (Int): Memory for each task (default: 8)
-
-**Outputs:**
-
-- `intersect_results` (Array[File]): Output from `intersect`
-- `coverage_results` (Array[File]): Output from `coverage`
-- `window_counts` (Array[File]): Output tarballs from `makewindows`
-- `validation_report` (File): Output report from `validate_outputs`
-
-## Configuration Guidelines
-
-### Resource Allocation
-
-The module supports flexible resource configuration:
-- **Memory**: 8-24 GB recommended depending on genome size and data volume
-- **CPUs**: 2 cores for coverage/intersect tasks; 10 cores recommended for `makewindows` due to parallelization
-- **Storage**: Sufficient space for input BAMs, reference files, and output files
-
-### Advanced Parameters
-
-- `intersect_flags`: Customize BEDTools intersect behavior (e.g., "-wo" for overlap amounts)
-- `chromosomes`: Limit analysis to specific chromosomes for faster processing  
-- `tmp_dir`: Set appropriate temporary directory with sufficient space
-- Ensure the reference genome is pre-indexed and has an associated `.fai`
-
-### Demo Configuration
-
-- `demo_sra_id`: Change to use different SRA sample for testing
-- Consider using single chromosome (e.g., ["chr22"]) for faster demo runs
-- Resource parameters apply to both demo and user-provided data modes
-
-## Requirements
-
-- WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- Docker or Apptainer support
-- Input BAM files must be sorted and indexed (when providing your own data)
-- Reference genome with FASTA index (when providing your own data)
-- Sufficient memory for genome processing (varies by genome size)
-
-## Features
-
-- **Standalone execution**: Complete workflow with automatic test data download
-- **Flexible input**: Use your own data or automatic demo data
-- **BEDTools intersect analysis**: Screen for overlaps between two sets of genomic features
-- **BEDTools coverage analysis**: Read coverage results across BED intervals
-- **BEDTools makewindows output**: Per-chromosome BED files of read counts with parallelization
-- **Validation**: Built-in output validation and reporting
-- **Module integration**: Seamlessly combines with ww-sra, ww-bwa, and ww-testdata
-- **Modular design**: Integrates with other WILDS workflows and tools
-- **Scalable**: Supports batch analysis across many samples
-- **Flexible**: Customizable resource settings per task
-- **Robust**: Includes error handling and reproducible output filenames
-
-## Advanced Usage
-
-### Chromosome-specific Analysis
-
-For faster processing or targeted analysis, limit to specific chromosomes:
-
-```json
-{
-  "bedtools_example.chromosomes": ["chr1", "chr2", "chr3"]
-}
-```
-
-### Custom Intersect Flags
-
-Modify BEDTools intersect behavior:
-
-```json
-{
-  "bedtools_example.intersect_flags": "-u -f 0.50"
-}
-```
-
-### Resource Optimization
-
-Adjust resources based on data size:
-
-```json
-{
   "bedtools_example.cpus": 4,
   "bedtools_example.memory_gb": 16
 }
 ```
 
+**Note**: If no `bed_file`, `samples`, `reference_fasta`, or `reference_index` are provided, the workflow will automatically download test data using the `ww-testdata` module.
+
+## Configuration Guidelines
+
+### Resource Allocation
+
+The module supports flexible resource configuration per task:
+- **Coverage task**: 2 cores, 16GB RAM (typical)
+- **Intersect task**: 2 cores, 16GB RAM (typical)  
+- **Makewindows task**: 10 cores, 24GB RAM (parallelized across chromosomes)
+- **Validation task**: 1 core, 2GB RAM
+
+### Chromosome Selection
+
+The `makewindows` task allows you to specify which chromosomes to analyze:
+- **Default**: All autosomes plus X and Y (chr1-chr22, chrX, chrY)
+- **Custom**: Specify any subset of chromosomes based on your analysis needs
+- **Performance**: Fewer chromosomes = faster runtime
+
+### Intersect Flags
+
+Customize BEDTools intersect behavior with the `intersect_flags` parameter:
+- **"-header -wo"**: Include header and write original entries plus overlap (default)
+- **"-wa -wb"**: Write both original A and B entries
+- **"-c"**: Count overlaps for each A entry
+- **"-v"**: Report A entries with no overlap in B
+
+### Window Analysis
+
+The `makewindows` task creates 500kb windows and counts reads with quality filters:
+- **Window size**: Fixed at 500kb for consistency
+- **Quality filters**: MAPQ ≥ 20, properly paired reads only
+- **Output**: Per-chromosome BED files packed in a tarball
+
+## Advanced Usage
+
+### Custom Intersect Analysis
+
+```wdl
+call bedtools_tasks.intersect {
+  input:
+    bed_file = target_regions,
+    aligned_bam = sample.bam,
+    sample_name = sample.name,
+    flags = "-wa -wb -f 0.5",  # Require 50% overlap
+    cpu_cores = 4,
+    memory_gb = 8
+}
+```
+
+### Targeted Coverage Analysis
+
+```wdl
+call bedtools_tasks.coverage {
+  input:
+    bed_file = exon_regions,
+    aligned_bam = sample.bam,
+    sample_name = sample.name,
+    cpu_cores = 2,
+    memory_gb = 16
+}
+```
+
+### Chromosome-Specific Window Analysis
+
+```wdl
+call bedtools_tasks.makewindows {
+  input:
+    bed_file = whole_genome_bed,
+    aligned_bam = sample.bam,
+    bam_index = sample.bam_index,
+    reference_fasta = ref_fasta,
+    reference_index = ref_fasta_index,
+    sample_name = sample.name,
+    list_chr = ["chr1", "chr2", "chr3"],  # Focus on specific chromosomes
+    cpu_cores = 6,
+    memory_gb = 20
+}
+```
+
+## Output Format
+
+### Coverage Output
+Tab-delimited file with BED intervals plus mean coverage column.
+
+### Intersect Output  
+Format depends on flags used, typically includes original BED entries with alignment overlaps.
+
+### Window Counts
+Tarball containing per-chromosome BED files with 500kb windows and read counts.
+
+## Requirements
+
+- WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
+- Input BAM files must be sorted and indexed
+- Reference genome with FASTA index for window analysis
+- BED file with genomic intervals of interest
+- Docker/Apptainer support
+- Sufficient computational resources (varies by task)
+
+## Features
+
+- **Multiple analysis types**: Coverage, intersection, and window-based counting
+- **Automatic test data**: Downloads test data when no inputs provided
+- **Parallel processing**: Chromosomes processed in parallel for efficiency
+- **Quality filtering**: Built-in MAPQ and pairing filters for reliable results
+- **Comprehensive validation**: Detailed output validation with file size and line counts
+- **Flexible configuration**: Customizable parameters for all major settings
+- **Integration ready**: Designed for use with other WILDS modules
+
 ## Module Development
 
 This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
-- Real sequencing data (SRA sample ERR1258306 for integration testing)
+- Real sequencing data (chromosome 1 subset for efficiency)
 - Comprehensive validation of all outputs
-- Integration testing with ww-sra, ww-bwa, and ww-testdata modules
-- Chromosome 22 subset for efficiency during CI/CD
+- Cross-platform compatibility testing
 
 For questions specific to this module or to contribute improvements, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).
 
 ## Support
 
-For questions, bugs, and/or feature requests, contact the Fred Hutch Data Science Lab (DaSL) at [wilds@fredhutch.org](mailto:wilds@fredhutch.org) or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
+For questions, bugs, and/or feature requests, reach out to the Fred Hutch Data Science Lab (DaSL) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
 
 ## Contributing
 
-To contribute to this module, please review the [WILDS Contributor Guide](https://getwilds.org/guide/) and the [contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md).
+If you would like to contribute to this WILDS WDL module, please see our [WILDS Contributor Guide](https://getwilds.org/guide/) and the [WILDS WDL Library contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for full details.
+Distributed under the MIT License. See `LICENSE` for details.

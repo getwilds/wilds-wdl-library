@@ -150,18 +150,15 @@ sprocket run ww-delly.wdl inputs.json
 
 When no samples or reference files are provided, the workflow automatically:
 1. Downloads reference genome data using `ww-testdata`
-2. Downloads SRA data (default: ERR1258306) using `ww-sra`
-3. Builds BWA index using `ww-bwa`
-4. Aligns reads using `ww-bwa`
-5. Calls structural variants using Delly
-6. Validates all outputs
+2. Downloads demonstration BAM data using `ww-testdata`
+3. Calls structural variants using Delly
+4. Validates all outputs
 
 ### Test Input Format
 
 **Minimal input (uses automatic demo data):**
 ```json
 {
-  "delly_example.demo_sra_id": "ERR1258306",
   "delly_example.sv_type": "",
   "delly_example.cpus": 2,
   "delly_example.memory_gb": 8
@@ -216,7 +213,6 @@ The module supports flexible resource configuration:
 
 ### Demo Configuration
 
-- `demo_sra_id`: Change to use different SRA sample for testing
 - `sv_type`: Use specific SV type for faster demo runs
 - Resource parameters apply to both demo and user-provided data modes
 
@@ -261,9 +257,9 @@ The module supports flexible resource configuration:
 
 This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
-- Real sequencing data (SRA sample ERR1258306 for integration testing)
+- Real sequencing data (demonstration BAM for integration testing)
 - Comprehensive validation of all outputs including VCF format validation
-- Integration testing with ww-sra, ww-bwa, and ww-testdata modules
+- Integration testing with ww-testdata modules
 - Chromosome 22 subset for efficiency during CI/CD
 
 For questions specific to this module or to contribute improvements, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).

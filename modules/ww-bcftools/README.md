@@ -6,51 +6,50 @@ A WILDS WDL module for variant calling and manipulation using bcftools.
 
 ## Overview
 
-This module provides reusable WDL tasks for variant calling and manipulation using bcftools, a popular suite of utilities for variant calling and manipulating VCF/BCF files. The module implements bcftools' mpileup/call pipeline for variant detection and includes comprehensive validation tasks.
+This module provides reusable WDL tasks for variant calling using bcftools, a popular suite of utilities for variant calling and manipulating VCF/BCF files. The module implements bcftools' mpileup/call pipeline for variant detection from BAM files with comprehensive parameter customization.
 
-The module is designed to be a foundational component within the WILDS ecosystem, suitable for use in larger variant calling pipelines. It can run completely standalone with automatic test data download and alignment, or integrate with existing BAM files.
+The module is designed to be a foundational component within the WILDS ecosystem, suitable for use in larger variant calling pipelines, and includes automatic test data downloading when no inputs are provided.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `mpileup_call`, `validate_outputs`
-- **Workflow**: `bcftools_example` (demonstration workflow with automatic test data support)
+- **Tasks**: `mpileup_call`, `validate_outputs`  
+- **Workflow**: `bcftools_example` (demonstration workflow that executes core tasks)
 - **Container**: `getwilds/bcftools:1.19`
-- **Dependencies**: Integrates with `ww-sra`, `ww-bwa`, and `ww-testdata` modules for complete workflows
-- **Test Data**: Automatically downloads reference genome and SRA data when not provided
+- **Test Data**: Automatically downloads test data when no samples provided using `ww-testdata` module
 
 ## Tasks
 
 ### `mpileup_call`
-Calls variants using bcftools mpileup and call pipeline.
+Calls variants using bcftools mpileup and call pipeline with comprehensive parameter support.
 
 **Inputs:**
-- `bam_file` (File): Input BAM file for the sample
-- `bam_index` (File): Index file for the input BAM
-- `reference_fasta` (File): Reference genome FASTA file  
-- `reference_fasta_index` (File): Reference genome FASTA index
+- `reference_fasta` (File): Reference genome FASTA file
+- `reference_fasta_index` (File): Reference genome FASTA index (.fai)
+- `bam_file` (File): Input BAM file for variant calling
+- `bam_index` (File): BAM index file (.bai)
 - `regions_bed` (File?): Optional BED file for targeted regions
-- `annotate_format` (String): FORMAT annotations to add (default: "FORMAT/AD,FORMAT/DP")
+- `annotate_format` (String): FORMAT annotations (default: "FORMAT/AD,FORMAT/DP")
 - `ignore_rg` (Boolean): Ignore read groups during analysis (default: true)
 - `disable_baq` (Boolean): Disable BAQ computation (default: true)
-- `max_depth` (Int): Maximum read depth (default: 10000)
-- `max_idepth` (Int): Maximum indel depth (default: 10000)
-- `memory_gb` (Int): Memory allocation in GB (default: 8)
-- `cpu_cores` (Int): Number of CPU cores (default: 2)
+- `max_depth` (Int): Maximum read depth for mpileup (default: 10000)
+- `max_idepth` (Int): Maximum per-sample indel depth (default: 10000)
+- `memory_gb` (Int): Memory allocation (default: 8)
+- `cpu_cores` (Int): CPU cores (default: 2)
 
 **Outputs:**
 - `mpileup_vcf` (File): Compressed VCF file with called variants
-- `mpileup_vcf_index` (File): Index for the VCF file
+- `mpileup_vcf_index` (File): Index for the VCF file (.csi)
 
 ### `validate_outputs`
-Validates variant calling outputs and generates comprehensive statistics.
+Validates variant calling outputs and generates comprehensive statistics including variant counts and SNP/indel breakdowns.
 
 **Inputs:**
 - `vcf_files` (Array[File]): Array of VCF files to validate
 
 **Outputs:**
-- `report` (File): Validation summary with variant statistics
+- `report` (File): Validation summary with detailed variant statistics
 
 ## Usage as a Module
 
@@ -80,27 +79,37 @@ workflow my_variant_calling_pipeline {
         bam_index = sample.bai,
         reference_fasta = reference_fasta,
         reference_fasta_index = reference_fasta_index,
-        regions_bed = regions_bed
+        regions_bed = regions_bed,
+        max_depth = 8000,
+        max_idepth = 8000
     }
+  }
+  
+  call bcftools_tasks.validate_outputs {
+    input:
+      vcf_files = mpileup_call.mpileup_vcf
   }
   
   output {
     Array[File] variant_vcfs = mpileup_call.mpileup_vcf
+    Array[File] vcf_indices = mpileup_call.mpileup_vcf_index
+    File validation_report = validate_outputs.report
   }
 }
 ```
 
 ### Integration Examples
 
-This module integrates seamlessly with other WILDS components:
+This module integrates well with other WILDS components:
+- **ww-testdata**: Provides reference genomes and test BAM files
 - **ww-star**: Use aligned BAM files from STAR for variant calling
 - **ww-bwa**: Use aligned BAM files from BWA for variant calling
-- **ww-sra**: Download data, align, then call variants (built into demo workflow)
+- **ww-annotsv**: Annotate structural variants found in VCF outputs
 - **Custom workflows**: Combine with GATK or other variant callers for consensus calling
 
 ## Testing the Module
 
-The module includes a demonstration workflow with comprehensive testing and **automatic test data download**:
+The module includes a demonstration workflow with comprehensive testing:
 
 ```bash
 # Using Cromwell
@@ -113,33 +122,15 @@ miniwdl run ww-bcftools.wdl -i inputs.json
 sprocket run ww-bcftools.wdl inputs.json
 ```
 
-### Automatic Demo Mode
-
-When no samples or reference files are provided, the workflow automatically:
-1. Downloads reference genome data using `ww-testdata`
-2. Downloads SRA data (default: ERR1258306) using `ww-sra`  
-3. Builds BWA index using `ww-bwa`
-4. Aligns reads using `ww-bwa`
-5. Calls variants using `bcftools`
-
 ### Test Input Format
 
-**Minimal input (uses automatic demo data):**
-```json
-{
-  "bcftools_example.demo_sra_id": "ERR1258306",
-  "bcftools_example.max_depth": 10000,
-  "bcftools_example.memory_gb": 8,
-  "bcftools_example.cpu_cores": 2
-}
-```
+When providing your own data:
 
-**Full input (provide your own data):**
 ```json
 {
   "bcftools_example.samples": [
     {
-      "name": "sample1", 
+      "name": "sample1",
       "bam": "/path/to/sample1.bam",
       "bai": "/path/to/sample1.bam.bai"
     }
@@ -154,48 +145,30 @@ When no samples or reference files are provided, the workflow automatically:
 }
 ```
 
-**Note**: You can mix and match - provide some inputs and let others use test data.
+**Note**: If no `samples`, `ref_fasta`, or `ref_fasta_index` are provided, the workflow will automatically download test data using the `ww-testdata` module.
 
 ## Configuration Guidelines
 
 ### Resource Allocation
 
 The module supports flexible resource configuration:
-- **Memory**: 4-8GB recommended for most applications  
+- **Memory**: 4-8GB recommended for most applications, scale with BAM size
 - **CPUs**: 1-2 cores typically sufficient for bcftools operations
 - **Storage**: Sufficient space for input BAMs and output VCFs
 
 ### Variant Calling Parameters
 
-- `max_depth`: Adjust based on expected coverage depth
-- `max_idepth`: Set higher for high-coverage applications
-- `annotate_format`: Customize FORMAT fields in output VCF
+**Depth Settings:**
+- `max_depth`: Adjust based on expected coverage depth (default: 10000)
+- `max_idepth`: Set higher for high-coverage applications (default: 10000)
+
+**Quality Settings:**
+- `annotate_format`: Customize FORMAT fields in output VCF (default: "FORMAT/AD,FORMAT/DP")
 - `ignore_rg`: Set to false if read group information is important
-- `disable_baq`: Set to false for more sensitive calling
-- `regions_bed`: Use for targeted sequencing applications
+- `disable_baq`: Set to false for higher sensitivity (may increase false positives)
 
-### Demo Configuration
-
-- `demo_sra_id`: Change to use different SRA sample for testing
-- Resource parameters apply to both demo and user-provided data modes
-
-## Requirements
-
-- WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- Docker/Apptainer support
-- Input BAM files must be sorted and indexed (when providing your own data)
-- Reference genome with FASTA index (when providing your own data)
-
-## Features
-
-- **Standalone execution**: Complete workflow with automatic test data download
-- **Flexible input**: Use your own data or automatic demo data
-- **Variant calling**: Configurable mpileup/call parameters
-- **Targeted regions**: Support for BED file region specification  
-- **Validation**: Built-in output validation and statistics
-- **Module integration**: Seamlessly combines with ww-sra, ww-bwa, and ww-testdata
-- **Scalable**: Configurable resource allocation
-- **Compatible**: Works with multiple WDL executors
+**Targeted Analysis:**
+- `regions_bed`: Use for targeted sequencing applications to focus on specific regions
 
 ## Advanced Usage
 
@@ -204,11 +177,11 @@ The module supports various bcftools mpileup/call parameters for fine-tuning var
 ```wdl
 call bcftools_tasks.mpileup_call {
   input:
-    bam_file = my_sample.bam,
-    bam_index = my_sample.bai,
+    bam_file = sample.bam,
+    bam_index = sample.bai,
+    regions_bed = my_targets_bed,
     reference_fasta = ref_fasta,
     reference_fasta_index = ref_fasta_index,
-    regions_bed = my_bedfile,
     max_depth = 1000,
     max_idepth = 1000,
     annotate_format = "FORMAT/AD,FORMAT/DP,FORMAT/SP",
@@ -217,13 +190,39 @@ call bcftools_tasks.mpileup_call {
 }
 ```
 
+## Output Format
+
+The module generates standard VCF files with the following characteristics:
+- **Compression**: bgzip-compressed (.vcf.gz)
+- **Indexing**: CSI index files (.csi) for rapid access
+- **FORMAT fields**: Configurable annotations (default: AD, DP)
+- **Variant types**: SNPs, indels, and complex variants
+
+## Requirements
+
+- WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
+- Input BAM files must be sorted and indexed
+- Reference genome with FASTA index
+- Docker/Apptainer support
+- Sufficient computational resources (8GB RAM recommended)
+
+## Features
+
+- **Flexible variant calling**: Configurable mpileup/call parameters
+- **Targeted regions**: Support for BED file region specification  
+- **Automatic test data**: Downloads test data when no inputs provided
+- **Comprehensive validation**: Built-in output validation with variant statistics
+- **Scalable**: Configurable resource allocation per sample
+- **Compatible**: Works with multiple WDL executors
+- **Integration ready**: Designed for use with other WILDS modules
+
 ## Module Development
 
 This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
-- Real sequencing data (SRA sample ERR1258306 for integration testing)
+- Real sequencing data (chromosome 1 subset for efficiency)
 - Comprehensive validation of all outputs
-- Integration testing with ww-sra, ww-bwa, and ww-testdata modules
+- Cross-platform compatibility testing
 
 For questions specific to this module or to contribute improvements, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).
 
