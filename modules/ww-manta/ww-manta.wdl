@@ -17,7 +17,7 @@ workflow manta_example {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "WDL workflow for structural variant calling via Manta"
-    url: "https://github.com/getwilds/ww-manta"
+    url: "https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-manta"
     outputs: {
         manta_vcf: "Structural variant calls in VCF format",
         manta_vcf_index: "Index file for the VCF output",

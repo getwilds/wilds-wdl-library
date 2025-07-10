@@ -17,7 +17,7 @@ workflow delly_example {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "WDL workflow for structural variant calling via Delly"
-    url: "https://github.com/getwilds/ww-delly"
+    url: "https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-delly"
     outputs: {
         delly_vcfs: "Structural variant calls in BCF/VCF format",
         delly_vcf_indices: "Index files for the BCF/VCF output",
