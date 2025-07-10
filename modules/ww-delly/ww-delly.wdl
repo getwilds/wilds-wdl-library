@@ -202,10 +202,12 @@ task validate_outputs {
   command <<<
     set -euo pipefail
 
-    echo "=== Delly Workflow Validation Report ===" > validation_report.txt
-    echo "Generated on: $(date)" >> validation_report.txt
-    echo "Total samples processed: ~{length(delly_vcfs)}" >> validation_report.txt
-    echo "" >> validation_report.txt
+    {
+      echo "=== Delly Workflow Validation Report ==="
+      echo "Generated on: $(date)"
+      echo "Total samples processed: ~{length(delly_vcfs)}"
+      echo ""
+    } >> validation_report.txt
 
     # Validate each VCF file
     VCF_FILES=(~{sep=" " delly_vcfs})
@@ -215,11 +217,13 @@ task validate_outputs {
       VCF="${VCF_FILES[$i]}"
       INDEX="${INDEX_FILES[$i]}"
       
-      echo "=====================" >> validation_report.txt
-      echo "- VCF file: $VCF" >> validation_report.txt
-      echo "  Size: $(ls -lh "$VCF" | awk '{print $5}')" >> validation_report.txt
-      echo "- VCF index: $INDEX" >> validation_report.txt
-      echo "  Size: $(ls -lh "$INDEX" | awk '{print $5}')" >> validation_report.txt
+      {
+        echo "====================="
+        echo "- VCF file: $VCF"
+        echo "  Size: $(ls -lh "$VCF" | awk '{print $5}')"
+        echo "- VCF index: $INDEX"
+        echo "  Size: $(ls -lh "$INDEX" | awk '{print $5}')"
+      } >> validation_report.txt
       
       # Validate VCF file format
       if bcftools view -h "$VCF" > /dev/null 2>&1; then
@@ -242,9 +246,11 @@ task validate_outputs {
       COUNT=$(bcftools view -H "$vcf" | wc -l)
       TOTAL_VARIANTS=$((TOTAL_VARIANTS + COUNT))
     done
-    echo "Total variants across all samples: $TOTAL_VARIANTS" >> validation_report.txt
-    echo "" >> validation_report.txt
-    echo "Validation completed successfully!" >> validation_report.txt
+    {
+      echo "Total variants across all samples: $TOTAL_VARIANTS"
+      echo ""
+      echo "Validation completed successfully!"
+    } >> validation_report.txt
   >>>
 
   output {

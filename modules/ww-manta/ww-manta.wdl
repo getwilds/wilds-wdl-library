@@ -186,14 +186,15 @@ task validate_outputs {
   command <<<
     set -eo pipefail
     
-    echo "Manta Structural Variant Calling Validation Report" > validation_report.txt
-    echo "=================================================" >> validation_report.txt
-    echo "Generated on: $(date)" >> validation_report.txt
-    echo "" >> validation_report.txt
-    
-    echo "Sample Summary:" >> validation_report.txt
-    echo "Total samples processed: ~{length(vcf_files)}" >> validation_report.txt
-    echo "" >> validation_report.txt
+    {
+      echo "Manta Structural Variant Calling Validation Report"
+      echo "================================================="
+      echo "Generated on: $(date)"
+      echo ""
+      echo "Sample Summary:"
+      echo "Total samples processed: ~{length(vcf_files)}"
+      echo ""
+    } >> validation_report.txt
     
     # Validate each sample's outputs
     vcf_files=(~{sep=" " vcf_files})
@@ -208,7 +209,7 @@ task validate_outputs {
         # Check if VCF file exists and is not empty
         if [[ -f "$vcf" && -s "$vcf" ]]; then
             echo "VCF file present and non-empty" >> validation_report.txt
-            variant_count=$(zcat "$vcf" | grep -v '^#' | wc -l)
+            variant_count=$(zcat "$vcf" | grep -c -v '^#' || true)
             echo "Variants called: $variant_count" >> validation_report.txt
         else
             echo "VCF file missing or empty" >> validation_report.txt

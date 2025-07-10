@@ -23,7 +23,8 @@ workflow testdata_example {
         ichor_map_wig: "Mapping quality WIG file for hg38",
         ichor_centromeres: "Centromere locations for hg38",
         ichor_panel_of_norm_rds: "Panel of normals RDS file for hg38",
-        annotsv_test_vcf: "Test VCF file for AnnotSV"
+        annotsv_test_vcf: "Test VCF file for AnnotSV",
+        validation_report: "Validation report summarizing all outputs"
     }
   }
 
@@ -211,8 +212,9 @@ task download_bam_data {
     set -euo pipefail
 
     # Pull down BAM files from GATK test data bucket
-    samtools view -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1:1-5000000 > NA12878.bam
-    samtools index NA12878.bam    
+    samtools view -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1 | \
+    samtools view -s 0.1 -b - > NA12878.bam
+    samtools index NA12878.bam
 
     # Only keep primary alignments from chr1 (no supplementary alignments)
     samtools view -h -f 0x2 NA12878.bam chr1 | \
@@ -465,9 +467,11 @@ task validate_outputs {
       validation_passed=false
     fi
 
-    echo "" >> validation_report.txt
-    echo "=== Validation Summary ===" >> validation_report.txt
-    echo "Total files validated: 13" >> validation_report.txt
+    {
+      echo ""
+      echo "=== Validation Summary ==="
+      echo "Total files validated: 13"
+    } >> validation_report.txt
     if [[ "$validation_passed" == "true" ]]; then
       echo "Overall Status: PASSED" >> validation_report.txt
     else
