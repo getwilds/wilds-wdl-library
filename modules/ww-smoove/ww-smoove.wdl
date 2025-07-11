@@ -4,16 +4,12 @@
 
 version 1.0
 
-struct SampleInfo {
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
+struct SmooveSample {
     String name
     File bam
     File bai
-}
-
-struct RefGenome {
-    String name
-    File fasta
-    File fasta_index
 }
 
 workflow smoove_example {
@@ -31,7 +27,8 @@ workflow smoove_example {
 
   parameter_meta {
     samples: "List of sample objects, each containing name, BAM file, and BAM index"
-    reference_genome: "Reference genome object containing name, fasta, and fasta index files"
+    ref_fasta: "Reference genome FASTA file"
+    ref_fasta_index: "Reference genome FASTA index file"
     exclude_bed: "Optional BED file defining regions to exclude from calling"
     include_bed: "Optional BED file defining regions to include for calling"
     cpus: "Number of CPU cores allocated for each task in the workflow"
@@ -39,21 +36,43 @@ workflow smoove_example {
   }
 
   input {
-    Array[SampleInfo] samples
-    RefGenome reference_genome
+    Array[SmooveSample]? samples
+    File? ref_fasta
+    File? ref_fasta_index
     File? exclude_bed
     File? include_bed
-    Int cpus = 8
-    Int memory_gb = 16
+    Int cpus = 2
+    Int memory_gb = 8
   }
 
-  scatter (sample in samples) {
+  # Determine which genome files to use
+  if (!defined(ref_fasta) || !defined(ref_fasta_index)) {
+    call ww_testdata.download_ref_data { }
+  }
+  File genome_fasta = select_first([ref_fasta, download_ref_data.fasta])
+  File genome_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
+
+  # If no samples provided, download demonstration data
+  if (!defined(samples)) {
+    call ww_testdata.download_bam_data { }
+  }
+
+  # Create samples array - either from input or from BWA alignment
+  Array[SmooveSample] final_samples = if defined(samples) then select_first([samples]) else [
+    {
+      "name": "demo_sample",
+      "bam": select_first([download_bam_data.bam]),
+      "bai": select_first([download_bam_data.bai])
+    }
+  ]
+
+  scatter (sample in final_samples) {
     call smoove_call { input:
         aligned_bam = sample.bam,
         aligned_bam_index = sample.bai,
         sample_name = sample.name,
-        reference_fasta = reference_genome.fasta,
-        reference_fasta_index = reference_genome.fasta_index,
+        reference_fasta = genome_fasta,
+        reference_fasta_index = genome_fasta_index,
         target_regions_bed = include_bed,
         exclude_bed = exclude_bed,
         cpu_cores = cpus,

@@ -4,16 +4,12 @@
 
 version 1.0
 
-struct SampleInfo {
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
+struct MantaSample {
     String name
     File bam
     File bai
-}
-
-struct RefGenome {
-    String name
-    File fasta
-    File fasta_index
 }
 
 workflow manta_example {
@@ -21,7 +17,7 @@ workflow manta_example {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "WDL workflow for structural variant calling via Manta"
-    url: "https://github.com/getwilds/ww-manta"
+    url: "https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-manta"
     outputs: {
         manta_vcf: "Structural variant calls in VCF format",
         manta_vcf_index: "Index file for the VCF output",
@@ -31,7 +27,8 @@ workflow manta_example {
 
   parameter_meta {
     samples: "List of sample objects, each containing name, BAM file, and BAM index"
-    reference_genome: "Reference genome object containing name, fasta, and fasta index files"
+    ref_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
+    ref_fasta_index: "Optional reference genome FASTA index file. If not provided, test data will be used."
     call_regions_bed: "Optional BED file to restrict calling to specific regions"
     call_regions_index: "Index file for the optional BED file"
     is_rna: "Boolean flag indicating if input data is RNA-seq (default: false for DNA)"
@@ -40,22 +37,44 @@ workflow manta_example {
   }
 
   input {
-    Array[SampleInfo] samples
-    RefGenome reference_genome
+    Array[MantaSample]? samples
+    File? ref_fasta
+    File? ref_fasta_index
     File? call_regions_bed
     File? call_regions_index
     Boolean is_rna = false
-    Int cpus = 8
-    Int memory_gb = 16
+    Int cpus = 2
+    Int memory_gb = 8
   }
 
-  scatter (sample in samples) {
+  # Determine which genome files to use
+  if (!defined(ref_fasta) || !defined(ref_fasta_index)) {
+    call ww_testdata.download_ref_data { }
+  }
+  File genome_fasta = select_first([ref_fasta, download_ref_data.fasta])
+  File genome_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
+
+  # If no samples provided, download demonstration data
+  if (!defined(samples)) {
+    call ww_testdata.download_bam_data { }
+  }
+
+  # Create samples array - either from input or from test data download
+  Array[MantaSample] final_samples = if defined(samples) then select_first([samples]) else [
+    {
+      "name": "demo_sample",
+      "bam": select_first([download_bam_data.bam]),
+      "bai": select_first([download_bam_data.bai])
+    }
+  ]
+
+  scatter (sample in final_samples) {
     call manta_call { input:
         aligned_bam = sample.bam,
         aligned_bam_index = sample.bai,
         sample_name = sample.name,
-        reference_fasta = reference_genome.fasta,
-        reference_fasta_index = reference_genome.fasta_index,
+        reference_fasta = genome_fasta,
+        reference_fasta_index = genome_fasta_index,
         call_regions_bed = call_regions_bed,
         call_regions_index = call_regions_index,
         is_rna = is_rna,
@@ -167,14 +186,15 @@ task validate_outputs {
   command <<<
     set -eo pipefail
     
-    echo "Manta Structural Variant Calling Validation Report" > validation_report.txt
-    echo "=================================================" >> validation_report.txt
-    echo "Generated on: $(date)" >> validation_report.txt
-    echo "" >> validation_report.txt
-    
-    echo "Sample Summary:" >> validation_report.txt
-    echo "Total samples processed: ~{length(vcf_files)}" >> validation_report.txt
-    echo "" >> validation_report.txt
+    {
+      echo "Manta Structural Variant Calling Validation Report"
+      echo "================================================="
+      echo "Generated on: $(date)"
+      echo ""
+      echo "Sample Summary:"
+      echo "Total samples processed: ~{length(vcf_files)}"
+      echo ""
+    } >> validation_report.txt
     
     # Validate each sample's outputs
     vcf_files=(~{sep=" " vcf_files})
@@ -189,7 +209,7 @@ task validate_outputs {
         # Check if VCF file exists and is not empty
         if [[ -f "$vcf" && -s "$vcf" ]]; then
             echo "VCF file present and non-empty" >> validation_report.txt
-            variant_count=$(zcat "$vcf" | grep -v '^#' | wc -l)
+            variant_count=$(zcat "$vcf" | grep -c -v '^#' || true)
             echo "Variants called: $variant_count" >> validation_report.txt
         else
             echo "VCF file missing or empty" >> validation_report.txt

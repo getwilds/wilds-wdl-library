@@ -19,17 +19,36 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 ## Module Structure
 
-This module contains three primary tasks:
+This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
+
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_annotsv_vcf`, `validate_outputs`
+- **Workflow**: `testdata_example` (demonstration workflow that executes all tasks)
+
+## Tasks
 
 ### `download_ref_data`
 Downloads chromosome-specific reference genome data including:
-- Reference FASTA file (compressed)
-- FASTA index (.fai) file
-- Gene annotations (GTF format)
+- Reference FASTA file (compressed and decompressed)
+- FASTA index (.fai) file created with samtools
+- Gene annotations (GTF format, chromosome-specific)
 - Chromosome coverage BED file
 
 **Supported genomes**: hg38, hg19
 **Configurable**: Any chromosome (chr1, chr2, chrX, etc.)
+
+### `download_fastq_data`
+Downloads small example paired-end FASTQ files for testing sequencing analysis workflows from GATK test data.
+
+### `download_cram_data`
+Downloads example CRAM files for testing CRAM-based workflows from GATK test data.
+
+### `download_bam_data`
+Downloads and processes example BAM files for testing alignment-based workflows. This task:
+- Downloads BAM data from GATK test repository
+- Filters to chromosome 1 only
+- Removes supplementary alignments and keeps only primary alignments
+- Subsamples to 10% of reads for smaller test files
+- Creates a clean, indexed BAM file suitable for testing
 
 ### `download_ichor_data`
 Downloads specialized reference files for ichorCNA copy number analysis:
@@ -39,7 +58,13 @@ Downloads specialized reference files for ichorCNA copy number analysis:
 - Panel of normals RDS file
 
 ### `download_annotsv_vcf`
-Downloads test VCF files for structural variant annotation workflows.
+Downloads test VCF files for structural variant annotation workflows from the AnnotSV repository.
+
+### `validate_outputs`
+Validates all downloaded test data files to ensure they exist and are non-empty.
+
+**Inputs**: All 15 output files from the download tasks
+**Outputs**: `report` (File): Validation summary confirming file presence and basic integrity
 
 ## Usage
 
@@ -113,6 +138,26 @@ call annotsv_tasks.annotate_variants {
 }
 ```
 
+**CRAM processing workflows**:
+```wdl
+call testdata.download_cram_data { }
+call my_cram_analysis { 
+  input: 
+    input_cram = download_cram_data.cram,
+    input_crai = download_cram_data.crai
+}
+```
+
+**BAM processing workflows**:
+```wdl
+call testdata.download_bam_data { }
+call my_bam_analysis { 
+  input: 
+    input_bam = download_bam_data.bam,
+    input_bai = download_bam_data.bai
+}
+```
+
 ## Task Reference
 
 ### download_ref_data
@@ -124,10 +169,40 @@ call annotsv_tasks.annotate_variants {
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
-- `fasta` (File): Reference chromosome FASTA file
+- `fasta` (File): Reference chromosome FASTA file (decompressed)
 - `fasta_index` (File): Samtools FASTA index (.fai)
 - `gtf` (File): Chromosome-specific gene annotations
 - `bed` (File): BED file covering entire chromosome
+
+### download_fastq_data
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `r1_fastq` (File): R1 FASTQ file for paired-end sequencing
+- `r2_fastq` (File): R2 FASTQ file for paired-end sequencing
+
+### download_cram_data
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `cram` (File): Example CRAM alignment file
+- `crai` (File): CRAM index file
+
+### download_bam_data
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `bam` (File): Processed BAM alignment file (chr1 only, primary alignments, 10% subsampled)
+- `bai` (File): BAM index file
 
 ### download_ichor_data
 
@@ -150,11 +225,36 @@ call annotsv_tasks.annotate_variants {
 **Outputs**:
 - `test_vcf` (File): Example VCF file for testing
 
+### validate_outputs
+
+**Inputs**:
+- `ref_fasta` (File): Reference FASTA file to validate
+- `ref_fasta_index` (File): Reference FASTA index file to validate
+- `ref_gtf` (File): GTF annotation file to validate
+- `ref_bed` (File): BED file to validate
+- `r1_fastq` (File): R1 FASTQ file to validate
+- `r2_fastq` (File): R2 FASTQ file to validate
+- `cram` (File): CRAM file to validate
+- `crai` (File): CRAM index file to validate
+- `bam` (File): BAM file to validate
+- `bai` (File): BAM index file to validate
+- `ichor_gc_wig` (File): ichorCNA GC content file to validate
+- `ichor_map_wig` (File): ichorCNA mapping quality file to validate
+- `ichor_centromeres` (File): ichorCNA centromere locations file to validate
+- `ichor_panel_of_norm_rds` (File): ichorCNA panel of normals file to validate
+- `annotsv_test_vcf` (File): AnnotSV test VCF file to validate
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+
+**Outputs**:
+- `report` (File): Validation summary reporting file checks and status
+
 ## Data Sources
 
 All reference data is downloaded from authoritative public repositories:
 
 - **UCSC Genome Browser**: Reference genomes and annotations
+- **GATK Test Data**: Example FASTQ, CRAM, and BAM files  
 - **ichorCNA Repository**: Copy number analysis references  
 - **AnnotSV Repository**: Structural variant test data
 
@@ -163,13 +263,13 @@ Data integrity is maintained through the use of stable URLs and version-pinned r
 ## Requirements
 
 ### Runtime Dependencies
-- **Container**: `getwilds/samtools:1.11`
-- **Tools**: samtools (for FASTA indexing), wget
+- **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`
+- **Tools**: samtools (for FASTA indexing and BAM processing), wget, aws CLI
 - **Network**: Internet access required for data downloads
 
 ### Resource Requirements
 - **CPU**: 1 core (configurable)
-- **Memory**: 4 GB (configurable)
+- **Memory**: 2-4 GB (configurable)
 - **Storage**: Varies by dataset (chr22: ~50MB, chr1: ~250MB)
 
 ## Integration with WILDS Ecosystem
@@ -186,6 +286,7 @@ By centralizing test data downloads, `ww-testdata` enables:
 - Efficient GitHub Actions testing (download only needed data)
 - Simplified module development and testing
 - Clear documentation of data dependencies
+- Built-in validation to ensure data integrity
 
 ## Module Development
 
@@ -193,6 +294,7 @@ This module is automatically tested as part of the WILDS WDL Library CI/CD pipel
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
 - Network connectivity validation
 - Cross-platform compatibility testing
+- Automated output validation
 
 ## Support
 

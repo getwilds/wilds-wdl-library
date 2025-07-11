@@ -4,6 +4,8 @@
 
 version 1.0
 
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
 workflow annotsv_example {
   meta {
     author: "WILDS Team"
@@ -17,7 +19,7 @@ workflow annotsv_example {
   }
 
   parameter_meta {
-    vcfs: "List of VCF files with structural variants"
+    vcfs: "Optional list of VCF files with structural variants. If not provided, test data will be used."
     genome_build: "Reference genome build (GRCh37, GRCh38)"
     annotation_mode: "Annotation mode: 'full' (one line per annotation) or 'split' (one line per SV)"
     include_ci: "Include confidence intervals in breakpoint coordinates"
@@ -29,7 +31,7 @@ workflow annotsv_example {
   }
 
   input {
-    Array[File] vcfs
+    Array[File]? vcfs
     String genome_build = "GRCh38" # GRCh38 or GRCh37
     String annotation_mode = "full"
     Boolean include_ci = true
@@ -40,7 +42,15 @@ workflow annotsv_example {
     Int memory_gb = 8
   }
 
-  scatter (vcf in vcfs) {
+  # If no VCFs provided, download test data
+  if (!defined(vcfs)) {
+    call ww_testdata.download_annotsv_vcf { }
+  }
+
+  # Determine which VCFs to use
+  Array[File] vcfs_to_process = if defined(vcfs) then select_first([vcfs]) else [select_first([download_annotsv_vcf.test_vcf])]
+
+  scatter (vcf in vcfs_to_process) {
     call annotsv_annotate { input:
         raw_vcf = vcf,
         genome_build = genome_build,

@@ -4,16 +4,12 @@
 
 version 1.0
 
-struct SampleInfo {
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
+struct DellySample {
     String name
     File bam
     File bai
-}
-
-struct RefGenome {
-    String name
-    File fasta
-    File fasta_index
 }
 
 workflow delly_example {
@@ -21,7 +17,7 @@ workflow delly_example {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "WDL workflow for structural variant calling via Delly"
-    url: "https://github.com/getwilds/ww-delly"
+    url: "https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-delly"
     outputs: {
         delly_vcfs: "Structural variant calls in BCF/VCF format",
         delly_vcf_indices: "Index files for the BCF/VCF output",
@@ -30,8 +26,9 @@ workflow delly_example {
   }
 
   parameter_meta {
-    samples: "List of sample objects, each containing name, BAM file, and BAM index"
-    reference_genome: "Reference genome object containing name, fasta, and fasta index files"
+    samples: "Optional list of DellySample objects, each containing sample name, BAM file, and BAM index. If not provided, workflow will download and align a demonstration sample from SRA"
+    ref_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
+    ref_fasta_index: "Optional reference genome FASTA index file. If not provided, test data will be used."
     target_regions_bed: "Optional BED file of regions to target for calling (e.g., exons, specific genomic regions)"
     exclude_regions_bed: "Optional BED file of regions to exclude from calling (e.g., centromeres, telomeres)"
     sv_type: "Type of structural variant to call (DEL, DUP, INV, TRA, INS, or leave empty for all types)"
@@ -40,22 +37,46 @@ workflow delly_example {
   }
 
   input {
-    Array[SampleInfo] samples
-    RefGenome reference_genome
+    Array[DellySample]? samples
+    File? ref_fasta
+    File? ref_fasta_index
     File? target_regions_bed
     File? exclude_regions_bed
     String sv_type = ""
-    Int cpus = 8
-    Int memory_gb = 16
+    Int cpus = 2
+    Int memory_gb = 8
   }
 
+  # If no reference genome provided, download test data
+  if (!defined(ref_fasta) || !defined(ref_fasta_index)) {
+    call ww_testdata.download_ref_data { }
+  }
+
+  # Determine which genome files to use
+  File genome_fasta = select_first([ref_fasta, download_ref_data.fasta])
+  File genome_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
+
+  # If no samples provided, download demonstration data
+  if (!defined(samples)) {
+    call ww_testdata.download_bam_data { }
+  }
+
+  # Create samples array - either from input or from test data download
+  Array[DellySample] final_samples = if defined(samples) then select_first([samples]) else [
+    {
+      "name": "demo_sample",
+      "bam": select_first([download_bam_data.bam]),
+      "bai": select_first([download_bam_data.bai])
+    }
+  ]
+
   # Call structural variants using Delly for each sample
-  scatter (sample in samples) {
+  scatter (sample in final_samples) {
     call delly_call { input:
         aligned_bam = sample.bam,
         aligned_bam_index = sample.bai,
-        reference_fasta = reference_genome.fasta,
-        reference_fasta_index = reference_genome.fasta_index,
+        reference_fasta = genome_fasta,
+        reference_fasta_index = genome_fasta_index,
         target_regions_bed = target_regions_bed,
         exclude_regions_bed = exclude_regions_bed,
         sv_type = sv_type,
@@ -181,10 +202,12 @@ task validate_outputs {
   command <<<
     set -euo pipefail
 
-    echo "=== Delly Workflow Validation Report ===" > validation_report.txt
-    echo "Generated on: $(date)" >> validation_report.txt
-    echo "Total samples processed: ~{length(delly_vcfs)}" >> validation_report.txt
-    echo "" >> validation_report.txt
+    {
+      echo "=== Delly Workflow Validation Report ==="
+      echo "Generated on: $(date)"
+      echo "Total samples processed: ~{length(delly_vcfs)}"
+      echo ""
+    } >> validation_report.txt
 
     # Validate each VCF file
     VCF_FILES=(~{sep=" " delly_vcfs})
@@ -194,11 +217,13 @@ task validate_outputs {
       VCF="${VCF_FILES[$i]}"
       INDEX="${INDEX_FILES[$i]}"
       
-      echo "=====================" >> validation_report.txt
-      echo "- VCF file: $VCF" >> validation_report.txt
-      echo "  Size: $(ls -lh "$VCF" | awk '{print $5}')" >> validation_report.txt
-      echo "- VCF index: $INDEX" >> validation_report.txt
-      echo "  Size: $(ls -lh "$INDEX" | awk '{print $5}')" >> validation_report.txt
+      {
+        echo "====================="
+        echo "- VCF file: $VCF"
+        echo "  Size: $(ls -lh "$VCF" | awk '{print $5}')"
+        echo "- VCF index: $INDEX"
+        echo "  Size: $(ls -lh "$INDEX" | awk '{print $5}')"
+      } >> validation_report.txt
       
       # Validate VCF file format
       if bcftools view -h "$VCF" > /dev/null 2>&1; then
@@ -221,9 +246,11 @@ task validate_outputs {
       COUNT=$(bcftools view -H "$vcf" | wc -l)
       TOTAL_VARIANTS=$((TOTAL_VARIANTS + COUNT))
     done
-    echo "Total variants across all samples: $TOTAL_VARIANTS" >> validation_report.txt
-    echo "" >> validation_report.txt
-    echo "Validation completed successfully!" >> validation_report.txt
+    {
+      echo "Total variants across all samples: $TOTAL_VARIANTS"
+      echo ""
+      echo "Validation completed successfully!"
+    } >> validation_report.txt
   >>>
 
   output {
