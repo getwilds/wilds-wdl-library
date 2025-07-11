@@ -4,7 +4,9 @@
 
 version 1.0
 
-struct SampleInfo {
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/switch-test-data/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
+struct BedtoolsSample {
     String name
     File bam
     File bam_index
@@ -40,10 +42,10 @@ workflow bedtools_example {
   }
 
   input {
-    File bed_file
-    File reference_fasta
-    File reference_index
-    Array[SampleInfo] samples
+    File? bed_file
+    Array[BedtoolsSample]? samples
+    File? reference_fasta
+    File? reference_index
     Array[String] chromosomes = [
       "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
       "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
@@ -51,23 +53,45 @@ workflow bedtools_example {
       ]
     String intersect_flags = "-header -wo"
     String tmp_dir = "/tmp"
-    Int cpus = 10
-    Int memory_gb = 24
+    Int cpus = 2
+    Int memory_gb = 8
   }
 
-  scatter (sample in samples) {
-    call coverage {
-     input:
-        bed_file = bed_file,
+  # If no reference genome provided, download test data
+  if (!defined(reference_fasta) || !defined(reference_index) || !defined(bed_file)) {
+    call ww_testdata.download_ref_data { }
+  }
+
+  # Determine which genome files to use
+  File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
+  File genome_fasta_index = select_first([reference_index, download_ref_data.fasta_index])
+  File bed_file_final = select_first([bed_file, download_ref_data.bed])
+
+  # If no samples provided, download demonstration data
+  if (!defined(samples)) {
+    call ww_testdata.download_bam_data { }
+  }
+
+  # Create samples array - either from input or from test data download
+  Array[BedtoolsSample] final_samples = if defined(samples) then select_first([samples]) else [
+    {
+      "name": "demo_sample",
+      "bam": select_first([download_bam_data.bam]),
+      "bam_index": select_first([download_bam_data.bai])
+    }
+  ]
+
+  scatter (sample in final_samples) {
+    call coverage { input:
+        bed_file = bed_file_final,
         aligned_bam = sample.bam,
         sample_name = sample.name,
         cpu_cores = cpus,
         memory_gb = memory_gb
     }
 
-    call intersect {
-     input:
-        bed_file = bed_file,
+    call intersect { input:
+        bed_file = bed_file_final,
         aligned_bam = sample.bam,
         sample_name = sample.name,
         flags = intersect_flags,
@@ -75,14 +99,13 @@ workflow bedtools_example {
         memory_gb = memory_gb
     }
 
-    call makewindows {
-     input:
-        bed_file = bed_file,
+    call makewindows { input:
+        bed_file = bed_file_final,
         aligned_bam = sample.bam,
         bam_index = sample.bam_index,
         sample_name = sample.name,
-        reference_fasta = reference_fasta,
-        reference_index = reference_index,
+        reference_fasta = genome_fasta,
+        reference_index = genome_fasta_index,
         list_chr = chromosomes,
         tmp_dir = tmp_dir,
         cpu_cores = cpus,
@@ -90,8 +113,7 @@ workflow bedtools_example {
     }
   }
 
-  call validate_outputs {
-   input:
+  call validate_outputs { input:
       intersect_files = intersect.intersect_output,
       coverage_files = coverage.mean_coverage,
       window_count_files = makewindows.counts_bed,
@@ -239,10 +261,10 @@ task makewindows {
     set -eo pipefail
     mkdir -p "~{sample_name}"
 
-    for Chrom in ~{sep=' ' list_chr}
+    for Chrom in ~{sep=" " list_chr}
     do
       # Create windows for this chromosome
-      bedtools makewindows -b ~{bed_file} -w 500000 | \
+      bedtools makewindows -b "~{bed_file}" -w 500000 | \
         awk -v OFS="\t" -v C="${Chrom}" '$1==C && NF==3' > "~{tmp_dir}"/"${Chrom}".windows.bed
 
       # Count reads in windows for this chromosome (run in background for parallelization)
@@ -272,7 +294,7 @@ task validate_outputs {
   meta {
     description: "Validate that BEDTools output files exist and are non-empty"
     outputs: {
-      report: "Validation report summarizing file check results"
+        report: "Validation report summarizing file check results"
     }
   }
 

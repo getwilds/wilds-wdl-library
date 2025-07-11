@@ -6,39 +6,41 @@ A WILDS WDL module for sequence alignment using the Burrows-Wheeler Aligner (BWA
 
 ## Overview
 
-This module provides reusable WDL tasks for aligning sequencing reads to a reference genome using **BWA-MEM** (Burrows-Wheeler aligner maximal exact matches algorithm). 
+This module provides reusable WDL tasks for aligning sequencing reads to a reference genome using **BWA-MEM** (Burrows-Wheeler aligner maximal exact matches algorithm). It includes comprehensive indexing, alignment, and validation capabilities.
 
-The module is designed to be a foundational component within the WILDS ecosystem, suitable for use in larger sequence analysis pipelines.
+The module is designed to be a foundational component within the WILDS ecosystem, suitable for use in larger sequence analysis pipelines. It can run completely standalone with automatic test data download, or integrate with existing FASTQ files.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Task**: `bwa_index`, `bwa_mem`, `validate_outputs`
-- **Workflow**: `bwa_example` (demonstration workflow that executes all tasks)
+- **Tasks**: `bwa_index`, `bwa_mem`, `validate_outputs`
+- **Workflow**: `bwa_example` (demonstration workflow with automatic test data support)
 - **Container**: `getwilds/bwa:0.7.17`
+- **Test Data**: Automatically downloads reference genome and FASTQ data when not provided using `ww-testdata` module
 
 ## Tasks
 
 ### `bwa_index`
-Builds BWA index files from reference FASTA.
+Builds BWA index files from reference FASTA and packages them in a compressed tarball.
 
 **Inputs:**
 - `reference_fasta` (File): Reference genome FASTA file
-- `memory_gb` (Int): Memory allocation in GB (default: 32)
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
+- `memory_gb` (Int): Memory allocation in GB (default: 32)
 
 **Outputs:**
-- `bwa_index_tar` (File): Compressed tarball containing BWA genome index
+- `bwa_index_tar` (File): Compressed tarball containing BWA genome index files
 
 ### `bwa_mem`
-
-Aligns paired-end reads to a reference using BWA-MEM.
+Aligns paired-end reads to a reference using BWA-MEM with automatic read group addition and BAM sorting.
 
 **Inputs:**
 - `bwa_genome_tar` (File): Compressed tarball containing BWA genome index
-- `reference_fasta` (File): Reference genome FASTA file (indexed and preprocessed externally)
-- `sample_data` (SampleInfo): Sample information struct containing sample name and R1/R2 FASTQ file paths
+- `reference_fasta` (File): Reference genome FASTA file
+- `r1` (File): FASTQ file for read 1
+- `r2` (File): FASTQ file for read 2
+- `name` (String): Sample name for read group information and output files
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
 
@@ -50,9 +52,8 @@ Aligns paired-end reads to a reference using BWA-MEM.
 Validates alignment outputs and generates a comprehensive report.
 
 **Inputs:**
-- `bam_files` (File): BAM file to validate
-- `bai_files` (File): BAM index file to validate
-- `sample_names` (String): Sample name that was processed
+- `bam_files` (Array[File]): Array of BAM files to validate
+- `bai_files` (Array[File]): Array of BAM index files to validate
 
 **Outputs:**
 - `report` (File): Validation summary with alignment statistics
@@ -64,7 +65,7 @@ Validates alignment outputs and generates a comprehensive report.
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as bwa_tasks
 
-struct SampleInfo {
+struct BwaSample {
     String name
     File r1
     File r2
@@ -72,12 +73,15 @@ struct SampleInfo {
 
 workflow my_alignment_pipeline {
   input {
-    Array[SampleInfo] samples
+    Array[BwaSample] samples
     File reference_fasta
   }
 
   call bwa_tasks.bwa_index {
-    reference_fasta = reference_fasta
+    input: 
+      reference_fasta = reference_fasta,
+      cpu_cores = 8,
+      memory_gb = 32
   }
 
   scatter (sample in samples) {
@@ -85,12 +89,24 @@ workflow my_alignment_pipeline {
       input:
         bwa_genome_tar = bwa_index.bwa_index_tar,
         reference_fasta = reference_fasta,
-        sample_data = sample
+        r1 = sample.r1,
+        r2 = sample.r2,
+        name = sample.name,
+        cpu_cores = 8,
+        memory_gb = 16
     }
+  }
+
+  call bwa_tasks.validate_outputs {
+    input:
+      bam_files = bwa_mem.sorted_bam,
+      bai_files = bwa_mem.sorted_bai
   }
 
   output {
     Array[File] aligned_bams = bwa_mem.sorted_bam
+    Array[File] aligned_bais = bwa_mem.sorted_bai
+    File validation_report = validate_outputs.report
   }
 }
 ```
@@ -98,7 +114,11 @@ workflow my_alignment_pipeline {
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
-- **ww-sra**: Download sequencing data prior to alignment
+- **ww-testdata**: Provides reference genomes and test FASTQ files automatically
+- **ww-bcftools**: Use aligned BAM files for variant calling
+- **ww-bedtools**: Use aligned BAM files for genomic interval analysis
+- **ww-delly**: Use aligned BAM files for structural variant calling
+- **Custom workflows**: Foundation for any analysis requiring aligned reads
 
 ## Testing the Module
 
@@ -115,8 +135,28 @@ miniwdl run ww-bwa.wdl -i inputs.json
 sprocket run ww-bwa.wdl inputs.json
 ```
 
+### Automatic Demo Mode
+
+When no samples or reference files are provided, the workflow automatically:
+1. Downloads reference genome data using `ww-testdata`
+2. Downloads FASTQ test data using `ww-testdata`
+3. Builds BWA index from reference FASTA
+4. Aligns reads using BWA-MEM with proper read groups
+5. Sorts and indexes BAM output
+6. Validates all outputs with detailed statistics
+
 ### Test Input Format
 
+**Minimal input (uses automatic demo data):**
+```json
+{
+  "bwa_example.demo_sra_id": "ERR1258306",
+  "bwa_example.cpus": 2,
+  "bwa_example.memory_gb": 8
+}
+```
+
+**Full input (provide your own data):**
 ```json
 {
   "bwa_example.samples": [
@@ -126,48 +166,112 @@ sprocket run ww-bwa.wdl inputs.json
       "r2": "/path/to/sample1_R2.fastq.gz"
     }
   ],
-  "bwa_example.reference_genome": {
-    "ref_fasta": "/path/to/genome.fasta",
-  },
+  "bwa_example.reference_fasta": "/path/to/genome.fasta",
   "bwa_example.cpus": 8,
   "bwa_example.memory_gb": 32
 }
 ```
 
+**Note**: If no `samples` or `reference_fasta` are provided, the workflow will automatically download test data using the `ww-testdata` module.
+
 ## Configuration Guidelines
 
 ### Resource Allocation
 
-- **Memory**: 16-32 GB recommended for human genomes; can be tuned for smaller references
-- **CPUs**: 8 cores typically sufficient for most samples; BWA-MEM and samtools scale with available threads
+The module supports flexible resource configuration:
+- **Memory**: 16-32 GB recommended for human genomes; can be reduced for smaller references
+- **CPUs**: 8 cores optimal for most samples; BWA-MEM and samtools benefit from multi-threading
+- **Storage**: Sufficient space for FASTQ files, reference genome, BWA index, and output BAM files
 
 ### Advanced Parameters
 
-- Ensure the reference genome is pre-indexed with BWA and has an associated `.fai` and `.dict`
-- Set `cpu_cores` and `memory_gb` based on your environment and dataset size
+- **BWA index building**: Memory-intensive step; ensure adequate memory allocation (32GB recommended for human genome)
+- **CPU thread optimization**: BWA-MEM uses `cpu_cores - 1` threads automatically for optimal performance
+- **Read group information**: Automatically added using the sample name for downstream compatibility
+- **SAM to BAM conversion**: Includes sorting and indexing in a single step
+
+### Demo Configuration
+
+- `demo_sra_id`: Currently a placeholder parameter; actual demo uses test FASTQ data from `ww-testdata`
+- Resource parameters apply to both demo and user-provided data modes
 
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
 - Docker or Apptainer support
-- Sufficient memory for genome indexing (varies by genome size)
+- Sufficient memory for genome indexing (varies by genome size; 32GB for human genome)
+- Paired-end FASTQ files (when providing your own data)
 
 ## Features
 
+- **Standalone execution**: Complete workflow with automatic test data download
+- **Flexible input**: Use your own data or automatic demo data from `ww-testdata`
 - **BWA-MEM alignment**: Fast and accurate for reads 70bp to 1Mbp
+- **Automatic indexing**: Builds BWA index from reference FASTA with tarball packaging
 - **Sorted BAM output**: Ready for downstream analysis (variant calling, QC, etc.)
-- **Validation**: Built-in output validation and reporting
-- **Modular design**: Integrates with other WILDS workflows and tools
+- **Read group addition**: Proper read group tags for downstream compatibility
+- **Comprehensive validation**: Built-in output validation with alignment statistics
+- **Module integration**: Seamlessly integrates with `ww-testdata` and other WILDS modules
 - **Scalable**: Supports batch alignment across many samples
-- **Flexible**: Customizable resource settings per task
-- **Robust**: Includes error handling and reproducible output filenames
+- **Robust**: Includes error handling and thread optimization
+
+## Advanced Usage
+
+### Resource Optimization for Large Genomes
+
+For human genome alignment:
+
+```json
+{
+  "bwa_example.cpus": 16,
+  "bwa_example.memory_gb": 64
+}
+```
+
+### Multiple Sample Processing
+
+```json
+{
+  "bwa_example.samples": [
+    {
+      "name": "control_1",
+      "r1": "/data/control_1_R1.fastq.gz",
+      "r2": "/data/control_1_R2.fastq.gz"
+    },
+    {
+      "name": "treatment_1", 
+      "r1": "/data/treatment_1_R1.fastq.gz",
+      "r2": "/data/treatment_1_R2.fastq.gz"
+    }
+  ],
+  "bwa_example.cpus": 12,
+  "bwa_example.memory_gb": 48
+}
+```
+
+### Custom Reference Genome
+
+```json
+{
+  "bwa_example.reference_fasta": "/data/custom_genome.fasta",
+  "bwa_example.samples": [
+    {
+      "name": "sample1",
+      "r1": "/data/sample1_R1.fastq.gz",
+      "r2": "/data/sample1_R2.fastq.gz"
+    }
+  ]
+}
+```
 
 ## Module Development
 
 This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
-- Real RNA-seq data (chromosome 22 subset for efficiency)
-- Comprehensive validation of all outputs
+- Test data from `ww-testdata` module (chromosome 1 subset for efficiency)
+- Comprehensive validation of all outputs including alignment statistics
+- Integration testing with `ww-testdata` module
+- Cross-platform compatibility testing
 
 For questions specific to this module or to contribute improvements, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).
 

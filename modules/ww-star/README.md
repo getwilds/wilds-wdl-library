@@ -6,17 +6,19 @@ A WILDS WDL module for RNA-seq alignment using STAR's two-pass methodology.
 
 ## Overview
 
-This module provides reusable WDL tasks for high-quality RNA-seq alignment using STAR (Spliced Transcripts Alignment to a Reference). It implements STAR's two-pass approach for improved splice junction detection and includes comprehensive validation of outputs.
+This module provides reusable WDL tasks for high-quality RNA-seq alignment using STAR (Spliced Transcripts Alignment to a Reference). It implements STAR's two-pass methodology for optimal splice junction detection and includes comprehensive validation of outputs. The module supports both single-sample analysis and batch processing.
 
-The module is designed to be a foundational component within the WILDS ecosystem, suitable for use in larger RNA-seq analysis pipelines.
+The module can run completely standalone with automatic test data download, or integrate with existing FASTQ files for production analyses.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
 - **Tasks**: `build_index`, `align_two_pass`, `validate_outputs`
-- **Workflow**: `star_example` (demonstration workflow that executes all tasks)
+- **Workflow**: `star_example` (demonstration workflow with automatic test data support)
 - **Container**: `getwilds/star:2.7.6a`
+- **Dependencies**: Integrates with `ww-testdata` module for complete workflows
+- **Test Data**: Automatically downloads reference genome, GTF annotation, and FASTQ data when not provided
 
 ## Tasks
 
@@ -26,22 +28,26 @@ Builds STAR genome index from reference FASTA and GTF files.
 **Inputs:**
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_gtf` (File): Reference genome GTF annotation file
-- `sjdb_overhang` (Int): Splice junction database overhang (default: 100)
-- `genome_sa_index_nbases` (Int): SA index string length (default: 14)
+- `sjdb_overhang` (Int): Length of genomic sequence around junctions (default: 100)
+- `genome_sa_index_nbases` (Int): SA pre-indexing string length (default: 14)
 - `memory_gb` (Int): Memory allocation in GB (default: 64)
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 
 **Outputs:**
-- `star_index_tar` (File): Compressed STAR genome index
+- `star_index_tar` (File): Compressed tarball containing STAR genome index
 
 ### `align_two_pass`
-Performs two-pass STAR alignment with gene counting.
+Performs RNA-seq alignment using STAR's two-pass methodology.
 
 **Inputs:**
 - `star_genome_tar` (File): STAR genome index from `build_index`
-- `sample_data` (SampleInfo): Sample information struct
-- `ref_genome_name` (String): Reference genome name for output files
-- Various resource and parameter settings
+- `r1` (File): R1 FASTQ file
+- `r2` (File): R2 FASTQ file
+- `name` (String): Sample name for output files
+- `sjdb_overhang` (Int): Length of genomic sequence around junctions (default: 100)
+- `memory_gb` (Int): Memory allocation in GB (default: 62)
+- `cpu_cores` (Int): Total CPU cores (default: 8)
+- `star_threads` (Int): STAR-specific thread count (default: 6)
 
 **Outputs:**
 - `bam` (File): Sorted BAM alignment file
@@ -54,7 +60,9 @@ Performs two-pass STAR alignment with gene counting.
 Validates alignment outputs and generates a comprehensive report.
 
 **Inputs:**
-- Arrays of output files from alignment tasks
+- `bam_files` (Array[File]): Array of BAM files to validate
+- `bai_files` (Array[File]): Array of BAM index files to validate
+- `gene_count_files` (Array[File]): Array of gene count files to validate
 
 **Outputs:**
 - `report` (File): Validation summary with alignment statistics
@@ -66,7 +74,7 @@ Validates alignment outputs and generates a comprehensive report.
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as star_tasks
 
-struct SampleInfo {
+struct StarSample {
     String name
     File r1
     File r2
@@ -74,7 +82,7 @@ struct SampleInfo {
 
 workflow my_rna_seq_pipeline {
   input {
-    Array[SampleInfo] samples
+    Array[StarSample] samples
     File reference_fasta
     File reference_gtf
   }
@@ -88,9 +96,10 @@ workflow my_rna_seq_pipeline {
   scatter (sample in samples) {
     call star_tasks.align_two_pass {
       input:
-        sample_data = sample,
         star_genome_tar = build_index.star_index_tar,
-        ref_genome_name = "hg38"
+        r1 = sample.r1,
+        r2 = sample.r2,
+        name = sample.name
     }
   }
   
@@ -101,20 +110,42 @@ workflow my_rna_seq_pipeline {
 }
 ```
 
+### Advanced Usage Examples
+
+**Custom splice junction parameters:**
+```wdl
+call star_tasks.build_index {
+  input:
+    sjdb_overhang = 149,  # read_length - 1 for optimal performance
+    genome_sa_index_nbases = 14  # Adjust for genome size
+}
+```
+
+**Resource optimization:**
+```wdl
+call star_tasks.align_two_pass {
+  input:
+    memory_gb = 64,
+    cpu_cores = 16,
+    star_threads = 12  # Leave some cores for I/O
+}
+```
+
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
 - **ww-sra**: Download sequencing data before alignment
+- **ww-testdata**: Automatic provisioning of reference data and test samples
 - **ww-sra-star vignette**: Complete SRA-to-alignment pipeline
-- **ww-star-deseq2 vignette**: Extended pipeline with differential expression
+- **Custom workflows**: Foundation for RNA-seq analysis pipelines
 
 ## Testing the Module
 
-The module includes a demonstration workflow with comprehensive testing:
+The module includes a demonstration workflow that can be tested independently:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-star.wdl --inputs inputs.json --options options.json
+java -jar cromwell.jar run ww-star.wdl --inputs inputs.json
 
 # Using miniWDL
 miniwdl run ww-star.wdl -i inputs.json
@@ -122,6 +153,15 @@ miniwdl run ww-star.wdl -i inputs.json
 # Using Sprocket
 sprocket run ww-star.wdl inputs.json
 ```
+
+### Automatic Demo Mode
+
+When no samples or reference files are provided, the workflow automatically:
+1. Downloads reference genome data using `ww-testdata`
+2. Downloads demonstration FASTQ data using `ww-testdata`
+3. Builds STAR genome index
+4. Performs RNA-seq alignment using STAR two-pass methodology
+5. Validates all outputs
 
 ### Test Input Format
 
@@ -134,11 +174,9 @@ sprocket run ww-star.wdl inputs.json
       "r2": "/path/to/sample1_R2.fastq.gz"
     }
   ],
-  "star_example.reference_genome": {
-    "name": "hg38",
-    "fasta": "/path/to/genome.fasta",
-    "gtf": "/path/to/annotation.gtf"
-  },
+  "star_example.ref_fasta": "/path/to/genome.fasta",
+  "star_example.ref_gtf": "/path/to/annotation.gtf",
+  "star_example.sjdb_overhang": 149,
   "star_example.genome_sa_index_nbases": 14,
   "star_example.cpus": 8,
   "star_example.memory_gb": 64
@@ -151,8 +189,8 @@ sprocket run ww-star.wdl inputs.json
 
 The module supports flexible resource configuration:
 
-- **Memory**: Scales with genome size (64GB recommended for human genome)
-- **CPUs**: Adjustable based on available resources (8 cores recommended)
+- **Memory**: 8-64 GB recommended (scales with genome size and sample complexity)
+- **CPUs**: 8 cores recommended; STAR benefits from multi-threading
 - **Index Parameters**: `genome_sa_index_nbases` should be set based on genome size:
   - Human genome (~3GB): 14 (default)
   - Mouse genome (~2.7GB): 14
@@ -162,35 +200,68 @@ The module supports flexible resource configuration:
 ### Advanced Parameters
 
 - `sjdb_overhang`: Set to (read_length - 1) for optimal junction detection
+- `star_threads`: Usually set slightly less than `cpu_cores` to leave resources for I/O
 - Resource allocation can be tuned for different compute environments
+
+### Demo Configuration
+
+- `sjdb_overhang`: Use 100 for demo runs with mixed read lengths
+- `genome_sa_index_nbases`: Use 14 for most reference genomes
+- Resource parameters apply to both demo and user-provided data modes
 
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
 - Docker/Apptainer support
-- Sufficient memory for genome indexing (varies by genome size)
+- Input FASTQ files must be gzip-compressed (when providing your own data)
+- Reference genome FASTA and GTF annotation files (when providing your own data)
+- Sufficient computational resources (STAR can be memory-intensive for large genomes)
 
 ## Features
 
-- **Two-pass alignment**: Improved splice junction detection
-- **Comprehensive outputs**: BAM files, gene counts, QC metrics
+- **Standalone execution**: Complete workflow with automatic test data download
+- **Flexible input**: Use your own data or automatic demo data
+- **Two-pass methodology**: Optimal splice junction detection using STAR's two-pass approach
+- **Comprehensive outputs**: BAM files, gene counts, splice junctions, and detailed logs
+- **Multi-sample support**: Process multiple samples in parallel
 - **Validation**: Built-in output validation and reporting
+- **Module integration**: Seamlessly combines with ww-sra and ww-testdata
 - **Scalable**: Configurable resource allocation
-- **Robust**: Extensive error handling and cleanup
 - **Compatible**: Works with multiple WDL executors
+
+## Performance Considerations
+
+- **Memory usage**: Index building requires significant RAM (32-64GB for human genome)
+- **CPU scaling**: Both index building and alignment benefit from multiple cores
+- **Storage requirements**: Ensure sufficient space for index files and BAM outputs
+- **Two-pass optimization**: Second pass uses splice junctions from first pass for improved accuracy
+
+## Output Description
+
+- **BAM files**: Sorted alignment files ready for downstream analysis
+- **BAI files**: Index files for rapid BAM access
+- **Gene count files**: Tab-delimited files with read counts per gene
+- **Log files**: Detailed alignment statistics and runtime information
+- **Splice junction files**: Coordinates and support for detected splice junctions
+- **Validation report**: Comprehensive validation with alignment statistics and file integrity checks
 
 ## Module Development
 
 This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
-- Real RNA-seq data (chromosome 22 subset for efficiency)
-- Comprehensive validation of all outputs
+- Real sequencing data (demonstration FASTQ for integration testing)
+- Comprehensive validation of all outputs including BAM format validation
+- Integration testing with ww-testdata modules
 
 For questions specific to this module or to contribute improvements, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).
 
 ## Support
 
 For questions, bugs, and/or feature requests, reach out to the Fred Hutch Data Science Lab (DaSL) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
+
+For questions specific to STAR usage or configuration, please refer to the [STAR manual](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf). Please make sure to cite their work if you use STAR in your analyses:
+
+Dobin A, Davis CA, Schlesinger F, et al. STAR: ultrafast universal RNA-seq aligner. Bioinformatics. 2013;29(1):15-21.
 
 ## Contributing
 

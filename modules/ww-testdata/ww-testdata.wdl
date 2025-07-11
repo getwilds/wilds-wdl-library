@@ -6,20 +6,27 @@ version 1.0
 
 workflow testdata_example {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "WDL workflow for downloading reference data for WILDS WDL tests"
-    url: "https://github.com/getwilds/ww-testdata"
+    url: "https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-testdata"
     outputs: {
         ref_fasta: "Reference genome FASTA file",
         ref_fasta_index: "Index file for the reference FASTA",
         ref_gtf: "GTF file containing gene annotations for the specified chromosome",
         ref_bed: "BED file covering the entire chromosome",
+        r1_fastq: "R1 fastq file downloaded for the sample in question",
+        r2_fastq: "R2 fastq file downloaded for the sample in question",
+        cram: "CRAM file downloaded for the sample in question",
+        crai: "Index file for the CRAM file",
+        bam: "BAM file downloaded for the sample in question",
+        bai: "Index file for the BAM file",
         ichor_gc_wig: "GC content WIG file for hg38",
         ichor_map_wig: "Mapping quality WIG file for hg38",
         ichor_centromeres: "Centromere locations for hg38",
         ichor_panel_of_norm_rds: "Panel of normals RDS file for hg38",
-        annotsv_test_vcf: "Test VCF file for AnnotSV"
+        annotsv_test_vcf: "Test VCF file for AnnotSV",
+        validation_report: "Validation report summarizing all outputs"
     }
   }
 
@@ -39,20 +46,58 @@ workflow testdata_example {
       version = version
   }
 
+  call download_fastq_data { }
+
+  call download_cram_data { input:
+    ref_fasta = download_ref_data.fasta
+  }
+
+  call download_bam_data { }
+
   call download_ichor_data { }
 
   call download_annotsv_vcf { }
 
+  call validate_outputs { input:
+    ref_fasta = download_ref_data.fasta,
+    ref_fasta_index = download_ref_data.fasta_index,
+    ref_gtf = download_ref_data.gtf,
+    ref_bed = download_ref_data.bed,
+    r1_fastq = download_fastq_data.r1_fastq,
+    r2_fastq = download_fastq_data.r2_fastq,
+    cram = download_cram_data.cram,
+    crai = download_cram_data.crai,
+    bam = download_bam_data.bam,
+    bai = download_bam_data.bai,
+    ichor_gc_wig = download_ichor_data.wig_gc,
+    ichor_map_wig = download_ichor_data.wig_map,
+    ichor_centromeres = download_ichor_data.centromeres,
+    ichor_panel_of_norm_rds = download_ichor_data.panel_of_norm_rds,
+    annotsv_test_vcf = download_annotsv_vcf.test_vcf
+  }
+
   output {
+    # Outputs from the reference data download
     File ref_fasta = download_ref_data.fasta
     File ref_fasta_index = download_ref_data.fasta_index
     File ref_gtf = download_ref_data.gtf
     File ref_bed = download_ref_data.bed
+    # Outputs from the fastq, cram, and bam data downloads
+    File r1_fastq = download_fastq_data.r1_fastq
+    File r2_fastq = download_fastq_data.r2_fastq
+    File cram = download_cram_data.cram
+    File crai = download_cram_data.crai
+    File bam = download_bam_data.bam
+    File bai = download_bam_data.bai
+    # Outputs from the ichorCNA data download
     File ichor_gc_wig = download_ichor_data.wig_gc
     File ichor_map_wig = download_ichor_data.wig_map
     File ichor_centromeres = download_ichor_data.centromeres
     File ichor_panel_of_norm_rds = download_ichor_data.panel_of_norm_rds
+    # Outputs from the AnnotSV test VCF download
     File annotsv_test_vcf = download_annotsv_vcf.test_vcf
+    # Validation report summarizing all outputs
+    File validation_report = validate_outputs.report
   }
 }
 
@@ -113,6 +158,150 @@ task download_ref_data {
 
   runtime {
     docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_fastq_data {
+  meta {
+    description: "Downloads small example FASTQ files for WILDS WDL test runs"
+    outputs: {
+        r1_fastq: "R1 fastq file downloaded for the sample in question",
+        r2_fastq: "R2 fastq file downloaded for the sample in question"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq .
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq .
+  >>>
+
+  output {
+    File r1_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq"
+    File r2_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_cram_data {
+  meta {
+    description: "Downloads small example CRAM files for WILDS WDL test runs"
+    outputs: {
+        cram: "CRAM file downloaded for the sample in question",
+        crai: "Index file for the CRAM file"
+    }
+  }
+
+  parameter_meta {
+    ref_fasta: "Reference genome FASTA file to use for CRAM conversion"
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    File ref_fasta
+    Int cpu_cores = 2
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -euo pipefail
+
+    # Pull down BAM files from GATK test data bucket
+    samtools view -@ ~{cpu_cores} -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1 | \
+    samtools view -@ ~{cpu_cores} -s 0.1 -b - > NA12878.bam
+    samtools index -@ ~{cpu_cores} NA12878.bam
+
+    # Only keep primary alignments from chr1 (no supplementary alignments)
+    samtools view -@ ~{cpu_cores} -h -f 0x2 NA12878.bam chr1 | \
+      awk '/^@/ || ($7 == "=" || $7 == "chr1")' | \
+      sed 's/\tSA:Z:[^\t]*//' | \
+      sed '/^@SQ/d' | \
+      sed '1a@SQ\tSN:chr1\tLN:248956422' | \
+      samtools view -@ ~{cpu_cores} -b > NA12878_chr1.bam
+
+    # Index the new BAM file
+    samtools index -@ ~{cpu_cores} NA12878_chr1.bam
+
+    # Convert BAM to CRAM using the provided reference FASTA
+    samtools view -@ ~{cpu_cores} -C -T ~{ref_fasta} -o NA12878_chr1.cram NA12878_chr1.bam
+    samtools index -@ ~{cpu_cores} NA12878_chr1.cram
+  >>>
+
+  output {
+    File cram = "NA12878_chr1.cram"
+    File crai = "NA12878_chr1.cram.crai"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_bam_data {
+  meta {
+    description: "Downloads small example BAM files for WILDS WDL test runs"
+    outputs: {
+        bam: "BAM file downloaded for the sample in question",
+        bai: "Index file for the BAM file"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 2
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -euo pipefail
+
+    # Pull down BAM files from GATK test data bucket
+    samtools view -@ ~{cpu_cores} -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1 | \
+    samtools view -@ ~{cpu_cores} -s 0.1 -b - > NA12878.bam
+    samtools index -@ ~{cpu_cores} NA12878.bam
+
+    # Only keep primary alignments from chr1 (no supplementary alignments)
+    samtools view -@ ~{cpu_cores} -h -f 0x2 NA12878.bam chr1 | \
+      awk '/^@/ || ($7 == "=" || $7 == "chr1")' | \
+      sed 's/\tSA:Z:[^\t]*//' | \
+      sed '/^@SQ/d' | \
+      sed '1a@SQ\tSN:chr1\tLN:248956422' | \
+      samtools view -@ ~{cpu_cores} -b > NA12878_chr1.bam
+
+    # Index the new BAM file
+    samtools index -@ ~{cpu_cores} NA12878_chr1.bam
+  >>>
+
+  output {
+    File bam = "NA12878_chr1.bam"
+    File bai = "NA12878_chr1.bam.bai"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -191,6 +380,195 @@ task download_annotsv_vcf {
 
   output {
     File test_vcf = "annotsv_test.vcf"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task validate_outputs {
+  meta {
+    description: "Validates downloaded test data files to ensure they exist and are non-empty"
+    outputs: {
+        report: "Validation summary reporting file checks and basic statistics"
+    }
+  }
+
+  parameter_meta {
+    ref_fasta: "Reference genome FASTA file to validate"
+    ref_fasta_index: "Reference FASTA index file to validate"
+    ref_gtf: "GTF annotation file to validate"
+    ref_bed: "BED file to validate"
+    r1_fastq: "R1 FASTQ file to validate"
+    r2_fastq: "R2 FASTQ file to validate"
+    cram: "CRAM file to validate"
+    crai: "CRAM index file to validate"
+    bam: "BAM file to validate"
+    bai: "BAM index file to validate"
+    ichor_gc_wig: "ichorCNA GC content file to validate"
+    ichor_map_wig: "ichorCNA mapping quality file to validate"
+    ichor_centromeres: "ichorCNA centromere locations file to validate"
+    ichor_panel_of_norm_rds: "ichorCNA panel of normals file to validate"
+    annotsv_test_vcf: "AnnotSV test VCF file to validate"
+    cpu_cores: "Number of CPU cores to use for validation"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    File ref_fasta
+    File ref_fasta_index
+    File ref_gtf
+    File ref_bed
+    File r1_fastq
+    File r2_fastq
+    File cram
+    File crai
+    File bam
+    File bai
+    File ichor_gc_wig
+    File ichor_map_wig
+    File ichor_centromeres
+    File ichor_panel_of_norm_rds
+    File annotsv_test_vcf
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -euo pipefail
+
+    echo "=== WILDS Test Data Validation Report ===" > validation_report.txt
+    echo "Generated on: $(date)" >> validation_report.txt
+    echo "" >> validation_report.txt
+
+    validation_passed=true
+
+    # Check each file exists and is not empty
+    if [[ -f "~{ref_fasta}" && -s "~{ref_fasta}" ]]; then
+      echo "Reference FASTA: ~{ref_fasta} - PASSED" >> validation_report.txt
+    else
+      echo "Reference FASTA: ~{ref_fasta} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{ref_fasta_index}" && -s "~{ref_fasta_index}" ]]; then
+      echo "Reference FASTA index: ~{ref_fasta_index} - PASSED" >> validation_report.txt
+    else
+      echo "Reference FASTA index: ~{ref_fasta_index} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{ref_gtf}" && -s "~{ref_gtf}" ]]; then
+      echo "GTF file: ~{ref_gtf} - PASSED" >> validation_report.txt
+    else
+      echo "GTF file: ~{ref_gtf} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{ref_bed}" && -s "~{ref_bed}" ]]; then
+      echo "BED file: ~{ref_bed} - PASSED" >> validation_report.txt
+    else
+      echo "BED file: ~{ref_bed} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{r1_fastq}" && -s "~{r1_fastq}" ]]; then
+      echo "R1 FASTQ: ~{r1_fastq} - PASSED" >> validation_report.txt
+    else
+      echo "R1 FASTQ: ~{r1_fastq} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{r2_fastq}" && -s "~{r2_fastq}" ]]; then
+      echo "R2 FASTQ: ~{r2_fastq} - PASSED" >> validation_report.txt
+    else
+      echo "R2 FASTQ: ~{r2_fastq} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{cram}" && -s "~{cram}" ]]; then
+      echo "CRAM file: ~{cram} - PASSED" >> validation_report.txt
+    else
+      echo "CRAM file: ~{cram} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{crai}" && -s "~{crai}" ]]; then
+      echo "CRAM index: ~{crai} - PASSED" >> validation_report.txt
+    else
+      echo "CRAM index: ~{crai} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{bam}" && -s "~{bam}" ]]; then
+      echo "BAM file: ~{bam} - PASSED" >> validation_report.txt
+    else
+      echo "BAM file: ~{bam} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{bai}" && -s "~{bai}" ]]; then
+      echo "BAM index: ~{bai} - PASSED" >> validation_report.txt
+    else
+      echo "BAM index: ~{bai} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{ichor_gc_wig}" && -s "~{ichor_gc_wig}" ]]; then
+      echo "ichorCNA GC WIG: ~{ichor_gc_wig} - PASSED" >> validation_report.txt
+    else
+      echo "ichorCNA GC WIG: ~{ichor_gc_wig} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{ichor_map_wig}" && -s "~{ichor_map_wig}" ]]; then
+      echo "ichorCNA MAP WIG: ~{ichor_map_wig} - PASSED" >> validation_report.txt
+    else
+      echo "ichorCNA MAP WIG: ~{ichor_map_wig} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{ichor_centromeres}" && -s "~{ichor_centromeres}" ]]; then
+      echo "ichorCNA centromeres: ~{ichor_centromeres} - PASSED" >> validation_report.txt
+    else
+      echo "ichorCNA centromeres: ~{ichor_centromeres} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{ichor_panel_of_norm_rds}" && -s "~{ichor_panel_of_norm_rds}" ]]; then
+      echo "ichorCNA panel of normals: ~{ichor_panel_of_norm_rds} - PASSED" >> validation_report.txt
+    else
+      echo "ichorCNA panel of normals: ~{ichor_panel_of_norm_rds} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{annotsv_test_vcf}" && -s "~{annotsv_test_vcf}" ]]; then
+      echo "AnnotSV test VCF: ~{annotsv_test_vcf} - PASSED" >> validation_report.txt
+    else
+      echo "AnnotSV test VCF: ~{annotsv_test_vcf} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    {
+      echo ""
+      echo "=== Validation Summary ==="
+      echo "Total files validated: 15"
+    } >> validation_report.txt
+    if [[ "$validation_passed" == "true" ]]; then
+      echo "Overall Status: PASSED" >> validation_report.txt
+    else
+      echo "Overall Status: FAILED" >> validation_report.txt
+      exit 1
+    fi
+
+    cat validation_report.txt
+  >>>
+
+  output {
+    File report = "validation_report.txt"
   }
 
   runtime {
