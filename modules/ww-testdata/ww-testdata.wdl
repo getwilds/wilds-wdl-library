@@ -17,6 +17,8 @@ workflow testdata_example {
         ref_bed: "BED file covering the entire chromosome",
         r1_fastq: "R1 fastq file downloaded for the sample in question",
         r2_fastq: "R2 fastq file downloaded for the sample in question",
+        cram: "CRAM file downloaded for the sample in question",
+        crai: "Index file for the CRAM file",
         bam: "BAM file downloaded for the sample in question",
         bai: "Index file for the BAM file",
         ichor_gc_wig: "GC content WIG file for hg38",
@@ -46,6 +48,8 @@ workflow testdata_example {
 
   call download_fastq_data { }
 
+  call download_cram_data {}
+
   call download_bam_data { }
 
   call download_ichor_data { }
@@ -59,6 +63,8 @@ workflow testdata_example {
     ref_bed = download_ref_data.bed,
     r1_fastq = download_fastq_data.r1_fastq,
     r2_fastq = download_fastq_data.r2_fastq,
+    cram = download_cram_data.cram,
+    crai = download_cram_data.crai,
     bam = download_bam_data.bam,
     bai = download_bam_data.bai,
     ichor_gc_wig = download_ichor_data.wig_gc,
@@ -74,9 +80,11 @@ workflow testdata_example {
     File ref_fasta_index = download_ref_data.fasta_index
     File ref_gtf = download_ref_data.gtf
     File ref_bed = download_ref_data.bed
-    # Outputs from the fastq and bam data downloads
+    # Outputs from the fastq, cram, and bam data downloads
     File r1_fastq = download_fastq_data.r1_fastq
     File r2_fastq = download_fastq_data.r2_fastq
+    File cram = download_cram_data.cram
+    File crai = download_cram_data.crai
     File bam = download_bam_data.bam
     File bai = download_bam_data.bai
     # Outputs from the ichorCNA data download
@@ -180,6 +188,42 @@ task download_fastq_data {
   output {
     File r1_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq"
     File r2_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_cram_data {
+  meta {
+    description: "Downloads small example CRAM files for WILDS WDL test runs"
+    outputs: {
+        cram: "CRAM file downloaded for the sample in question",
+        crai: "Index file for the CRAM file"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_cram/NA12878_20k_hg38/NA12878.cram .
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_cram/NA12878_20k_hg38/NA12878.crai .
+  >>>
+
+  output {
+    File cram = "NA12878.cram"
+    File crai = "NA12878.crai"
   }
 
   runtime {
@@ -337,6 +381,8 @@ task validate_outputs {
     ref_bed: "BED file to validate"
     r1_fastq: "R1 FASTQ file to validate"
     r2_fastq: "R2 FASTQ file to validate"
+    cram: "CRAM file to validate"
+    crai: "CRAM index file to validate"
     bam: "BAM file to validate"
     bai: "BAM index file to validate"
     ichor_gc_wig: "ichorCNA GC content file to validate"
@@ -355,6 +401,8 @@ task validate_outputs {
     File ref_bed
     File r1_fastq
     File r2_fastq
+    File cram
+    File crai
     File bam
     File bai
     File ichor_gc_wig
@@ -418,6 +466,20 @@ task validate_outputs {
       validation_passed=false
     fi
 
+    if [[ -f "~{cram}" && -s "~{cram}" ]]; then
+      echo "CRAM file: ~{cram} - PASSED" >> validation_report.txt
+    else
+      echo "CRAM file: ~{cram} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{crai}" && -s "~{crai}" ]]; then
+      echo "CRAM index: ~{crai} - PASSED" >> validation_report.txt
+    else
+      echo "CRAM index: ~{crai} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
     if [[ -f "~{bam}" && -s "~{bam}" ]]; then
       echo "BAM file: ~{bam} - PASSED" >> validation_report.txt
     else
@@ -470,7 +532,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 13"
+      echo "Total files validated: 15"
     } >> validation_report.txt
     if [[ "$validation_passed" == "true" ]]; then
       echo "Overall Status: PASSED" >> validation_report.txt

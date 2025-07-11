@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_bam_data`, `download_ichor_data`, `download_annotsv_vcf`, `validate_outputs`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_annotsv_vcf`, `validate_outputs`
 - **Workflow**: `testdata_example` (demonstration workflow that executes all tasks)
 
 ## Tasks
@@ -38,6 +38,9 @@ Downloads chromosome-specific reference genome data including:
 
 ### `download_fastq_data`
 Downloads small example paired-end FASTQ files for testing sequencing analysis workflows from GATK test data.
+
+### `download_cram_data`
+Downloads example CRAM files for testing CRAM-based workflows from GATK test data.
 
 ### `download_bam_data`
 Downloads and processes example BAM files for testing alignment-based workflows. This task:
@@ -60,7 +63,7 @@ Downloads test VCF files for structural variant annotation workflows from the An
 ### `validate_outputs`
 Validates all downloaded test data files to ensure they exist and are non-empty.
 
-**Inputs**: All 13 output files from the download tasks
+**Inputs**: All 15 output files from the download tasks
 **Outputs**: `report` (File): Validation summary confirming file presence and basic integrity
 
 ## Usage
@@ -135,6 +138,16 @@ call annotsv_tasks.annotate_variants {
 }
 ```
 
+**CRAM processing workflows**:
+```wdl
+call testdata.download_cram_data { }
+call my_cram_analysis { 
+  input: 
+    input_cram = download_cram_data.cram,
+    input_crai = download_cram_data.crai
+}
+```
+
 **BAM processing workflows**:
 ```wdl
 call testdata.download_bam_data { }
@@ -170,6 +183,16 @@ call my_bam_analysis {
 **Outputs**:
 - `r1_fastq` (File): R1 FASTQ file for paired-end sequencing
 - `r2_fastq` (File): R2 FASTQ file for paired-end sequencing
+
+### download_cram_data
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `cram` (File): Example CRAM alignment file
+- `crai` (File): CRAM index file
 
 ### download_bam_data
 
@@ -211,6 +234,8 @@ call my_bam_analysis {
 - `ref_bed` (File): BED file to validate
 - `r1_fastq` (File): R1 FASTQ file to validate
 - `r2_fastq` (File): R2 FASTQ file to validate
+- `cram` (File): CRAM file to validate
+- `crai` (File): CRAM index file to validate
 - `bam` (File): BAM file to validate
 - `bai` (File): BAM index file to validate
 - `ichor_gc_wig` (File): ichorCNA GC content file to validate
@@ -229,7 +254,7 @@ call my_bam_analysis {
 All reference data is downloaded from authoritative public repositories:
 
 - **UCSC Genome Browser**: Reference genomes and annotations
-- **GATK Test Data**: Example FASTQ and BAM files  
+- **GATK Test Data**: Example FASTQ, CRAM, and BAM files  
 - **ichorCNA Repository**: Copy number analysis references  
 - **AnnotSV Repository**: Structural variant test data
 
