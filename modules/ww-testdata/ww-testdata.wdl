@@ -48,7 +48,9 @@ workflow testdata_example {
 
   call download_fastq_data { }
 
-  call download_cram_data {}
+  call download_cram_data { input:
+    ref_fasta = download_ref_data.fasta
+  }
 
   call download_bam_data { }
 
@@ -207,23 +209,44 @@ task download_cram_data {
   }
 
   parameter_meta {
+    ref_fasta: "Reference genome FASTA file to use for CRAM conversion"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
 
   input {
-    Int cpu_cores = 1
+    File ref_fasta
+    Int cpu_cores = 2
     Int memory_gb = 4
   }
 
   command <<<
-    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_cram/NA12878_20k_hg38/NA12878.cram .
-    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_cram/NA12878_20k_hg38/NA12878.crai .
+    set -euo pipefail
+
+    # Pull down BAM files from GATK test data bucket
+    samtools view -@ ~{cpu_cores} -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1 | \
+    samtools view -@ ~{cpu_cores} -s 0.1 -b - > NA12878.bam
+    samtools index -@ ~{cpu_cores} NA12878.bam
+
+    # Only keep primary alignments from chr1 (no supplementary alignments)
+    samtools view -@ ~{cpu_cores} -h -f 0x2 NA12878.bam chr1 | \
+      awk '/^@/ || ($7 == "=" || $7 == "chr1")' | \
+      sed 's/\tSA:Z:[^\t]*//' | \
+      sed '/^@SQ/d' | \
+      sed '1a@SQ\tSN:chr1\tLN:248956422' | \
+      samtools view -@ ~{cpu_cores} -b > NA12878_chr1.bam
+
+    # Index the new BAM file
+    samtools index -@ ~{cpu_cores} NA12878_chr1.bam
+
+    # Convert BAM to CRAM using the provided reference FASTA
+    samtools view -@ ~{cpu_cores} -C -T ~{ref_fasta} -o NA12878_chr1.cram NA12878_chr1.bam
+    samtools index -@ ~{cpu_cores} NA12878_chr1.cram
   >>>
 
   output {
-    File cram = "NA12878.cram"
-    File crai = "NA12878.crai"
+    File cram = "NA12878_chr1.cram"
+    File crai = "NA12878_chr1.cram.crai"
   }
 
   runtime {
@@ -248,7 +271,7 @@ task download_bam_data {
   }
 
   input {
-    Int cpu_cores = 1
+    Int cpu_cores = 2
     Int memory_gb = 4
   }
 
@@ -256,20 +279,20 @@ task download_bam_data {
     set -euo pipefail
 
     # Pull down BAM files from GATK test data bucket
-    samtools view -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1 | \
-    samtools view -s 0.1 -b - > NA12878.bam
-    samtools index NA12878.bam
+    samtools view -@ ~{cpu_cores} -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1 | \
+    samtools view -@ ~{cpu_cores} -s 0.1 -b - > NA12878.bam
+    samtools index -@ ~{cpu_cores} NA12878.bam
 
     # Only keep primary alignments from chr1 (no supplementary alignments)
-    samtools view -h -f 0x2 NA12878.bam chr1 | \
+    samtools view -@ ~{cpu_cores} -h -f 0x2 NA12878.bam chr1 | \
       awk '/^@/ || ($7 == "=" || $7 == "chr1")' | \
       sed 's/\tSA:Z:[^\t]*//' | \
       sed '/^@SQ/d' | \
       sed '1a@SQ\tSN:chr1\tLN:248956422' | \
-      samtools view -b > NA12878_chr1.bam
+      samtools view -@ ~{cpu_cores} -b > NA12878_chr1.bam
 
     # Index the new BAM file
-    samtools index NA12878_chr1.bam
+    samtools index -@ ~{cpu_cores} NA12878_chr1.bam
   >>>
 
   output {
