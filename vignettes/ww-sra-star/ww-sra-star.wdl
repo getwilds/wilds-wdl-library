@@ -62,12 +62,9 @@ workflow sra_star {
 
     call star_tasks.align_two_pass { input:
         star_genome_tar = build_index.star_index_tar,
-        sample_data = {
-          "name": id,
-          "r1": fastqdump.r1_end,
-          "r2": fastqdump.r2_end
-        },
-        ref_genome_name = ref_genome.name,
+        name = id,
+        r1 = fastqdump.r1_end,
+        r2 = fastqdump.r2_end,
         sjdb_overhang = sjdb_overhang,
         memory_gb = memory_gb,
         cpu_cores = ncpu,
@@ -76,7 +73,6 @@ workflow sra_star {
   }
 
   call star_tasks.validate_outputs { input:
-    sample_names = align_two_pass.name,
     bam_files = align_two_pass.bam,
     bai_files = align_two_pass.bai,
     gene_count_files = align_two_pass.gene_counts
