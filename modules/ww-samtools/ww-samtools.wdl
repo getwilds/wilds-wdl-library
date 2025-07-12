@@ -3,6 +3,8 @@
 
 version 1.0
 
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
 struct SampleInfo {
   String name
   Array[File] cram_files
@@ -15,8 +17,8 @@ workflow samtools_example {
     description: "WDL workflow for processing genomic files with Samtools"
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-samtools"
     outputs: {
-      fastq_results: "FASTQ output files for each sample",
-      validation_report: "Validation report confirming all expected outputs were generated"
+        fastq_results: "FASTQ output files for each sample",
+        validation_report: "Validation report confirming all expected outputs were generated"
     }
   }
 
@@ -28,25 +30,46 @@ workflow samtools_example {
   }
 
   input {
-    Array[SampleInfo] samples
-    File reference_fasta
-    Int cpus = 23
-    Int memory_gb = 36
+    Array[SampleInfo]? samples
+    File? reference_fasta
+    Int cpus = 2
+    Int memory_gb = 8
   }
 
-  scatter (sample in samples) {
-    call crams_to_fastq {
-      input:
+  # If no reference genome provided, download test data
+  if (!defined(reference_fasta)) {
+    call ww_testdata.download_ref_data { }
+  }
+
+  # Determine which genome file to use
+  File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
+
+  # If no samples provided, download demonstration data
+  if (!defined(samples)) {
+    call ww_testdata.download_cram_data { input:
+        ref_fasta = genome_fasta
+    }
+  }
+
+  # Create samples array - either from input or from test data download
+  Array[SampleInfo] final_samples = if defined(samples) then select_first([samples]) else [
+    SampleInfo {
+      name: "demo_sample",
+      cram_files: [select_first([download_cram_data.cram])]
+    }
+  ]
+
+  scatter (sample in final_samples) {
+    call crams_to_fastq { input:
         cram_files = sample.cram_files,
-        ref = reference_fasta,
+        ref = genome_fasta,
         name = sample.name,
         cpu_cores = cpus,
         memory_gb = memory_gb
     }
   }
 
-  call validate_outputs {
-    input:
+  call validate_outputs { input:
       fastq_files = crams_to_fastq.fastq_file,
       sample_names = crams_to_fastq.sample_name
   }
@@ -57,13 +80,12 @@ workflow samtools_example {
   }
 }
 
-
 task crams_to_fastq {
   meta {
-    description: "Merge CRAM/BAM/SAM files and convert to FASTQ using samtools.",
+    description: "Merge CRAM/BAM/SAM files and convert to FASTQ using samtools."
     outputs: {
-      fastq_file: "FASTQ file generated from merged CRAM/BAM/SAM file"
-      sample_name: "Sample name that was processed"
+        fastq_file: "FASTQ file generated from merged CRAM/BAM/SAM file",
+        sample_name: "Sample name that was processed"
     }
   }
 
@@ -96,7 +118,7 @@ task crams_to_fastq {
 
   runtime {
     memory: "~{memory_gb} GB"
-    cpu: "~{cpu_cores}"
+    cpu: cpu_cores
     docker: "getwilds/samtools:1.11"
   }
 }
@@ -105,7 +127,7 @@ task validate_outputs {
   meta {
     description: "Validates that FASTQ files exist and are non-empty after CRAM-to-FASTQ conversion."
     outputs: {
-      report: "Validation report with pass/fail summary"
+        report: "Validation report with pass/fail summary"
     }
   }
 
