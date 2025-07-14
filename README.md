@@ -82,6 +82,7 @@ WILDS vignettes and workflows use GitHub URLs for imports, providing several adv
 | `ww-bwa` | BWA Aligner | `getwilds/bwa:0.7.17` | Alignment with the Burrows-Wheeler Aligner |
 | `ww-ichorcna` | Tumor Fraction Estimator | `getwilds/ichorcna:0.2.0` | Estimate tumor fraction with ichorCNA |
 | `ww-manta` | Structural Variant Caller | `getwilds/manta:1.6.0` | Call structural variants with Manta |
+| `ww-samtools` | Utilities for SAM/BAM/CRAM Files | `getwilds/manta:1.6.0` | Work with Sequence Alignment/Map (SAM) format files |
 | `ww-smoove` | Structural Variant Caller | `brentp/smoove:latest` | Call structural variants with Smoove |
 | `ww-sra` | SRA Toolkit | `getwilds/sra-tools:3.1.1` | Download sequencing data from NCBI SRA |
 | `ww-star` | STAR Aligner | `getwilds/star:2.7.6a` | RNA-seq alignment with two-pass methodology |

@@ -1,0 +1,10 @@
+{
+  "samtools_example.samples": [
+    {
+      "name": "ERR1258306",
+      "cram_files": []
+    }
+  ],
+  "samtools_example.cpus": 23,
+  "samtools_example.memory_gb": 36
+}
