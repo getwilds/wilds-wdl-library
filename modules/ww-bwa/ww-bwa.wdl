@@ -8,8 +8,8 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 struct BwaSample {
     String name
-    File r1
-    File r2
+    File reads
+    File? mates
 }
 
 workflow bwa_example {
@@ -26,41 +26,48 @@ workflow bwa_example {
   }
 
   parameter_meta {
-    samples: "Optional list of BwaSample objects, each containing sample name and R1/R2 FASTQ files. If not provided, workflow will download a demonstration sample from SRA"
     reference_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
-    demo_sra_id: "SRA accession ID to use for demonstration when no samples are provided"
+    samples: "Optional list of BwaSample objects, each containing sample name and FASTQ file(s). If not provided, workflow will download a demonstration sample from SRA"
     cpus: "Number of CPU cores allocated for each task in the workflow"
     memory_gb: "Memory allocated for each task in the workflow in GB"
   }
 
   input {
-    Array[BwaSample]? samples
     File? reference_fasta
-    String demo_sra_id = "ERR1258306"
+    Array[BwaSample]? samples
+    Boolean paired
     Int cpus = 2
     Int memory_gb = 8
   }
 
-  # If no reference genome provided, download test data
+   # If no reference genome provided, download test data
   if (!defined(reference_fasta)) {
     call ww_testdata.download_ref_data { }
   }
 
-  # Determine which genome files to use
+   # Determine which genome files to use
   File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
 
-  # If no samples provided, download demonstration data
+   # If no samples provided, download demonstration data
   if (!defined(samples)) {
     call ww_testdata.download_fastq_data { }
+    call ww_testdata.interleave_fastq { input:
+      r1_fq = download_fastq_data.r1_fastq,
+      r2_fq = download_fastq_data.r2_fastq
+    }
   }
 
-  # Create samples array - either from input or from test data download
+   # Create samples array - either from input or from test data download
   Array[BwaSample] final_samples = if defined(samples) then select_first([samples]) else [
     {
       "name": "demo_sample",
-      "r1": select_first([download_fastq_data.r1_fastq]),
-      "r2": select_first([download_fastq_data.r2_fastq])
-    }
+      "reads": select_first([download_fastq_data.r1_fastq]),
+      "mates": select_first([download_fastq_data.r2_fastq])
+    },
+    {
+      "name": "demo_sample2",
+      "reads": select_first([interleave_fastq.inter_fastq])
+    },
   ]
 
   call bwa_index { input:
