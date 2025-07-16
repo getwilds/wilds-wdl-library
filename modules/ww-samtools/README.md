@@ -1,5 +1,5 @@
 # ww-samtools
-[![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)  
+[![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A WILDS WDL module for processing genomic files with [Samtools](http://www.htslib.org/).
@@ -22,7 +22,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 ### `crams_to_fastq`
 
-Merges one or more CRAM/BAM/SAM files for a sample and converts the result to a compressed FASTQ.
+Merges one or more CRAM/BAM/SAM files for a sample, sorts by read name, and converts the result to a compressed FASTQ.
 
 **Inputs:**
 - `cram_files` (Array[String]): List of CRAM/BAM/SAM files to merge and convert
