@@ -48,6 +48,11 @@ workflow testdata_example {
 
   call download_fastq_data { }
 
+  call interleave_fastq { input:
+    r1_fq = download_fastq_data.r1_fastq,
+    r2_fq = download_fastq_data.r2_fastq
+  }
+
   call download_cram_data { input:
     ref_fasta = download_ref_data.fasta
   }
@@ -65,6 +70,7 @@ workflow testdata_example {
     ref_bed = download_ref_data.bed,
     r1_fastq = download_fastq_data.r1_fastq,
     r2_fastq = download_fastq_data.r2_fastq,
+    inter_fastq = interleave_fastq.inter_fastq,
     cram = download_cram_data.cram,
     crai = download_cram_data.crai,
     bam = download_bam_data.bam,
@@ -190,6 +196,47 @@ task download_fastq_data {
   output {
     File r1_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq"
     File r2_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task interleave_fastq {
+  meta {
+    description: "Interleaves a set of R1 and R2 FASTQ files"
+    outputs: {
+        interleaved_fq: "Interleaved FASTQ"
+    }
+  }
+
+  parameter_meta {
+    r1_fq: "Forward (R1) FASTQ file"
+    r2_fq: "Reverse (R2) FASTQ file"
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    File r1_fq
+    File r2_fq
+    Int cpu_cores = 2
+    Int memory_gb = 4
+  }
+
+  command <<<
+    # Read in both files in groups of four lines each
+    paste <(gunzip -c ~{r1_fq} | paste - - - -) <(gunzip -c ~{r2_fq} | paste - - - -) | \
+    # Interleave lines from each file and include "+" FASTQ lines
+    awk -v OFS="\n" -v FS="\t" '{print($1,$2,"+",$4,$5,$6,"+",$8)}' | \
+    gzip > interleaved.fastq.gz
+  >>>
+
+  output {
+    File inter_fastq = "interleaved.fastq.gz"
   }
 
   runtime {
@@ -404,6 +451,7 @@ task validate_outputs {
     ref_bed: "BED file to validate"
     r1_fastq: "R1 FASTQ file to validate"
     r2_fastq: "R2 FASTQ file to validate"
+    inter_fastq: "Interleaved FASTQ to validate"
     cram: "CRAM file to validate"
     crai: "CRAM index file to validate"
     bam: "BAM file to validate"
@@ -424,6 +472,7 @@ task validate_outputs {
     File ref_bed
     File r1_fastq
     File r2_fastq
+    File inter_fastq
     File cram
     File crai
     File bam
@@ -486,6 +535,13 @@ task validate_outputs {
       echo "R2 FASTQ: ~{r2_fastq} - PASSED" >> validation_report.txt
     else
       echo "R2 FASTQ: ~{r2_fastq} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{inter_fastq}" && -s "~{inter_fastq}" ]]; then
+      echo "Interleaved FASTQ: ~{inter_fastq} - PASSED" >> validation_report.txt
+    else
+      echo "Interleaved FASTQ: ~{inter_fastq} - MISSING OR EMPTY" >> validation_report.txt
       validation_passed=false
     fi
 

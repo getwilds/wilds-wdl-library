@@ -39,6 +39,9 @@ Downloads chromosome-specific reference genome data including:
 ### `download_fastq_data`
 Downloads small example paired-end FASTQ files for testing sequencing analysis workflows from GATK test data.
 
+### `interleave_fastq`
+Interleaves a set of R1 and R2 FASTQ files to produce an interleaved FASTQ.
+
 ### `download_cram_data`
 Downloads example CRAM files for testing CRAM-based workflows from GATK test data.
 
@@ -184,6 +187,17 @@ call my_bam_analysis {
 - `r1_fastq` (File): R1 FASTQ file for paired-end sequencing
 - `r2_fastq` (File): R2 FASTQ file for paired-end sequencing
 
+### interleave_fastq
+
+**Inputs**:
+- `r1_fq` (File): R1 FASTQ file for paired-end sequencing
+- `r2_fq` (File): R2 FASTQ file for paired-end sequencing
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `inter_fastq` (File): Interleaved FASTQ file
+
 ### download_cram_data
 
 **Inputs**:
@@ -234,6 +248,7 @@ call my_bam_analysis {
 - `ref_bed` (File): BED file to validate
 - `r1_fastq` (File): R1 FASTQ file to validate
 - `r2_fastq` (File): R2 FASTQ file to validate
+- `inter_fastq` (File): Interleaved FASTQ to validate
 - `cram` (File): CRAM file to validate
 - `crai` (File): CRAM index file to validate
 - `bam` (File): BAM file to validate
