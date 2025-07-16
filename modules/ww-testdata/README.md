@@ -79,14 +79,14 @@ Import specific tasks into your workflows:
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as testdata
 
 workflow my_analysis {
-  call testdata.download_ref_data { 
-    input: 
+  call testdata.download_ref_data {
+    input:
       chromo = "chr22",
       version = "hg38"
   }
-  
-  call my_analysis_task { 
-    input: 
+
+  call my_analysis_task {
+    input:
       reference_fasta = download_ref_data.fasta,
       reference_gtf = download_ref_data.gtf
   }
@@ -111,22 +111,22 @@ sprocket run ww-testdata.wdl inputs.json
 
 **RNA-seq analysis**:
 ```wdl
-call testdata.download_ref_data { 
-  input: 
+call testdata.download_ref_data {
+  input:
     chromo = "chr22",
-    version = "hg38" 
+    version = "hg38"
 }
-call star_tasks.build_star_index { 
-  input: 
-    reference_fasta = download_ref_data.fasta 
+call star_tasks.build_star_index {
+  input:
+    reference_fasta = download_ref_data.fasta
 }
 ```
 
 **Copy number analysis**:
 ```wdl
 call testdata.download_ichor_data { }
-call ichor_tasks.run_ichor { 
-  input: 
+call ichor_tasks.run_ichor {
+  input:
     gc_wig = download_ichor_data.wig_gc,
     map_wig = download_ichor_data.wig_map
 }
@@ -135,17 +135,17 @@ call ichor_tasks.run_ichor {
 **Variant annotation**:
 ```wdl
 call testdata.download_annotsv_vcf { }
-call annotsv_tasks.annotate_variants { 
-  input: 
-    test_vcf = download_annotsv_vcf.test_vcf 
+call annotsv_tasks.annotate_variants {
+  input:
+    test_vcf = download_annotsv_vcf.test_vcf
 }
 ```
 
 **CRAM processing workflows**:
 ```wdl
 call testdata.download_cram_data { }
-call my_cram_analysis { 
-  input: 
+call my_cram_analysis {
+  input:
     input_cram = download_cram_data.cram,
     input_crai = download_cram_data.crai
 }
@@ -154,8 +154,8 @@ call my_cram_analysis {
 **BAM processing workflows**:
 ```wdl
 call testdata.download_bam_data { }
-call my_bam_analysis { 
-  input: 
+call my_bam_analysis {
+  input:
     input_bam = download_bam_data.bam,
     input_bai = download_bam_data.bai
 }
@@ -269,8 +269,8 @@ call my_bam_analysis {
 All reference data is downloaded from authoritative public repositories:
 
 - **UCSC Genome Browser**: Reference genomes and annotations
-- **GATK Test Data**: Example FASTQ, CRAM, and BAM files  
-- **ichorCNA Repository**: Copy number analysis references  
+- **GATK Test Data**: Example FASTQ, CRAM, and BAM files
+- **ichorCNA Repository**: Copy number analysis references
 - **AnnotSV Repository**: Structural variant test data
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
