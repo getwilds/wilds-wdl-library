@@ -146,6 +146,10 @@ task smoove_call {
       ~{if defined(exclude_chroms) then "--excludechroms " + exclude_chroms else ""} \
       "~{aligned_bam}"
     
+    # Sort the resulting vcf (SV's are tricky)
+    bcftools sort -Oz "results/~{sample_name}-smoove.vcf.gz" \
+      > "results/~{sample_name}-smoove.sorted.vcf.gz"
+
     # Index the raw output
     tabix -p vcf "results/~{sample_name}-smoove.vcf.gz"
 
@@ -157,6 +161,9 @@ task smoove_call {
         -Oz \
         -o "~{vcf_filename}" \
         "results/~{sample_name}-smoove.vcf.gz"
+      
+      # Sort the resulting vcf (SV's are tricky)
+      bcftools sort -Oz "~{vcf_filename}" > "~{vcf_filename}"
       
       # Index the filtered VCF
       tabix -p vcf "~{vcf_filename}"
