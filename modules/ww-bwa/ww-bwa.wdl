@@ -246,8 +246,8 @@ task validate_outputs {
     echo "" >> validation_report.txt
 
     # Arrays for bash processing
-    bam_files=("~{sep=" " bam_files}")
-    bai_files=("~{sep=" " bai_files}")
+    bam_files=(~{sep=" " bam_files})
+    bai_files=(~{sep=" " bai_files})
 
     validation_passed=true
     total_mapped_reads=0
