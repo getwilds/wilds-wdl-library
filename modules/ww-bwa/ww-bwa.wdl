@@ -26,6 +26,7 @@ workflow bwa_example {
   }
 
   parameter_meta {
+    paired: "Optional boolean indicating if reads are paired end (default: true)"
     reference_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
     samples: "Optional list of BwaSample objects, each containing sample name and FASTQ file(s). If not provided, workflow will download a demonstration sample from SRA"
     cpus: "Number of CPU cores allocated for each task in the workflow"
@@ -33,9 +34,10 @@ workflow bwa_example {
   }
 
   input {
+    Boolean paired
     File? reference_fasta
     Array[BwaSample]? samples
-    Boolean paired
+
     Int cpus = 2
     Int memory_gb = 8
   }
