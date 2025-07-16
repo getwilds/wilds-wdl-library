@@ -80,9 +80,10 @@ workflow bwa_example {
     call bwa_mem { input:
         bwa_genome_tar = bwa_index.bwa_index_tar,
         reference_fasta = genome_fasta,
-        r1 = sample.r1,
-        r2 = sample.r2,
+        reads = sample.reads,
+        mates = sample.mates,
         name = sample.name,
+        paired_end = paired,
         cpu_cores = cpus,
         memory_gb = memory_gb
     }
@@ -154,9 +155,10 @@ task bwa_mem {
   parameter_meta {
     bwa_genome_tar: "Compressed tarball containing BWA genome index"
     reference_fasta: "Reference genome FASTA file"
-    r1: "FASTQ file for read 1"
-    r2: "FASTQ file for read 2"
+    reads: "FASTQ file for forward (R1) reads or interleaved reads"
     name: "Sample name for read group information"
+    mates: "Optional FASTQ file for reverse (R2) reads"
+    paired_end: "Optional boolean indicating if reads are paired end (default: true)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
@@ -164,14 +166,15 @@ task bwa_mem {
   input {
     File bwa_genome_tar
     File reference_fasta
-    File r1
-    File r2
+    File reads
     String name
+    File? mates
+    Boolean paired_end = true
     Int cpu_cores = 8
     Int memory_gb = 16
   }
 
-   # Name of reference FASTA file, which should be in bwa_genome_tar
+    # Name of reference FASTA file, which should be in bwa_genome_tar
   String ref_name = basename(reference_fasta)
 
    # Compute cpu_threads as one less than cpu_cores, with minimum of 1
@@ -179,14 +182,29 @@ task bwa_mem {
 
   command <<<
     set -eo pipefail
-    
+
     echo "Extracting BWA reference..."
     tar -xvf "~{bwa_genome_tar}"
 
     echo "Starting BWA alignment..."
-    bwa mem -v 3 -t ~{cpu_threads} -M -R "@RG\tID:~{name}\tSM:~{name}\tPL:illumina" \
-      "bwa_index/~{ref_name}" "~{r1}" "~{r2}" > "~{name}.sam"
-    
+
+  if [[ "~{mates}" == "" && "~{paired_end}" == "true" ]]; then
+      # Interleaved (paired-end)
+      bwa mem -p -v 3 -t ~{cpu_threads} -M -R "@RG\tID:~{name}\tSM:~{name}\tPL:illumina" \
+        "bwa_index/~{ref_name}" "~{reads}" > "~{name}.sam"
+    elif [[ "~{mates}" == "" && "~{paired_end}" == "false" ]]; then
+      # Single-end
+      bwa mem -v 3 -t ~{cpu_threads} -M -R "@RG\tID:~{name}\tSM:~{name}\tPL:illumina" \
+        "bwa_index/~{ref_name}" "~{reads}" > "~{name}.sam"
+    elif [[ "~{mates}" != "" && "~{paired_end}" == "true" ]]; then
+      # Paired-end with forward and reverse fastqs
+      bwa mem -v 3 -t ~{cpu_threads} -M -R "@RG\tID:~{name}\tSM:~{name}\tPL:illumina" \
+        "bwa_index/~{ref_name}" "~{reads}" "~{mates}" > "~{name}.sam"
+    else
+      echo "Invalid input: Single-end experiments should only have one input FASTQ file."
+      exit 1
+    fi
+
     samtools sort -@ ~{cpu_threads - 1} -o "~{name}.sorted_aligned.bam" "~{name}.sam"
     samtools index "~{name}.sorted_aligned.bam"
   >>>
