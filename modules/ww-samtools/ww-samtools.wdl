@@ -115,6 +115,7 @@ task crams_to_fastq {
   command <<<
     # Merge CRAM/BAM/SAM files if more than one, then convert to FASTQ
     samtools merge -@ ~{cpu_cores} --reference "~{ref}" -f "~{name}.merged.cram" ~{sep=" " cram_files} && \
+    samtools sort -n "~{name}.merged.cram" && \
     samtools fastq --reference "~{ref}" -o "~{name}.fastq.gz" "~{name}.merged.cram"
   >>>
 
