@@ -4,7 +4,6 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedtools/ww-bedtools.wdl" as ww_bedtools
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct IchorSample {
@@ -33,9 +32,6 @@ workflow ichorcna_example {
 
   parameter_meta {
     samples: "Array of sample information containing name and tarball of per-chromosome BED files of read counts"
-    bed_file: "BED file containing genomic intervals of interest"
-    reference_fasta: "Reference genome FASTA file used for analysis"
-    reference_index: "Index file for the reference genome"
     wig_gc: "GC-content WIG file"
     wig_map: "Mappability score WIG file"
     panel_of_norm_rds: "RDS file of median corrected depth from panel of normals"
@@ -51,9 +47,6 @@ workflow ichorcna_example {
 
   input {
     Array[IchorSample]? samples
-    File? bed_file
-    File? reference_fasta
-    File? reference_index
     File? wig_gc
     File? wig_map
     File? panel_of_norm_rds
@@ -63,19 +56,9 @@ workflow ichorcna_example {
     String genome_style = "UCSC"
     Int memory_gb = 8
     Int cpus = 2
-    Array[String] chrs_list = ["chr1"]
-    String chrs_vec = "c(1)"
+    Array[String] chrs_list = ["chr1"] # Limiting to chr1 for test workflow
+    String chrs_vec = "c(1)" # Limiting to chr1 for test workflow
   }
-
-  String tmp_dir = "/tmp"
-
-  # Determine which genome files to use
-  if (!defined(reference_fasta) || !defined(reference_index) || !defined(bed_file)) {
-    call ww_testdata.download_ref_data { }
-  }
-  File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
-  File genome_fasta_index = select_first([reference_index, download_ref_data.fasta_index])
-  File final_bed_file = select_first([bed_file, download_ref_data.bed])
 
   # Determine which ichorCNA data files to use
   if (!defined(wig_gc) || !defined(wig_map) || !defined(panel_of_norm_rds) || !defined(centromeres)) {
@@ -101,25 +84,22 @@ workflow ichorcna_example {
   ]
 
   scatter (sample in final_samples) {
-    call ww_bedtools.makewindows { input:
-        bed_file = final_bed_file,
-        aligned_bam = sample.bam,
-        bam_index = sample.bam_index,
-        sample_name = sample.name,
-        reference_fasta = genome_fasta,
-        reference_index = genome_fasta_index,
-        list_chr = chrs_list,
-        tmp_dir = tmp_dir,
-        cpu_cores = cpus,
-        memory_gb = memory_gb
+    call readcounter_wig { input:
+      bam_file = sample.bam,
+      bam_index = sample.bam_index,
+      sample_name = sample.name,
+      window_size = 500000,
+      chromosomes = chrs_list,
+      memory_gb = memory_gb,
+      cpus = cpus
     }
 
     call ichorcna_call { input:
+      wig_tumor = readcounter_wig.wig_file,
       wig_gc = final_wig_gc,
       wig_map = final_wig_map,
       panel_of_norm_rds = final_panel_of_norm,
       centromeres = final_centromeres,
-      counts_bed = makewindows.counts_bed,
       name = sample.name,
       sex = sex,
       chrs = chrs_vec,
@@ -137,8 +117,7 @@ workflow ichorcna_example {
       allgenome_pdfs = ichorcna_call.allgenomewide_pdf,
       correct_pdfs = ichorcna_call.correct_pdf,
       rdata_files = ichorcna_call.rdata,
-      wig_files = ichorcna_call.wig,
-      sample_names = ichorcna_call.sample_name
+      wig_files = readcounter_wig.wig_file,
   }
 
   output {
@@ -148,8 +127,58 @@ workflow ichorcna_example {
     Array[File] allgenomewide_pdf = ichorcna_call.allgenomewide_pdf
     Array[File] correct_pdf = ichorcna_call.correct_pdf
     Array[File] rdata = ichorcna_call.rdata
-    Array[File] wig = ichorcna_call.wig
+    Array[File] wig = readcounter_wig.wig_file
     File validation_report = validate_outputs.report
+  }
+}
+
+task readcounter_wig {
+  meta {
+    description: "Generate tumor WIG file from aligned bam files using HMMcopy's readCounter"
+    outputs: {
+        wig_file: "WIG file created from binned read count data within input BED files"
+    }
+  }
+
+  parameter_meta {
+    bam_file: "Aligned bam file containing reads to be analyzed"
+    bam_index: "Index for the bam file"
+    sample_name: "Name of the sample being analyzed"
+    window_size: "Window size in base pairs for WIG format"
+    chromosomes: "Chromosomes to include in WIG file"
+    memory_gb: "Memory allocated for the task in GB"
+    cpus: "Number of CPU cores allocated for the task"
+  }
+
+  input {
+    File bam_file
+    File bam_index
+    String sample_name
+    Array[String] chromosomes
+    Int window_size = 500000
+    Int memory_gb = 8
+    Int cpus = 2
+  }
+
+  command <<<
+    set -eo pipefail
+    
+    # Use readCounter from HMMcopy to generate WIG directly from BAM
+    readCounter \
+      --window ~{window_size} \
+      --quality 20 \
+      --chromosome ~{sep="," chromosomes} \
+      "~{bam_file}" > "~{sample_name}.wig"
+  >>>
+
+  output {
+    File wig_file = "${sample_name}.wig"
+  }
+
+  runtime {
+    docker: "getwilds/hmmcopy:1.0.0"
+    cpu: cpus
+    memory: "~{memory_gb} GB"
   }
 }
 
@@ -162,15 +191,13 @@ task ichorcna_call {
         genomewide_pdf: "Genome wide plot of data annotated for estimated copy number, tumor fraction, and ploidy for the optimal solution",
         allgenomewide_pdf: "Combined PDF of all solutions",
         correct_pdf:  "Genome wide correction comparisons",
-        rdata: "Saved R image after ichorCNA has finished. Results for all solutions will be included",
-        wig: "WIG file created from binned read count data within input BED files",
-        sample_name: "Sample ID that was processed"
+        rdata: "Saved R image after ichorCNA has finished. Results for all solutions will be included"
     }
   }
 
   parameter_meta {
     # TODO: Take a user-generated WIG file as input, instead of making one from BED files
-    counts_bed: "Tarball of per-chromosome BED files of read counts. Used to make tumor WIG file"
+    wig_tumor: "Tumor WIG file being analyzed"
     wig_gc: "GC-content WIG file"
     wig_map: "Mappability score WIG file"
     panel_of_norm_rds: "RDS file of median corrected depth from panel of normals"
@@ -185,7 +212,7 @@ task ichorcna_call {
   }
 
   input {
-    File counts_bed
+    File wig_tumor
     File wig_gc
     File wig_map
     File panel_of_norm_rds
@@ -194,22 +221,17 @@ task ichorcna_call {
     String sex
     String genome
     String genome_style
-    String chrs = "c(1:22, \"X\", \"Y\")"
+    String chrs = "c(1:22, 'X', 'Y')"
     Int memory_gb = 16
     Int cpus = 6
   }
 
   command <<<
     set -eo pipefail
-    # Extract tarball of BED files and concatenate
-    tar -xzf "~{counts_bed}" -O | sort -k 1,1V -k 2,2n | \
-    # Create fixed-step WIG format using 500kb windows
-    awk -v window=500000 \
-    'BEGIN { chr=""; } { if ($1!=chr){ printf("fixedStep chrom=%s start=1 step=%d span=%d\n",$1,window,window); chr=$1; } print $4; }' \
-    > "~{name}.ichor.tumor.wig" && \
+
     Rscript /usr/local/bin/ichorCNA/scripts/runIchorCNA.R \
     --id "~{name}" \
-    --WIG "~{name}.ichor.tumor.wig" \
+    --WIG "~{wig_tumor}" \
     --ploidy "c(2)" \
     --normal "c(0.1,0.5,.85)" \
     --maxCN 3 \
@@ -239,8 +261,6 @@ task ichorcna_call {
     File allgenomewide_pdf = "${name}_genomeWide_all_sols.pdf"
     File correct_pdf = "${name}_genomeWideCorrection.pdf"
     File rdata = "${name}.RData"
-    File wig = "${name}.ichor.tumor.wig"
-    String sample_name = name
   }
 
   runtime {
@@ -267,7 +287,6 @@ task validate_outputs {
     correct_pdfs: "Array of correction comparison PDFs"
     rdata_files: "Array of ichorCNA RData files"
     wig_files: "Array of WIG files generated from BED file data"
-    sample_names: "Array of Sample ID strings"
   }
 
   input {
@@ -278,7 +297,6 @@ task validate_outputs {
     Array[File] correct_pdfs
     Array[File] rdata_files
     Array[File] wig_files
-    Array[String] sample_names
   }
 
   command <<<
@@ -293,12 +311,10 @@ task validate_outputs {
   correct_pdfs=("~{sep=" " correct_pdfs}")
   rdata_files=("~{sep=" " rdata_files}")
   wig_files=("~{sep=" " wig_files}")
-  sample_names=("~{sep=" " sample_names}")
 
   validation_passed=true
 
-  for i in "${!sample_names[@]}"; do
-      sample="${sample_names[$i]}"
+  for i in "${!wig_files[@]}"; do
       params="${params_files[$i]}"
       seg="${seg_files[$i]}"
       genomewide_pdf="${genome_pdfs[$i]}"
@@ -307,7 +323,7 @@ task validate_outputs {
       rdata="${rdata_files[$i]}"
       wig="${wig_files[$i]}"
 
-      echo "--- Sample: $sample ---" >> ichor_validation_report.txt
+      echo "--- Sample: $wig ---" >> ichor_validation_report.txt
 
       # Parameters file
       if [[ -f "$params" && -s "$params" ]]; then
@@ -389,7 +405,7 @@ task validate_outputs {
   done
 
   echo "=== Validation Summary ===" >> ichor_validation_report.txt
-  echo "Total samples processed: ${#sample_names[@]}" \
+  echo "Total samples processed: ${#wig_files[@]}" \
     >> ichor_validation_report.txt
 
   if [[ "$validation_passed" == "true" ]]; then

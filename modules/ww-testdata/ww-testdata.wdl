@@ -333,17 +333,17 @@ task download_ichor_data {
 
     # Download ichorCNA reference data files
     # These files are used for normalization and centromere locations in ichorCNA analysis
-    wget -q --no-check-certificate -O gc_hg38_500kb.wig https://raw.githubusercontent.com/GavinHaLab/ichorCNA/b2bbce0a9997f31733f0f0ea4278cfba937ded41/inst/extdata/gc_hg38_500kb.wig
-    wget -q --no-check-certificate -O map_hg38_500kb.wig https://raw.githubusercontent.com/GavinHaLab/ichorCNA/b2bbce0a9997f31733f0f0ea4278cfba937ded41/inst/extdata/map_hg38_500kb.wig
-    wget -q --no-check-certificate -O GRCh38.GCA_000001405.2_centromere_acen.txt https://raw.githubusercontent.com/GavinHaLab/ichorCNA/b2bbce0a9997f31733f0f0ea4278cfba937ded41/inst/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt
-    wget -q --no-check-certificate -O nextera_hg38_500kb_median_normAutosome_median.rds_median.n9.gr.rds https://github.com/genome/docker-basespace_chromoseq/raw/refs/heads/master/workflow_files/nextera_hg38_500kb_median_normAutosome_median.rds_median.n9.gr.rds
+    wget -q --no-check-certificate -O gc_hg38_500kb.wig https://raw.githubusercontent.com/broadinstitute/ichorCNA/refs/heads/master/inst/extdata/gc_hg38_500kb.wig
+    wget -q --no-check-certificate -O map_hg38_500kb.wig https://raw.githubusercontent.com/broadinstitute/ichorCNA/refs/heads/master/inst/extdata/map_hg38_500kb.wig
+    wget -q --no-check-certificate -O GRCh38.GCA_000001405.2_centromere_acen.txt https://raw.githubusercontent.com/broadinstitute/ichorCNA/refs/heads/master/inst/extdata/GRCh38.GCA_000001405.2_centromere_acen.txt
+    wget -q --no-check-certificate -O HD_ULP_PoN_500kb_median_normAutosome_mapScoreFiltered_median.rds https://github.com/broadinstitute/ichorCNA/raw/refs/heads/master/inst/extdata/HD_ULP_PoN_500kb_median_normAutosome_mapScoreFiltered_median.rds
   >>>
 
   output {
     File wig_gc = "gc_hg38_500kb.wig"
     File wig_map = "map_hg38_500kb.wig"
     File centromeres = "GRCh38.GCA_000001405.2_centromere_acen.txt"
-    File panel_of_norm_rds = "nextera_hg38_500kb_median_normAutosome_median.rds_median.n9.gr.rds"
+    File panel_of_norm_rds = "HD_ULP_PoN_500kb_median_normAutosome_mapScoreFiltered_median.rds"
   }
 
   runtime {

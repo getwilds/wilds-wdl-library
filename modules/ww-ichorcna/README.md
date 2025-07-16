@@ -8,25 +8,40 @@ A WILDS WDL module for tumor fraction estimation in cfDNA using ichorCNA.
 
 This module provides reusable WDL tasks for estimating tumor fraction in cell-free DNA (cfDNA) using ichorCNA. It analyzes copy number alterations and ploidy to determine the proportion of tumor-derived DNA in liquid biopsy samples. The module includes built-in validation and comprehensive reporting for quality assurance.
 
-The module integrates with `ww-bedtools` for read counting and `ww-testdata` for automatic test data provisioning when input files are not provided.
+The module integrates with HMMcopy's `readCounter` for generating WIG files and `ww-testdata` for automatic test data provisioning when input files are not provided.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `ichorcna_call`, `validate_outputs`
+- **Tasks**: `readcounter_wig`, `ichorcna_call`, `validate_outputs`
 - **Workflow**: `ichorcna_example` (demonstration workflow with automatic test data support)
-- **Container**: `getwilds/ichorcna:0.2.0`
-- **Dependencies**: Integrates with `ww-bedtools` and `ww-testdata` modules for complete workflows
-- **Test Data**: Automatically downloads reference genome, ichorCNA data files, and BAM data when not provided
+- **Containers**: `getwilds/hmmcopy:1.0.0`, `getwilds/ichorcna:0.2.0`
+- **Dependencies**: Integrates with `ww-testdata` module for complete workflows
+- **Test Data**: Automatically downloads ichorCNA data files and BAM data when not provided
 
 ## Tasks
+
+### `readcounter_wig`
+Generates tumor WIG file from aligned BAM files using HMMcopy's readCounter.
+
+**Inputs:**
+- `bam_file` (File): Aligned BAM file containing reads to be analyzed
+- `bam_index` (File): Index for the BAM file
+- `sample_name` (String): Name of the sample being analyzed
+- `chromosomes` (Array[String]): Chromosomes to include in WIG file
+- `window_size` (Int): Window size in base pairs for WIG format (default: 500000)
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `cpus` (Int): Number of CPU cores to use (default: 2)
+
+**Outputs:**
+- `wig_file` (File): WIG file created from binned read count data
 
 ### `ichorcna_call`
 Estimates cfDNA tumor fraction using ichorCNA.
 
 **Inputs:**
-- `counts_bed` (File): Tarball of per-chromosome BED files of read counts
+- `wig_tumor` (File): Tumor WIG file being analyzed
 - `wig_gc` (File): GC-content WIG file
 - `wig_map` (File): Mappability score WIG file
 - `panel_of_norm_rds` (File): RDS file of median corrected depth from panel of normals
@@ -35,7 +50,7 @@ Estimates cfDNA tumor fraction using ichorCNA.
 - `sex` (String): User-specified sex (male or female)
 - `genome` (String): Genome build (default: "hg38")
 - `genome_style` (String): Chromosome naming convention (default: "UCSC")
-- `chrs` (String): Chromosomes to analyze as R vector (default: "c(1)")
+- `chrs` (String): Chromosomes to analyze as R vector (default: "c(1:22, 'X', 'Y')")
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
 - `cpus` (Int): Number of CPU cores to use (default: 6)
 
@@ -46,8 +61,6 @@ Estimates cfDNA tumor fraction using ichorCNA.
 - `allgenomewide_pdf` (File): Combined PDF of all solutions
 - `correct_pdf` (File): Genome wide correction comparisons
 - `rdata` (File): Saved R image after ichorCNA has finished
-- `wig` (File): WIG file created from binned read count data
-- `sample_name` (String): Sample ID that was processed
 
 ### `validate_outputs`
 Validates ichorCNA outputs and generates a comprehensive report.
@@ -60,7 +73,6 @@ Validates ichorCNA outputs and generates a comprehensive report.
 - `correct_pdfs` (Array[File]): Array of correction comparison PDFs
 - `rdata_files` (Array[File]): Array of ichorCNA RData files
 - `wig_files` (Array[File]): Array of WIG files
-- `sample_names` (Array[String]): Array of sample ID strings
 
 **Outputs:**
 - `report` (File): Comprehensive validation report with statistics
@@ -88,16 +100,25 @@ workflow my_cfDNA_workflow {
   }
   
   scatter (sample in samples) {
+    call ichorcna_tasks.readcounter_wig {
+      input:
+        bam_file = sample.bam,
+        bam_index = sample.bam_index,
+        sample_name = sample.name,
+        chromosomes = ["chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"],
+        window_size = 500000
+    }
+  
     call ichorcna_tasks.ichorcna_call {
       input:
-        counts_bed = sample.counts_bed,  # Pre-generated read counts
+        wig_tumor = readcounter_wig.wig_file,
         wig_gc = wig_gc,
         wig_map = wig_map,
         panel_of_norm_rds = panel_of_norm_rds,
         centromeres = centromeres,
         name = sample.name,
         sex = "male",
-        chrs = "c(1:22, \"X\", \"Y\")",
+        chrs = "c(1:22, 'X', 'Y')",
         memory_gb = 16,
         cpus = 6
     }
@@ -114,7 +135,7 @@ workflow my_cfDNA_workflow {
 ### Integration Examples
 
 This module pairs seamlessly with other WILDS modules:
-- **ww-bedtools**: Generate read count BED files from BAM files (built into demo workflow)
+- **HMMcopy readCounter**: Generate WIG files from BAM files (built into workflow)
 - **ww-testdata**: Automatic provisioning of reference data and test samples
 - **Custom workflows**: Foundation for any cfDNA tumor fraction analysis pipeline
 
@@ -136,12 +157,11 @@ sprocket run ww-ichorcna.wdl inputs.json
 ### Automatic Demo Mode
 
 When no samples or reference files are provided, the workflow automatically:
-1. Downloads reference genome data using `ww-testdata`
-2. Downloads ichorCNA-specific data files using `ww-testdata`
-3. Downloads demonstration BAM data using `ww-testdata`
-4. Generates read count windows using `ww-bedtools`
-5. Estimates tumor fraction using ichorCNA
-6. Validates all outputs
+1. Downloads ichorCNA-specific data files using `ww-testdata`
+2. Downloads demonstration BAM data using `ww-testdata`
+3. Generates WIG files from BAM files using HMMcopy's readCounter
+4. Estimates tumor fraction using ichorCNA
+5. Validates all outputs
 
 ### Test Input Format
 
@@ -167,9 +187,6 @@ When no samples or reference files are provided, the workflow automatically:
       "bam_index": "/path/to/sample1.bam.bai"
     }
   ],
-  "ichorcna_example.bed_file": "/path/to/regions.bed",
-  "ichorcna_example.reference_fasta": "/path/to/reference.fasta",
-  "ichorcna_example.reference_index": "/path/to/reference.fasta.fai",
   "ichorcna_example.wig_gc": "/path/to/gc_content.wig",
   "ichorcna_example.wig_map": "/path/to/mappability.wig",
   "ichorcna_example.panel_of_norm_rds": "/path/to/panel_of_normals.rds",
@@ -214,7 +231,7 @@ The module supports flexible resource configuration:
 - **Copy number analysis**: Identifies genomic regions with copy number alterations
 - **Multiple solutions**: Evaluates different ploidy and normal contamination scenarios
 - **Quality validation**: Built-in output validation and comprehensive reporting
-- **Module integration**: Seamlessly combines with ww-bedtools and ww-testdata
+- **HMMcopy integration**: Uses standard readCounter for WIG file generation
 - **Standardized output**: Multiple output formats for downstream analysis
 - **Sex-aware analysis**: Handles male/female samples appropriately
 
@@ -231,7 +248,7 @@ The module supports flexible resource configuration:
 - **Segments file**: Genomic segments with copy number calls and subclonal status
 - **PDF plots**: Visualization of copy number profiles and model fits
 - **RData file**: Complete R workspace for further analysis
-- **WIG file**: Read depth data in WIG format
+- **WIG file**: Read depth data in WIG format generated by HMMcopy readCounter
 - **Validation report**: Comprehensive validation with file integrity checks
 
 ## Module Development
@@ -240,7 +257,7 @@ This module is automatically tested as part of the WILDS WDL Library CI/CD pipel
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
 - Real sequencing data (demonstration BAM for integration testing)
 - Comprehensive validation of all outputs including R object validation
-- Integration testing with ww-bedtools and ww-testdata modules
+- Integration testing with ww-testdata module
 - Chromosome 1 subset for efficiency during CI/CD
 
 For questions specific to this module or to contribute improvements, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).
