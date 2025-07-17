@@ -148,7 +148,7 @@ task smoove_call {
     
     # Sort the resulting vcf (SV's are tricky)
     bcftools sort -Oz "results/~{sample_name}-smoove.vcf.gz" \
-      > "results/~{sample_name}-smoove.sorted.vcf.gz"
+      > "results/~{sample_name}-smoove.vcf.gz"
 
     # Index the raw output
     tabix -p vcf "results/~{sample_name}-smoove.vcf.gz"
