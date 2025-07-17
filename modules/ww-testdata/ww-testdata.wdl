@@ -209,7 +209,7 @@ task interleave_fastq {
   meta {
     description: "Interleaves a set of R1 and R2 FASTQ files"
     outputs: {
-        interleaved_fq: "Interleaved FASTQ"
+        inter_fastq: "Interleaved FASTQ"
     }
   }
 
