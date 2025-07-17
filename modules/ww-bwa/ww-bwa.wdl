@@ -60,15 +60,16 @@ workflow bwa_example {
 
    # Create samples array - either from input or from test data download
   Array[BwaSample] final_samples = if defined(samples) then select_first([samples]) else [
-    {
-      "name": "demo_sample",
-      "reads": select_first([download_fastq_data.r1_fastq]),
-      "mates": select_first([download_fastq_data.r2_fastq])
-    },
-    {
-      "name": "demo_sample2",
-      "reads": select_first([interleave_fastq.inter_fastq])
-    },
+      BwaSample {
+          name: "demo_sample",
+          reads: select_first([download_fastq_data.r1_fastq]),
+          mates: select_first([download_fastq_data.r2_fastq])
+      },
+      BwaSample {
+          name: "demo_sample2",
+          reads: select_first([interleave_fastq.inter_fastq]),
+          mates: None
+      }
   ]
 
   call bwa_index { input:
