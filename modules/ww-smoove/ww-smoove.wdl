@@ -146,24 +146,26 @@ task smoove_call {
       ~{if defined(exclude_chroms) then "--excludechroms " + exclude_chroms else ""} \
       "~{aligned_bam}"
     
+    # Sort the resulting vcf (SV's are tricky)
+    bcftools sort -Oz "results/~{sample_name}-smoove.vcf.gz" \
+      > "results/~{sample_name}-smoove.sorted.vcf.gz"
+
     # Index the raw output
-    tabix -p vcf "results/~{sample_name}-smoove.vcf.gz"
+    tabix -p vcf "results/~{sample_name}-smoove.sorted.vcf.gz"
 
     # Filter to target regions if provided, otherwise use raw output
     if [ -n "~{target_regions_bed}" ]; then
       # Filter VCF to only include variants overlapping target regions
-      bcftools view \
-        -R "~{target_regions_bed}" \
-        -Oz \
-        -o "~{vcf_filename}" \
-        "results/~{sample_name}-smoove.vcf.gz"
+      bcftools view -R "~{target_regions_bed}" \
+        "results/~{sample_name}-smoove.sorted.vcf.gz" | \
+        bcftools sort -Oz -o "~{vcf_filename}"
       
       # Index the filtered VCF
       tabix -p vcf "~{vcf_filename}"
     else
       # Move and rename output files for consistency
-      mv "results/~{sample_name}-smoove.vcf.gz" "~{vcf_filename}"
-      mv "results/~{sample_name}-smoove.vcf.gz.tbi" "~{vcf_index_filename}"
+      mv "results/~{sample_name}-smoove.sorted.vcf.gz" "~{vcf_filename}"
+      mv "results/~{sample_name}-smoove.sorted.vcf.gz.tbi" "~{vcf_index_filename}"
     fi
   >>>
 
