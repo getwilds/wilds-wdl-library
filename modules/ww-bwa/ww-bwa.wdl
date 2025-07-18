@@ -49,28 +49,29 @@ workflow bwa_example {
    # Determine which genome files to use
   File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
 
-   # If no samples provided, download demonstration data
-  if (!defined(samples)) {
-    call ww_testdata.download_fastq_data { }
-    call ww_testdata.interleave_fastq { input:
+  # Handle samples - always download test data, but only use if no samples provided
+  call ww_testdata.download_fastq_data { }
+  call ww_testdata.interleave_fastq { 
+    input:
       r1_fq = download_fastq_data.r1_fastq,
       r2_fq = download_fastq_data.r2_fastq
-    }
   }
 
-   # Create samples array - either from input or from test data download
-  Array[BwaSample] final_samples = if defined(samples) then select_first([samples]) else [
-      BwaSample {
-          name: "demo_sample",
-          reads: select_first([download_fastq_data.r1_fastq]),
-          mates: select_first([download_fastq_data.r2_fastq])
-      },
-      BwaSample {
-          name: "demo_sample2",
-          reads: select_first([interleave_fastq.inter_fastq]),
-          mates: None
-      }
+  # Create default samples from test data
+  Array[BwaSample] default_samples = [
+    object {
+      name: "demo_sample",
+      reads: download_fastq_data.r1_fastq,
+      mates: download_fastq_data.r2_fastq
+    },
+    object {
+      name: "demo_sample_interleaved", 
+      reads: interleave_fastq.inter_fastq
+    }
   ]
+
+  # Use provided samples or default to test samples
+  Array[BwaSample] final_samples = select_first([samples, default_samples])
 
   call bwa_index { input:
       reference_fasta = genome_fasta,
