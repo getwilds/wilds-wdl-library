@@ -1,5 +1,5 @@
 # ww-bwa
-[![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)  
+[![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A WILDS WDL module for sequence alignment using the Burrows-Wheeler Aligner (BWA).
@@ -38,9 +38,10 @@ Aligns paired-end reads to a reference using BWA-MEM with automatic read group a
 **Inputs:**
 - `bwa_genome_tar` (File): Compressed tarball containing BWA genome index
 - `reference_fasta` (File): Reference genome FASTA file
-- `r1` (File): FASTQ file for read 1
-- `r2` (File): FASTQ file for read 2
+- `reads` (File): FASTQ file for forward (R1) reads or interleaved reads
+- `mates` (File): Optional FASTQ file for reverse (R2) reads
 - `name` (String): Sample name for read group information and output files
+- `paired_end` (Boolean): Optional, indicating if reads are paired end (default: true)
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
 
@@ -67,8 +68,8 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 struct BwaSample {
     String name
-    File r1
-    File r2
+    File reads
+    File mates
 }
 
 workflow my_alignment_pipeline {
@@ -78,7 +79,7 @@ workflow my_alignment_pipeline {
   }
 
   call bwa_tasks.bwa_index {
-    input: 
+    input:
       reference_fasta = reference_fasta,
       cpu_cores = 8,
       memory_gb = 32
@@ -89,8 +90,8 @@ workflow my_alignment_pipeline {
       input:
         bwa_genome_tar = bwa_index.bwa_index_tar,
         reference_fasta = reference_fasta,
-        r1 = sample.r1,
-        r2 = sample.r2,
+        reads = sample.reads,
+        mates = sample.mates,
         name = sample.name,
         cpu_cores = 8,
         memory_gb = 16
@@ -162,8 +163,8 @@ When no samples or reference files are provided, the workflow automatically:
   "bwa_example.samples": [
     {
       "name": "sample1",
-      "r1": "/path/to/sample1_R1.fastq.gz",
-      "r2": "/path/to/sample1_R2.fastq.gz"
+      "reads": "/path/to/sample1_R1.fastq.gz",
+      "mates": "/path/to/sample1_R2.fastq.gz"
     }
   ],
   "bwa_example.reference_fasta": "/path/to/genome.fasta",
@@ -205,7 +206,8 @@ The module supports flexible resource configuration:
 ## Features
 
 - **Standalone execution**: Complete workflow with automatic test data download
-- **Flexible input**: Use your own data or automatic demo data from `ww-testdata`
+- **Optional input**: Use your own data or automatic demo data from `ww-testdata`
+- **Paired-end or single-end input**: Use separate or interleaved paired-end FASTQs, or single-end data.
 - **BWA-MEM alignment**: Fast and accurate for reads 70bp to 1Mbp
 - **Automatic indexing**: Builds BWA index from reference FASTA with tarball packaging
 - **Sorted BAM output**: Ready for downstream analysis (variant calling, QC, etc.)
@@ -235,13 +237,13 @@ For human genome alignment:
   "bwa_example.samples": [
     {
       "name": "control_1",
-      "r1": "/data/control_1_R1.fastq.gz",
-      "r2": "/data/control_1_R2.fastq.gz"
+      "reads": "/data/control_1_R1.fastq.gz",
+      "mates": "/data/control_1_R2.fastq.gz"
     },
     {
-      "name": "treatment_1", 
-      "r1": "/data/treatment_1_R1.fastq.gz",
-      "r2": "/data/treatment_1_R2.fastq.gz"
+      "name": "treatment_1",
+      "reads": "/data/treatment_1_interleaved.fastq.gz",
+      "mates": ""
     }
   ],
   "bwa_example.cpus": 12,
@@ -257,8 +259,8 @@ For human genome alignment:
   "bwa_example.samples": [
     {
       "name": "sample1",
-      "r1": "/data/sample1_R1.fastq.gz",
-      "r2": "/data/sample1_R2.fastq.gz"
+      "reads": "/data/sample1_R1.fastq.gz",
+      "mates": "/data/sample1_R2.fastq.gz"
     }
   ]
 }
