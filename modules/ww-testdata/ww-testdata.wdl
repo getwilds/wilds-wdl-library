@@ -63,10 +63,15 @@ workflow testdata_example {
 
   call download_dbsnp_vcf { input:
     region = "NC_000001.11:1-10000000",
-    base_name = "dbsnp_chr1"
+    filter_name = "chr1"
   }
 
   call download_known_indels_vcf { input:
+    region = "chr1:1-10000000",
+    filter_name = "chr1"
+  }
+
+  call download_gnomad_vcf { input:
     region = "chr1:1-10000000",
     filter_name = "chr1"
   }
@@ -93,6 +98,8 @@ workflow testdata_example {
     dbsnp_vcf_index = download_dbsnp_vcf.dbsnp_vcf_index,
     known_indels_vcf = download_known_indels_vcf.known_indels_vcf,
     known_indels_vcf_index = download_known_indels_vcf.known_indels_vcf_index,
+    gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
+    gnomad_vcf_index = download_gnomad_vcf.gnomad_vcf_index,
     annotsv_test_vcf = download_annotsv_vcf.test_vcf
   }
 
@@ -114,7 +121,13 @@ workflow testdata_example {
     File ichor_map_wig = download_ichor_data.wig_map
     File ichor_centromeres = download_ichor_data.centromeres
     File ichor_panel_of_norm_rds = download_ichor_data.panel_of_norm_rds
-    # Outputs from the AnnotSV test VCF download
+    # Outputs from VCF downloads
+    File dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf
+    File dbsnp_vcf_index = download_dbsnp_vcf.dbsnp_vcf_index
+    File known_indels_vcf = download_known_indels_vcf.known_indels_vcf
+    File known_indels_vcf_index = download_known_indels_vcf.known_indels_vcf_index
+    File gnomad_vcf = download_gnomad_vcf.gnomad_vcf
+    File gnomad_vcf_index = download_gnomad_vcf.gnomad_vcf_index
     File annotsv_test_vcf = download_annotsv_vcf.test_vcf
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
@@ -425,14 +438,14 @@ task download_dbsnp_vcf {
 
   parameter_meta {
     region: "Chromosomal region to filter the dbSNP vcf down to, e.g. NC_000001.11:1-10000000"
-    base_name: "Base filename to save the dbSNP vcf to"
+    filter_name: "Filename tag to save the dbSNP vcf with"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
 
   input {
     String? region
-    String base_name = "dbsnp"
+    String filter_name = "hg38"
     Int cpu_cores = 1
     Int memory_gb = 4
   }
@@ -440,17 +453,48 @@ task download_dbsnp_vcf {
   command <<<
     set -euo pipefail
 
-    # Download filtered dbSNP VCF
+    # Create a full mapping file
+    cat > chr_mapping.txt << EOF
+    NC_000001.11 chr1
+    NC_000002.12 chr2
+    NC_000003.12 chr3
+    NC_000004.12 chr4
+    NC_000005.10 chr5
+    NC_000006.12 chr6
+    NC_000007.14 chr7
+    NC_000008.11 chr8
+    NC_000009.12 chr9
+    NC_000010.11 chr10
+    NC_000011.10 chr11
+    NC_000012.12 chr12
+    NC_000013.11 chr13
+    NC_000014.9 chr14
+    NC_000015.10 chr15
+    NC_000016.10 chr16
+    NC_000017.11 chr17
+    NC_000018.10 chr18
+    NC_000019.10 chr19
+    NC_000020.11 chr20
+    NC_000021.9 chr21
+    NC_000022.11 chr22
+    NC_000023.11 chrX
+    NC_000024.10 chrY
+    NC_012920.1 chrMT
+    EOF
+
+    # Download filtered dbSNP vcf from NCBI and rename chromosomes
     bcftools view ~{if defined(region) then "-r " + region else ""} \
-    https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz -O z -o "~{base_name}.vcf.gz"
+      https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz | \
+    bcftools annotate --rename-chrs chr_mapping.txt \
+      -O z -o "dbsnp.~{filter_name}.vcf.gz"
 
     # Index filtered dbSNP VCF
-    bcftools index "~{base_name}.vcf.gz"
+    bcftools index "dbsnp.~{filter_name}.vcf.gz"
   >>>
 
   output {
-    File dbsnp_vcf = "~{base_name}.vcf.gz"
-    File dbsnp_vcf_index = "~{base_name}.vcf.gz.csi"
+    File dbsnp_vcf = "dbsnp.~{filter_name}.vcf.gz"
+    File dbsnp_vcf_index = "dbsnp.~{filter_name}.vcf.gz.csi"
   }
 
   runtime {
@@ -470,7 +514,7 @@ task download_known_indels_vcf {
   }
 
   parameter_meta {
-    region: "Chromosomal region to filter the known indels vcf down to, e.g. NC_000001.11:1-10000000"
+    region: "Chromosomal region to filter the known indels vcf down to, e.g. chr1:1-10000000"
     filter_name: "Filename tag to save the known indels vcf with"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
@@ -485,8 +529,8 @@ task download_known_indels_vcf {
 
   command <<<
     # Download filtered known indels vcf from GATK
-    bcftools view -r ~{if defined(region) then "-r " + region else ""} \
-    gs://genomics-public-data/resources/broad/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz \
+    bcftools view ~{if defined(region) then "-r " + region else ""} \
+    https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz \
     -O z -o "mills_1000g_known_indels.~{filter_name}.vcf.gz"
 
     # Index known indels vcf
@@ -496,6 +540,51 @@ task download_known_indels_vcf {
   output {
     File known_indels_vcf = "mills_1000g_known_indels.~{filter_name}.vcf.gz"
     File known_indels_vcf_index = "mills_1000g_known_indels.~{filter_name}.vcf.gz.csi"
+  }
+
+  runtime {
+    docker: "getwilds/bcftools:1.19"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_gnomad_vcf {
+  meta {
+    description: "Downloads gnomad VCF files for GATK workflows"
+    outputs: {
+        known_indels_vcf: "Gnomad VCF file (filtered down if region specified)",
+        known_indels_vcf_index: "Index for the gnomad VCF file"
+    }
+  }
+
+  parameter_meta {
+    region: "Chromosomal region to filter the gnomad vcf down to, e.g. chr1:1-10000000"
+    filter_name: "Filename tag to save the gnomad vcf with"
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    String? region
+    String filter_name = "hg38"
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    # Download filtered gnomad vcf from GATK
+    bcftools view ~{if defined(region) then "-r " + region else ""} \
+    https://storage.googleapis.com/gatk-best-practices/somatic-hg38/af-only-gnomad.hg38.vcf.gz \
+    -O z -o "gnomad_af_only.~{filter_name}.vcf.gz"
+
+    # Index gnomad vcf
+    bcftools index "gnomad_af_only.~{filter_name}.vcf.gz"
+  >>>
+
+  output {
+    File gnomad_vcf = "gnomad_af_only.~{filter_name}.vcf.gz"
+    File gnomad_vcf_index = "gnomad_af_only.~{filter_name}.vcf.gz.csi"
   }
 
   runtime {
@@ -566,10 +655,12 @@ task validate_outputs {
     ichor_map_wig: "ichorCNA mapping quality file to validate"
     ichor_centromeres: "ichorCNA centromere locations file to validate"
     ichor_panel_of_norm_rds: "ichorCNA panel of normals file to validate"
-    dbsnp_vcf: "dbSNP VCF file to validate"
+    dbsnp_vcf: "dbSNP VCF to validate"
     dbsnp_vcf_index: "dbSNP VCF index to validate"
     known_indels_vcf: "Known indels VCF to validate"
     known_indels_vcf_index: "Known indels VCF index to validate"
+    gnomad_vcf: "gnomad VCF to validate"
+    gnomad_vcf_index: "gnomad VCF index to validate"
     annotsv_test_vcf: "AnnotSV test VCF file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
@@ -595,6 +686,8 @@ task validate_outputs {
     File dbsnp_vcf_index
     File known_indels_vcf
     File known_indels_vcf_index
+    File gnomad_vcf
+    File gnomad_vcf_index
     File annotsv_test_vcf
     Int cpu_cores = 1
     Int memory_gb = 2
@@ -743,6 +836,20 @@ task validate_outputs {
       validation_passed=false
     fi
 
+    if [[ -f "~{gnomad_vcf}" && -s "~{gnomad_vcf}" ]]; then
+      echo "Gnomad VCF: ~{gnomad_vcf} - PASSED" >> validation_report.txt
+    else
+      echo "Gnomad VCF: ~{gnomad_vcf} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{gnomad_vcf_index}" && -s "~{gnomad_vcf_index}" ]]; then
+      echo "Gnomad VCF Index: ~{gnomad_vcf_index} - PASSED" >> validation_report.txt
+    else
+      echo "Gnomad VCF Index: ~{gnomad_vcf_index} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
     if [[ -f "~{annotsv_test_vcf}" && -s "~{annotsv_test_vcf}" ]]; then
       echo "AnnotSV test VCF: ~{annotsv_test_vcf} - PASSED" >> validation_report.txt
     else
@@ -753,7 +860,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 19"
+      echo "Total files validated: 21"
     } >> validation_report.txt
     if [[ "$validation_passed" == "true" ]]; then
       echo "Overall Status: PASSED" >> validation_report.txt
