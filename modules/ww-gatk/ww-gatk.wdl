@@ -4,7 +4,7 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-gatk/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct GatkSample {
     String name
@@ -32,7 +32,6 @@ workflow gatk_example {
     samples: "Array of sample information objects containing BAM files and indices"
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Reference genome FASTA index (.fai)"
-    reference_dict: "Reference genome sequence dictionary (.dict)"
     dbsnp_vcf: "dbSNP VCF file for variant annotation and base recalibration"
     dbsnp_vcf_index: "Index file for dbSNP VCF"
     known_indels_sites_vcfs: "Array of VCF files with known indel sites for BQSR"
@@ -46,9 +45,8 @@ workflow gatk_example {
     Array[GatkSample]? samples
     File? reference_fasta
     File? reference_fasta_index
-    File reference_dict
-    File dbsnp_vcf
-    File dbsnp_vcf_index
+    File? dbsnp_vcf
+    File? dbsnp_vcf_index
     Array[File] known_indels_sites_vcfs
     Array[File] known_indels_sites_indices
     File gnomad_vcf
@@ -62,6 +60,25 @@ workflow gatk_example {
   }
   File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
   File genome_fasta_index = select_first([reference_fasta_index, download_ref_data.fasta_index])
+  
+  # Create reference dictionary
+  call create_sequence_dictionary { input: 
+      reference_fasta = genome_fasta
+  }
+
+  # Determine which dbSNP vcf to use
+  if (!defined(dbsnp_vcf) || !defined(dbsnp_vcf_index)) {
+    call ww_testdata.download_dbsnp_vcf { }
+  }
+  File final_dbsnp = select_first([dbsnp_vcf, download_dbsnp_vcf.dbsnp_vcf])
+  File final_dbsnp_index = select_first([dbsnp_vcf_index, download_dbsnp_vcf.dbsnp_vcf_index])
+
+  # Determine which known indels vcf to use
+  if (!defined(known_indels_sites_vcfs) || !defined(known_indels_sites_indices)) {
+    call ww_testdata.download_known_indels_vcf { }
+  }
+  Array[File] final_known_indels = select_first([known_indels_sites_vcfs, select_all([download_known_indels_vcf.known_indels_vcf])])
+  Array[File] final_known_indels_index = select_first([known_indels_sites_indices, select_all([download_known_indels_vcf.known_indels_vcf_index])])
 
   # If no samples provided, download demonstration data
   if (!defined(samples)) {
@@ -82,13 +99,13 @@ workflow gatk_example {
         aligned_bam = sample.bam,
         aligned_bam_index = sample.bai,
         intervals = intervals,
-        dbsnp_vcf = dbsnp_vcf,
-        dbsnp_vcf_index = dbsnp_vcf_index,
+        dbsnp_vcf = final_dbsnp,
+        dbsnp_vcf_index = final_dbsnp_index,
         reference_fasta = genome_fasta,
         reference_fasta_index = genome_fasta_index,
-        reference_dict = reference_dict,
-        known_indels_sites_vcfs = known_indels_sites_vcfs,
-        known_indels_sites_indices = known_indels_sites_indices,
+        reference_dict = create_sequence_dictionary.sequence_dict,
+        known_indels_sites_vcfs = final_known_indels,
+        known_indels_sites_indices = final_known_indels_index,
         output_basename = sample.name + ".recalibrated"
     }
 
@@ -98,9 +115,9 @@ workflow gatk_example {
         intervals = intervals,
         reference_fasta = genome_fasta,
         reference_fasta_index = genome_fasta_index,
-        reference_dict = reference_dict,
-        dbsnp_vcf = dbsnp_vcf,
-        dbsnp_vcf_index = dbsnp_vcf_index,
+        reference_dict = create_sequence_dictionary.sequence_dict,
+        dbsnp_vcf = final_dbsnp,
+        dbsnp_vcf_index = final_dbsnp_index,
         output_basename = sample.name + ".haplotypecaller"
     }
 
@@ -110,7 +127,7 @@ workflow gatk_example {
         intervals = intervals,
         reference_fasta = genome_fasta,
         reference_fasta_index = genome_fasta_index,
-        reference_dict = reference_dict,
+        reference_dict = create_sequence_dictionary.sequence_dict,
         gnomad_vcf = gnomad_vcf,
         gnomad_vcf_index = gnomad_vcf_index,
         output_basename = sample.name + ".mutect2"
@@ -359,6 +376,49 @@ task mutect2 {
     File vcf_index = "~{output_basename}.vcf.gz.tbi"
     File stats_file = "~{output_basename}.unfiltered.vcf.gz.stats"
     File f1r2_counts = "~{output_basename}.f1r2.tar.gz"
+  }
+
+  runtime {
+    docker: "getwilds/gatk:4.6.1.0"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
+task create_sequence_dictionary {
+  meta {
+    description: "Create a sequence dictionary file from a reference FASTA file"
+    outputs: {
+        sequence_dict: "Sequence dictionary file (.dict) for the reference genome"
+    }
+  }
+
+  parameter_meta {
+    reference_fasta: "Reference genome FASTA file"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
+  }
+
+  input {
+    File reference_fasta
+    Int memory_gb = 8
+    Int cpu_cores = 2
+  }
+
+  String dict_basename = basename(reference_fasta, ".fa")
+
+  command <<<
+    set -eo pipefail
+    
+    gatk --java-options "-Xms~{memory_gb - 2}g -Xmx~{memory_gb - 1}g" \
+      CreateSequenceDictionary \
+      -R "~{reference_fasta}" \
+      -O "~{dict_basename}.dict" \
+      --VERBOSITY WARNING
+  >>>
+
+  output {
+    File sequence_dict = "~{dict_basename}.dict"
   }
 
   runtime {
