@@ -66,6 +66,11 @@ workflow testdata_example {
     base_name = "dbsnp_chr1"
   }
 
+  call download_known_indels_vcf { input:
+    region = "chr1:1-10000000",
+    filter_name = "chr1"
+  }
+
   call download_annotsv_vcf { }
 
   call validate_outputs { input:
@@ -85,6 +90,9 @@ workflow testdata_example {
     ichor_centromeres = download_ichor_data.centromeres,
     ichor_panel_of_norm_rds = download_ichor_data.panel_of_norm_rds,
     dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf,
+    dbsnp_vcf_index = download_dbsnp_vcf.dbsnp_vcf_index,
+    known_indels_vcf = download_known_indels_vcf.known_indels_vcf,
+    known_indels_vcf_index = download_known_indels_vcf.known_indels_vcf_index,
     annotsv_test_vcf = download_annotsv_vcf.test_vcf
   }
 
@@ -408,9 +416,10 @@ task download_ichor_data {
 
 task download_dbsnp_vcf {
   meta {
-    description: "Downloads test VCF files for structural variant annotation workflows"
+    description: "Downloads dbSNP VCF files for GATK workflows"
     outputs: {
-        dbsnp_vcf: "Test VCF file for AnnotSV"
+        dbsnp_vcf: "dbSNP VCF file (filtered down if region specified)",
+        dbsnp_vcf_index: "Index for the dbSNP VCF file"
     }
   }
 
@@ -431,13 +440,62 @@ task download_dbsnp_vcf {
   command <<<
     set -euo pipefail
 
-    # Download filtered dbSNP VCF file
+    # Download filtered dbSNP VCF
     bcftools view ~{if defined(region) then "-r " + region else ""} \
     https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz -O z -o "~{base_name}.vcf.gz"
+
+    # Index filtered dbSNP VCF
+    bcftools index "~{base_name}.vcf.gz"
   >>>
 
   output {
     File dbsnp_vcf = "~{base_name}.vcf.gz"
+    File dbsnp_vcf_index = "~{base_name}.vcf.gz.csi"
+  }
+
+  runtime {
+    docker: "getwilds/bcftools:1.19"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_known_indels_vcf {
+  meta {
+    description: "Downloads known indel VCF files for GATK workflows"
+    outputs: {
+        known_indels_vcf: "Known indels VCF file (filtered down if region specified)",
+        known_indels_vcf_index: "Index for the known indels VCF file"
+    }
+  }
+
+  parameter_meta {
+    region: "Chromosomal region to filter the known indels vcf down to, e.g. NC_000001.11:1-10000000"
+    filter_name: "Filename tag to save the known indels vcf with"
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    String? region
+    String filter_name = "hg38"
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    # Download filtered known indels vcf from GATK
+    bcftools view -r ~{if defined(region) then "-r " + region else ""} \
+    gs://genomics-public-data/resources/broad/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz \
+    -O z -o "mills_1000g_known_indels.~{filter_name}.vcf.gz"
+
+    # Index known indels vcf
+    bcftools index "mills_1000g_known_indels.~{filter_name}.vcf.gz"
+  >>>
+
+  output {
+    File known_indels_vcf = "mills_1000g_known_indels.~{filter_name}.vcf.gz"
+    File known_indels_vcf_index = "mills_1000g_known_indels.~{filter_name}.vcf.gz.csi"
   }
 
   runtime {
@@ -509,6 +567,9 @@ task validate_outputs {
     ichor_centromeres: "ichorCNA centromere locations file to validate"
     ichor_panel_of_norm_rds: "ichorCNA panel of normals file to validate"
     dbsnp_vcf: "dbSNP VCF file to validate"
+    dbsnp_vcf_index: "dbSNP VCF index to validate"
+    known_indels_vcf: "Known indels VCF to validate"
+    known_indels_vcf_index: "Known indels VCF index to validate"
     annotsv_test_vcf: "AnnotSV test VCF file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
@@ -531,6 +592,9 @@ task validate_outputs {
     File ichor_centromeres
     File ichor_panel_of_norm_rds
     File dbsnp_vcf
+    File dbsnp_vcf_index
+    File known_indels_vcf
+    File known_indels_vcf_index
     File annotsv_test_vcf
     Int cpu_cores = 1
     Int memory_gb = 2
@@ -658,6 +722,27 @@ task validate_outputs {
       validation_passed=false
     fi
 
+    if [[ -f "~{dbsnp_vcf_index}" && -s "~{dbsnp_vcf_index}" ]]; then
+      echo "dbSNP VCF Index: ~{dbsnp_vcf_index} - PASSED" >> validation_report.txt
+    else
+      echo "dbSNP VCF Index: ~{dbsnp_vcf_index} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{known_indels_vcf}" && -s "~{known_indels_vcf}" ]]; then
+      echo "Known Indels VCF: ~{known_indels_vcf} - PASSED" >> validation_report.txt
+    else
+      echo "Known Indels VCF: ~{known_indels_vcf} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{known_indels_vcf_index}" && -s "~{known_indels_vcf_index}" ]]; then
+      echo "Known Indels VCF Index: ~{known_indels_vcf_index} - PASSED" >> validation_report.txt
+    else
+      echo "Known Indels VCF Index: ~{known_indels_vcf_index} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
     if [[ -f "~{annotsv_test_vcf}" && -s "~{annotsv_test_vcf}" ]]; then
       echo "AnnotSV test VCF: ~{annotsv_test_vcf} - PASSED" >> validation_report.txt
     else
@@ -668,7 +753,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 15"
+      echo "Total files validated: 19"
     } >> validation_report.txt
     if [[ "$validation_passed" == "true" ]]; then
       echo "Overall Status: PASSED" >> validation_report.txt
