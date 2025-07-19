@@ -25,6 +25,12 @@ workflow testdata_example {
         ichor_map_wig: "Mapping quality WIG file for hg38",
         ichor_centromeres: "Centromere locations for hg38",
         ichor_panel_of_norm_rds: "Panel of normals RDS file for hg38",
+        dbsnp_vcf: "dbSNP VCF for hg38",
+        dbsnp_vcf_index: "Index for the dbSNP VCF",
+        known_indels_vcf: "Known indels VCF for hg38",
+        known_indels_vcf_index: "Index for the known indels VCF",
+        gnomad_vcf: "Gnomad VCF for hg38",
+        gnomad_vcf_index: "Index for the gnomad VCF",
         annotsv_test_vcf: "Test VCF file for AnnotSV",
         validation_report: "Validation report summarizing all outputs"
     }
@@ -553,8 +559,8 @@ task download_gnomad_vcf {
   meta {
     description: "Downloads gnomad VCF files for GATK workflows"
     outputs: {
-        known_indels_vcf: "Gnomad VCF file (filtered down if region specified)",
-        known_indels_vcf_index: "Index for the gnomad VCF file"
+        gnomad_vcf: "Gnomad VCF file (filtered down if region specified)",
+        gnomad_vcf_index: "Index for the gnomad VCF file"
     }
   }
 
