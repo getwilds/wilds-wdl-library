@@ -61,6 +61,11 @@ workflow testdata_example {
 
   call download_ichor_data { }
 
+  call download_dbsnp_vcf { input:
+    region = "NC_000001.11:1-10000000",
+    base_name = "dbsnp_chr1"
+  }
+
   call download_annotsv_vcf { }
 
   call validate_outputs { input:
@@ -79,6 +84,7 @@ workflow testdata_example {
     ichor_map_wig = download_ichor_data.wig_map,
     ichor_centromeres = download_ichor_data.centromeres,
     ichor_panel_of_norm_rds = download_ichor_data.panel_of_norm_rds,
+    dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf,
     annotsv_test_vcf = download_annotsv_vcf.test_vcf
   }
 
@@ -229,7 +235,7 @@ task interleave_fastq {
 
   command <<<
     # Read in both files in groups of four lines each
-    paste <(gunzip -c ~{r1_fq} | paste - - - -) <(gunzip -c ~{r2_fq} | paste - - - -) | \
+    paste <(gunzip -c "~{r1_fq}" | paste - - - -) <(gunzip -c "~{r2_fq}" | paste - - - -) | \
     # Interleave lines from each file and include "+" FASTQ lines
     awk -v OFS="\n" -v FS="\t" '{print($1,$2,"+",$4,$5,$6,"+",$8)}' | \
     gzip > interleaved.fastq.gz
@@ -287,7 +293,7 @@ task download_cram_data {
     samtools index -@ ~{cpu_cores} NA12878_chr1.bam
 
     # Convert BAM to CRAM using the provided reference FASTA
-    samtools view -@ ~{cpu_cores} -C -T ~{ref_fasta} -o NA12878_chr1.cram NA12878_chr1.bam
+    samtools view -@ ~{cpu_cores} -C -T "~{ref_fasta}" -o NA12878_chr1.cram NA12878_chr1.bam
     samtools index -@ ~{cpu_cores} NA12878_chr1.cram
   >>>
 
@@ -400,6 +406,47 @@ task download_ichor_data {
   }
 }
 
+task download_dbsnp_vcf {
+  meta {
+    description: "Downloads test VCF files for structural variant annotation workflows"
+    outputs: {
+        dbsnp_vcf: "Test VCF file for AnnotSV"
+    }
+  }
+
+  parameter_meta {
+    region: "Chromosomal region to filter the dbSNP vcf down to, e.g. NC_000001.11:1-10000000"
+    base_name: "Base filename to save the dbSNP vcf to"
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    String? region
+    String base_name = "dbsnp"
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -euo pipefail
+
+    # Download filtered dbSNP VCF file
+    bcftools view ~{if defined(region) then "-r " + region else ""} \
+    https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz -O z -o "~{base_name}.vcf.gz"
+  >>>
+
+  output {
+    File dbsnp_vcf = "~{base_name}.vcf.gz"
+  }
+
+  runtime {
+    docker: "getwilds/bcftools:1.19"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task download_annotsv_vcf {
   meta {
     description: "Downloads test VCF files for structural variant annotation workflows"
@@ -422,7 +469,8 @@ task download_annotsv_vcf {
     set -euo pipefail
 
     # Download AnnotSV test VCF file
-    wget -q --no-check-certificate -O annotsv_test.vcf https://raw.githubusercontent.com/lgmgeo/AnnotSV/refs/heads/master/share/doc/AnnotSV/Example/test.vcf
+    wget -q --no-check-certificate -O annotsv_test.vcf \
+      https://raw.githubusercontent.com/lgmgeo/AnnotSV/1f6a1b4033ea41e35be146be1999b791e183d079/share/doc/AnnotSV/Example/test.vcf
   >>>
 
   output {
@@ -460,6 +508,7 @@ task validate_outputs {
     ichor_map_wig: "ichorCNA mapping quality file to validate"
     ichor_centromeres: "ichorCNA centromere locations file to validate"
     ichor_panel_of_norm_rds: "ichorCNA panel of normals file to validate"
+    dbsnp_vcf: "dbSNP VCF file to validate"
     annotsv_test_vcf: "AnnotSV test VCF file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
@@ -481,6 +530,7 @@ task validate_outputs {
     File ichor_map_wig
     File ichor_centromeres
     File ichor_panel_of_norm_rds
+    File dbsnp_vcf
     File annotsv_test_vcf
     Int cpu_cores = 1
     Int memory_gb = 2
@@ -598,6 +648,13 @@ task validate_outputs {
       echo "ichorCNA panel of normals: ~{ichor_panel_of_norm_rds} - PASSED" >> validation_report.txt
     else
       echo "ichorCNA panel of normals: ~{ichor_panel_of_norm_rds} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{dbsnp_vcf}" && -s "~{dbsnp_vcf}" ]]; then
+      echo "dbSNP VCF: ~{dbsnp_vcf} - PASSED" >> validation_report.txt
+    else
+      echo "dbSNP VCF: ~{dbsnp_vcf} - MISSING OR EMPTY" >> validation_report.txt
       validation_passed=false
     fi
 
