@@ -230,8 +230,8 @@ task interleave_fastq {
   command <<<
     # Read in both files in groups of four lines each
     paste <(gunzip -c ~{r1_fq} | paste - - - -) <(gunzip -c ~{r2_fq} | paste - - - -) | \
-    # Interleave lines from each file and include "+" FASTQ lines
-    awk -v OFS="\n" -v FS="\t" '{print($1,$2,"+",$4,$5,$6,"+",$8)}' | \
+    # Interleave lines from each file, modifying quality score characters and including "+" lines
+    awk -v OFS="\n" -v FS="\t" '{gsub(/#/, "!", $4); gsub(/#/, "!", $8); print($1,$2,"+",$4,$5,$6,"+",$8)}' | \
     gzip > interleaved.fastq.gz
   >>>
 
@@ -422,7 +422,7 @@ task download_annotsv_vcf {
     set -euo pipefail
 
     # Download AnnotSV test VCF file
-    wget -q --no-check-certificate -O annotsv_test.vcf https://raw.githubusercontent.com/lgmgeo/AnnotSV/refs/heads/master/share/doc/AnnotSV/Example/test.vcf
+    wget -q --no-check-certificate -O annotsv_test.vcf https://raw.githubusercontent.com/lgmgeo/AnnotSV/refs/heads/master/share/doc/AnnotSV/Example/test2.vcf
   >>>
 
   output {
