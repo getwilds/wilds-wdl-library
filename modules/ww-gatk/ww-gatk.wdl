@@ -33,11 +33,8 @@ workflow gatk_example {
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Reference genome FASTA index (.fai)"
     dbsnp_vcf: "dbSNP VCF file for variant annotation and base recalibration"
-    dbsnp_vcf_index: "Index file for dbSNP VCF"
     known_indels_sites_vcfs: "Array of VCF files with known indel sites for BQSR"
-    known_indels_sites_indices: "Array of index files for known indels VCFs"
     gnomad_vcf: "gnomAD population allele frequency VCF for Mutect2"
-    gnomad_vcf_index: "Index file for gnomAD VCF"
     intervals: "Optional interval list file defining target regions"
   }
 
@@ -46,11 +43,8 @@ workflow gatk_example {
     File? reference_fasta
     File? reference_fasta_index
     File? dbsnp_vcf
-    File? dbsnp_vcf_index
-    Array[File] known_indels_sites_vcfs
-    Array[File] known_indels_sites_indices
-    File gnomad_vcf
-    File gnomad_vcf_index
+    Array[File]? known_indels_sites_vcfs
+    File? gnomad_vcf
     File? intervals
   }
 
@@ -60,25 +54,38 @@ workflow gatk_example {
   }
   File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
   File genome_fasta_index = select_first([reference_fasta_index, download_ref_data.fasta_index])
-  
+
   # Create reference dictionary
-  call create_sequence_dictionary { input: 
+  call create_sequence_dictionary { input:
       reference_fasta = genome_fasta
   }
 
   # Determine which dbSNP vcf to use
-  if (!defined(dbsnp_vcf) || !defined(dbsnp_vcf_index)) {
-    call ww_testdata.download_dbsnp_vcf { }
+  if (!defined(dbsnp_vcf)) {
+    call ww_testdata.download_dbsnp_vcf { input:
+      region = "NC_000001.11:1-10000000",
+      filter_name = "chr1"
+    }
   }
   File final_dbsnp = select_first([dbsnp_vcf, download_dbsnp_vcf.dbsnp_vcf])
-  File final_dbsnp_index = select_first([dbsnp_vcf_index, download_dbsnp_vcf.dbsnp_vcf_index])
 
   # Determine which known indels vcf to use
-  if (!defined(known_indels_sites_vcfs) || !defined(known_indels_sites_indices)) {
-    call ww_testdata.download_known_indels_vcf { }
+  if (!defined(known_indels_sites_vcfs)) {
+    call ww_testdata.download_known_indels_vcf { input:
+      region = "chr1:1-10000000",
+      filter_name = "chr1"
+    }
   }
   Array[File] final_known_indels = select_first([known_indels_sites_vcfs, select_all([download_known_indels_vcf.known_indels_vcf])])
-  Array[File] final_known_indels_index = select_first([known_indels_sites_indices, select_all([download_known_indels_vcf.known_indels_vcf_index])])
+
+  # Determine which gnomad vcf to use
+  if (!defined(gnomad_vcf)) {
+    call ww_testdata.download_gnomad_vcf { input:
+      region = "chr1:1-10000000",
+      filter_name = "chr1"
+    }
+  }
+  File final_gnomad = select_first([gnomad_vcf, download_gnomad_vcf.gnomad_vcf])
 
   # If no samples provided, download demonstration data
   if (!defined(samples)) {
@@ -100,12 +107,10 @@ workflow gatk_example {
         aligned_bam_index = sample.bai,
         intervals = intervals,
         dbsnp_vcf = final_dbsnp,
-        dbsnp_vcf_index = final_dbsnp_index,
         reference_fasta = genome_fasta,
         reference_fasta_index = genome_fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
         known_indels_sites_vcfs = final_known_indels,
-        known_indels_sites_indices = final_known_indels_index,
         output_basename = sample.name + ".recalibrated"
     }
 
@@ -117,7 +122,6 @@ workflow gatk_example {
         reference_fasta_index = genome_fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
         dbsnp_vcf = final_dbsnp,
-        dbsnp_vcf_index = final_dbsnp_index,
         output_basename = sample.name + ".haplotypecaller"
     }
 
@@ -128,8 +132,7 @@ workflow gatk_example {
         reference_fasta = genome_fasta,
         reference_fasta_index = genome_fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
-        gnomad_vcf = gnomad_vcf,
-        gnomad_vcf_index = gnomad_vcf_index,
+        gnomad_vcf = final_gnomad,
         output_basename = sample.name + ".mutect2"
     }
 
@@ -176,12 +179,10 @@ task base_recalibrator {
     aligned_bam_index: "Index file for the input BAM"
     intervals: "Optional interval list file defining target regions"
     dbsnp_vcf: "dbSNP VCF file for known variant sites"
-    dbsnp_vcf_index: "Index file for the dbSNP VCF"
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Index file for the reference FASTA"
     reference_dict: "Reference genome sequence dictionary"
     known_indels_sites_vcfs: "Array of VCF files with known indel sites"
-    known_indels_sites_indices: "Array of index files for known indels VCFs"
     output_basename: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
@@ -192,24 +193,35 @@ task base_recalibrator {
     File aligned_bam_index
     File? intervals
     File dbsnp_vcf
-    File dbsnp_vcf_index
     File reference_fasta
     File reference_fasta_index
     File reference_dict
     Array[File] known_indels_sites_vcfs
-    Array[File] known_indels_sites_indices
     String output_basename
-    Int memory_gb = 16
-    Int cpu_cores = 4
+    Int memory_gb = 8
+    Int cpu_cores = 2
   }
 
   command <<<
     set -eo pipefail
+
+    # Add local symbolic link for reference fasta and dict
+    # If soft links aren't allowed on your HPC system, copy them locally instead
+    ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
+    ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
+    ln -s "~{reference_dict}" "~{basename(reference_dict)}"
     
+    # Generate vcf index files using GATK
+    gatk IndexFeatureFile -I "~{dbsnp_vcf}"
+    known_vcfs=(~{sep=" " known_indels_sites_vcfs})
+    for known_vcf in "${known_vcfs[@]}"; do
+      gatk IndexFeatureFile -I "${known_vcf}"
+    done
+
     # Generate Base Recalibration Table
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       BaseRecalibrator \
-      -R "~{reference_fasta}" \
+      -R "~{basename(reference_fasta)}" \
       -I "~{aligned_bam}" \
       -O "~{output_basename}.recal_data.table" \
       --known-sites "~{dbsnp_vcf}" \
@@ -220,7 +232,7 @@ task base_recalibrator {
     # Apply Base Quality Score Recalibration
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       ApplyBQSR \
-      -R "~{reference_fasta}" \
+      -R "~{basename(reference_fasta)}" \
       -I "~{aligned_bam}" \
       -bqsr "~{output_basename}.recal_data.table" \
       -O "~{output_basename}.bam" \
@@ -261,7 +273,6 @@ task haplotype_caller {
     reference_fasta_index: "Index file for the reference FASTA"
     reference_dict: "Reference genome sequence dictionary"
     dbsnp_vcf: "dbSNP VCF file for variant annotation"
-    dbsnp_vcf_index: "Index file for the dbSNP VCF"
     output_basename: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
@@ -275,7 +286,6 @@ task haplotype_caller {
     File reference_fasta_index
     File reference_dict
     File dbsnp_vcf
-    File dbsnp_vcf_index
     String output_basename
     Int memory_gb = 16
     Int cpu_cores = 4
@@ -284,9 +294,19 @@ task haplotype_caller {
   command <<<
     set -eo pipefail
     
+    # Add local symbolic link for reference fasta and dict
+    # If soft links aren't allowed on your HPC system, copy them locally instead
+    ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
+    ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
+    ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+
+    # Create index for dbSNP vcf
+    gatk IndexFeatureFile -I "~{dbsnp_vcf}"
+
+    # Run HaplotypeCaller    
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       HaplotypeCaller \
-      -R "~{reference_fasta}" \
+      -R "~{basename(reference_fasta)}" \
       -I "~{bam}" \
       -O "~{output_basename}.vcf.gz" \
       --dbsnp "~{dbsnp_vcf}" \
@@ -326,7 +346,6 @@ task mutect2 {
     reference_fasta_index: "Index file for the reference FASTA"
     reference_dict: "Reference genome sequence dictionary"
     gnomad_vcf: "gnomAD population allele frequency VCF for germline resource"
-    gnomad_vcf_index: "Index file for the gnomAD VCF"
     output_basename: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
@@ -340,19 +359,27 @@ task mutect2 {
     File reference_fasta_index
     File reference_dict
     File gnomad_vcf
-    File gnomad_vcf_index
     String output_basename
-    Int memory_gb = 24
-    Int cpu_cores = 4
+    Int memory_gb = 8
+    Int cpu_cores = 2
   }
 
   command <<<
     set -eo pipefail
     
+    # Add local symbolic link for reference fasta and dict
+    # If soft links aren't allowed on your HPC system, copy them locally instead
+    ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
+    ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
+    ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+
+    # Index gnomad VCF
+    gatk IndexFeatureFile -I "~{gnomad_vcf}"
+
     # Run Mutect2
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       Mutect2 \
-      -R "~{reference_fasta}" \
+      -R "~{basename(reference_fasta)}" \
       -I "~{bam}" \
       -O "~{output_basename}.unfiltered.vcf.gz" \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
@@ -365,7 +392,7 @@ task mutect2 {
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       FilterMutectCalls \
       -V "~{output_basename}.unfiltered.vcf.gz" \
-      -R "~{reference_fasta}" \
+      -R "~{basename(reference_fasta)}" \
       -O "~{output_basename}.vcf.gz" \
       --stats "~{output_basename}.unfiltered.vcf.gz.stats" \
       --verbosity WARNING
@@ -457,8 +484,8 @@ task collect_wgs_metrics {
     File reference_fasta_index
     File? intervals
     String output_basename
-    Int memory_gb = 16
-    Int cpu_cores = 4
+    Int memory_gb = 8
+    Int cpu_cores = 2
     Int minimum_mapping_quality = 20
     Int minimum_base_quality = 20
     Int coverage_cap = 250
