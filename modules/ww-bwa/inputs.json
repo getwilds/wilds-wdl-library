@@ -2,16 +2,16 @@
   "bwa_example.samples": [
     {
       "name": "sample1",
-      "r1": "/path/to/your/sample1_R1.fastq.gz",
-      "r2": "/path/to/your/sample1_R2.fastq.gz"
+      "reads": "/path/to/your/sample1_R1.fastq.gz",
+      "mates": "/path/to/your/sample1_R2.fastq.gz"
     },
     {
       "name": "sample2",
-      "r1": "/path/to/your/sample2_R1.fastq.gz",
-      "r2": "/path/to/your/sample2_R2.fastq.gz"
+      "reads": "/path/to/your/sample2_interleaved.fastq.gz"
     }
   ],
   "bwa_example.reference_fasta": "/path/to/your/reference_genome.fasta",
+  "bwa_example.paired": true,
   "bwa_example.cpus": 8,
   "bwa_example.memory_gb": 32
 }
