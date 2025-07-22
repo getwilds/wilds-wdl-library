@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_annotsv_vcf`, `validate_outputs`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `validate_outputs`
 - **Workflow**: `testdata_example` (demonstration workflow that executes all tasks)
 
 ## Tasks
@@ -60,13 +60,32 @@ Downloads specialized reference files for ichorCNA copy number analysis:
 - Centromere location annotations
 - Panel of normals RDS file
 
+### `download_dbsnp_vcf`
+Downloads dbSNP VCF files for GATK workflows with optional region filtering:
+- Downloads from NCBI's latest dbSNP release
+- Converts chromosome names from NCBI format (NC_*) to UCSC format (chr*)
+- Supports region-specific filtering to reduce file size
+- Outputs compressed VCF files ready for variant calling workflows
+
+### `download_known_indels_vcf`
+Downloads known indel VCF files for GATK Base Quality Score Recalibration (BQSR):
+- Downloads Mills and 1000 Genomes gold standard indels for hg38
+- Supports region-specific filtering
+- Essential for GATK best practices variant calling workflows
+
+### `download_gnomad_vcf`
+Downloads gnomAD (Genome Aggregation Database) VCF files for population frequency annotation:
+- Downloads allele frequency-only gnomAD data for hg38
+- Used for filtering common variants in variant calling workflows
+- Supports region-specific filtering for targeted analysis
+
 ### `download_annotsv_vcf`
 Downloads test VCF files for structural variant annotation workflows from the AnnotSV repository.
 
 ### `validate_outputs`
 Validates all downloaded test data files to ensure they exist and are non-empty.
 
-**Inputs**: All 15 output files from the download tasks
+**Inputs**: All 18 output files from the download tasks
 **Outputs**: `report` (File): Validation summary confirming file presence and basic integrity
 
 ## Usage
@@ -132,6 +151,24 @@ call ichor_tasks.run_ichor {
 }
 ```
 
+**Variant calling with GATK best practices**:
+```wdl
+call testdata.download_dbsnp_vcf {
+  input:
+    region = "chr1:1-10000000",
+    filter_name = "chr1"
+}
+call testdata.download_known_indels_vcf {
+  input:
+    region = "chr1:1-10000000", 
+    filter_name = "chr1"
+}
+call gatk_tasks.base_recalibrator {
+  input:
+    known_sites = [download_dbsnp_vcf.dbsnp_vcf, download_known_indels_vcf.known_indels_vcf]
+}
+```
+
 **Variant annotation**:
 ```wdl
 call testdata.download_annotsv_vcf { }
@@ -143,7 +180,10 @@ call annotsv_tasks.annotate_variants {
 
 **CRAM processing workflows**:
 ```wdl
-call testdata.download_cram_data { }
+call testdata.download_cram_data {
+  input:
+    ref_fasta = download_ref_data.fasta
+}
 call my_cram_analysis {
   input:
     input_cram = download_cram_data.cram,
@@ -192,7 +232,7 @@ call my_bam_analysis {
 **Inputs**:
 - `r1_fq` (File): R1 FASTQ file for paired-end sequencing
 - `r2_fq` (File): R2 FASTQ file for paired-end sequencing
-- `cpu_cores` (Int): CPU allocation (default: 1)
+- `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
@@ -201,7 +241,8 @@ call my_bam_analysis {
 ### download_cram_data
 
 **Inputs**:
-- `cpu_cores` (Int): CPU allocation (default: 1)
+- `ref_fasta` (File): Reference genome FASTA file to use for CRAM conversion
+- `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
@@ -211,7 +252,7 @@ call my_bam_analysis {
 ### download_bam_data
 
 **Inputs**:
-- `cpu_cores` (Int): CPU allocation (default: 1)
+- `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
@@ -229,6 +270,39 @@ call my_bam_analysis {
 - `wig_map` (File): Mappability in 500kb bins
 - `centromeres` (File): Centromere coordinates
 - `panel_of_norm_rds` (File): Panel of normals for normalization
+
+### download_dbsnp_vcf
+
+**Inputs**:
+- `region` (String?): Chromosomal region to filter (e.g., "NC_000001.11:1-10000000")
+- `filter_name` (String): Filename tag for output (default: "hg38")
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `dbsnp_vcf` (File): Filtered and compressed dbSNP VCF file
+
+### download_known_indels_vcf
+
+**Inputs**:
+- `region` (String?): Chromosomal region to filter (e.g., "chr1:1-10000000")
+- `filter_name` (String): Filename tag for output (default: "hg38")
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `known_indels_vcf` (File): Filtered and compressed known indels VCF file
+
+### download_gnomad_vcf
+
+**Inputs**:
+- `region` (String?): Chromosomal region to filter (e.g., "chr1:1-10000000")
+- `filter_name` (String): Filename tag for output (default: "hg38")
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `gnomad_vcf` (File): Filtered and compressed gnomAD VCF file
 
 ### download_annotsv_vcf
 
@@ -257,6 +331,9 @@ call my_bam_analysis {
 - `ichor_map_wig` (File): ichorCNA mapping quality file to validate
 - `ichor_centromeres` (File): ichorCNA centromere locations file to validate
 - `ichor_panel_of_norm_rds` (File): ichorCNA panel of normals file to validate
+- `dbsnp_vcf` (File): dbSNP VCF to validate
+- `known_indels_vcf` (File): Known indels VCF to validate
+- `gnomad_vcf` (File): gnomAD VCF to validate
 - `annotsv_test_vcf` (File): AnnotSV test VCF file to validate
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
@@ -272,18 +349,20 @@ All reference data is downloaded from authoritative public repositories:
 - **GATK Test Data**: Example FASTQ, CRAM, and BAM files
 - **ichorCNA Repository**: Copy number analysis references
 - **AnnotSV Repository**: Structural variant test data
+- **NCBI dbSNP**: Latest dbSNP variant database
+- **GATK Resource Bundle**: Known indels and gnomAD population frequencies
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
 
 ## Requirements
 
 ### Runtime Dependencies
-- **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`
-- **Tools**: samtools (for FASTA indexing and BAM processing), wget, aws CLI
+- **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`, `getwilds/bcftools:1.19`
+- **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), wget, aws CLI
 - **Network**: Internet access required for data downloads
 
 ### Resource Requirements
-- **CPU**: 1 core (configurable)
+- **CPU**: 1-2 cores (configurable)
 - **Memory**: 2-4 GB (configurable)
 - **Storage**: Varies by dataset (chr22: ~50MB, chr1: ~250MB)
 
@@ -295,6 +374,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-bwa**: DNA alignment (requires reference FASTA)
 - **ww-ichorcna**: Copy number analysis (requires ichorCNA reference files)
 - **ww-annotsv**: Structural variant annotation (requires test VCF)
+- **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:
 - Consistent data across all WILDS workflows
