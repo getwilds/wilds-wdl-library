@@ -193,15 +193,15 @@ task bwa_mem {
 
   if [[ "~{mates}" == "" && "~{paired_end}" == "true" ]]; then
       # Interleaved (paired-end)
-      bwa mem -p -v 3 -t ~{cpu_threads} -M -R "@RG\tID:~{name}\tSM:~{name}\tPL:illumina" \
+      bwa mem -p -Y -v 3 -t ~{cpu_threads} -M -R "@RG\tID:~{name}\tSM:~{name}\tPL:illumina" \
         "bwa_index/~{ref_name}" "~{reads}" > "~{name}.sam"
     elif [[ "~{mates}" == "" && "~{paired_end}" == "false" ]]; then
       # Single-end
-      bwa mem -v 3 -t ~{cpu_threads} -M -R "@RG\tID:~{name}\tSM:~{name}\tPL:illumina" \
+      bwa mem -Y -v 3 -t ~{cpu_threads} -M -R "@RG\tID:~{name}\tSM:~{name}\tPL:illumina" \
         "bwa_index/~{ref_name}" "~{reads}" > "~{name}.sam"
     elif [[ "~{mates}" != "" && "~{paired_end}" == "true" ]]; then
       # Paired-end with forward and reverse fastqs
-      bwa mem -v 3 -t ~{cpu_threads} -M -R "@RG\tID:~{name}\tSM:~{name}\tPL:illumina" \
+      bwa mem -Y -v 3 -t ~{cpu_threads} -M -R "@RG\tID:~{name}\tSM:~{name}\tPL:illumina" \
         "bwa_index/~{ref_name}" "~{reads}" "~{mates}" > "~{name}.sam"
     else
       echo "Invalid input: Single-end experiments should only have one input FASTQ file."
