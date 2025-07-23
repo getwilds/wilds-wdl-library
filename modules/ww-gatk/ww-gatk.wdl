@@ -235,12 +235,20 @@ task base_recalibrator {
       -R "~{basename(reference_fasta)}" \
       -I "~{aligned_bam}" \
       -bqsr "~{output_basename}.recal_data.table" \
-      -O "~{output_basename}.bam" \
+      -O "~{output_basename}.temp.bam" \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       --verbosity WARNING
 
-    # Index the recalibrated BAM
+    # Clean BAM to prevent Manta alignment name collisions
+    samtools view -h -F 1024 "~{output_basename}.temp.bam" | \
+    awk '!seen[$1]++ || /^@/' | \
+    samtools view -bS - > "~{output_basename}.bam"
+    
+    # Index resulting bam file
     samtools index "~{output_basename}.bam"
+    
+    # Clean up temporary file
+    rm "~{output_basename}.temp.bam"
   >>>
 
   output {
