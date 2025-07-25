@@ -121,6 +121,9 @@ task crams_to_fastq {
     samtools merge -@ ~{cpu_cores} --reference "~{ref}" -f "~{name}.merged.cram" ~{sep=" " cram_files} && \
     samtools collate -u -O "~{name}.merged.cram" | \
     samtools fastq --reference "~{ref}" -1 "~{name}_R1.fastq.gz" -2 "~{name}_R2.fastq.gz" -0 /dev/null -s /dev/null -
+
+    # Cleaning up merged CRAM file to save space
+    rm -f "~{name}.merged.cram"
   >>>
 
   output {
