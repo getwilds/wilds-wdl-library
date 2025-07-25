@@ -47,7 +47,7 @@ workflow gatk_example {
     Array[File]? known_indels_sites_vcfs
     File? gnomad_vcf
     File? intervals
-    Int scatter_count = 4 # Only scattering over 4 intervals for testing purposes
+    Int scatter_count = 2 # Only scattering over 2 intervals for testing purposes
   }
 
   # Determine which genome files to use
@@ -492,8 +492,8 @@ task haplotype_caller {
     File reference_dict
     File dbsnp_vcf
     String output_basename
-    Int memory_gb = 16
-    Int cpu_cores = 4
+    Int memory_gb = 8
+    Int cpu_cores = 2
   }
 
   command <<<
