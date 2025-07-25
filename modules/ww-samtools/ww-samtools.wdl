@@ -17,7 +17,8 @@ workflow samtools_example {
     description: "WDL workflow for processing genomic files with Samtools"
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-samtools"
     outputs: {
-        fastq_results: "FASTQ output files for each sample",
+        r1_fastqs: "Array of R1 FASTQ files generated from CRAM/BAM/SAM files",
+        r2_fastqs: "Array of R2 FASTQ files generated from CRAM/BAM/SAM files",
         validation_report: "Validation report confirming all expected outputs were generated"
     }
   }
@@ -77,21 +78,24 @@ workflow samtools_example {
   }
 
   call validate_outputs { input:
-      fastq_files = crams_to_fastq.fastq_file,
+      r1_fastqs = crams_to_fastq.r1_fastq,
+      r2_fastqs = crams_to_fastq.r2_fastq,
       sample_names = crams_to_fastq.sample_name
   }
 
   output {
-    Array[File] fastq_results = crams_to_fastq.fastq_file
+    Array[File] r1_fastqs = crams_to_fastq.r1_fastq
+    Array[File] r2_fastqs = crams_to_fastq.r2_fastq
     File validation_report = validate_outputs.report
   }
 }
 
 task crams_to_fastq {
   meta {
-    description: "Merge CRAM/BAM/SAM files and convert to FASTQ using samtools."
+    description: "Merge CRAM/BAM/SAM files and convert to FASTQ's using samtools."
     outputs: {
-        fastq_file: "FASTQ file generated from merged CRAM/BAM/SAM file",
+        r1_fastq: "R1 FASTQ file generated from merged CRAM/BAM/SAM file",
+        r2_fastq: "R2 FASTQ file generated from merged CRAM/BAM/SAM file",
         sample_name: "Sample name that was processed"
     }
   }
@@ -115,12 +119,16 @@ task crams_to_fastq {
   command <<<
     # Merge CRAM/BAM/SAM files if more than one, then convert to FASTQ
     samtools merge -@ ~{cpu_cores} --reference "~{ref}" -f "~{name}.merged.cram" ~{sep=" " cram_files} && \
-    samtools sort -n "~{name}.merged.cram" && \
-    samtools fastq --reference "~{ref}" -o "~{name}.fastq.gz" "~{name}.merged.cram"
+    samtools collate -u -O "~{name}.merged.cram" | \
+    samtools fastq --reference "~{ref}" -1 "~{name}_R1.fastq.gz" -2 "~{name}_R2.fastq.gz" -0 /dev/null -s /dev/null -
+
+    # Cleaning up merged CRAM file to save space
+    rm -f "~{name}.merged.cram"
   >>>
 
   output {
-    File fastq_file = "~{name}.fastq.gz"
+    File r1_fastq = "~{name}_R1.fastq.gz"
+    File r2_fastq = "~{name}_R2.fastq.gz"
     String sample_name = "~{name}"
   }
 
@@ -140,12 +148,14 @@ task validate_outputs {
   }
 
   parameter_meta {
-    fastq_files: "Array of FASTQ files to check"
+    r1_fastqs: "Array of R1 FASTQ files to check"
+    r2_fastqs: "Array of R2 FASTQ files to check"
     sample_names: "Array of sample names corresponding to FASTQ files"
   }
 
   input {
-    Array[File] fastq_files
+    Array[File] r1_fastqs
+    Array[File] r2_fastqs
     Array[String] sample_names
   }
 
@@ -155,23 +165,34 @@ task validate_outputs {
     echo "=== Samtools FASTQ Validation Report ===" > samtools_validation_report.txt
     echo "" >> samtools_validation_report.txt
 
-    fastq_files=(~{sep=" " fastq_files})
+    r1_fastqs=(~{sep=" " r1_fastqs})
+    r2_fastqs=(~{sep=" " r2_fastqs})
     sample_names=(~{sep=" " sample_names})
 
     validation_passed=true
 
     for i in "${!sample_names[@]}"; do
       sample="${sample_names[$i]}"
-      fastq="${fastq_files[$i]}"
+      r1="${r1_fastqs[$i]}"
+      r2="${r2_fastqs[$i]}"
 
       echo "--- Sample: $sample ---" >> samtools_validation_report.txt
 
-      if [[ -f "$fastq" && -s "$fastq" ]]; then
-        size=$(stat -c%s "$fastq")
-        lines=$(zcat "$fastq" | wc -l)
-        echo "  FASTQ: PASS (${size} bytes, ${lines} lines)" >> samtools_validation_report.txt
+      if [[ -f "$r1" && -s "$r1" ]]; then
+        size=$(stat -c%s "$r1")
+        lines=$(zcat "$r1" | wc -l)
+        echo "  R1 FASTQ: PASS (${size} bytes, ${lines} lines)" >> samtools_validation_report.txt
       else
-        echo "  FASTQ: FAIL - MISSING OR EMPTY" >> samtools_validation_report.txt
+        echo "  R1 FASTQ: FAIL - MISSING OR EMPTY" >> samtools_validation_report.txt
+        validation_passed=false
+      fi
+
+      if [[ -f "$r2" && -s "$r2" ]]; then
+        size=$(stat -c%s "$r2")
+        lines=$(zcat "$r2" | wc -l)
+        echo "  R2 FASTQ: PASS (${size} bytes, ${lines} lines)" >> samtools_validation_report.txt
+      else
+        echo "  R2 FASTQ: FAIL - MISSING OR EMPTY" >> samtools_validation_report.txt
         validation_passed=false
       fi
 

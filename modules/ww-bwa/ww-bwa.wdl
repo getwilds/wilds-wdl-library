@@ -133,6 +133,9 @@ task bwa_index {
     echo "Building BWA index..." && \
     bwa index "bwa_index/~{ref_name}" && \
     tar -czf bwa_index.tar.gz bwa_index/*
+
+    # Cleaning up the bwa_index directory to save space, only need the tarball
+    rm -rf bwa_index
   >>>
 
   output {
@@ -191,7 +194,7 @@ task bwa_mem {
 
     echo "Starting BWA alignment..."
 
-  if [[ "~{mates}" == "" && "~{paired_end}" == "true" ]]; then
+    if [[ "~{mates}" == "" && "~{paired_end}" == "true" ]]; then
       # Interleaved (paired-end)
       bwa mem -p -v 3 -t ~{cpu_threads} -M -R "@RG\tID:~{name}\tSM:~{name}\tPL:illumina" \
         "bwa_index/~{ref_name}" "~{reads}" > "~{name}.sam"
@@ -208,8 +211,13 @@ task bwa_mem {
       exit 1
     fi
 
+    # Converting to BAM, sorting, and indexing
     samtools sort -@ ~{cpu_threads - 1} -o "~{name}.sorted_aligned.bam" "~{name}.sam"
     samtools index "~{name}.sorted_aligned.bam"
+
+    # Cleaning up BWA index and initial SAM file to save space
+    rm -rf bwa_index  # Remove BWA index directory
+    rm -f "~{name}.sam"  # Remove initial SAM file
   >>>
 
   output {
