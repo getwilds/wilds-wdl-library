@@ -208,8 +208,12 @@ task bwa_mem {
       exit 1
     fi
 
+    # Converting to BAM, sorting, and indexing
     samtools sort -@ ~{cpu_threads - 1} -o "~{name}.sorted_aligned.bam" "~{name}.sam"
     samtools index "~{name}.sorted_aligned.bam"
+    
+    # Cleaning up initial SAM file to save space
+    rm -f "~{name}.sam"
   >>>
 
   output {
