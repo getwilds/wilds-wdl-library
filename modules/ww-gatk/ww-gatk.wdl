@@ -36,7 +36,7 @@ workflow gatk_example {
     known_indels_sites_vcfs: "Array of VCF files with known indel sites for BQSR"
     gnomad_vcf: "gnomAD population allele frequency VCF for Mutect2"
     intervals: "Optional interval list file defining target regions"
-    scatter_count: "Number of intervals to create for parallelization when scatter_intervals not provided (default: 50)"
+    scatter_count: "Number of intervals to create for parallelization"
   }
 
   input {
@@ -47,7 +47,7 @@ workflow gatk_example {
     Array[File]? known_indels_sites_vcfs
     File? gnomad_vcf
     File? intervals
-    Int scatter_count = 24
+    Int scatter_count = 4 # Only scattering over 4 intervals for testing purposes
   }
 
   # Determine which genome files to use
@@ -215,7 +215,7 @@ task split_intervals {
     reference_fasta_index: "Reference genome FASTA index file"
     reference_dict: "Reference genome sequence dictionary"
     intervals: "Optional interval list file defining target regions to split"
-    scatter_count: "Number of interval files to create (default: 50)"
+    scatter_count: "Number of interval files to create (default: 24)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
@@ -225,7 +225,7 @@ task split_intervals {
     File reference_fasta_index
     File reference_dict
     File? intervals
-    Int scatter_count = 50
+    Int scatter_count = 24
     Int memory_gb = 8
     Int cpu_cores = 2
   }
