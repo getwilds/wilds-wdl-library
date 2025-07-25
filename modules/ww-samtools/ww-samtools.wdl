@@ -89,9 +89,10 @@ workflow samtools_example {
 
 task crams_to_fastq {
   meta {
-    description: "Merge CRAM/BAM/SAM files and convert to FASTQ using samtools."
+    description: "Merge CRAM/BAM/SAM files and convert to FASTQ's using samtools."
     outputs: {
-        fastq_file: "FASTQ file generated from merged CRAM/BAM/SAM file",
+        r1_fastq: "R1 FASTQ file generated from merged CRAM/BAM/SAM file",
+        r2_fastq: "R2 FASTQ file generated from merged CRAM/BAM/SAM file",
         sample_name: "Sample name that was processed"
     }
   }
@@ -115,12 +116,13 @@ task crams_to_fastq {
   command <<<
     # Merge CRAM/BAM/SAM files if more than one, then convert to FASTQ
     samtools merge -@ ~{cpu_cores} --reference "~{ref}" -f "~{name}.merged.cram" ~{sep=" " cram_files} && \
-    samtools sort -n "~{name}.merged.cram" && \
-    samtools fastq --reference "~{ref}" -o "~{name}.fastq.gz" "~{name}.merged.cram"
+    samtools collate -u -O "~{name}.merged.cram" | \
+    samtools fastq --reference "~{ref}" -1 "~{name}_R1.fastq.gz" -2 "~{name}_R2.fastq.gz" -0 /dev/null -s /dev/null -
   >>>
 
   output {
-    File fastq_file = "~{name}.fastq.gz"
+    File r1_fastq = "~{name}_R1.fastq.gz"
+    File r2_fastq = "~{name}_R2.fastq.gz"
     String sample_name = "~{name}"
   }
 
