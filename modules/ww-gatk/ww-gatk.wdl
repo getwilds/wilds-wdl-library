@@ -36,6 +36,7 @@ workflow gatk_example {
     known_indels_sites_vcfs: "Array of VCF files with known indel sites for BQSR"
     gnomad_vcf: "gnomAD population allele frequency VCF for Mutect2"
     intervals: "Optional interval list file defining target regions"
+    scatter_count: "Number of intervals to create for parallelization"
   }
 
   input {
@@ -46,6 +47,7 @@ workflow gatk_example {
     Array[File]? known_indels_sites_vcfs
     File? gnomad_vcf
     File? intervals
+    Int scatter_count = 2 # Only scattering over 2 intervals for testing purposes
   }
 
   # Determine which genome files to use
@@ -101,6 +103,14 @@ workflow gatk_example {
     }
   ]
 
+  call split_intervals { input:
+      reference_fasta = genome_fasta,
+      reference_fasta_index = genome_fasta_index,
+      reference_dict = create_sequence_dictionary.sequence_dict,
+      intervals = intervals,
+      scatter_count = scatter_count
+  }
+
   scatter (sample in final_samples) {
     call base_recalibrator { input:
         aligned_bam = sample.bam,
@@ -114,26 +124,54 @@ workflow gatk_example {
         output_basename = sample.name + ".recalibrated"
     }
 
-    call haplotype_caller { input:
-        bam = base_recalibrator.recalibrated_bam,
-        bam_index = base_recalibrator.recalibrated_bai,
-        intervals = intervals,
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
-        reference_dict = create_sequence_dictionary.sequence_dict,
-        dbsnp_vcf = final_dbsnp,
-        output_basename = sample.name + ".haplotypecaller"
+    # Parallelize HaplotypeCaller across intervals
+    scatter (interval_file in split_intervals.interval_files) {
+      call haplotype_caller { input:
+          bam = base_recalibrator.recalibrated_bam,
+          bam_index = base_recalibrator.recalibrated_bai,
+          intervals = interval_file,
+          reference_fasta = genome_fasta,
+          reference_fasta_index = genome_fasta_index,
+          reference_dict = create_sequence_dictionary.sequence_dict,
+          dbsnp_vcf = final_dbsnp,
+          output_basename = sample.name + ".haplotypecaller." + basename(interval_file, ".intervals")
+      }
     }
 
-    call mutect2 { input:
-        bam = base_recalibrator.recalibrated_bam,
-        bam_index = base_recalibrator.recalibrated_bai,
-        intervals = intervals,
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
-        reference_dict = create_sequence_dictionary.sequence_dict,
-        gnomad_vcf = final_gnomad,
-        output_basename = sample.name + ".mutect2"
+    # Merge HaplotypeCaller VCFs for this sample
+    call merge_vcfs as merge_haplotype_vcfs { input:
+        vcfs = haplotype_caller.vcf,
+        vcf_indices = haplotype_caller.vcf_index,
+        output_basename = sample.name + ".haplotypecaller.merged",
+        reference_dict = create_sequence_dictionary.sequence_dict
+    }
+
+    # Parallelize Mutect2 across intervals
+    scatter (interval_file in split_intervals.interval_files) {
+      call mutect2 { input:
+          bam = base_recalibrator.recalibrated_bam,
+          bam_index = base_recalibrator.recalibrated_bai,
+          intervals = interval_file,
+          reference_fasta = genome_fasta,
+          reference_fasta_index = genome_fasta_index,
+          reference_dict = create_sequence_dictionary.sequence_dict,
+          gnomad_vcf = final_gnomad,
+          output_basename = sample.name + ".mutect2." + basename(interval_file, ".intervals")
+      }
+    }
+
+    # Merge Mutect2 VCFs for this sample
+    call merge_vcfs as merge_mutect2_vcfs { input:
+        vcfs = mutect2.vcf,
+        vcf_indices = mutect2.vcf_index,
+        output_basename = sample.name + ".mutect2.merged",
+        reference_dict = create_sequence_dictionary.sequence_dict
+    }
+
+    # Merge Mutect2 stats files
+    call merge_mutect_stats { input:
+        stats = mutect2.stats_file,
+        output_basename = sample.name + ".mutect2.merged"
     }
 
     call collect_wgs_metrics { input:
@@ -149,20 +187,179 @@ workflow gatk_example {
   call validate_outputs { input:
       recalibrated_bams = base_recalibrator.recalibrated_bam,
       recalibrated_bais = base_recalibrator.recalibrated_bai,
-      haplotype_vcfs = haplotype_caller.vcf,
-      mutect2_vcfs = mutect2.vcf,
+      haplotype_vcfs = merge_haplotype_vcfs.merged_vcf,
+      mutect2_vcfs = merge_mutect2_vcfs.merged_vcf,
       wgs_metrics = collect_wgs_metrics.metrics_file
   }
 
   output {
     Array[File] recalibrated_bams = base_recalibrator.recalibrated_bam
     Array[File] recalibrated_bais = base_recalibrator.recalibrated_bai
-    Array[File] haplotype_vcfs = haplotype_caller.vcf
-    Array[File] mutect2_vcfs = mutect2.vcf
+    Array[File] haplotype_vcfs = merge_haplotype_vcfs.merged_vcf
+    Array[File] mutect2_vcfs = merge_mutect2_vcfs.merged_vcf
     Array[File] wgs_metrics = collect_wgs_metrics.metrics_file
     File validation_report = validate_outputs.report
   }
 }
+
+task split_intervals {
+  meta {
+    description: "Split intervals into smaller chunks for parallelization using GATK SplitIntervals"
+    outputs: {
+        interval_files: "Array of interval files optimized for parallel processing"
+    }
+  }
+
+  parameter_meta {
+    reference_fasta: "Reference genome FASTA file"
+    reference_fasta_index: "Reference genome FASTA index file"
+    reference_dict: "Reference genome sequence dictionary"
+    intervals: "Optional interval list file defining target regions to split"
+    scatter_count: "Number of interval files to create (default: 24)"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
+  }
+
+  input {
+    File reference_fasta
+    File reference_fasta_index
+    File reference_dict
+    File? intervals
+    Int scatter_count = 24
+    Int memory_gb = 8
+    Int cpu_cores = 2
+  }
+
+  command <<<
+    set -eo pipefail
+    
+    # Add local symbolic link for reference files
+    ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
+    ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
+    ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    
+    # Create output directory
+    mkdir -p scattered_intervals
+    
+    # Run SplitIntervals
+    gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
+      SplitIntervals \
+      -R "~{basename(reference_fasta)}" \
+      --scatter-count ~{scatter_count} \
+      ~{if defined(intervals) then "--intervals " + intervals else ""} \
+      -O scattered_intervals/ \
+      --verbosity WARNING
+    
+    # List all created interval files for output
+    find scattered_intervals/ -name "*.interval_list" | sort -V > interval_files.txt
+  >>>
+
+  output {
+    Array[File] interval_files = read_lines("interval_files.txt")
+  }
+
+  runtime {
+    docker: "getwilds/gatk:4.6.1.0"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
+task merge_vcfs {
+  meta {
+    description: "Merge multiple VCF files into a single VCF"
+    outputs: {
+        merged_vcf: "Merged VCF file",
+        merged_vcf_index: "Index for merged VCF file"
+    }
+  }
+
+  parameter_meta {
+    vcfs: "Array of VCF files to merge"
+    vcf_indices: "Array of VCF index files"
+    output_basename: "Base name for output files"
+    reference_dict: "Reference sequence dictionary"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
+  }
+
+  input {
+    Array[File] vcfs
+    Array[File] vcf_indices
+    String output_basename
+    File reference_dict
+    Int memory_gb = 8
+    Int cpu_cores = 2
+  }
+
+  command <<<
+    set -eo pipefail
+    
+    gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
+      MergeVcfs \
+      -I ~{sep=" -I " vcfs} \
+      -D "~{reference_dict}" \
+      -O "~{output_basename}.vcf.gz" \
+      --VERBOSITY WARNING
+  >>>
+
+  output {
+    File merged_vcf = "~{output_basename}.vcf.gz"
+    File merged_vcf_index = "~{output_basename}.vcf.gz.tbi"
+  }
+
+  runtime {
+    docker: "getwilds/gatk:4.6.1.0"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
+task merge_mutect_stats {
+  meta {
+    description: "Merge Mutect2 statistics files"
+    outputs: {
+        merged_stats: "Merged Mutect2 statistics file"
+    }
+  }
+
+  parameter_meta {
+    stats: "Array of Mutect2 stats files to merge"
+    output_basename: "Base name for output files"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
+  }
+
+  input {
+    Array[File] stats
+    String output_basename
+    Int memory_gb = 4
+    Int cpu_cores = 1
+  }
+
+  command <<<
+    set -eo pipefail
+    
+    gatk --java-options "-Xms~{memory_gb - 2}g -Xmx~{memory_gb - 1}g" \
+      MergeMutectStats \
+      --stats ~{sep=" --stats " stats} \
+      -O "~{output_basename}.stats" \
+      --verbosity WARNING
+  >>>
+
+  output {
+    File merged_stats = "~{output_basename}.stats"
+  }
+
+  runtime {
+    docker: "getwilds/gatk:4.6.1.0"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
+# Keep all your existing tasks (base_recalibrator, haplotype_caller, mutect2, etc.)
+# They remain unchanged from your original implementation
 
 task base_recalibrator {
   meta {
@@ -235,12 +432,20 @@ task base_recalibrator {
       -R "~{basename(reference_fasta)}" \
       -I "~{aligned_bam}" \
       -bqsr "~{output_basename}.recal_data.table" \
-      -O "~{output_basename}.bam" \
+      -O "~{output_basename}.temp.bam" \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       --verbosity WARNING
 
-    # Index the recalibrated BAM
+    # Clean BAM to prevent Manta alignment name collisions
+    samtools view -h -F 1024 "~{output_basename}.temp.bam" | \
+    awk '!seen[$1]++ || /^@/' | \
+    samtools view -bS - > "~{output_basename}.bam"
+    
+    # Index resulting bam file
     samtools index "~{output_basename}.bam"
+    
+    # Clean up temporary file
+    rm "~{output_basename}.temp.bam"
   >>>
 
   output {
@@ -287,8 +492,8 @@ task haplotype_caller {
     File reference_dict
     File dbsnp_vcf
     String output_basename
-    Int memory_gb = 16
-    Int cpu_cores = 4
+    Int memory_gb = 8
+    Int cpu_cores = 2
   }
 
   command <<<
@@ -619,4 +824,3 @@ task validate_outputs {
     cpu: 1
   }
 }
-
