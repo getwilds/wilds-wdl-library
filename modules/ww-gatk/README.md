@@ -103,7 +103,7 @@ Automatically splits genome intervals into optimal chunks for parallel processin
 - `reference_fasta_index` (File): Index file for the reference FASTA
 - `reference_dict` (File): Reference genome sequence dictionary
 - `intervals` (File?): Optional interval list file defining target regions to split
-- `scatter_count` (Int): Number of interval files to create (default: 50)
+- `scatter_count` (Int): Number of interval files to create (default: 24)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 
