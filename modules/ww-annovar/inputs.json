@@ -1,0 +1,9 @@
+{
+  "annovar_example.vcfs": [
+    "/path/to/your/variants_sample1.vcf.gz",
+    "/path/to/your/variants_sample2.vcf.gz"
+  ],
+  "annovar_example.ref_name": "hg38",
+  "annovar_example.protocols": "refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome",
+  "annovar_example.operation": "g,f,f,f,f,f"
+}
