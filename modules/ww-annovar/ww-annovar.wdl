@@ -24,12 +24,6 @@ workflow annovar_example {
     ref_name: "Reference genome name (hg19 or hg38)"
     protocols: "Comma-separated list of annotation protocols (e.g., 'refGene,gnomad211_exome,clinvar_20210123')"
     operation: "Comma-separated list of operations corresponding to protocols (e.g. 'g,f,f')"
-    build_ver: "Genome build version (hg19 or hg38)"
-    vcf_input: "Whether input is VCF format (true) or tab-delimited (false)"
-    include_info: "Include INFO field annotations in output VCF"
-    remove_temp: "Remove intermediate files to save disk space"
-    cpu_cores: "Number of CPU cores allocated for each task"
-    memory_gb: "Memory allocated for each task in GB"
   }
 
   input {
@@ -51,8 +45,7 @@ workflow annovar_example {
   Array[File] vcfs_to_process = if defined(vcfs) then select_first([vcfs]) else [select_first([download_gnomad_vcf.gnomad_vcf])]
 
   scatter (vcf in vcfs_to_process) {
-    call annovar_annotate { 
-      input:
+    call annovar_annotate { input:
         vcf_to_annotate = vcf,
         ref_name = ref_name,
         annovar_protocols = protocols,
@@ -60,8 +53,7 @@ workflow annovar_example {
     }
   }
 
-  call validate_outputs { 
-    input:
+  call validate_outputs { input:
       annotated_vcf_files = annovar_annotate.annotated_vcf,
       annotated_table_files = annovar_annotate.annotated_table
   }
@@ -87,7 +79,6 @@ task annovar_annotate {
     ref_name: "Reference genome build name for Annovar annotation (e.g., 'hg38', 'hg19')"
     annovar_protocols: "Comma-separated list of annotation protocols to apply"
     annovar_operation: "Comma-separated list of operations corresponding to the protocols"
-    docker: "Docker container image for Annovar"
   }
 
   input {
@@ -126,6 +117,9 @@ task annovar_annotate {
 task validate_outputs {
   meta {
     description: "Validate Annovar outputs and generate summary statistics"
+    outputs: {
+        report: "Validation report confirming all expected outputs were generated"
+    }
   }
 
   parameter_meta {
@@ -148,7 +142,7 @@ task validate_outputs {
     # Validate VCF files
     echo "VCF Files Validation:" >> validation_report.txt
     vcf_count=0
-    for vcf in ~{sep=' ' annotated_vcf_files}; do
+    for vcf in ~{sep=" " annotated_vcf_files}; do
       vcf_count=$((vcf_count + 1))
       echo "  File $vcf_count: $(basename $vcf)" >> validation_report.txt
       
@@ -175,7 +169,7 @@ task validate_outputs {
     # Validate annotation table files
     echo "Annotation Table Files Validation:" >> validation_report.txt
     table_count=0
-    for table in ~{sep=' ' annotated_table_files}; do
+    for table in ~{sep=" " annotated_table_files}; do
       table_count=$((table_count + 1))
       echo "  File $table_count: $(basename $table)" >> validation_report.txt
       
@@ -204,13 +198,13 @@ task validate_outputs {
     echo "Validation completed: $(date)" >> validation_report.txt
   >>>
 
+  output {
+    File report = "validation_report.txt"
+  }
+
   runtime {
     docker: "getwilds/bcftools:1.19"
     cpu: 1
     memory: "2 GB"
-  }
-
-  output {
-    File report = "validation_report.txt"
   }
 }
