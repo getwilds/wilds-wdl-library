@@ -76,10 +76,12 @@ WILDS vignettes and workflows use GitHub URLs for imports, providing several adv
 ### Modules
 | Module | Tool | Container | Description |
 |--------|------|-----------|-------------|
+| `ww-annovar` | Variant Annotator | `getwilds/annovar:GRCh38` | Annotate genetic variants with ANNOVAR |
 | `ww-annotsv` | Structural Variant Annotator | `getwilds/annotsv:3.4.4` | Annotate structural variants with AnnotSV |
 | `ww-bcftools` | Utilities for Variant Calls | `getwilds/bcftools:1.19` | Call and analyze variants with BCFtools |
 | `ww-bedtools` | Utilities for Genomic Intervals | `getwilds/bedtools:2.31.1` | Work with genomic intervals |
 | `ww-bwa` | BWA Aligner | `getwilds/bwa:0.7.17` | Alignment with the Burrows-Wheeler Aligner |
+| `ww-delly` | Structural Variant Caller | `getwilds/delly:1.2.9` | Call structural variants with Delly |
 | `ww-gatk` | GATK Variant Calling | `getwilds/gatk:4.6.1.0` | Variant calling and processing with GATK |
 | `ww-ichorcna` | Tumor Fraction Estimator | `getwilds/ichorcna:0.2.0` | Estimate tumor fraction with ichorCNA |
 | `ww-manta` | Structural Variant Caller | `getwilds/manta:1.6.0` | Call structural variants with Manta |
