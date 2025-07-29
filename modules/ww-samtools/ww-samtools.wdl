@@ -19,8 +19,6 @@ workflow samtools_example {
     outputs: {
         r1_fastqs: "Array of R1 FASTQ files generated from CRAM/BAM/SAM files",
         r2_fastqs: "Array of R2 FASTQ files generated from CRAM/BAM/SAM files",
-        interval_bams: "Array of BAM files split by genomic intervals",
-        interval_bam_indices: "Array of BAM index files for the split BAMs",
         validation_report: "Validation report confirming all expected outputs were generated"
     }
   }
@@ -28,9 +26,6 @@ workflow samtools_example {
   parameter_meta {
     samples: "Array of sample objects, each containing name and paths to CRAM/BAM/SAM files"
     reference_fasta: "Reference genome FASTA file"
-    interval_bed: "Optional BED file defining genomic intervals for splitting BAM files"
-    test_bam: "Optional BAM file for interval splitting testing"
-    test_bam_index: "Optional BAM index file for interval splitting testing"
     cpus: "Number of CPU cores allocated for each non-validation task"
     memory_gb: "Memory in GB allocated for each non-validation task"
   }
@@ -38,21 +33,17 @@ workflow samtools_example {
   input {
     Array[SampleInfo]? samples
     File? reference_fasta
-    File? interval_bed
-    File? test_bam
-    File? test_bam_index
     Int cpus = 2
     Int memory_gb = 8
   }
 
   # If no reference genome provided, download test data
-  if (!defined(reference_fasta) || !defined(interval_bed)) {
+  if (!defined(reference_fasta)) {
     call ww_testdata.download_ref_data { }
   }
 
-  # Determine which genome and interval files to use
+  # Determine which genome file to use
   File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
-  File intervals = select_first([interval_bed, download_ref_data.bed])
 
   # If no samples provided, download demonstration data
   if (!defined(samples)) {
@@ -86,38 +77,15 @@ workflow samtools_example {
     }
   }
 
-  # If no test BAM provided, download demonstration BAM data
-  if (!defined(test_bam) || !defined(test_bam_index)) {
-    call ww_testdata.download_bam_data { }
-  }
-
-  # Determine which BAM files to use for interval splitting
-  File bam_for_splitting = select_first([test_bam, download_bam_data.bam])
-  File bam_index_for_splitting = select_first([test_bam_index, download_bam_data.bai])
-
-  # Testing splitting BAM files by intervals
-  call split_bam_by_intervals { input:
-      bam_to_split = bam_for_splitting,
-      bam_to_split_index = bam_index_for_splitting,
-      bed_files = [intervals],
-      output_basename = "split_intervals_test",
-      memory_gb = memory_gb,
-      cpu_cores = cpus
-  }
-
   call validate_outputs { input:
       r1_fastqs = crams_to_fastq.r1_fastq,
       r2_fastqs = crams_to_fastq.r2_fastq,
-      sample_names = crams_to_fastq.sample_name,
-      interval_bams = split_bam_by_intervals.interval_bams,
-      interval_bam_indices = split_bam_by_intervals.interval_bam_indices
+      sample_names = crams_to_fastq.sample_name
   }
 
   output {
     Array[File] r1_fastqs = crams_to_fastq.r1_fastq
     Array[File] r2_fastqs = crams_to_fastq.r2_fastq
-    Array[File] interval_bams = split_bam_by_intervals.interval_bams
-    Array[File] interval_bam_indices = split_bam_by_intervals.interval_bam_indices
     File validation_report = validate_outputs.report
   }
 }
@@ -171,77 +139,9 @@ task crams_to_fastq {
   }
 }
 
-task split_bam_by_intervals {
-  meta {
-    description: "Split BAM file by genomic intervals using samtools view for scatter-gather parallelization"
-    outputs: {
-        interval_bams: "Array of BAM files split by intervals",
-        interval_bam_indices: "Array of BAM index files for the split BAMs"
-    }
-  }
-
-  parameter_meta {
-    bam_to_split: "Input BAM file to split"
-    bam_to_split_index: "Index file for the input BAM"
-    bed_files: "Array of BED files defining intervals to split by"
-    output_basename: "Base name for output BAM files"
-    memory_gb: "Memory allocation in GB"
-    cpu_cores: "Number of CPU cores to use"
-  }
-
-  input {
-    File bam_to_split
-    File bam_to_split_index
-    Array[File] bed_files
-    String output_basename
-    Int memory_gb = 8
-    Int cpu_cores = 2
-  }
-
-  command <<<
-    set -eo pipefail
-    
-    # Create array to track output files
-    declare -a bam_files
-    declare -a bai_files
-    
-    # Process each BED file
-    for bed_file in ~{sep=" " bed_files}; do
-      # Extract interval name for output filename
-      interval_name=$(basename "$bed_file" .bed)
-      output_bam="~{output_basename}.${interval_name}.bam"
-      
-      # Use samtools view with BED file directly (-L flag)
-      samtools view -b -h -L "$bed_file" "~{bam_to_split}" > "$output_bam"
-      
-      # Index the resulting BAM
-      samtools index "$output_bam"
-      
-      # Add to arrays for output
-      bam_files+=("$output_bam")
-      bai_files+=("${output_bam}.bai")
-    done
-    
-    # Write output file lists
-    printf '%s\n' "${bam_files[@]}" > bam_files.txt
-    printf '%s\n' "${bai_files[@]}" > bai_files.txt
-  >>>
-
-  output {
-    Array[File] interval_bams = read_lines("bam_files.txt")
-    Array[File] interval_bam_indices = read_lines("bai_files.txt")
-  }
-
-  runtime {
-    docker: "getwilds/samtools:1.11"
-    memory: "~{memory_gb} GB"
-    cpu: cpu_cores
-  }
-}
-
 task validate_outputs {
   meta {
-    description: "Validates that FASTQ files exist and are non-empty after CRAM-to-FASTQ conversion, and validates interval BAM files."
+    description: "Validates that FASTQ files exist and are non-empty after CRAM-to-FASTQ conversion."
     outputs: {
         report: "Validation report with pass/fail summary"
     }
@@ -251,34 +151,26 @@ task validate_outputs {
     r1_fastqs: "Array of R1 FASTQ files to check"
     r2_fastqs: "Array of R2 FASTQ files to check"
     sample_names: "Array of sample names corresponding to FASTQ files"
-    interval_bams: "Array of interval BAM files to validate"
-    interval_bam_indices: "Array of interval BAM index files to validate"
   }
 
   input {
     Array[File] r1_fastqs
     Array[File] r2_fastqs
     Array[String] sample_names
-    Array[File] interval_bams
-    Array[File] interval_bam_indices
   }
 
   command <<<
     set -eo pipefail
 
-    echo "=== Samtools FASTQ and BAM Validation Report ===" > samtools_validation_report.txt
+    echo "=== Samtools FASTQ Validation Report ===" > samtools_validation_report.txt
     echo "" >> samtools_validation_report.txt
 
     r1_fastqs=(~{sep=" " r1_fastqs})
     r2_fastqs=(~{sep=" " r2_fastqs})
     sample_names=(~{sep=" " sample_names})
-    interval_bams=(~{sep=" " interval_bams})
-    interval_bam_indices=(~{sep=" " interval_bam_indices})
 
     validation_passed=true
 
-    # Validate FASTQ files
-    echo "=== FASTQ Validation ===" >> samtools_validation_report.txt
     for i in "${!sample_names[@]}"; do
       sample="${sample_names[$i]}"
       r1="${r1_fastqs[$i]}"
@@ -307,42 +199,8 @@ task validate_outputs {
       echo "" >> samtools_validation_report.txt
     done
 
-    # Validate interval BAM files
-    echo "=== Interval BAM Validation ===" >> samtools_validation_report.txt
-    for i in "${!interval_bams[@]}"; do
-      bam="${interval_bams[$i]}"
-      bai="${interval_bam_indices[$i]}"
-      
-      echo "--- Interval BAM $(($i + 1)): $(basename "$bam") ---" >> samtools_validation_report.txt
-
-      if [[ -f "$bam" && -s "$bam" ]]; then
-        size=$(stat -c%s "$bam")
-        echo "  BAM file: PASS (${size} bytes)" >> samtools_validation_report.txt
-        
-        # Try to get basic BAM stats if samtools is available
-        if command -v samtools &> /dev/null; then
-          read_count=$(samtools view -c "$bam" 2>/dev/null || echo "N/A")
-          echo "  Read count: $read_count" >> samtools_validation_report.txt
-        fi
-      else
-        echo "  BAM file: FAIL - MISSING OR EMPTY" >> samtools_validation_report.txt
-        validation_passed=false
-      fi
-
-      if [[ -f "$bai" && -s "$bai" ]]; then
-        size=$(stat -c%s "$bai")
-        echo "  BAI index: PASS (${size} bytes)" >> samtools_validation_report.txt
-      else
-        echo "  BAI index: FAIL - MISSING OR EMPTY" >> samtools_validation_report.txt
-        validation_passed=false
-      fi
-
-      echo "" >> samtools_validation_report.txt
-    done
-
     echo "=== Summary ===" >> samtools_validation_report.txt
-    echo "FASTQ samples processed: ${#sample_names[@]}" >> samtools_validation_report.txt
-    echo "Interval BAMs processed: ${#interval_bams[@]}" >> samtools_validation_report.txt
+    echo "Samples processed: ${#sample_names[@]}" >> samtools_validation_report.txt
     if [[ "$validation_passed" == "true" ]]; then
       echo "Status: PASSED" >> samtools_validation_report.txt
     else

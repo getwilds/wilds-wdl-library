@@ -5,7 +5,6 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/gatk-inner-parallel/modules/ww-samtools/ww-samtools.wdl" as ww_samtools
 
 struct GatkSample {
     String name
@@ -141,38 +140,40 @@ workflow gatk_example {
     }
 
     # Split BAM by intervals for scatter-gather approach
-    call ww_samtools.split_bam_by_intervals { input:
-      bam_to_split = base_recalibrator.recalibrated_bam,
-      bam_to_split_index = base_recalibrator.recalibrated_bai,
-      bed_files = split_intervals.bed_files,
+    call print_reads { input:
+      input_bam = base_recalibrator.recalibrated_bam,
+      input_bam_index = base_recalibrator.recalibrated_bai,
+      interval_files = split_intervals.interval_files,
+      reference_fasta = genome_fasta,
+      reference_fasta_index = genome_fasta_index,
       output_basename = sample.name + ".recalibrated"
     }
 
     # Scatter HaplotypeCaller and Mutect2 across interval-specific BAMs
     scatter (i in range(length(split_intervals.interval_files))) {
       call haplotype_caller { input:
-        bam = split_bam_by_intervals.interval_bams[i],
-        bam_index = split_bam_by_intervals.interval_bam_indices[i],
+        bam = print_reads.interval_bams[i],
+        bam_index = print_reads.interval_bam_indices[i],
         intervals = split_intervals.interval_files[i],
         reference_fasta = genome_fasta,
         reference_fasta_index = genome_fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
         dbsnp_vcf = final_dbsnp,
         base_file_name = sample.name,
-        memory_gb = 8,
+        memory_gb = 4 * scatter_count,
         cpu_cores = scatter_count
       }
 
       call mutect2 { input:
-        bam = split_bam_by_intervals.interval_bams[i],
-        bam_index = split_bam_by_intervals.interval_bam_indices[i],
+        bam = print_reads.interval_bams[i],
+        bam_index = print_reads.interval_bam_indices[i],
         intervals = split_intervals.interval_files[i],
         reference_fasta = genome_fasta,
         reference_fasta_index = genome_fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
         gnomad_vcf = final_gnomad,
         base_file_name = sample.name,
-        memory_gb = 8,
+        memory_gb = 4 * scatter_count,
         cpu_cores = scatter_count
       }
     }
@@ -545,6 +546,80 @@ task split_intervals {
   output {
     Array[File] interval_files = read_lines("interval_files.txt")
     Array[File] bed_files = read_lines("bed_files.txt")
+  }
+
+  runtime {
+    docker: "getwilds/gatk:4.6.1.0"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
+task print_reads {
+  meta {
+    description: "Extract reads from specific intervals using GATK PrintReads"
+    outputs: {
+        interval_bams: "Array of BAM files containing reads from specified intervals",
+        interval_bam_indices: "Array of index files for the interval BAMs"
+    }
+  }
+
+  parameter_meta {
+    input_bam: "Input BAM file to extract reads from"
+    input_bam_index: "Index file for the input BAM"
+    interval_files: "Array of interval files defining regions to extract"
+    reference_fasta: "Reference genome FASTA file"
+    reference_fasta_index: "Index file for the reference FASTA"
+    output_basename: "Base name for output files"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
+  }
+
+  input {
+    File input_bam
+    File input_bam_index
+    Array[File] interval_files
+    File reference_fasta
+    File reference_fasta_index
+    String output_basename
+    Int memory_gb = 8
+    Int cpu_cores = 2
+  }
+
+  command <<<
+    set -eo pipefail
+    
+    # Create arrays to store output filenames
+    bam_files=()
+    bai_files=()
+    
+    # Process each interval file
+    counter=0
+    for interval_file in ~{sep=" " interval_files}; do
+      interval_name=$(basename "$interval_file" .interval_list)
+      output_bam="~{output_basename}.${counter}.${interval_name}.bam"
+      
+      gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
+        PrintReads \
+        -R "~{reference_fasta}" \
+        -I "~{input_bam}" \
+        -L "$interval_file" \
+        -O "$output_bam" \
+        --verbosity WARNING
+      
+      bam_files+=("$output_bam")
+      bai_files+=("${output_bam}.bai")
+      counter=$((counter + 1))
+    done
+    
+    # Write output file lists
+    printf '%s\n' "${bam_files[@]}" > bam_files.txt
+    printf '%s\n' "${bai_files[@]}" > bai_files.txt
+  >>>
+
+  output {
+    Array[File] interval_bams = read_lines("bam_files.txt")
+    Array[File] interval_bam_indices = read_lines("bai_files.txt")
   }
 
   runtime {
