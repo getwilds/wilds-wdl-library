@@ -614,6 +614,7 @@ task print_reads {
         -L "$interval_file" \
         -O "$output_bam" \
         --verbosity WARNING
+      samtools index "$output_bam"
       
       bam_files+=("$output_bam")
       bai_files+=("${output_bam}.bai")
