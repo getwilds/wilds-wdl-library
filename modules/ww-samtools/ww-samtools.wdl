@@ -27,6 +27,8 @@ workflow samtools_example {
     samples: "Array of sample objects, each containing name and paths to CRAM/BAM/SAM files"
     reference_fasta: "Reference genome FASTA file"
     interval_bed: "Optional BED file defining genomic intervals for splitting BAM files"
+    test_bam: "Optional BAM file for interval splitting testing"
+    test_bam_index: "Optional BAM index file for interval splitting testing"
     cpus: "Number of CPU cores allocated for each non-validation task"
     memory_gb: "Memory in GB allocated for each non-validation task"
   }
@@ -35,6 +37,8 @@ workflow samtools_example {
     Array[SampleInfo]? samples
     File? reference_fasta
     File? interval_bed
+    File? test_bam
+    File? test_bam_index
     Int cpus = 2
     Int memory_gb = 8
   }
@@ -80,11 +84,19 @@ workflow samtools_example {
     }
   }
 
+  # If no test BAM provided, download demonstration BAM data
+  if (!defined(test_bam) || !defined(test_bam_index)) {
+    call ww_testdata.download_bam_data { }
+  }
+
+  # Determine which BAM files to use for interval splitting
+  File bam_for_splitting = select_first([test_bam, download_bam_data.bam])
+  File bam_index_for_splitting = select_first([test_bam_index, download_bam_data.bai])
+
   # Testing splitting BAM files by intervals
-  call ww_testdata.download_bam_data { }
   call split_bam_by_intervals { input:
-      input_bam = download_bam_data.bam,
-      input_bam_index = download_bam_data.bai,
+      input_bam = bam_for_splitting,
+      input_bam_index = bam_index_for_splitting,
       bed_files = [intervals],
       output_basename = "split_intervals_test",
       memory_gb = memory_gb,
