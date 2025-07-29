@@ -139,6 +139,74 @@ task crams_to_fastq {
   }
 }
 
+task split_bam_by_intervals {
+  meta {
+    description: "Split BAM file by genomic intervals using samtools view for scatter-gather parallelization"
+    outputs: {
+        interval_bams: "Array of BAM files split by intervals",
+        interval_bam_indices: "Array of BAM index files for the split BAMs"
+    }
+  }
+
+  parameter_meta {
+    input_bam: "Input BAM file to split"
+    input_bam_index: "Index file for the input BAM"
+    bed_files: "Array of BED files defining intervals to split by"
+    output_basename: "Base name for output BAM files"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
+  }
+
+  input {
+    File input_bam
+    File input_bam_index
+    Array[File] bed_files
+    String output_basename
+    Int memory_gb = 8
+    Int cpu_cores = 2
+  }
+
+  command <<<
+    set -eo pipefail
+    
+    # Create array to track output files
+    declare -a bam_files
+    declare -a bai_files
+    
+    # Process each BED file
+    for bed_file in ~{sep=" " bed_files}; do
+      # Extract interval name for output filename
+      interval_name=$(basename "$bed_file" .bed)
+      output_bam="~{output_basename}.${interval_name}.bam"
+      
+      # Use samtools view with BED file directly (-L flag)
+      samtools view -b -h -L "$bed_file" "~{input_bam}" > "$output_bam"
+      
+      # Index the resulting BAM
+      samtools index "$output_bam"
+      
+      # Add to arrays for output
+      bam_files+=("$output_bam")
+      bai_files+=("${output_bam}.bai")
+    done
+    
+    # Write output file lists
+    printf '%s\n' "${bam_files[@]}" > bam_files.txt
+    printf '%s\n' "${bai_files[@]}" > bai_files.txt
+  >>>
+
+  output {
+    Array[File] interval_bams = read_lines("bam_files.txt")
+    Array[File] interval_bam_indices = read_lines("bai_files.txt")
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
 task validate_outputs {
   meta {
     description: "Validates that FASTQ files exist and are non-empty after CRAM-to-FASTQ conversion."
