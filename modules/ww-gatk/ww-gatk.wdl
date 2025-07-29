@@ -529,7 +529,7 @@ task split_intervals {
         gatk IntervalListToBed \
           -I "$interval_file" \
           -O "$bed_file" \
-          --verbosity WARNING
+          --VERBOSITY WARNING
       fi
     done
     
