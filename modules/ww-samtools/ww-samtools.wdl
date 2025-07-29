@@ -26,6 +26,7 @@ workflow samtools_example {
   parameter_meta {
     samples: "Array of sample objects, each containing name and paths to CRAM/BAM/SAM files"
     reference_fasta: "Reference genome FASTA file"
+    interval_bed: "Optional BED file defining genomic intervals for splitting BAM files"
     cpus: "Number of CPU cores allocated for each non-validation task"
     memory_gb: "Memory in GB allocated for each non-validation task"
   }
@@ -33,17 +34,19 @@ workflow samtools_example {
   input {
     Array[SampleInfo]? samples
     File? reference_fasta
+    File? interval_bed
     Int cpus = 2
     Int memory_gb = 8
   }
 
   # If no reference genome provided, download test data
-  if (!defined(reference_fasta)) {
+  if (!defined(reference_fasta) || !defined(interval_bed)) {
     call ww_testdata.download_ref_data { }
   }
 
-  # Determine which genome file to use
+  # Determine which genome and interval files to use
   File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
+  File intervals = select_first([interval_bed, download_ref_data.bed])
 
   # If no samples provided, download demonstration data
   if (!defined(samples)) {
@@ -77,6 +80,17 @@ workflow samtools_example {
     }
   }
 
+  # Testing splitting BAM files by intervals
+  call ww_testdata.download_bam_data { }
+  call split_bam_by_intervals { input:
+      input_bam = download_bam_data.bam,
+      input_bam_index = download_bam_data.bai,
+      bed_files = [intervals],
+      output_basename = "split_intervals_test",
+      memory_gb = memory_gb,
+      cpu_cores = cpus
+  }
+
   call validate_outputs { input:
       r1_fastqs = crams_to_fastq.r1_fastq,
       r2_fastqs = crams_to_fastq.r2_fastq,
@@ -86,6 +100,8 @@ workflow samtools_example {
   output {
     Array[File] r1_fastqs = crams_to_fastq.r1_fastq
     Array[File] r2_fastqs = crams_to_fastq.r2_fastq
+    Array[File] interval_bams = split_bam_by_intervals.interval_bams
+    Array[File] interval_bam_indices = split_bam_by_intervals.interval_bam_indices
     File validation_report = validate_outputs.report
   }
 }
