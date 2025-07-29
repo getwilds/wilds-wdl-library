@@ -276,12 +276,16 @@ task mark_duplicates {
     aligned_bam: "Aligned input BAM file"
     aligned_bam_index: "Index file for the aligned input BAM"
     base_file_name: "Base name for the output files"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
   }
 
   input {
     File aligned_bam
     File aligned_bam_index
     String base_file_name
+    Int memory_gb = 8
+    Int cpu_cores = 2
   }
 
   command <<<
@@ -303,8 +307,8 @@ task mark_duplicates {
 
   runtime {
     docker: "getwilds/gatk:4.6.1.0"
-    memory: "24 GB"
-    cpu: 1
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
   }
 }
 
