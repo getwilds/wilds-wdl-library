@@ -19,6 +19,8 @@ workflow samtools_example {
     outputs: {
         r1_fastqs: "Array of R1 FASTQ files generated from CRAM/BAM/SAM files",
         r2_fastqs: "Array of R2 FASTQ files generated from CRAM/BAM/SAM files",
+        interval_bams: "Array of BAM files split by genomic intervals",
+        interval_bam_indices: "Array of BAM index files for the split BAMs",
         validation_report: "Validation report confirming all expected outputs were generated"
     }
   }
@@ -95,8 +97,8 @@ workflow samtools_example {
 
   # Testing splitting BAM files by intervals
   call split_bam_by_intervals { input:
-      input_bam = bam_for_splitting,
-      input_bam_index = bam_index_for_splitting,
+      bam_to_split = bam_for_splitting,
+      bam_to_split_index = bam_index_for_splitting,
       bed_files = [intervals],
       output_basename = "split_intervals_test",
       memory_gb = memory_gb,
@@ -179,8 +181,8 @@ task split_bam_by_intervals {
   }
 
   parameter_meta {
-    input_bam: "Input BAM file to split"
-    input_bam_index: "Index file for the input BAM"
+    bam_to_split: "Input BAM file to split"
+    bam_to_split_index: "Index file for the input BAM"
     bed_files: "Array of BED files defining intervals to split by"
     output_basename: "Base name for output BAM files"
     memory_gb: "Memory allocation in GB"
@@ -188,8 +190,8 @@ task split_bam_by_intervals {
   }
 
   input {
-    File input_bam
-    File input_bam_index
+    File bam_to_split
+    File bam_to_split_index
     Array[File] bed_files
     String output_basename
     Int memory_gb = 8
@@ -210,7 +212,7 @@ task split_bam_by_intervals {
       output_bam="~{output_basename}.${interval_name}.bam"
       
       # Use samtools view with BED file directly (-L flag)
-      samtools view -b -h -L "$bed_file" "~{input_bam}" > "$output_bam"
+      samtools view -b -h -L "$bed_file" "~{bam_to_split}" > "$output_bam"
       
       # Index the resulting BAM
       samtools index "$output_bam"
