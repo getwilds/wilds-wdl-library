@@ -5,6 +5,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/gatk-inner-parallel/modules/ww-samtools/ww-samtools.wdl" as ww_samtools
 
 struct GatkSample {
     String name
@@ -136,49 +137,83 @@ workflow gatk_example {
         reference_fasta = genome_fasta,
         reference_fasta_index = genome_fasta_index,
         intervals = intervals,
-        output_basename = sample.name + ".wgsmetrics"
+        base_file_name = sample.name + ".wgsmetrics"
     }
 
-    call haplotype_caller { input:
-      bam = base_recalibrator.recalibrated_bam,
-      bam_index = base_recalibrator.recalibrated_bai,
-      interval_files = split_intervals.interval_files,
-      reference_fasta = genome_fasta,
-      reference_fasta_index = genome_fasta_index,
-      reference_dict = create_sequence_dictionary.sequence_dict,
-      dbsnp_vcf = final_dbsnp,
-      output_basename = sample.name + ".haplotypecaller",
-      memory_gb = 8,
-      cpu_cores = scatter_count
+    # Split BAM by intervals for scatter-gather approach
+    call ww_samtools.split_bam_by_intervals { input:
+      input_bam = base_recalibrator.recalibrated_bam,
+      input_bam_index = base_recalibrator.recalibrated_bai,
+      bed_files = split_intervals.bed_files,
+      output_basename = sample.name + ".recalibrated"
     }
 
-    call mutect2 { input:
-      bam = base_recalibrator.recalibrated_bam,
-      bam_index = base_recalibrator.recalibrated_bai,
-      interval_files = split_intervals.interval_files,
-      reference_fasta = genome_fasta,
-      reference_fasta_index = genome_fasta_index,
-      reference_dict = create_sequence_dictionary.sequence_dict,
-      gnomad_vcf = final_gnomad,
-      output_basename = sample.name + ".mutect2",
-      memory_gb = 8,
-      cpu_cores = scatter_count
+    # Scatter HaplotypeCaller and Mutect2 across interval-specific BAMs
+    scatter (i in range(length(split_intervals.interval_files))) {
+      call haplotype_caller { input:
+        bam = split_bam_by_intervals.interval_bams[i],
+        bam_index = split_bam_by_intervals.interval_bam_indices[i],
+        intervals = split_intervals.interval_files[i],
+        reference_fasta = genome_fasta,
+        reference_fasta_index = genome_fasta_index,
+        reference_dict = create_sequence_dictionary.sequence_dict,
+        dbsnp_vcf = final_dbsnp,
+        base_file_name = sample.name,
+        memory_gb = 8,
+        cpu_cores = scatter_count
+      }
+
+      call mutect2 { input:
+        bam = split_bam_by_intervals.interval_bams[i],
+        bam_index = split_bam_by_intervals.interval_bam_indices[i],
+        intervals = split_intervals.interval_files[i],
+        reference_fasta = genome_fasta,
+        reference_fasta_index = genome_fasta_index,
+        reference_dict = create_sequence_dictionary.sequence_dict,
+        gnomad_vcf = final_gnomad,
+        base_file_name = sample.name,
+        memory_gb = 8,
+        cpu_cores = scatter_count
+      }
+    }
+
+    # Merge HaplotypeCaller results
+    call merge_vcfs as merge_haplotype_vcfs { input:
+        vcfs = haplotype_caller.vcf,
+        vcf_indices = haplotype_caller.vcf_index,
+        base_file_name = sample.name + ".haplotypecaller",
+        reference_dict = create_sequence_dictionary.sequence_dict
+    }
+
+    # Merge Mutect2 results
+    call merge_vcfs as merge_mutect2_vcfs { input:
+        vcfs = mutect2.vcf,
+        vcf_indices = mutect2.vcf_index,
+        base_file_name = sample.name + ".mutect2",
+        reference_dict = create_sequence_dictionary.sequence_dict
+    }
+
+    call merge_mutect_stats { input:
+        stats = mutect2.stats_file,
+        base_file_name = sample.name + ".mutect2"
     }
   }
 
   call validate_outputs { input:
+      markdup_bams = mark_duplicates.markdup_bam,
+      markdup_bais = mark_duplicates.markdup_bai,
       recalibrated_bams = base_recalibrator.recalibrated_bam,
       recalibrated_bais = base_recalibrator.recalibrated_bai,
-      haplotype_vcfs = haplotype_caller.vcf,
-      mutect2_vcfs = mutect2.vcf,
+      haplotype_vcfs = merge_haplotype_vcfs.merged_vcf,
+      mutect2_vcfs = merge_mutect2_vcfs.merged_vcf,
       wgs_metrics = collect_wgs_metrics.metrics_file
   }
 
   output {
     Array[File] recalibrated_bams = base_recalibrator.recalibrated_bam
     Array[File] recalibrated_bais = base_recalibrator.recalibrated_bai
-    Array[File] haplotype_vcfs = haplotype_caller.vcf
-    Array[File] mutect2_vcfs = mutect2.vcf
+    Array[File] haplotype_vcfs = merge_haplotype_vcfs.merged_vcf
+    Array[File] mutect2_vcfs = merge_mutect2_vcfs.merged_vcf
     Array[File] wgs_metrics = collect_wgs_metrics.metrics_file
     File validation_report = validate_outputs.report
   }
@@ -239,13 +274,13 @@ task mark_duplicates {
 
   parameter_meta {
     aligned_bam: "Aligned input BAM file"
-    aligned_bai: "Index file for the aligned input BAM"
+    aligned_bam_index: "Index file for the aligned input BAM"
     base_file_name: "Base name for the output files"
   }
 
   input {
     File aligned_bam
-    File aligned_bai
+    File aligned_bam_index
     String base_file_name
   }
 
@@ -286,13 +321,13 @@ task base_recalibrator {
   parameter_meta {
     aligned_bam: "Input aligned BAM file to be recalibrated"
     aligned_bam_index: "Index file for the input BAM"
-    intervals: "Optional interval list file defining target regions"
     dbsnp_vcf: "dbSNP VCF file for known variant sites"
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Index file for the reference FASTA"
     reference_dict: "Reference genome sequence dictionary"
     known_indels_sites_vcfs: "Array of VCF files with known indel sites"
     base_file_name: "Base name for output files"
+    intervals: "Optional interval list file defining target regions"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
@@ -300,13 +335,13 @@ task base_recalibrator {
   input {
     File aligned_bam
     File aligned_bam_index
-    File? intervals
     File dbsnp_vcf
     File reference_fasta
     File reference_fasta_index
     File reference_dict
     Array[File] known_indels_sites_vcfs
     String base_file_name
+    File? intervals
     Int memory_gb = 8
     Int cpu_cores = 2
   }
@@ -386,8 +421,8 @@ task collect_wgs_metrics {
     bam_index: "Index file for the input BAM"
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Index file for the reference FASTA"
+    base_file_name: "Base name for output files"
     intervals: "Optional interval list file defining target regions"
-    output_basename: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
     minimum_mapping_quality: "Minimum mapping quality for reads to be included"
@@ -400,8 +435,8 @@ task collect_wgs_metrics {
     File bam_index
     File reference_fasta
     File reference_fasta_index
+    String base_file_name
     File? intervals
-    String output_basename
     Int memory_gb = 8
     Int cpu_cores = 2
     Int minimum_mapping_quality = 20
@@ -415,7 +450,7 @@ task collect_wgs_metrics {
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       CollectWgsMetrics \
       -I "~{bam}" \
-      -O "~{output_basename}.wgs_metrics.txt" \
+      -O "~{base_file_name}.wgs_metrics.txt" \
       -R "~{reference_fasta}" \
       --MINIMUM_MAPPING_QUALITY ~{minimum_mapping_quality} \
       --MINIMUM_BASE_QUALITY ~{minimum_base_quality} \
@@ -425,7 +460,7 @@ task collect_wgs_metrics {
   >>>
 
   output {
-    File metrics_file = "~{output_basename}.wgs_metrics.txt"
+    File metrics_file = "~{base_file_name}.wgs_metrics.txt"
   }
 
   runtime {
@@ -439,7 +474,8 @@ task split_intervals {
   meta {
     description: "Split intervals into smaller chunks for parallelization using GATK SplitIntervals"
     outputs: {
-        interval_files: "Array of interval files optimized for parallel processing"
+        interval_files: "Array of interval files optimized for parallel processing",
+        bed_files: "Array of BED files corresponding to the interval files"
     }
   }
 
@@ -471,8 +507,9 @@ task split_intervals {
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
     
-    # Create output directory
+    # Create output directories
     mkdir -p scattered_intervals
+    mkdir -p scattered_beds
     
     # Run SplitIntervals
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
@@ -483,12 +520,27 @@ task split_intervals {
       -O scattered_intervals/ \
       --verbosity WARNING
     
-    # List all created interval files for output
+    # Convert interval_list files to BED format using GATK IntervalListToBed
+    for interval_file in scattered_intervals/*.interval_list; do
+      if [[ -f "$interval_file" ]]; then
+        interval_name=$(basename "$interval_file" .interval_list)
+        bed_file="scattered_beds/${interval_name}.bed"
+        
+        gatk IntervalListToBed \
+          -I "$interval_file" \
+          -O "$bed_file" \
+          --verbosity WARNING
+      fi
+    done
+    
+    # List all created files for output
     find scattered_intervals/ -name "*.interval_list" | sort -V > interval_files.txt
+    find scattered_beds/ -name "*.bed" | sort -V > bed_files.txt
   >>>
 
   output {
     Array[File] interval_files = read_lines("interval_files.txt")
+    Array[File] bed_files = read_lines("bed_files.txt")
   }
 
   runtime {
@@ -510,12 +562,12 @@ task haplotype_caller {
   parameter_meta {
     bam: "Input aligned BAM file"
     bam_index: "Index file for the input BAM"
-    intervals: "Optional interval list file defining target regions"
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Index file for the reference FASTA"
     reference_dict: "Reference genome sequence dictionary"
     dbsnp_vcf: "dbSNP VCF file for variant annotation"
-    output_basename: "Base name for output files"
+    base_file_name: "Base name for output files"
+    intervals: "Optional interval list file defining target regions"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
@@ -523,12 +575,12 @@ task haplotype_caller {
   input {
     File bam
     File bam_index
-    File? intervals
     File reference_fasta
     File reference_fasta_index
     File reference_dict
     File dbsnp_vcf
-    String output_basename
+    String base_file_name
+    File? intervals
     Int memory_gb = 8
     Int cpu_cores = 2
   }
@@ -550,7 +602,7 @@ task haplotype_caller {
       HaplotypeCaller \
       -R "~{basename(reference_fasta)}" \
       -I "~{bam}" \
-      -O "~{output_basename}.vcf.gz" \
+      -O "~{base_file_name}.haplotypecaller.vcf.gz" \
       --dbsnp "~{dbsnp_vcf}" \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       ~{if defined(intervals) then "--interval-padding 100" else ""} \
@@ -558,8 +610,8 @@ task haplotype_caller {
   >>>
 
   output {
-    File vcf = "~{output_basename}.vcf.gz"
-    File vcf_index = "~{output_basename}.vcf.gz.tbi"
+    File vcf = "~{base_file_name}.haplotypecaller.vcf.gz"
+    File vcf_index = "~{base_file_name}.haplotypecaller.vcf.gz.tbi"
   }
 
   runtime {
@@ -583,12 +635,12 @@ task mutect2 {
   parameter_meta {
     bam: "Input aligned BAM file"
     bam_index: "Index file for the input BAM"
-    intervals: "Optional interval list file defining target regions"
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Index file for the reference FASTA"
     reference_dict: "Reference genome sequence dictionary"
     gnomad_vcf: "gnomAD population allele frequency VCF for germline resource"
-    output_basename: "Base name for output files"
+    base_file_name: "Base name for output files"
+    intervals: "Optional interval list file defining target regions"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
@@ -596,12 +648,12 @@ task mutect2 {
   input {
     File bam
     File bam_index
-    File? intervals
     File reference_fasta
     File reference_fasta_index
     File reference_dict
     File gnomad_vcf
-    String output_basename
+    String base_file_name
+    File? intervals
     Int memory_gb = 8
     Int cpu_cores = 2
   }
@@ -623,28 +675,28 @@ task mutect2 {
       Mutect2 \
       -R "~{basename(reference_fasta)}" \
       -I "~{bam}" \
-      -O "~{output_basename}.unfiltered.vcf.gz" \
+      -O "~{base_file_name}.unfiltered.vcf.gz" \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       ~{if defined(intervals) then "--interval-padding 100" else ""} \
       --germline-resource "~{gnomad_vcf}" \
-      --f1r2-tar-gz "~{output_basename}.f1r2.tar.gz" \
+      --f1r2-tar-gz "~{base_file_name}.f1r2.tar.gz" \
       --verbosity WARNING
 
     # Filter Mutect2 calls
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       FilterMutectCalls \
-      -V "~{output_basename}.unfiltered.vcf.gz" \
+      -V "~{base_file_name}.unfiltered.vcf.gz" \
       -R "~{basename(reference_fasta)}" \
-      -O "~{output_basename}.vcf.gz" \
-      --stats "~{output_basename}.unfiltered.vcf.gz.stats" \
+      -O "~{base_file_name}.mutect2.vcf.gz" \
+      --stats "~{base_file_name}.unfiltered.vcf.gz.stats" \
       --verbosity WARNING
   >>>
 
   output {
-    File vcf = "~{output_basename}.vcf.gz"
-    File vcf_index = "~{output_basename}.vcf.gz.tbi"
-    File stats_file = "~{output_basename}.unfiltered.vcf.gz.stats"
-    File f1r2_counts = "~{output_basename}.f1r2.tar.gz"
+    File vcf = "~{base_file_name}.mutect2.vcf.gz"
+    File vcf_index = "~{base_file_name}.mutect2.vcf.gz.tbi"
+    File stats_file = "~{base_file_name}.unfiltered.vcf.gz.stats"
+    File f1r2_counts = "~{base_file_name}.f1r2.tar.gz"
   }
 
   runtime {
@@ -666,7 +718,7 @@ task merge_vcfs {
   parameter_meta {
     vcfs: "Array of VCF files to merge"
     vcf_indices: "Array of VCF index files"
-    output_basename: "Base name for output files"
+    base_file_name: "Base name for output files"
     reference_dict: "Reference sequence dictionary"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
@@ -675,7 +727,7 @@ task merge_vcfs {
   input {
     Array[File] vcfs
     Array[File] vcf_indices
-    String output_basename
+    String base_file_name
     File reference_dict
     Int memory_gb = 8
     Int cpu_cores = 2
@@ -688,13 +740,13 @@ task merge_vcfs {
       MergeVcfs \
       -I ~{sep=" -I " vcfs} \
       -D "~{reference_dict}" \
-      -O "~{output_basename}.vcf.gz" \
+      -O "~{base_file_name}.merged.vcf.gz" \
       --VERBOSITY WARNING
   >>>
 
   output {
-    File merged_vcf = "~{output_basename}.vcf.gz"
-    File merged_vcf_index = "~{output_basename}.vcf.gz.tbi"
+    File merged_vcf = "~{base_file_name}.merged.vcf.gz"
+    File merged_vcf_index = "~{base_file_name}.merged.vcf.gz.tbi"
   }
 
   runtime {
@@ -714,14 +766,14 @@ task merge_mutect_stats {
 
   parameter_meta {
     stats: "Array of Mutect2 stats files to merge"
-    output_basename: "Base name for output files"
+    base_file_name: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
 
   input {
     Array[File] stats
-    String output_basename
+    String base_file_name
     Int memory_gb = 4
     Int cpu_cores = 1
   }
@@ -732,12 +784,12 @@ task merge_mutect_stats {
     gatk --java-options "-Xms~{memory_gb - 2}g -Xmx~{memory_gb - 1}g" \
       MergeMutectStats \
       --stats ~{sep=" --stats " stats} \
-      -O "~{output_basename}.stats" \
+      -O "~{base_file_name}.merged.stats" \
       --verbosity WARNING
   >>>
 
   output {
-    File merged_stats = "~{output_basename}.stats"
+    File merged_stats = "~{base_file_name}.merged.stats"
   }
 
   runtime {
@@ -748,6 +800,7 @@ task merge_mutect_stats {
 }
 
 task validate_outputs {
+  # TODO: Add validation for GATK dictionary, intervals, and duplicate metrics files
   meta {
     description: "Validate GATK outputs and generate comprehensive statistics report"
     outputs: {
@@ -756,14 +809,18 @@ task validate_outputs {
   }
 
   parameter_meta {
+    markdup_bams: "Array of MarkDuplicates BAM files"
+    markdup_bais: "Array of MarkDuplicates BAM index files"
     recalibrated_bams: "Array of recalibrated BAM files"
-    recalibrated_bais: "Array of BAM index files"
+    recalibrated_bais: "Array of recalibrated BAM index files"
     haplotype_vcfs: "Array of HaplotypeCaller VCF files"
     mutect2_vcfs: "Array of Mutect2 VCF files"
     wgs_metrics: "Array of WGS metrics files"
   }
 
   input {
+    Array[File] markdup_bams
+    Array[File] markdup_bais
     Array[File] recalibrated_bams
     Array[File] recalibrated_bais
     Array[File] haplotype_vcfs
@@ -786,27 +843,47 @@ task validate_outputs {
     echo "File Validation:" >> validation_report.txt
     echo "Checking file existence and basic properties..." >> validation_report.txt
     
-    # Check BAM files
-    for bam in ~{sep=" " recalibrated_bams}; do
+    # Check MarkDuplicates BAM files
+    for bam in ~{sep=" " markdup_bams}; do
       if [[ -f "$bam" ]]; then
         size=$(stat -f%z "$bam" 2>/dev/null || stat -c%s "$bam" 2>/dev/null || echo "unknown")
-        echo "BAM: $(basename $bam) (${size} bytes)" >> validation_report.txt
+        echo "MarkDuplicates BAM: $(basename $bam) (${size} bytes)" >> validation_report.txt
       else
-        echo "Missing BAM: $bam" >> validation_report.txt
+        echo "Missing MarkDuplicates BAM: $bam" >> validation_report.txt
       fi
     done
 
-    # Check BAI files
+    # Check MarkDuplicates BAM index files
+    for bai in ~{sep=" " markdup_bais}; do
+      if [[ -f "$bai" ]]; then
+        size=$(stat -f%z "$bai" 2>/dev/null || stat -c%s "$bai" 2>/dev/null || echo "unknown")
+        echo "MarkDuplicates BAM Index: $(basename $bai) (${size} bytes)" >> validation_report.txt
+      else
+        echo "Missing MarkDuplicates BAM Index: $bai" >> validation_report.txt
+      fi
+    done
+
+    # Check Recalibrated BAM files
+    for bam in ~{sep=" " recalibrated_bams}; do
+      if [[ -f "$bam" ]]; then
+        size=$(stat -f%z "$bam" 2>/dev/null || stat -c%s "$bam" 2>/dev/null || echo "unknown")
+        echo "Recalibrated BAM: $(basename $bam) (${size} bytes)" >> validation_report.txt
+      else
+        echo "Missing Recalibrated BAM: $bam" >> validation_report.txt
+      fi
+    done
+
+    # Check Recalibrated BAM index files
     for bai in ~{sep=" " recalibrated_bais}; do
       if [[ -f "$bai" ]]; then
         size=$(stat -f%z "$bai" 2>/dev/null || stat -c%s "$bai" 2>/dev/null || echo "unknown")
-        echo "BAM: $(basename $bai) (${size} bytes)" >> validation_report.txt
+        echo "Recalibrated BAM Index: $(basename $bai) (${size} bytes)" >> validation_report.txt
       else
-        echo "Missing BAI: $bai" >> validation_report.txt
+        echo "Missing Recal BAM Index: $bai" >> validation_report.txt
       fi
     done
     
-    # Check VCF files
+    # Check HaplotypeCaller VCFs if present
     for vcf in ~{sep=" " haplotype_vcfs}; do
       if [[ -f "$vcf" ]]; then
         variants=$(zcat "$vcf" | grep -v '^#' | wc -l || echo "0")
