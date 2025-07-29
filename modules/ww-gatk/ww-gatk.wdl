@@ -113,14 +113,14 @@ workflow gatk_example {
 
   scatter (sample in final_samples) {
     call mark_duplicates { input:
-        aligned_bam = sample.bam,
-        aligned_bam_index = sample.bai,
+        bam = sample.bam,
+        bam_index = sample.bai,
         base_file_name = sample.name
     }
 
     call base_recalibrator { input:
-        aligned_bam = mark_duplicates.markdup_bam,
-        aligned_bam_index = mark_duplicates.markdup_bai,
+        bam = mark_duplicates.markdup_bam,
+        bam_index = mark_duplicates.markdup_bai,
         intervals = intervals,
         dbsnp_vcf = final_dbsnp,
         reference_fasta = genome_fasta,
@@ -136,7 +136,22 @@ workflow gatk_example {
         reference_fasta = genome_fasta,
         reference_fasta_index = genome_fasta_index,
         intervals = intervals,
-        base_file_name = sample.name + ".wgsmetrics"
+        base_file_name = sample.name
+    }
+
+    call markdup_recal_metrics { input:
+        bam = sample.bam,
+        bam_index = sample.bai,
+        dbsnp_vcf = final_dbsnp,
+        reference_fasta = genome_fasta,
+        reference_fasta_index = genome_fasta_index,
+        reference_dict = create_sequence_dictionary.sequence_dict,
+        known_indels_sites_vcfs = final_known_indels,
+        base_file_name = sample.name + ".combined",
+        intervals = intervals,
+        minimum_mapping_quality = 20,
+        minimum_base_quality = 20,
+        coverage_cap = 250
     }
 
     # Split BAM by intervals for scatter-gather approach
@@ -206,6 +221,8 @@ workflow gatk_example {
       markdup_bais = mark_duplicates.markdup_bai,
       recalibrated_bams = base_recalibrator.recalibrated_bam,
       recalibrated_bais = base_recalibrator.recalibrated_bai,
+      sequential_bams = markdup_recal_metrics.recalibrated_bam,
+      sequential_bais = markdup_recal_metrics.recalibrated_bai,
       haplotype_vcfs = merge_haplotype_vcfs.merged_vcf,
       mutect2_vcfs = merge_mutect2_vcfs.merged_vcf,
       wgs_metrics = collect_wgs_metrics.metrics_file
@@ -275,25 +292,27 @@ task mark_duplicates {
   }
 
   parameter_meta {
-    aligned_bam: "Aligned input BAM file"
-    aligned_bam_index: "Index file for the aligned input BAM"
+    bam: "Aligned input BAM file"
+    bam_index: "Index file for the aligned input BAM"
     base_file_name: "Base name for the output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
 
   input {
-    File aligned_bam
-    File aligned_bam_index
+    File bam
+    File bam_index
     String base_file_name
     Int memory_gb = 8
     Int cpu_cores = 2
   }
 
   command <<<
+    set -eo pipefail
+
     gatk --java-options "-Dsamjdk.compression_level=5 -Xms16g -Xmx16g" \
       MarkDuplicates \
-      --INPUT "~{aligned_bam}" \
+      --INPUT "~{bam}" \
       --OUTPUT "~{base_file_name}.markdup.bam" \
       --METRICS_FILE "~{base_file_name}.duplicate_metrics" \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 2500 \
@@ -325,8 +344,8 @@ task base_recalibrator {
   }
 
   parameter_meta {
-    aligned_bam: "Input aligned BAM file to be recalibrated"
-    aligned_bam_index: "Index file for the input BAM"
+    bam: "Input aligned BAM file to be recalibrated"
+    bam_index: "Index file for the input BAM"
     dbsnp_vcf: "dbSNP VCF file for known variant sites"
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Index file for the reference FASTA"
@@ -339,8 +358,8 @@ task base_recalibrator {
   }
 
   input {
-    File aligned_bam
-    File aligned_bam_index
+    File bam
+    File bam_index
     File dbsnp_vcf
     File reference_fasta
     File reference_fasta_index
@@ -372,7 +391,7 @@ task base_recalibrator {
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       BaseRecalibrator \
       -R "~{basename(reference_fasta)}" \
-      -I "~{aligned_bam}" \
+      -I "~{bam}" \
       -O "~{base_file_name}.recal_data.table" \
       --known-sites "~{dbsnp_vcf}" \
       --known-sites ~{sep=" --known-sites " known_indels_sites_vcfs} \
@@ -383,22 +402,14 @@ task base_recalibrator {
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       ApplyBQSR \
       -R "~{basename(reference_fasta)}" \
-      -I "~{aligned_bam}" \
+      -I "~{bam}" \
       -bqsr "~{base_file_name}.recal_data.table" \
-      -O "~{base_file_name}.temp.bam" \
+      -O "~{base_file_name}.recal.bam" \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       --verbosity WARNING
 
-    # Clean BAM to prevent Manta alignment name collisions
-    samtools view -h -F 1024 "~{base_file_name}.temp.bam" | \
-    awk '!seen[$1]++ || /^@/' | \
-    samtools view -bS - > "~{base_file_name}.recal.bam"
-    
     # Index resulting bam file
     samtools index "~{base_file_name}.recal.bam"
-    
-    # Clean up temporary file
-    rm "~{base_file_name}.temp.bam"
   >>>
 
   output {
@@ -467,6 +478,135 @@ task collect_wgs_metrics {
 
   output {
     File metrics_file = "~{base_file_name}.wgs_metrics.txt"
+  }
+
+  runtime {
+    docker: "getwilds/gatk:4.6.1.0"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
+task markdup_recal_metrics {
+  meta {
+    description: "Performs duplicate marking, base recalibration, and WGS metrics in a single task to avoid data duplication"
+    outputs: {
+        recalibrated_bam: "BAM file with recalibrated base quality scores",
+        recalibrated_bai: "Index file for the recalibrated BAM",
+        recalibration_report: "Base recalibration report table",
+        duplicate_metrics: "Metrics file containing duplicate marking statistics",
+        wgs_metrics: "Comprehensive WGS metrics file with coverage and quality statistics"
+    }
+  }
+
+  parameter_meta {
+    bam: "Aligned input BAM file"
+    bam_index: "Index file for the aligned input BAM"
+    dbsnp_vcf: "dbSNP VCF file for known variant sites"
+    reference_fasta: "Reference genome FASTA file"
+    reference_fasta_index: "Index file for the reference FASTA"
+    reference_dict: "Reference genome sequence dictionary"
+    known_indels_sites_vcfs: "Array of VCF files with known indel sites"
+    base_file_name: "Base name for output files"
+    intervals: "Optional interval list file defining target regions"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
+    minimum_mapping_quality: "Minimum mapping quality for reads to be included"
+    minimum_base_quality: "Minimum base quality for bases to be included"
+    coverage_cap: "Maximum coverage depth to analyze"
+  }
+
+  input {
+    File bam
+    File bam_index
+    File dbsnp_vcf
+    File reference_fasta
+    File reference_fasta_index
+    File reference_dict
+    Array[File] known_indels_sites_vcfs
+    String base_file_name
+    File? intervals
+    Int memory_gb = 8
+    Int cpu_cores = 2
+    Int minimum_mapping_quality = 20
+    Int minimum_base_quality = 20
+    Int coverage_cap = 250
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Mark duplicates in the aligned BAM file
+    gatk --java-options "-Dsamjdk.compression_level=5 -Xms16g -Xmx16g" \
+      MarkDuplicates \
+      --INPUT "~{bam}" \
+      --OUTPUT "~{base_file_name}.markdup.bam" \
+      --METRICS_FILE "~{base_file_name}.duplicate_metrics" \
+      --OPTICAL_DUPLICATE_PIXEL_DISTANCE 2500 \
+      --VERBOSITY WARNING
+    
+    # Index resulting bam file
+    samtools index "~{base_file_name}.markdup.bam"
+
+    # Add local symbolic link for reference fasta and dict
+    # If soft links aren't allowed on your HPC system, copy them locally instead
+    ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
+    ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
+    ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    
+    # Generate vcf index files using GATK
+    gatk IndexFeatureFile -I "~{dbsnp_vcf}"
+    known_vcfs=(~{sep=" " known_indels_sites_vcfs})
+    for known_vcf in "${known_vcfs[@]}"; do
+      gatk IndexFeatureFile -I "${known_vcf}"
+    done
+
+    # Generate Base Recalibration Table
+    gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
+      BaseRecalibrator \
+      -R "~{basename(reference_fasta)}" \
+      -I "~{bam}" \
+      -O "~{base_file_name}.recal_data.table" \
+      --known-sites "~{dbsnp_vcf}" \
+      --known-sites ~{sep=" --known-sites " known_indels_sites_vcfs} \
+      ~{if defined(intervals) then "--intervals " + intervals else ""} \
+      --verbosity WARNING
+
+    # Apply Base Quality Score Recalibration
+    gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
+      ApplyBQSR \
+      -R "~{basename(reference_fasta)}" \
+      -I "~{bam}" \
+      -bqsr "~{base_file_name}.recal_data.table" \
+      -O "~{base_file_name}.recal.bam" \
+      ~{if defined(intervals) then "--intervals " + intervals else ""} \
+      --verbosity WARNING
+
+    # Index resulting bam file
+    samtools index "~{base_file_name}.recal.bam"
+
+    # Cleaning up intermediate MarkDuplicates BAM file
+    rm "~{base_file_name}.markdup.bam" "~{base_file_name}.markdup.bam.bai"
+
+    # Collect WGS metrics
+    gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
+      CollectWgsMetrics \
+      -I "~{bam}" \
+      -O "~{base_file_name}.wgs_metrics.txt" \
+      -R "~{basename(reference_fasta)}" \
+      --MINIMUM_MAPPING_QUALITY ~{minimum_mapping_quality} \
+      --MINIMUM_BASE_QUALITY ~{minimum_base_quality} \
+      --COVERAGE_CAP ~{coverage_cap} \
+      ~{if defined(intervals) then "--INTERVALS " + intervals else ""} \
+      --VERBOSITY WARNING
+  >>>
+
+  output {
+    File recalibrated_bam = "~{base_file_name}.recal.bam"
+    File recalibrated_bai = "~{base_file_name}.recal.bam.bai"
+    File recalibration_report = "~{base_file_name}.recal_data.table"
+    File duplicate_metrics = "~{base_file_name}.duplicate_metrics"
+    File wgs_metrics = "~{base_file_name}.wgs_metrics.txt"
   }
 
   runtime {
@@ -889,6 +1029,7 @@ task merge_mutect_stats {
 
 task validate_outputs {
   # TODO: Add validation for GATK dictionary, intervals, and duplicate metrics files
+  # TODO: Ensure that the recalibrated BAM files match between the separate and all-in-one tasks
   meta {
     description: "Validate GATK outputs and generate comprehensive statistics report"
     outputs: {
@@ -901,6 +1042,8 @@ task validate_outputs {
     markdup_bais: "Array of MarkDuplicates BAM index files"
     recalibrated_bams: "Array of recalibrated BAM files"
     recalibrated_bais: "Array of recalibrated BAM index files"
+    sequential_bams: "Array of sequential Markdup-Recal-Metrics BAM files"
+    sequential_bais: "Array of sequential Markdup-Recal-Metrics BAM index files"
     haplotype_vcfs: "Array of HaplotypeCaller VCF files"
     mutect2_vcfs: "Array of Mutect2 VCF files"
     wgs_metrics: "Array of WGS metrics files"
@@ -911,6 +1054,8 @@ task validate_outputs {
     Array[File] markdup_bais
     Array[File] recalibrated_bams
     Array[File] recalibrated_bais
+    Array[File] sequential_bams
+    Array[File] sequential_bais
     Array[File] haplotype_vcfs
     Array[File] mutect2_vcfs
     Array[File] wgs_metrics
@@ -958,6 +1103,26 @@ task validate_outputs {
         echo "Recalibrated BAM: $(basename $bam) (${size} bytes)" >> validation_report.txt
       else
         echo "Missing Recalibrated BAM: $bam" >> validation_report.txt
+      fi
+    done
+
+    # Check Sequential Markdup-Recal-Metrics BAM files
+    for bam in ~{sep=" " sequential_bams}; do
+      if [[ -f "$bam" ]]; then
+        size=$(stat -f%z "$bam" 2>/dev/null || stat -c%s "$bam" 2>/dev/null || echo "unknown")
+        echo "Sequential BAM: $(basename $bam) (${size} bytes)" >> validation_report.txt
+      else
+        echo "Missing Sequential BAM: $bam" >> validation_report.txt
+      fi
+    done
+
+    # Check Sequential Markdup-Recal-Metrics BAI files
+    for bai in ~{sep=" " sequential_bais}; do
+      if [[ -f "$bai" ]]; then
+        size=$(stat -f%z "$bai" 2>/dev/null || stat -c%s "$bai" 2>/dev/null || echo "unknown")
+        echo "Sequential BAI: $(basename $bai) (${size} bytes)" >> validation_report.txt
+      else
+        echo "Missing Sequential BAI: $bai" >> validation_report.txt
       fi
     done
 
