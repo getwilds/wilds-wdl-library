@@ -141,11 +141,12 @@ workflow gatk_example {
 
     # Split BAM by intervals for scatter-gather approach
     call print_reads { input:
-      input_bam = base_recalibrator.recalibrated_bam,
-      input_bam_index = base_recalibrator.recalibrated_bai,
+      bam = base_recalibrator.recalibrated_bam,
+      bam_index = base_recalibrator.recalibrated_bai,
       interval_files = split_intervals.interval_files,
       reference_fasta = genome_fasta,
       reference_fasta_index = genome_fasta_index,
+      reference_dict = create_sequence_dictionary.sequence_dict,
       output_basename = sample.name + ".recalibrated"
     }
 
@@ -565,22 +566,24 @@ task print_reads {
   }
 
   parameter_meta {
-    input_bam: "Input BAM file to extract reads from"
-    input_bam_index: "Index file for the input BAM"
+    bam: "Input BAM file to extract reads from"
+    bam_index: "Index file for the input BAM"
     interval_files: "Array of interval files defining regions to extract"
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Index file for the reference FASTA"
+    reference_dict: "Reference genome sequence dictionary"
     output_basename: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
 
   input {
-    File input_bam
-    File input_bam_index
+    File bam
+    File bam_index
     Array[File] interval_files
     File reference_fasta
     File reference_fasta_index
+    File reference_dict
     String output_basename
     Int memory_gb = 8
     Int cpu_cores = 2
@@ -589,6 +592,11 @@ task print_reads {
   command <<<
     set -eo pipefail
     
+    # Add local symbolic link for reference files
+    ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
+    ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
+    ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+
     # Create arrays to store output filenames
     bam_files=()
     bai_files=()
@@ -602,7 +610,7 @@ task print_reads {
       gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
         PrintReads \
         -R "~{reference_fasta}" \
-        -I "~{input_bam}" \
+        -I "~{bam}" \
         -L "$interval_file" \
         -O "$output_bam" \
         --verbosity WARNING
