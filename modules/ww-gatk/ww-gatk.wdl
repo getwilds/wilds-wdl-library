@@ -142,8 +142,8 @@ workflow gatk_example {
 
     # Split BAM by intervals for scatter-gather approach
     call ww_samtools.split_bam_by_intervals { input:
-      input_bam = base_recalibrator.recalibrated_bam,
-      input_bam_index = base_recalibrator.recalibrated_bai,
+      bam_to_split = base_recalibrator.recalibrated_bam,
+      bam_to_split_index = base_recalibrator.recalibrated_bai,
       bed_files = split_intervals.bed_files,
       output_basename = sample.name + ".recalibrated"
     }
