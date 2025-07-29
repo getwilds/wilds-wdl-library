@@ -94,7 +94,9 @@ workflow samtools_example {
   call validate_outputs { input:
       r1_fastqs = crams_to_fastq.r1_fastq,
       r2_fastqs = crams_to_fastq.r2_fastq,
-      sample_names = crams_to_fastq.sample_name
+      sample_names = crams_to_fastq.sample_name,
+      interval_bams = split_bam_by_intervals.interval_bams,
+      interval_bam_indices = split_bam_by_intervals.interval_bam_indices
   }
 
   output {
@@ -225,7 +227,7 @@ task split_bam_by_intervals {
 
 task validate_outputs {
   meta {
-    description: "Validates that FASTQ files exist and are non-empty after CRAM-to-FASTQ conversion."
+    description: "Validates that FASTQ files exist and are non-empty after CRAM-to-FASTQ conversion, and validates interval BAM files."
     outputs: {
         report: "Validation report with pass/fail summary"
     }
@@ -235,26 +237,34 @@ task validate_outputs {
     r1_fastqs: "Array of R1 FASTQ files to check"
     r2_fastqs: "Array of R2 FASTQ files to check"
     sample_names: "Array of sample names corresponding to FASTQ files"
+    interval_bams: "Array of interval BAM files to validate"
+    interval_bam_indices: "Array of interval BAM index files to validate"
   }
 
   input {
     Array[File] r1_fastqs
     Array[File] r2_fastqs
     Array[String] sample_names
+    Array[File] interval_bams
+    Array[File] interval_bam_indices
   }
 
   command <<<
     set -eo pipefail
 
-    echo "=== Samtools FASTQ Validation Report ===" > samtools_validation_report.txt
+    echo "=== Samtools FASTQ and BAM Validation Report ===" > samtools_validation_report.txt
     echo "" >> samtools_validation_report.txt
 
     r1_fastqs=(~{sep=" " r1_fastqs})
     r2_fastqs=(~{sep=" " r2_fastqs})
     sample_names=(~{sep=" " sample_names})
+    interval_bams=(~{sep=" " interval_bams})
+    interval_bam_indices=(~{sep=" " interval_bam_indices})
 
     validation_passed=true
 
+    # Validate FASTQ files
+    echo "=== FASTQ Validation ===" >> samtools_validation_report.txt
     for i in "${!sample_names[@]}"; do
       sample="${sample_names[$i]}"
       r1="${r1_fastqs[$i]}"
@@ -283,8 +293,42 @@ task validate_outputs {
       echo "" >> samtools_validation_report.txt
     done
 
+    # Validate interval BAM files
+    echo "=== Interval BAM Validation ===" >> samtools_validation_report.txt
+    for i in "${!interval_bams[@]}"; do
+      bam="${interval_bams[$i]}"
+      bai="${interval_bam_indices[$i]}"
+      
+      echo "--- Interval BAM $(($i + 1)): $(basename "$bam") ---" >> samtools_validation_report.txt
+
+      if [[ -f "$bam" && -s "$bam" ]]; then
+        size=$(stat -c%s "$bam")
+        echo "  BAM file: PASS (${size} bytes)" >> samtools_validation_report.txt
+        
+        # Try to get basic BAM stats if samtools is available
+        if command -v samtools &> /dev/null; then
+          read_count=$(samtools view -c "$bam" 2>/dev/null || echo "N/A")
+          echo "  Read count: $read_count" >> samtools_validation_report.txt
+        fi
+      else
+        echo "  BAM file: FAIL - MISSING OR EMPTY" >> samtools_validation_report.txt
+        validation_passed=false
+      fi
+
+      if [[ -f "$bai" && -s "$bai" ]]; then
+        size=$(stat -c%s "$bai")
+        echo "  BAI index: PASS (${size} bytes)" >> samtools_validation_report.txt
+      else
+        echo "  BAI index: FAIL - MISSING OR EMPTY" >> samtools_validation_report.txt
+        validation_passed=false
+      fi
+
+      echo "" >> samtools_validation_report.txt
+    done
+
     echo "=== Summary ===" >> samtools_validation_report.txt
-    echo "Samples processed: ${#sample_names[@]}" >> samtools_validation_report.txt
+    echo "FASTQ samples processed: ${#sample_names[@]}" >> samtools_validation_report.txt
+    echo "Interval BAMs processed: ${#interval_bams[@]}" >> samtools_validation_report.txt
     if [[ "$validation_passed" == "true" ]]; then
       echo "Status: PASSED" >> samtools_validation_report.txt
     else
