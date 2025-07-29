@@ -609,7 +609,7 @@ task print_reads {
       
       gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
         PrintReads \
-        -R "~{reference_fasta}" \
+        -R "~{basename(reference_fasta)}" \
         -I "~{bam}" \
         -L "$interval_file" \
         -O "$output_bam" \
