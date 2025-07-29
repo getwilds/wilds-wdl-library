@@ -103,6 +103,7 @@ workflow gatk_example {
     }
   ]
 
+  # Splitting intervals for parallel processing
   call split_intervals { input:
       reference_fasta = genome_fasta,
       reference_fasta_index = genome_fasta_index,
@@ -111,13 +112,16 @@ workflow gatk_example {
       scatter_count = scatter_count
   }
 
+  # Scattering across the samples provided
   scatter (sample in final_samples) {
+    # Mark duplicates in the raw BAM file
     call mark_duplicates { input:
         bam = sample.bam,
         bam_index = sample.bai,
         base_file_name = sample.name
     }
 
+    # Base recalibration using GATK BaseRecalibrator
     call base_recalibrator { input:
         bam = mark_duplicates.markdup_bam,
         bam_index = mark_duplicates.markdup_bai,
@@ -130,6 +134,7 @@ workflow gatk_example {
         base_file_name = sample.name
     }
 
+    # Collect WGS metrics after base recalibration
     call collect_wgs_metrics { input:
         bam = base_recalibrator.recalibrated_bam,
         bam_index = base_recalibrator.recalibrated_bai,
@@ -139,6 +144,7 @@ workflow gatk_example {
         base_file_name = sample.name
     }
 
+    # Perform all three operations in a single task
     call markdup_recal_metrics { input:
         bam = sample.bam,
         bam_index = sample.bai,
@@ -202,7 +208,7 @@ workflow gatk_example {
         reference_dict = create_sequence_dictionary.sequence_dict
     }
 
-    # Merge Mutect2 results
+    # Merge Mutect2 VCFs
     call merge_vcfs as merge_mutect2_vcfs { input:
         vcfs = mutect2.vcf,
         vcf_indices = mutect2.vcf_index,
@@ -210,12 +216,14 @@ workflow gatk_example {
         reference_dict = create_sequence_dictionary.sequence_dict
     }
 
+    # Merge Mutect2 stats
     call merge_mutect_stats { input:
         stats = mutect2.stats_file,
         base_file_name = sample.name + ".mutect2"
     }
   }
 
+  # Validate outputs to ensure all tasks completed successfully
   call validate_outputs { input:
       markdup_bams = mark_duplicates.markdup_bam,
       markdup_bais = mark_duplicates.markdup_bai,
@@ -620,8 +628,7 @@ task split_intervals {
   meta {
     description: "Split intervals into smaller chunks for parallelization using GATK SplitIntervals"
     outputs: {
-        interval_files: "Array of interval files optimized for parallel processing",
-        bed_files: "Array of BED files corresponding to the interval files"
+        interval_files: "Array of interval files optimized for parallel processing"
     }
   }
 
@@ -655,7 +662,6 @@ task split_intervals {
     
     # Create output directories
     mkdir -p scattered_intervals
-    mkdir -p scattered_beds
     
     # Run SplitIntervals
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
@@ -666,27 +672,12 @@ task split_intervals {
       -O scattered_intervals/ \
       --verbosity WARNING
     
-    # Convert interval_list files to BED format using GATK IntervalListToBed
-    for interval_file in scattered_intervals/*.interval_list; do
-      if [[ -f "$interval_file" ]]; then
-        interval_name=$(basename "$interval_file" .interval_list)
-        bed_file="scattered_beds/${interval_name}.bed"
-        
-        gatk IntervalListToBed \
-          -I "$interval_file" \
-          -O "$bed_file" \
-          --VERBOSITY WARNING
-      fi
-    done
-    
     # List all created files for output
     find scattered_intervals/ -name "*.interval_list" | sort -V > interval_files.txt
-    find scattered_beds/ -name "*.bed" | sort -V > bed_files.txt
   >>>
 
   output {
     Array[File] interval_files = read_lines("interval_files.txt")
-    Array[File] bed_files = read_lines("bed_files.txt")
   }
 
   runtime {

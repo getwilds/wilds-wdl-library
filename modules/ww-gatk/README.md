@@ -6,9 +6,9 @@ A WILDS WDL module for GATK variant calling and analysis tasks with automated pa
 
 ## Overview
 
-This module provides comprehensive variant calling capabilities using GATK (Genome Analysis Toolkit), supporting both germline and somatic variant detection workflows with **automatic interval-based parallelization** for optimal performance on whole genome sequencing (WGS) data. It includes base quality score recalibration (BQSR), germline variant calling with HaplotypeCaller, somatic variant calling with Mutect2, and quality metrics collection. The module can run completely standalone with automatic test data download or integrate with existing BAM files and reference data.
+This module provides comprehensive variant calling capabilities using GATK (Genome Analysis Toolkit), supporting both germline and somatic variant detection workflows with **automatic interval-based parallelization** for optimal performance on whole genome sequencing (WGS) data. It includes duplicate marking, base quality score recalibration (BQSR), germline variant calling with HaplotypeCaller, somatic variant calling with Mutect2, and quality metrics collection. The module can run completely standalone with automatic test data download or integrate with existing BAM files and reference data.
 
-The module implements GATK best practices for variant calling, including proper base quality recalibration using known variant sites, **automatic interval splitting for parallelization**, and provides comprehensive validation and reporting for quality assurance.
+The module implements GATK best practices for variant calling, including proper duplicate marking, base quality recalibration using known variant sites, **automatic interval splitting for parallelization**, and provides comprehensive validation and reporting for quality assurance.
 
 ## Key Features
 
@@ -16,13 +16,14 @@ The module implements GATK best practices for variant calling, including proper 
 - **Significant speedup**: Near-linear performance scaling for HaplotypeCaller and Mutect2 on WGS data
 - **Smart interval management**: Uses GATK SplitIntervals to create balanced computational chunks
 - **Seamless merging**: Automatically combines parallel results into final VCF files
+- **Flexible processing modes**: Both individual task execution and combined processing approaches
 - **Zero configuration**: Works out-of-the-box with sensible defaults for parallelization
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `base_recalibrator`, `haplotype_caller`, `mutect2`, `split_intervals`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `validate_outputs`
+- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `validate_outputs`
 - **Workflow**: `gatk_example` (demonstration workflow with automatic test data support and parallelization)
 - **Container**: `getwilds/gatk:4.6.1.0`
 - **Dependencies**: Integrates with `ww-testdata` module for automatic reference genome and variant database downloads
@@ -30,21 +31,36 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 ## Tasks
 
-### Core Variant Calling Tasks
+### Core Processing Tasks
+
+### `mark_duplicates`
+Marks duplicate reads in aligned BAM files to improve variant calling accuracy.
+
+**Inputs:**
+- `bam` (File): Aligned input BAM file
+- `bam_index` (File): Index file for the aligned input BAM
+- `base_file_name` (String): Base name for the output files
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+
+**Outputs:**
+- `markdup_bam` (File): BAM file with duplicate reads marked
+- `markdup_bai` (File): Index file for the duplicate-marked BAM
+- `duplicate_metrics` (File): Metrics file containing duplicate marking statistics
 
 ### `base_recalibrator`
 Performs Base Quality Score Recalibration (BQSR) to improve the accuracy of base quality scores.
 
 **Inputs:**
-- `aligned_bam` (File): Input aligned BAM file to be recalibrated
-- `aligned_bam_index` (File): Index file for the input BAM
-- `intervals` (File?): Optional interval list file defining target regions
+- `bam` (File): Input aligned BAM file to be recalibrated
+- `bam_index` (File): Index file for the input BAM
 - `dbsnp_vcf` (File): dbSNP VCF file for known variant sites
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Index file for the reference FASTA
 - `reference_dict` (File): Reference genome sequence dictionary
 - `known_indels_sites_vcfs` (Array[File]): Array of VCF files with known indel sites
-- `output_basename` (String): Base name for output files
+- `base_file_name` (String): Base name for output files
+- `intervals` (File?): Optional interval list file defining target regions
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 
@@ -53,20 +69,48 @@ Performs Base Quality Score Recalibration (BQSR) to improve the accuracy of base
 - `recalibrated_bai` (File): Index file for the recalibrated BAM
 - `recalibration_report` (File): Base recalibration report table
 
+### `markdup_recal_metrics`
+Performs duplicate marking, base recalibration, and WGS metrics collection in a single task to avoid data duplication and improve efficiency.
+
+**Inputs:**
+- `bam` (File): Aligned input BAM file
+- `bam_index` (File): Index file for the aligned input BAM
+- `dbsnp_vcf` (File): dbSNP VCF file for known variant sites
+- `reference_fasta` (File): Reference genome FASTA file
+- `reference_fasta_index` (File): Index file for the reference FASTA
+- `reference_dict` (File): Reference genome sequence dictionary
+- `known_indels_sites_vcfs` (Array[File]): Array of VCF files with known indel sites
+- `base_file_name` (String): Base name for output files
+- `intervals` (File?): Optional interval list file defining target regions
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `minimum_mapping_quality` (Int): Minimum mapping quality for reads (default: 20)
+- `minimum_base_quality` (Int): Minimum base quality for bases (default: 20)
+- `coverage_cap` (Int): Maximum coverage depth to analyze (default: 250)
+
+**Outputs:**
+- `recalibrated_bam` (File): BAM file with recalibrated base quality scores
+- `recalibrated_bai` (File): Index file for the recalibrated BAM
+- `recalibration_report` (File): Base recalibration report table
+- `duplicate_metrics` (File): Metrics file containing duplicate marking statistics
+- `wgs_metrics` (File): Comprehensive WGS metrics file with coverage and quality statistics
+
+### Core Variant Calling Tasks
+
 ### `haplotype_caller`
 Calls germline variants using GATK HaplotypeCaller.
 
 **Inputs:**
 - `bam` (File): Input aligned BAM file
 - `bam_index` (File): Index file for the input BAM
-- `intervals` (File?): Optional interval list file defining target regions
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Index file for the reference FASTA
 - `reference_dict` (File): Reference genome sequence dictionary
 - `dbsnp_vcf` (File): dbSNP VCF file for variant annotation
-- `output_basename` (String): Base name for output files
-- `memory_gb` (Int): Memory allocation in GB (default: 16)
-- `cpu_cores` (Int): Number of CPU cores to use (default: 4)
+- `base_file_name` (String): Base name for output files
+- `intervals` (File?): Optional interval list file defining target regions
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 
 **Outputs:**
 - `vcf` (File): Compressed VCF file containing germline variant calls
@@ -78,12 +122,12 @@ Calls somatic variants using GATK Mutect2 in tumor-only mode with filtering.
 **Inputs:**
 - `bam` (File): Input aligned BAM file
 - `bam_index` (File): Index file for the input BAM
-- `intervals` (File?): Optional interval list file defining target regions
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Index file for the reference FASTA
 - `reference_dict` (File): Reference genome sequence dictionary
 - `gnomad_vcf` (File): gnomAD population allele frequency VCF for germline resource
-- `output_basename` (String): Base name for output files
+- `base_file_name` (String): Base name for output files
+- `intervals` (File?): Optional interval list file defining target regions
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 
@@ -110,13 +154,31 @@ Automatically splits genome intervals into optimal chunks for parallel processin
 **Outputs:**
 - `interval_files` (Array[File]): Array of interval files optimized for parallel processing
 
+### `print_reads`
+Extracts reads from specific intervals using GATK PrintReads for scatter-gather processing.
+
+**Inputs:**
+- `bam` (File): Input BAM file to extract reads from
+- `bam_index` (File): Index file for the input BAM
+- `interval_files` (Array[File]): Array of interval files defining regions to extract
+- `reference_fasta` (File): Reference genome FASTA file
+- `reference_fasta_index` (File): Index file for the reference FASTA
+- `reference_dict` (File): Reference genome sequence dictionary
+- `output_basename` (String): Base name for output files
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+
+**Outputs:**
+- `interval_bams` (Array[File]): Array of BAM files containing reads from specified intervals
+- `interval_bam_indices` (Array[File]): Array of index files for the interval BAMs
+
 ### `merge_vcfs`
 Merges multiple VCF files from parallel processing into a single consolidated VCF.
 
 **Inputs:**
 - `vcfs` (Array[File]): Array of VCF files to merge
 - `vcf_indices` (Array[File]): Array of VCF index files
-- `output_basename` (String): Base name for output files
+- `base_file_name` (String): Base name for output files
 - `reference_dict` (File): Reference sequence dictionary
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
@@ -130,7 +192,7 @@ Merges Mutect2 statistics files from parallel processing.
 
 **Inputs:**
 - `stats` (Array[File]): Array of Mutect2 stats files to merge
-- `output_basename` (String): Base name for output files
+- `base_file_name` (String): Base name for output files
 - `memory_gb` (Int): Memory allocation in GB (default: 4)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 1)
 
@@ -159,7 +221,7 @@ Collects whole genome sequencing metrics using GATK CollectWgsMetrics.
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Index file for the reference FASTA
 - `intervals` (File?): Optional interval list file defining target regions
-- `output_basename` (String): Base name for output files
+- `base_file_name` (String): Base name for output files
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 - `minimum_mapping_quality` (Int): Minimum mapping quality for reads (default: 20)
@@ -173,8 +235,12 @@ Collects whole genome sequencing metrics using GATK CollectWgsMetrics.
 Validates GATK outputs and generates comprehensive statistics report.
 
 **Inputs:**
+- `markdup_bams` (Array[File]): Array of MarkDuplicates BAM files
+- `markdup_bais` (Array[File]): Array of MarkDuplicates BAM index files
 - `recalibrated_bams` (Array[File]): Array of recalibrated BAM files
-- `recalibrated_bais` (Array[File]): Array of BAM index files
+- `recalibrated_bais` (Array[File]): Array of recalibrated BAM index files
+- `sequential_bams` (Array[File]): Array of sequential Markdup-Recal-Metrics BAM files
+- `sequential_bais` (Array[File]): Array of sequential Markdup-Recal-Metrics BAM index files
 - `haplotype_vcfs` (Array[File]): Array of HaplotypeCaller VCF files
 - `mutect2_vcfs` (Array[File]): Array of Mutect2 VCF files
 - `wgs_metrics` (Array[File]): Array of WGS metrics files
@@ -185,10 +251,15 @@ Validates GATK outputs and generates comprehensive statistics report.
 ## Workflow Parallelization Configuration
 
 **Default behavior:**
-- Splits genome into 24 balanced intervals (optimal for human genome)
+- Splits genome into configurable intervals (default: 2 for testing, 24 recommended for production)
+- Splits BAM files by intervals for optimal parallel processing
 - Each interval runs HaplotypeCaller and Mutect2 in parallel
 - Automatically merges results into final VCF files
 - Near-linear speedup for WGS analysis
+
+**Processing approaches:**
+- **Individual tasks**: Separate duplicate marking, base recalibration, and metrics collection
+- **Combined task**: `markdup_recal_metrics` performs all preprocessing steps in one task for efficiency
 
 ## Testing the Module
 
@@ -239,9 +310,10 @@ The demonstration workflow can run with an empty inputs file (`{}`) and will aut
 ## Features
 
 - **Automatic interval-based parallelization**: Dramatically improves WGS performance
-- **Complete GATK pipeline**: Base recalibration, germline and somatic variant calling, QC metrics
+- **Complete GATK pipeline**: Duplicate marking, base recalibration, germline and somatic variant calling, QC metrics
 - **Intelligent interval splitting**: Uses GATK SplitIntervals for optimal load balancing
 - **Seamless result merging**: Transparent combination of parallel results
+- **Flexible processing modes**: Choose between individual tasks or combined processing approaches
 - **Automatic test data**: Downloads reference genome, variant databases, and test BAM when not provided
 - **Best practices implementation**: Follows GATK best practices for variant calling workflows
 - **Comprehensive validation**: Built-in output validation and quality reporting
@@ -264,16 +336,18 @@ The demonstration workflow can run with an empty inputs file (`{}`) and will aut
 - **Region targeting**: Using intervals files significantly reduces runtime and resource requirements
 
 ### Optimization Tips
-- **Use appropriate scatter_count**: Balance between parallelization and overhead
+- **Use appropriate scatter_count**: Balance between parallelization and overhead (default 2 for testing, 24 for production)
 - **Ensure adequate CPU allocation**: More cores = better performance for variant calling
 - **Monitor memory usage**: Each parallel task needs sufficient memory
+- **Choose processing approach**: Combined tasks reduce I/O overhead for large datasets
 
 ## Output Description
 
+- **Duplicate-marked BAMs**: BAM files with duplicate reads marked for improved variant calling
 - **Recalibrated BAMs**: Quality-improved BAM files with recalibrated base scores
 - **Germline VCFs**: HaplotypeCaller variant calls suitable for population genetics and clinical analysis (automatically merged from parallel processing)
 - **Somatic VCFs**: Mutect2 tumor-only somatic variant calls with filtering applied (automatically merged from parallel processing)
-- **QC metrics**: Comprehensive sequencing quality metrics including coverage statistics
+- **QC metrics**: Comprehensive sequencing quality metrics including coverage statistics and duplicate rates
 - **Validation report**: Summary of pipeline execution with file verification and basic statistics
 
 ## Module Development
@@ -284,6 +358,7 @@ This module is automatically tested as part of the WILDS WDL Library CI/CD pipel
 - Comprehensive validation of all outputs and statistics
 - Integration testing with `ww-testdata` module
 - Parallelization testing with multiple interval configurations
+- Validation of both individual and combined processing approaches
 
 ## Integration Patterns
 
@@ -293,6 +368,7 @@ This module demonstrates several key patterns:
 - **Best practices workflow**: Implementation of GATK recommended variant calling pipeline
 - **Comprehensive validation**: Quality assurance for complex multi-output workflows
 - **Automatic parallelization**: Transparent interval-based parallel processing with result merging
+- **Flexible processing architectures**: Both modular and combined task approaches
 
 ## Extending the Module
 
@@ -302,6 +378,7 @@ This module can be extended by:
 - Including structural variant calling with other GATK tools
 - Adding quality control modules (e.g., FastQC, MultiQC integration)
 - Customizing parallelization strategies for specific use cases
+- Implementing additional preprocessing steps or optimizations
 
 ## Related WILDS Components
 
