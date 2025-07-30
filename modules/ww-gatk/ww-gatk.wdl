@@ -638,6 +638,7 @@ task split_intervals {
     reference_dict: "Reference genome sequence dictionary"
     intervals: "Optional interval list file defining target regions to split"
     scatter_count: "Number of interval files to create (default: 24)"
+    filter_to_canonical_chromosomes: "Whether to restrict analysis to canonical chromosomes (chr1-22,X,Y,M) (default: true)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
@@ -648,6 +649,7 @@ task split_intervals {
     File reference_dict
     File? intervals
     Int scatter_count = 24
+    Boolean filter_to_canonical_chromosomes = true
     Int memory_gb = 8
     Int cpu_cores = 2
   }
@@ -663,12 +665,37 @@ task split_intervals {
     # Create output directories
     mkdir -p scattered_intervals
     
+    # Create canonical chromosome intervals if filtering is enabled and no custom intervals provided
+    if [[ "~{filter_to_canonical_chromosomes}" == "true" && ! -f "~{intervals}" ]]; then
+      echo "Creating canonical chromosome intervals..."
+      echo "@HD	VN:1.0	SO:coordinate" > canonical_chromosomes.interval_list
+      
+      # Add sequence dictionary headers for canonical chromosomes only
+      grep -E "^@SQ.*SN:(chr[1-9]|chr1[0-9]|chr2[0-2]|chrX|chrY|chrM)\s" "~{basename(reference_dict)}" >> canonical_chromosomes.interval_list || true
+      
+      # Add interval entries for canonical chromosomes
+      grep -E "^@SQ.*SN:(chr[1-9]|chr1[0-9]|chr2[0-2]|chrX|chrY|chrM)\s" "~{basename(reference_dict)}" | \
+        awk '{
+          match($0, /SN:([^\s]+)/, seq_name);
+          match($0, /LN:([0-9]+)/, seq_length);
+          if (seq_name[1] && seq_length[1]) {
+            print seq_name[1] "\t1\t" seq_length[1] "\t+\t."
+          }
+        }' >> canonical_chromosomes.interval_list
+      
+      INTERVAL_ARG="--intervals canonical_chromosomes.interval_list"
+    elif [[ -f "~{intervals}" ]]; then
+      INTERVAL_ARG="--intervals ~{intervals}"
+    else
+      INTERVAL_ARG=""
+    fi
+    
     # Run SplitIntervals
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       SplitIntervals \
       -R "~{basename(reference_fasta)}" \
       --scatter-count ~{scatter_count} \
-      ~{if defined(intervals) then "--intervals " + intervals else ""} \
+      ${INTERVAL_ARG} \
       -O scattered_intervals/ \
       --verbosity WARNING
     
