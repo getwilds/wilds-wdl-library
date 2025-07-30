@@ -181,9 +181,7 @@ workflow gatk_example {
         reference_fasta_index = genome_fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
         dbsnp_vcf = final_dbsnp,
-        base_file_name = sample.name,
-        memory_gb = 4 * scatter_count,
-        cpu_cores = scatter_count
+        base_file_name = sample.name + "." + basename(split_intervals.interval_files[i], ".interval_list")
       }
 
       call mutect2 { input:
@@ -194,9 +192,7 @@ workflow gatk_example {
         reference_fasta_index = genome_fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
         gnomad_vcf = final_gnomad,
-        base_file_name = sample.name,
-        memory_gb = 4 * scatter_count,
-        cpu_cores = scatter_count
+        base_file_name = sample.name + "." + basename(split_intervals.interval_files[i], ".interval_list")
       }
     }
 
@@ -676,11 +672,21 @@ task split_intervals {
       # Add interval entries for canonical chromosomes
       grep -E "^@SQ.*SN:(chr[1-9]|chr1[0-9]|chr2[0-2]|chrX|chrY|chrM)\s" "~{basename(reference_dict)}" | \
         awk '{
-          match($0, /SN:([^\s]+)/, seq_name);
-          match($0, /LN:([0-9]+)/, seq_length);
-          if (seq_name[1] && seq_length[1]) {
-            print seq_name[1] "\t1\t" seq_length[1] "\t+\t."
+          # Extract sequence name (SN:)
+          for(i=1; i<=NF; i++) {
+            if($i ~ /^SN:/) {
+              gsub(/^SN:/, "", $i);
+              seq_name = $i;
+            }
+            if($i ~ /^LN:/) {
+              gsub(/^LN:/, "", $i);
+              seq_length = $i;
+            }
           }
+          if(seq_name && seq_length) {
+            print seq_name "\t1\t" seq_length "\t+\t.";
+          }
+          seq_name=""; seq_length="";
         }' >> canonical_chromosomes.interval_list
       
       INTERVAL_ARG="--intervals canonical_chromosomes.interval_list"
