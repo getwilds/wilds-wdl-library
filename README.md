@@ -1,7 +1,14 @@
-# WILDS WDL Library
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<table>
+<tr>
+  <td><img src="WILDSWDLLogo.jpeg" width="400" alt="WILDS WDL logo"></td>
+  <td>
+    <h1>WILDS WDL Library</h1>
+    <p>A centralized collection of bioinformatics WDL infrastructure providing reusable, well-tested components that can be combined to create powerful computational pipelines for genomics research.</p>
+  </td>
+</tr>
+</table>
 
-The WILDS WDL Library is a centralized collection of bioinformatics WDL infrastructure providing reusable, well-tested components that can be combined to create powerful computational pipelines for genomics research.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
 
