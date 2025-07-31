@@ -5,7 +5,7 @@ version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
-struct SampleInfo {
+struct SamtoolsSample {
   String name
   Array[File] cram_files
 }
@@ -31,7 +31,7 @@ workflow samtools_example {
   }
 
   input {
-    Array[SampleInfo]? samples
+    Array[SamtoolsSample]? samples
     File? reference_fasta
     Int cpus = 2
     Int memory_gb = 8
@@ -53,7 +53,7 @@ workflow samtools_example {
   }
 
   # Create test sample array when no samples provided
-  Array[SampleInfo] test_samples = if defined(download_cram_data.cram) then [
+  Array[SamtoolsSample] test_samples = if defined(download_cram_data.cram) then [
     object {
       name: "test_sample",
       cram_files: [
@@ -65,7 +65,7 @@ workflow samtools_example {
   ] else []
 
   # Create the samples array - either from input or from test data
-  Array[SampleInfo] final_samples = select_first([samples, test_samples])
+  Array[SamtoolsSample] final_samples = select_first([samples, test_samples])
 
   scatter (sample in final_samples) {
     call crams_to_fastq { input:
