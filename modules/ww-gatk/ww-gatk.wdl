@@ -1335,10 +1335,10 @@ task validate_outputs {
     recalibrated_bais: "Array of recalibrated BAM index files"
     sequential_bams: "Array of sequential Markdup-Recal-Metrics BAM files"
     sequential_bais: "Array of sequential Markdup-Recal-Metrics BAM index files"
-    haplotype_vcfs: "Array of HaplotypeCaller VCF files"
-    mutect2_vcfs: "Array of Mutect2 VCF files"
-    parallel_haplotype_vcfs: "Array of parallel HaplotypeCaller VCF files"
-    parallel_mutect2_vcfs: "Array of parallel Mutect2 VCF files"
+    haplotype_vcfs: "Array of HaplotypeCaller VCF files called via scatter-gather parallelization"
+    mutect2_vcfs: "Array of Mutect2 VCF files called via scatter-gather parallelization"
+    parallel_haplotype_vcfs: "Array of HaplotypeCaller VCF files called via internal parallelization"
+    parallel_mutect2_vcfs: "Array of Mutect2 VCF files called via internal parallelization"
     wgs_metrics: "Array of WGS metrics files"
   }
 

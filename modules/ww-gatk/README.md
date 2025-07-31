@@ -281,10 +281,10 @@ Validates GATK outputs and generates comprehensive statistics report.
 - `recalibrated_bais` (Array[File]): Array of recalibrated BAM index files
 - `sequential_bams` (Array[File]): Array of sequential Markdup-Recal-Metrics BAM files
 - `sequential_bais` (Array[File]): Array of sequential Markdup-Recal-Metrics BAM index files
-- `haplotype_vcfs` (Array[File]): Array of HaplotypeCaller VCF files
-- `mutect2_vcfs` (Array[File]): Array of Mutect2 VCF files
-- `parallel_haplotype_vcfs` (Array[File]): Array of parallel HaplotypeCaller VCF files
-- `parallel_mutect2_vcfs` (Array[File]): Array of parallel Mutect2 VCF files
+- `haplotype_vcfs` (Array[File]): Array of HaplotypeCaller VCF files called via scatter-gather parallelization
+- `mutect2_vcfs` (Array[File]): Array of Mutect2 VCF files called via scatter-gather parallelization
+- `parallel_haplotype_vcfs` (Array[File]): Array of HaplotypeCaller VCF files called via internal parallelization
+- `parallel_mutect2_vcfs` (Array[File]): Array of Mutect2 VCF files called via internal parallelization
 - `wgs_metrics` (Array[File]): Array of WGS metrics files
 
 **Outputs:**
