@@ -12,7 +12,7 @@ The module implements GATK best practices for variant calling, including proper 
 
 ## Key Features
 
-- **Automatic parallelization**: Intelligently splits genome into optimal intervals for parallel processing
+- **Dual parallelization strategies**: Both scatter-gather and internal parallelization approaches
 - **Significant speedup**: Near-linear performance scaling for HaplotypeCaller and Mutect2 on WGS data
 - **Smart interval management**: Uses GATK SplitIntervals to create balanced computational chunks
 - **Seamless merging**: Automatically combines parallel results into final VCF files
@@ -23,7 +23,7 @@ The module implements GATK best practices for variant calling, including proper 
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `validate_outputs`
+- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `validate_outputs`
 - **Workflow**: `gatk_example` (demonstration workflow with automatic test data support and parallelization)
 - **Container**: `getwilds/gatk:4.6.1.0`
 - **Dependencies**: Integrates with `ww-testdata` module for automatic reference genome and variant database downloads
@@ -98,7 +98,7 @@ Performs duplicate marking, base recalibration, and WGS metrics collection in a 
 ### Core Variant Calling Tasks
 
 ### `haplotype_caller`
-Calls germline variants using GATK HaplotypeCaller.
+Calls germline variants using GATK HaplotypeCaller for individual intervals in scatter-gather workflows.
 
 **Inputs:**
 - `bam` (File): Input aligned BAM file
@@ -116,8 +116,27 @@ Calls germline variants using GATK HaplotypeCaller.
 - `vcf` (File): Compressed VCF file containing germline variant calls
 - `vcf_index` (File): Index file for the VCF output
 
+### `haplotype_caller_parallel`
+Calls germline variants using GATK HaplotypeCaller with internal parallelization for reduced data duplication and improved efficiency.
+
+**Inputs:**
+- `bam` (File): Input aligned BAM file
+- `bam_index` (File): Index file for the input BAM
+- `intervals` (Array[File]): Array of interval files for parallel processing
+- `reference_fasta` (File): Reference genome FASTA file
+- `reference_fasta_index` (File): Index file for the reference FASTA
+- `reference_dict` (File): Reference genome sequence dictionary
+- `dbsnp_vcf` (File): dbSNP VCF file for variant annotation
+- `base_file_name` (String): Base name for output files
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `cpu_cores` (Int): Number of CPU cores to use (should match number of intervals) (default: 2)
+
+**Outputs:**
+- `vcf` (File): Compressed VCF file containing germline variant calls
+- `vcf_index` (File): Index file for the VCF output
+
 ### `mutect2`
-Calls somatic variants using GATK Mutect2 in tumor-only mode with filtering.
+Calls somatic variants using GATK Mutect2 in tumor-only mode with filtering for individual intervals in scatter-gather workflows.
 
 **Inputs:**
 - `bam` (File): Input aligned BAM file
@@ -137,6 +156,26 @@ Calls somatic variants using GATK Mutect2 in tumor-only mode with filtering.
 - `stats_file` (File): Mutect2 statistics file
 - `f1r2_counts` (File): F1R2 counts for filtering
 
+### `mutect2_parallel`
+Calls somatic variants using GATK Mutect2 with internal parallelization for reduced data duplication and improved efficiency.
+
+**Inputs:**
+- `bam` (File): Input aligned BAM file
+- `bam_index` (File): Index file for the input BAM
+- `intervals` (Array[File]): Array of interval files for parallel processing
+- `reference_fasta` (File): Reference genome FASTA file
+- `reference_fasta_index` (File): Index file for the reference FASTA
+- `reference_dict` (File): Reference genome sequence dictionary
+- `gnomad_vcf` (File): gnomAD population allele frequency VCF for germline resource
+- `base_file_name` (String): Base name for output files
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+
+**Outputs:**
+- `vcf` (File): Compressed VCF file containing filtered somatic variant calls
+- `vcf_index` (File): Index file for the Mutect2 VCF output
+- `stats_file` (File): Merged Mutect2 statistics file
+
 ### Parallelization and Utility Tasks
 
 ### `split_intervals`
@@ -148,6 +187,7 @@ Automatically splits genome intervals into optimal chunks for parallel processin
 - `reference_dict` (File): Reference genome sequence dictionary
 - `intervals` (File?): Optional interval list file defining target regions to split
 - `scatter_count` (Int): Number of interval files to create (default: 24)
+- `filter_to_canonical_chromosomes` (Boolean): Whether to restrict analysis to canonical chromosomes (chr1-22,X,Y,M) (default: true)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 
@@ -160,7 +200,7 @@ Extracts reads from specific intervals using GATK PrintReads for scatter-gather 
 **Inputs:**
 - `bam` (File): Input BAM file to extract reads from
 - `bam_index` (File): Index file for the input BAM
-- `interval_files` (Array[File]): Array of interval files defining regions to extract
+- `intervals` (Array[File]): Array of interval files defining regions to extract
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Index file for the reference FASTA
 - `reference_dict` (File): Reference genome sequence dictionary
@@ -241,8 +281,10 @@ Validates GATK outputs and generates comprehensive statistics report.
 - `recalibrated_bais` (Array[File]): Array of recalibrated BAM index files
 - `sequential_bams` (Array[File]): Array of sequential Markdup-Recal-Metrics BAM files
 - `sequential_bais` (Array[File]): Array of sequential Markdup-Recal-Metrics BAM index files
-- `haplotype_vcfs` (Array[File]): Array of HaplotypeCaller VCF files
-- `mutect2_vcfs` (Array[File]): Array of Mutect2 VCF files
+- `haplotype_vcfs` (Array[File]): Array of HaplotypeCaller VCF files called via scatter-gather parallelization
+- `mutect2_vcfs` (Array[File]): Array of Mutect2 VCF files called via scatter-gather parallelization
+- `parallel_haplotype_vcfs` (Array[File]): Array of HaplotypeCaller VCF files called via internal parallelization
+- `parallel_mutect2_vcfs` (Array[File]): Array of Mutect2 VCF files called via internal parallelization
 - `wgs_metrics` (Array[File]): Array of WGS metrics files
 
 **Outputs:**
@@ -252,14 +294,14 @@ Validates GATK outputs and generates comprehensive statistics report.
 
 **Default behavior:**
 - Splits genome into configurable intervals (default: 2 for testing, 24 recommended for production)
-- Splits BAM files by intervals for optimal parallel processing
-- Each interval runs HaplotypeCaller and Mutect2 in parallel
+- Provides both scatter-gather and internal parallelization approaches
 - Automatically merges results into final VCF files
 - Near-linear speedup for WGS analysis
 
-**Processing approaches:**
-- **Individual tasks**: Separate duplicate marking, base recalibration, and metrics collection
-- **Combined task**: `markdup_recal_metrics` performs all preprocessing steps in one task for efficiency
+**Parallelization strategies:**
+- **Scatter-gather approach**: Uses `print_reads` to split BAMs by intervals, then runs `haplotype_caller` and `mutect2` on each interval
+- **Internal parallelization**: Uses `haplotype_caller_parallel` and `mutect2_parallel` with GNU parallel for more efficient resource usage
+- **Combined processing**: `markdup_recal_metrics` performs all preprocessing steps in one task for efficiency
 
 ## Testing the Module
 
@@ -309,11 +351,11 @@ The demonstration workflow can run with an empty inputs file (`{}`) and will aut
 
 ## Features
 
-- **Automatic interval-based parallelization**: Dramatically improves WGS performance
+- **Dual parallelization strategies**: Both scatter-gather and internal parallelization approaches for maximum flexibility
 - **Complete GATK pipeline**: Duplicate marking, base recalibration, germline and somatic variant calling, QC metrics
 - **Intelligent interval splitting**: Uses GATK SplitIntervals for optimal load balancing
 - **Seamless result merging**: Transparent combination of parallel results
-- **Flexible processing modes**: Choose between individual tasks or combined processing approaches
+- **Flexible processing modes**: Choose between individual tasks, combined processing, or different parallelization approaches
 - **Automatic test data**: Downloads reference genome, variant databases, and test BAM when not provided
 - **Best practices implementation**: Follows GATK best practices for variant calling workflows
 - **Comprehensive validation**: Built-in output validation and quality reporting
@@ -327,6 +369,12 @@ The demonstration workflow can run with an empty inputs file (`{}`) and will aut
 - **Mutect2**: Similar dramatic performance improvements
 - **Scalability**: Performance scales nearly linearly with available CPU cores
 - **Memory efficiency**: Parallel tasks use memory more efficiently than single large jobs
+- **Internal parallelization**: The `*_parallel` tasks offer better resource utilization by avoiding data duplication
+
+### Parallelization Strategy Comparison
+- **Scatter-gather approach**: Better for distributed computing environments, easier debugging of individual intervals
+- **Internal parallelization**: More efficient resource usage, reduced data duplication, better for single-node execution
+- **Both approaches**: Available in the same workflow for comparison and flexibility
 
 ### Resource Requirements
 - **Memory usage**: 16-32GB RAM total for WGS analysis (distributed across parallel tasks)
@@ -337,6 +385,7 @@ The demonstration workflow can run with an empty inputs file (`{}`) and will aut
 
 ### Optimization Tips
 - **Use appropriate scatter_count**: Balance between parallelization and overhead (default 2 for testing, 24 for production)
+- **Choose parallelization strategy**: Internal parallelization for single nodes, scatter-gather for distributed computing
 - **Ensure adequate CPU allocation**: More cores = better performance for variant calling
 - **Monitor memory usage**: Each parallel task needs sufficient memory
 - **Choose processing approach**: Combined tasks reduce I/O overhead for large datasets
@@ -358,7 +407,7 @@ This module is automatically tested as part of the WILDS WDL Library CI/CD pipel
 - Comprehensive validation of all outputs and statistics
 - Integration testing with `ww-testdata` module
 - Parallelization testing with multiple interval configurations
-- Validation of both individual and combined processing approaches
+- Validation of both scatter-gather and internal parallelization approaches
 
 ## Integration Patterns
 
@@ -367,8 +416,8 @@ This module demonstrates several key patterns:
 - **Resource management**: Coordinated memory allocation across compute-intensive tasks
 - **Best practices workflow**: Implementation of GATK recommended variant calling pipeline
 - **Comprehensive validation**: Quality assurance for complex multi-output workflows
-- **Automatic parallelization**: Transparent interval-based parallel processing with result merging
-- **Flexible processing architectures**: Both modular and combined task approaches
+- **Dual parallelization approaches**: Both scatter-gather and internal parallelization strategies
+- **Flexible processing architectures**: Multiple task orchestration patterns
 
 ## Extending the Module
 
@@ -377,8 +426,8 @@ This module can be extended by:
 - Integrating additional variant filtering and annotation tools
 - Including structural variant calling with other GATK tools
 - Adding quality control modules (e.g., FastQC, MultiQC integration)
-- Customizing parallelization strategies for specific use cases
-- Implementing additional preprocessing steps or optimizations
+- Implementing additional parallelization strategies for specific use cases
+- Adding performance benchmarking between parallelization approaches
 
 ## Related WILDS Components
 
