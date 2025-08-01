@@ -1,631 +1,364 @@
-## Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing.
+## Consensus variant calling workflow for DNA sequencing - Refactored with WILDS modules
+## This version imports functionality from existing WILDS WDL modules for maximum reusability
+##
+## Key Features:
+## - Modular design using 10 WILDS WDL modules for maintainability and testing
+## - Advanced scatter-gather parallelization with interval-based BAM splitting
+## - Comprehensive variant calling: germline (HaplotypeCaller), somatic (Mutect2), and population-based (bcftools)
+## - Multi-caller consensus variant analysis with custom R processing
+## - Complete structural variant analysis pipeline (Manta, Smoove, Delly with AnnotSV annotation)
+## - Tumor fraction estimation for cfDNA analysis using ichorCNA
+## - GATK best practices for preprocessing (duplicate marking, base quality recalibration)
+##
 ## Input requirements:
-## - Pair-end sequencing data in FASTQ format
+## - CRAM files containing paired-end sequencing data
 ## - Sample information provided as structs in the input JSON
-## - BED file of regions of interest
-## - Reference genome files
-## - VCF files of known variant information
-## - Lists of settings to use for Annovar
+## - Reference genome files (FASTA, index, dictionary)
+## - Variant calling resource files (dbSNP, known indels, gnomAD)
+## - ichorCNA reference files (GC content, mappability, panel of normals, centromeres)
+## - Annovar annotation configuration (protocols and operations)
+##
+## Major workflow steps:
+## 1. CRAM to FASTQ conversion using samtools
+## 2. Read alignment using BWA-MEM with proper read groups
+## 3. Preprocessing: duplicate marking, base recalibration, and QC metrics
+## 4. Interval-based scatter-gather for parallel variant calling
+## 5. Three-way variant calling: HaplotypeCaller, Mutect2, and bcftools mpileup
+## 6. Variant annotation using Annovar with customizable protocols
+## 7. Consensus variant calling combining all three callers
+## 8. Structural variant calling and annotation using three complementary tools
+## 9. Copy number analysis and tumor fraction estimation using ichorCNA
 ##
 ## Output Files:
-## - recalibrated bam and it's index
-## - GATK vcf
-## - samtools/bcftools vcf
-## - Annovar annotated vcfs and tabular variant list for each variant caller
-## - Basic QC stats from bedtools for mean coverage over regions in panel
+## - Analysis-ready BAM files with base quality recalibration
+## - Variant calls from three different callers (VCF format)
+## - Annotated variants with functional and clinical annotations
+## - Consensus variant calls combining evidence from all callers
+## - Structural variant calls with comprehensive genomic annotations
+## - Copy number profiles and tumor fraction estimates
+## - Quality control metrics and validation reports
 
 version 1.0
 
-struct SampleInfo {
-    String omics_sample_name
-    String molecular_id
-    File r1_fastq
-    File r2_fastq
+# Import WILDS modules
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-annotsv/ww-annotsv.wdl" as annotsv_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-annovar/ww-annovar.wdl" as annovar_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bcftools/ww-bcftools.wdl" as bcftools_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as bwa_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-delly/ww-delly.wdl" as delly_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl" as gatk_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ichorcna/ww-ichorcna.wdl" as ichorcna_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-manta/ww-manta.wdl" as manta_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl" as samtools_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-smoove/ww-smoove.wdl" as smoove_tasks
+
+struct SampleDetails {
+    String name
+    Array[File] cramfiles
 }
 
 workflow ww_leukemia {
   meta {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
-    description: "Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing with focus on leukemia analysis"
-    url: "https://github.com/getwilds/wilds-wdl-library"
-    version: "1.0.0"
+    description: "Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing with focus on leukemia analysis - Refactored with WILDS modules"
+    url: "https://github.com/getwilds/ww-leukemia"
+    version: "2.0.0"
     outputs: {
         analysis_ready_bam: "Array of recalibrated BAM files ready for downstream analysis",
         analysis_ready_bai: "Array of index files for the recalibrated BAM files",
-        gatk_vcf: "Array of variant calls from GATK HaplotypeCaller",
-        sam_vcf: "Array of variant calls from samtools/bcftools mpileup",
+        haplotype_vcf: "Array of variant calls from GATK HaplotypeCaller",
+        mpileup_vcf: "Array of variant calls from samtools/bcftools mpileup",
         mutect_vcf: "Array of variant calls from GATK Mutect2 (tumor-only mode)",
         mutect_vcf_index: "Array of index files for Mutect2 VCF files",
+        mutect_stats: "Array of Mutect2 statistics files summarizing variant calls",
         mutect_annotated_vcf: "Array of Mutect2 VCF files annotated with Annovar",
         mutect_annotated_table: "Array of Mutect2 variants in tabular format with annotations",
-        gatk_annotated_vcf: "Array of GATK HaplotypeCaller VCF files annotated with Annovar",
-        gatk_annotated_table: "Array of GATK HaplotypeCaller variants in tabular format with annotations",
-        sam_annotated_vcf: "Array of samtools/bcftools VCF files annotated with Annovar",
-        sam_annotated_table: "Array of samtools/bcftools variants in tabular format with annotations",
-        panel_qc: "Array of quality control metrics from bedtools showing mean coverage over target regions",
-        picard_qc: "Array of hybrid selection metrics from Picard CollectHsMetrics",
-        picard_qc_per_target: "Array of per-target coverage metrics from Picard",
-        consensus_variants: "Array of consensus variant calls combining results from all three variant callers"
+        haplotype_annotated_vcf: "Array of GATK HaplotypeCaller VCF files annotated with Annovar",
+        haplotype_annotated_table: "Array of GATK HaplotypeCaller variants in tabular format with annotations",
+        mpileup_annotated_vcf: "Array of samtools/bcftools VCF files annotated with Annovar",
+        mpileup_annotated_table: "Array of samtools/bcftools variants in tabular format with annotations",
+        gatk_wgs_metrics: "Array of hybrid selection metrics from GATK CollectWgsMetrics",
+        consensus_variants: "Array of consensus variant calls combining results from all three variant callers",
+        manta_sv_vcf: "Array of structural variant calls from Manta",
+        manta_sv_vcf_index: "Array of index files for the Manta structural variant VCF files",
+        manta_sv_annotated_tsv: "Array of Manta SV calls annotated with Annotsv",
+        smoove_sv_vcf: "Array of structural variant calls from Smoove",
+        smoove_sv_vcf_index: "Array of index files for the Smoove structural variant VCF files",
+        smoove_sv_annotated_tsv: "Array of Smoove SV calls annotated with Annotsv",
+        delly_sv_bcf: "Array of structural variant calls from Delly",
+        delly_sv_bcf_index: "Array of index files for the Delly structural variant BCF files",
+        delly_sv_annotated_tsv: "Array of Delly SV calls annotated with Annotsv",
+        ichorcna_params: "Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions",
+        ichorcna_seg: "Segments called by the Viterbi algorithm, including subclonal status of segments (0=clonal, 1=subclonal), and filtered fo exclude Y chromosome segments if not male",
+        ichorcna_genomewide_pdf: "Genome wide plot of data annotated for estimated copy number, tumor fraction, and ploidy for the optimal solution",
+        ichorcna_allgenomewide_pdf: "Combined PDF of all solutions",
+        ichorcna_correct_pdf:  "Genome wide correction comparisons",
+        ichorcna_rdata: "Saved R image after ichorCNA has finished. Results for all solutions will be included",
+        ichorcna_wig: "WIG file created from binned read count data within input BED files"
     }
   }
 
   parameter_meta {
-    bed_location: "BED file defining target regions for panel sequencing"
     ref_fasta: "Reference genome FASTA file"
     ref_fasta_index: "Index file (.fai) for the reference genome FASTA"
     ref_dict: "Sequence dictionary (.dict) for the reference genome"
-    ref_amb: "BWA index file (.amb) for the reference genome"
-    ref_ann: "BWA index file (.ann) for the reference genome"
-    ref_bwt: "BWA index file (.bwt) for the reference genome"
-    ref_pac: "BWA index file (.pac) for the reference genome"
-    ref_sa: "BWA index file (.sa) for the reference genome"
     dbsnp_vcf: "dbSNP VCF file for base quality score recalibration and variant annotation"
     dbsnp_vcf_index: "Index file for the dbSNP VCF"
     af_only_gnomad: "gnomAD allele frequency VCF file for Mutect2 germline resource"
     af_only_gnomad_index: "Index file for the gnomAD allele frequency VCF"
+    wig_gc: "GC-content WIG file"
+    wig_map: "Mappability score WIG file"
+    panel_of_norm_rds: "RDS file of median corrected depth from panel of normals"
+    centromeres: "Text file containing Centromere locations"
     known_indels_sites_vcfs: "Array of VCF files containing known indel sites for base quality score recalibration"
     known_indels_sites_indices: "Array of index files for the known indels VCF files"
-    samples: "Array of sample information structs containing sample names, molecular IDs, and paired FASTQ files"
+    samples: "Array of sample information structs containing sample names, molecular IDs, and CRAM files"
     ref_name: "Reference genome build name (e.g., 'hg38', 'hg19') used for Annovar annotation"
     annovar_protocols: "Comma-separated list of Annovar annotation protocols to apply"
     annovar_operation: "Comma-separated list of Annovar operations corresponding to the protocols"
+    scatter_count: "Number of intervals to scatter across for parallel processing"
   }
 
   input {
-    File bed_location
     File ref_fasta
     File ref_fasta_index
     File ref_dict
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
     File dbsnp_vcf
     File dbsnp_vcf_index
     File af_only_gnomad
     File af_only_gnomad_index
+    File wig_gc
+    File wig_map
+    File panel_of_norm_rds
+    File centromeres
     Array[File] known_indels_sites_vcfs
     Array[File] known_indels_sites_indices
-    Array[SampleInfo] samples
+    Array[SampleDetails] samples
     String ref_name
     String annovar_protocols
     String annovar_operation
+    Int scatter_count = 32
   }
 
-  # Docker containers this workflow has been designed for
-  String gatk_docker = "getwilds/gatk:4.3.0.0"
-  String bwa_docker = "getwilds/bwa:0.7.17"
-  String bedtools_docker = "getwilds/bedtools:2.31.1"
-  String bcftools_docker = "getwilds/bcftools:1.19"
-  String annovar_docker = "getwilds/annovar:~{ref_name}"
-  String r_docker = "getwilds/consensus:0.1.1"
+  # Use GATK module for splitting intervals
+  call gatk_tasks.split_intervals { input:
+      reference_fasta = ref_fasta,
+      reference_fasta_index = ref_fasta_index,
+      reference_dict = ref_dict,
+      scatter_count = scatter_count
+  }
 
-  Int bwa_threads = 16
-
-  # Prepare bed file and check sorting
-  call sort_bed { input:
-      unsorted_bed = bed_location,
-      ref_dict = ref_dict,
-      docker = gatk_docker
+  # Use BWA module for indexing
+  call bwa_tasks.bwa_index { input:
+      reference_fasta = ref_fasta
   }
 
   scatter (sample in samples){
-    String sample_name = sample.omics_sample_name
-    String molecular_id = sample.molecular_id
-    File sample_r1 = sample.r1_fastq
-    File sample_r2 = sample.r2_fastq
+    String base_file_name = sample.name + "." + ref_name
 
-    String base_file_name = sample_name + "_" + molecular_id + "." + ref_name
-
-    # Map reads to reference directly from paired FASTQ files
-    call bwa_mem { input:
-        r1_fastq = sample_r1,
-        r2_fastq = sample_r2,
-        sample_name = sample_name,
-        library_name = molecular_id,
-        base_file_name = base_file_name,
-        ref_fasta = ref_fasta,
-        ref_amb = ref_amb,
-        ref_ann = ref_ann,
-        ref_bwt = ref_bwt,
-        ref_pac = ref_pac,
-        ref_sa = ref_sa,
-        threads = bwa_threads,
-        docker = bwa_docker
+    # Use Samtools module for CRAM to FASTQ conversion
+    call samtools_tasks.crams_to_fastq { input:
+        cram_files = sample.cramfiles,
+        ref = ref_fasta,
+        name = sample.name
     }
 
-    # Aggregate aligned+merged flowcell BAM files and mark duplicates
-    call mark_duplicates { input:
-        raw_bam = bwa_mem.aligned_bam,
-        raw_bai = bwa_mem.aligned_bai,
-        markdup_bam_basename = base_file_name + ".aligned.duplicates_marked",
-        metrics_filename = base_file_name + ".duplicate_metrics",
-        docker = gatk_docker
+    # Use BWA module for alignment
+    call bwa_tasks.bwa_mem { input:
+        bwa_genome_tar = bwa_index.bwa_index_tar,
+        reference_fasta = ref_fasta,
+        reads = crams_to_fastq.r1_fastq,
+        mates = crams_to_fastq.r2_fastq,
+        name = base_file_name,
+        cpu_cores = 16,
+        memory_gb = 32
     }
 
-    # Generate the recalibration model by interval and apply it
-    call apply_base_recal { input:
-        aligned_bam = mark_duplicates.markdup_bam,
-        aligned_bam_index = mark_duplicates.markdup_bai,
-        base_file_name = base_file_name,
-        intervals = sort_bed.intervals,
+    # Use GATK module for mark duplicates and base recalibration (combined)
+    call gatk_tasks.markdup_recal_metrics { input:
+        bam = bwa_mem.sorted_bam,
+        bam_index = bwa_mem.sorted_bai,
         dbsnp_vcf = dbsnp_vcf,
-        dbsnp_vcf_index = dbsnp_vcf_index,
+        reference_fasta = ref_fasta,
+        reference_fasta_index = ref_fasta_index,
+        reference_dict = ref_dict,
         known_indels_sites_vcfs = known_indels_sites_vcfs,
-        known_indels_sites_indices = known_indels_sites_indices,
-        ref_dict = ref_dict,
-        ref_fasta = ref_fasta,
-        ref_fasta_index = ref_fasta_index,
-        docker = gatk_docker
+        base_file_name = base_file_name
     }
 
-    call bedtools_qc { input:
-        aligned_bam = apply_base_recal.recalibrated_bam,
-        genome_sort_order = apply_base_recal.sort_order,
-        bed_file = sort_bed.sorted_bed,
-        base_file_name = base_file_name,
-        docker = bedtools_docker
-    }
-
-    call collect_hs_metrics { input:
-        aligned_bam = apply_base_recal.recalibrated_bam,
-        base_file_name = base_file_name,
-        ref_fasta = ref_fasta,
-        ref_fasta_index = ref_fasta_index,
-        intervals = sort_bed.intervals,
-        docker = gatk_docker
-    }
-
-    # Generate haplotype caller vcf
-    call haplotype_caller { input:
-        aligned_bam = apply_base_recal.recalibrated_bam,
-        aligned_bam_index = apply_base_recal.recalibrated_bai,
-        intervals = sort_bed.intervals,
-        base_file_name = base_file_name,
-        ref_dict = ref_dict,
-        ref_fasta = ref_fasta,
-        ref_fasta_index = ref_fasta_index,
+    # Run HaplotypeCaller with internal parallelization
+    call gatk_tasks.haplotype_caller_parallel { input:
+        bam = markdup_recal_metrics.recalibrated_bam,
+        bam_index = markdup_recal_metrics.recalibrated_bai,
+        intervals = split_intervals.interval_files,
+        reference_fasta = ref_fasta,
+        reference_fasta_index = ref_fasta_index,
+        reference_dict = ref_dict,
         dbsnp_vcf = dbsnp_vcf,
-        dbsnp_index = dbsnp_vcf_index,
-        docker = gatk_docker
-    }
-
-    # Generate mutect2 vcf
-    call mutect2_tumoronly { input:
-        aligned_bam = apply_base_recal.recalibrated_bam,
-        aligned_bam_index = apply_base_recal.recalibrated_bai,
-        intervals = sort_bed.intervals,
         base_file_name = base_file_name,
-        ref_dict = ref_dict,
-        ref_fasta = ref_fasta,
-        ref_fasta_index = ref_fasta_index,
-        genome_ref = af_only_gnomad,
-        genome_ref_index = af_only_gnomad_index,
-        docker = gatk_docker
+        memory_gb = 2*scatter_count,
+        cpu_cores = scatter_count
     }
 
-    # Generate bcftools vcf
-    call bcftools_mpileup { input:
-        aligned_bam = apply_base_recal.recalibrated_bam,
-        aligned_bam_index = apply_base_recal.recalibrated_bai,
-        sorted_bed = sort_bed.sorted_bed,
+    # Run Mutect2 with internal parallelization
+    call gatk_tasks.mutect2_parallel { input:
+        bam = markdup_recal_metrics.recalibrated_bam,
+        bam_index = markdup_recal_metrics.recalibrated_bai,
+        intervals = split_intervals.interval_files,
+        reference_fasta = ref_fasta,
+        reference_fasta_index = ref_fasta_index,
+        reference_dict = ref_dict,
+        gnomad_vcf = af_only_gnomad,
         base_file_name = base_file_name,
-        ref_dict = ref_dict,
-        ref_fasta = ref_fasta,
-        ref_fasta_index = ref_fasta_index,
-        docker = bcftools_docker
+        memory_gb = 2*scatter_count,
+        cpu_cores = scatter_count
     }
 
-    # Annotate variants
-    call annovar as annotateSAM { input:
-        vcf_to_annotate = bcftools_mpileup.mpileup_vcf,
+    # Use bcftools module for variant calling
+    call bcftools_tasks.mpileup_call { input:
+        bam_file = markdup_recal_metrics.recalibrated_bam,
+        bam_index = markdup_recal_metrics.recalibrated_bai,
+        reference_fasta = ref_fasta,
+        reference_fasta_index = ref_fasta_index
+    }
+
+    # Use Annovar module for variant annotation
+    call annovar_tasks.annovar_annotate as annotateSAM { input:
+        vcf_to_annotate = mpileup_call.mpileup_vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols,
-        docker = annovar_docker
+        annovar_protocols = annovar_protocols
     }
 
-    # Annotate variants
-    call annovar as annotateMutect { input:
-        vcf_to_annotate = mutect2_tumoronly.mutect2_vcf,
+    call annovar_tasks.annovar_annotate as annotateMutect { input:
+        vcf_to_annotate = mutect2_parallel.vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols,
-        docker = annovar_docker
+        annovar_protocols = annovar_protocols
     }
 
-    # Annotate variants
-    call annovar as annotateHaplotype { input:
-        vcf_to_annotate = haplotype_caller.haplotype_vcf,
+    call annovar_tasks.annovar_annotate as annotateHaplotype { input:
+        vcf_to_annotate = haplotype_caller_parallel.vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols,
-        docker = annovar_docker
+        annovar_protocols = annovar_protocols
     }
 
+    # Keep custom consensus processing task
     call consensus_processing { input:
         gatk_vars = annotateHaplotype.annotated_table,
         sam_vars = annotateSAM.annotated_table,
         mutect_vars = annotateMutect.annotated_table,
-        base_file_name = base_file_name,
-        docker = r_docker
+        base_file_name = base_file_name
+    }
+
+    # Use Manta module for structural variants
+    call manta_tasks.manta_call { input:
+        aligned_bam = markdup_recal_metrics.recalibrated_bam,
+        aligned_bam_index = markdup_recal_metrics.recalibrated_bai,
+        reference_fasta = ref_fasta,
+        reference_fasta_index = ref_fasta_index,
+        sample_name = base_file_name
+    }
+
+    # Use Smoove module for structural variants
+    call smoove_tasks.smoove_call { input:
+        aligned_bam = markdup_recal_metrics.recalibrated_bam,
+        aligned_bam_index = markdup_recal_metrics.recalibrated_bai,
+        sample_name = base_file_name,
+        reference_fasta = ref_fasta,
+        reference_fasta_index = ref_fasta_index
+    }
+
+    # Use Delly module for structural variants
+    call delly_tasks.delly_call { input:
+        aligned_bam = markdup_recal_metrics.recalibrated_bam,
+        aligned_bam_index = markdup_recal_metrics.recalibrated_bai,
+        reference_fasta = ref_fasta,
+        reference_fasta_index = ref_fasta_index
+    }
+
+    # Use AnnotSV module for Manta annotation
+    call annotsv_tasks.annotsv_annotate as annotateManta { input:
+        raw_vcf = manta_call.vcf,
+        genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37"
+    }
+
+    # Use AnnotSV module for Smoove annotation
+    call annotsv_tasks.annotsv_annotate as annotateSmoove { input:
+        raw_vcf = smoove_call.vcf,
+        genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37"
+    }
+
+    # Use AnnotSV module for Delly annotation
+    call annotsv_tasks.annotsv_annotate as annotateDelly { input:
+        raw_vcf = delly_call.vcf,
+        genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37"
+    }
+
+    # Use ichorCNA module for tumor fraction analysis
+    call ichorcna_tasks.readcounter_wig { input:
+        bam_file = markdup_recal_metrics.recalibrated_bam,
+        bam_index = markdup_recal_metrics.recalibrated_bai,
+        sample_name = base_file_name,
+        chromosomes = ["chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"],
+        window_size = 500000
+    }
+
+    call ichorcna_tasks.ichorcna_call { input:
+      wig_tumor = readcounter_wig.wig_file,
+      wig_gc = wig_gc,
+      wig_map = wig_map,
+      panel_of_norm_rds = panel_of_norm_rds,
+      centromeres = centromeres,
+      name = base_file_name,
+      sex = "male", # Defaulting to male for now, can be parameterized later
+      genome = ref_name,
+      genome_style = "UCSC", # Defaulting to UCSC style for now
+      chrs = "c(1:22, 'X', 'Y')"
     }
   } # End scatter
 
   # Outputs that will be retained when execution is complete
   output {
-    Array[File] analysis_ready_bam = apply_base_recal.recalibrated_bam
-    Array[File] analysis_ready_bai = apply_base_recal.recalibrated_bai
-    Array[File] gatk_vcf = haplotype_caller.haplotype_vcf
-    Array[File] sam_vcf = bcftools_mpileup.mpileup_vcf
-    Array[File] mutect_vcf = mutect2_tumoronly.mutect2_vcf
-    Array[File] mutect_vcf_index = mutect2_tumoronly.mutect2_vcf_index
+    Array[File] analysis_ready_bam = markdup_recal_metrics.recalibrated_bam
+    Array[File] analysis_ready_bai = markdup_recal_metrics.recalibrated_bai
+    Array[File] haplotype_vcf = haplotype_caller_parallel.vcf
+    Array[File] mpileup_vcf = mpileup_call.mpileup_vcf
+    Array[File] mutect_vcf = mutect2_parallel.vcf
+    Array[File] mutect_vcf_index = mutect2_parallel.vcf_index
+    Array[File] mutect_stats = mutect2_parallel.stats_file
     Array[File] mutect_annotated_vcf = annotateMutect.annotated_vcf
     Array[File] mutect_annotated_table = annotateMutect.annotated_table
-    Array[File] gatk_annotated_vcf = annotateHaplotype.annotated_vcf
-    Array[File] gatk_annotated_table = annotateHaplotype.annotated_table
-    Array[File] sam_annotated_vcf = annotateSAM.annotated_vcf
-    Array[File] sam_annotated_table = annotateSAM.annotated_table
-    Array[File] panel_qc = bedtools_qc.mean_qc
-    Array[File] picard_qc = collect_hs_metrics.picard_metrics
-    Array[File] picard_qc_per_target = collect_hs_metrics.picard_pertarget
+    Array[File] haplotype_annotated_vcf = annotateHaplotype.annotated_vcf
+    Array[File] haplotype_annotated_table = annotateHaplotype.annotated_table
+    Array[File] mpileup_annotated_vcf = annotateSAM.annotated_vcf
+    Array[File] mpileup_annotated_table = annotateSAM.annotated_table
+    Array[File] gatk_wgs_metrics = markdup_recal_metrics.wgs_metrics
     Array[File] consensus_variants = consensus_processing.consensus_tsv
-  }
-} # End workflow
-
-#### TASK DEFINITIONS
-
-# annotate with annovar
-task annovar {
-  meta {
-    description: "Annotate variants using Annovar with customizable protocols and operations"
-    outputs: {
-        annotated_vcf: "VCF file with Annovar annotations added",
-        annotated_table: "Tab-delimited table with variant annotations"
-    }
-  }
-
-  parameter_meta {
-    vcf_to_annotate: "Input VCF file to be annotated"
-    ref_name: "Reference genome build name for Annovar annotation (e.g., 'hg38', 'hg19')"
-    annovar_protocols: "Comma-separated list of annotation protocols to apply"
-    annovar_operation: "Comma-separated list of operations corresponding to the protocols"
-    docker: "Docker container image for Annovar"
-  }
-
-  input {
-    File vcf_to_annotate
-    String ref_name
-    String annovar_protocols
-    String annovar_operation
-    String docker
-  }
-
-  String base_vcf_name = basename(vcf_to_annotate, ".vcf.gz")
-
-  command <<<
-    set -eo pipefail
-    perl /annovar/table_annovar.pl "~{vcf_to_annotate}" /annovar/humandb/ \
-      -buildver "~{ref_name}" \
-      -outfile "~{base_vcf_name}" \
-      -remove \
-      -protocol "~{annovar_protocols}" \
-      -operation "~{annovar_operation}" \
-      -nastring . -vcfinput
-    sed -i "s/Otherinfo1\tOtherinfo2\tOtherinfo3\tOtherinfo4\tOtherinfo5\tOtherinfo6\tOtherinfo7\tOtherinfo8\tOtherinfo9\tOtherinfo10\tOtherinfo11\tOtherinfo12\tOtherinfo13/Otherinfo/g" "~{base_vcf_name}.~{ref_name}_multianno.txt"
-  >>>
-
-  output {
-    File annotated_vcf = "~{base_vcf_name}.~{ref_name}_multianno.vcf"
-    File annotated_table = "~{base_vcf_name}.~{ref_name}_multianno.txt"
-  }
-
-  runtime {
-    docker: docker
-    cpu: 1
-    memory: "2GB"
+    Array[File] manta_sv_vcf = manta_call.vcf
+    Array[File] manta_sv_vcf_index = manta_call.vcf_index
+    Array[File] manta_sv_annotated_tsv = annotateManta.annotated_tsv
+    Array[File] smoove_sv_vcf = smoove_call.vcf
+    Array[File] smoove_sv_vcf_index = smoove_call.vcf_index
+    Array[File] smoove_sv_annotated_tsv = annotateSmoove.annotated_tsv
+    Array[File] delly_sv_bcf = delly_call.vcf
+    Array[File] delly_sv_bcf_index = delly_call.vcf_index
+    Array[File] delly_sv_annotated_tsv = annotateDelly.annotated_tsv
+    Array[File] ichorcna_params = ichorcna_call.params
+    Array[File] ichorcna_seg = ichorcna_call.seg
+    Array[File] ichorcna_genomewide_pdf = ichorcna_call.genomewide_pdf
+    Array[File] ichorcna_allgenomewide_pdf = ichorcna_call.allgenomewide_pdf
+    Array[File] ichorcna_correct_pdf = ichorcna_call.correct_pdf
+    Array[File] ichorcna_rdata = ichorcna_call.rdata
+    Array[File] ichorcna_wig = readcounter_wig.wig_file
   }
 }
 
-# Generate Base Quality Score Recalibration (BQSR) model and apply it
-task apply_base_recal {
-  meta {
-    description: "Generate Base Quality Score Recalibration (BQSR) model and apply it to improve base quality scores"
-    outputs: {
-        recalibrated_bam: "BAM file with recalibrated base quality scores",
-        recalibrated_bai: "Index file for the recalibrated BAM",
-        sort_order: "Text file containing the chromosome sort order of the BAM file"
-    }
-  }
+#### CUSTOM TASK DEFINITIONS (Tasks not available in WILDS modules)
 
-  parameter_meta {
-    aligned_bam: "Input aligned BAM file to be recalibrated"
-    aligned_bam_index: "Index file for the input BAM"
-    intervals: "Interval list file defining target regions"
-    dbsnp_vcf: "dbSNP VCF file for known variant sites"
-    dbsnp_vcf_index: "Index file for the dbSNP VCF"
-    ref_dict: "Reference genome sequence dictionary"
-    ref_fasta: "Reference genome FASTA file"
-    ref_fasta_index: "Index file for the reference FASTA"
-    known_indels_sites_vcfs: "Array of VCF files with known indel sites"
-    known_indels_sites_indices: "Array of index files for known indels VCFs"
-    base_file_name: "Base name for output files"
-    docker: "Docker container image for GATK"
-  }
-
-  input {
-    File aligned_bam
-    File aligned_bam_index
-    File intervals
-    File dbsnp_vcf
-    File dbsnp_vcf_index
-    File ref_dict
-    File ref_fasta
-    File ref_fasta_index
-    Array[File] known_indels_sites_vcfs
-    Array[File] known_indels_sites_indices
-    String base_file_name
-    String docker
-  }
-
-  command <<<
-    set -eo pipefail
-    gatk --java-options "-Xms8g -Xmx8g" \
-      BaseRecalibrator \
-        -R "~{ref_fasta}" \
-        -I "~{aligned_bam}" \
-        -O "~{base_file_name}.recal_data.csv" \
-        --known-sites "~{dbsnp_vcf}" \
-        --known-sites ~{sep=" --known-sites " known_indels_sites_vcfs} \
-        --intervals "~{intervals}" \
-        --interval-padding 100 \
-        --verbosity WARNING
-    gatk --java-options "-Xms48g -Xmx48g" \
-      ApplyBQSR \
-        -bqsr "~{base_file_name}.recal_data.csv" \
-        -I "~{aligned_bam}" \
-        -O "~{base_file_name}.recal.bam" \
-        -R "~{ref_fasta}" \
-        --intervals "~{intervals}" \
-        --interval-padding 100 \
-        --verbosity WARNING
-    # finds the current sort order of this bam file
-    samtools view -H "~{base_file_name}.recal.bam" | \
-      grep @SQ|sed 's/@SQ\tSN:\|LN://g' > "~{base_file_name}.sortOrder.txt"
-  >>>
-
-  output {
-    File recalibrated_bam = "~{base_file_name}.recal.bam"
-    File recalibrated_bai = "~{base_file_name}.recal.bai"
-    File sort_order = "~{base_file_name}.sortOrder.txt"
-  }
-
-  runtime {
-    memory: "36 GB"
-    cpu: 1
-    docker: docker
-  }
-}
-
-# bcftools Mpileup variant calling
-task bcftools_mpileup {
-  meta {
-    description: "Call variants using bcftools mpileup and call pipeline"
-    outputs: {
-        mpileup_vcf: "Compressed VCF file containing variant calls from bcftools"
-    }
-  }
-
-  parameter_meta {
-    aligned_bam: "Input aligned BAM file"
-    aligned_bam_index: "Index file for the input BAM"
-    sorted_bed: "BED file defining target regions for variant calling"
-    ref_dict: "Reference genome sequence dictionary"
-    ref_fasta: "Reference genome FASTA file"
-    ref_fasta_index: "Index file for the reference FASTA"
-    base_file_name: "Base name for output files"
-    docker: "Docker container image for bcftools"
-  }
-
-  input {
-    File aligned_bam
-    File aligned_bam_index
-    File sorted_bed
-    File ref_dict
-    File ref_fasta
-    File ref_fasta_index
-    String base_file_name
-    String docker
-  }
-
-  command <<<
-    set -eo pipefail
-    bcftools mpileup \
-      --max-depth 10000 \
-      --max-idepth 10000 \
-      --annotate "FORMAT/AD,FORMAT/DP" \
-      --fasta-ref "~{ref_fasta}" \
-      --regions-file "~{sorted_bed}" \
-      --ignore-RG \
-      --no-BAQ \
-      "~{aligned_bam}" | bcftools call -Oz -mv \
-          -o "~{base_file_name}.SAM.vcf.gz"
-  >>>
-
-  output {
-    File mpileup_vcf = "~{base_file_name}.SAM.vcf.gz"
-  }
-
-  runtime {
-    docker: docker
-    memory: "8 GB"
-    cpu: 2
-  }
-}
-
-# use bedtools to find basic QC data
-task bedtools_qc {
-  meta {
-    description: "Generate quality control metrics using bedtools to calculate mean coverage over target regions"
-    outputs: {
-        mean_qc: "Tab-delimited file with mean coverage statistics for each target region"
-    }
-  }
-
-  parameter_meta {
-    aligned_bam: "Input aligned BAM file"
-    bed_file: "BED file defining target regions"
-    genome_sort_order: "File containing chromosome sort order information"
-    base_file_name: "Base name for output files"
-    docker: "Docker container image for bedtools"
-  }
-
-  input {
-    File aligned_bam
-    File bed_file
-    File genome_sort_order
-    String base_file_name
-    String docker
-  }
-
-  command <<<
-    set -eo pipefail
-    bedtools sort -g "~{genome_sort_order}" -i "~{bed_file}" > correctly.sorted.bed
-    bedtools coverage -mean -sorted -g "~{genome_sort_order}" -a correctly.sorted.bed \
-        -b "~{aligned_bam}" > "~{base_file_name}.bedtoolsQCMean.txt"
-  >>>
-
-  output {
-    File mean_qc = "~{base_file_name}.bedtoolsQCMean.txt"
-  }
-
-  runtime {
-    docker: docker
-    memory: "4 GB"
-    cpu: 1
-  }
-}
-
-# align to genome using paired FASTQ files
-task bwa_mem {
-  meta {
-    description: "Align paired-end reads to reference genome using BWA-MEM algorithm"
-    outputs: {
-        aligned_bam: "Coordinate-sorted BAM file containing aligned reads",
-        aligned_bai: "Index file for the aligned BAM"
-    }
-  }
-
-  parameter_meta {
-    r1_fastq: "Read 1 FASTQ file"
-    r2_fastq: "Read 2 FASTQ file"
-    ref_fasta: "Reference genome FASTA file"
-    ref_amb: "BWA index file (.amb) for the reference genome"
-    ref_ann: "BWA index file (.ann) for the reference genome"
-    ref_bwt: "BWA index file (.bwt) for the reference genome"
-    ref_pac: "BWA index file (.pac) for the reference genome"
-    ref_sa: "BWA index file (.sa) for the reference genome"
-    sample_name: "Sample name for read group assignment"
-    library_name: "Library name for read group assignment"
-    base_file_name: "Base name for output files"
-    docker: "Docker container image for BWA and samtools"
-    threads: "Number of threads to use for alignment"
-  }
-
-  input {
-    File r1_fastq
-    File r2_fastq
-    File ref_fasta
-    File ref_amb
-    File ref_ann
-    File ref_bwt
-    File ref_pac
-    File ref_sa
-    String sample_name
-    String library_name
-    String base_file_name
-    String docker
-    Int threads
-  }
-
-  command <<<
-    set -eo pipefail
-    bwa mem \
-      -t ~{threads - 1} \
-      -R "@RG\tID:~{library_name}\tSM:~{sample_name}\tLB:~{library_name}\tPU:~{library_name}\tPL:ILLUMINA" \
-      "~{ref_fasta}" "~{r1_fastq}" "~{r2_fastq}" | \
-      samtools sort -o "~{base_file_name}.aligned.bam"
-    samtools index "~{base_file_name}.aligned.bam"
-  >>>
-
-  output {
-    File aligned_bam = "~{base_file_name}.aligned.bam"
-    File aligned_bai = "~{base_file_name}.aligned.bam.bai"
-  }
-
-  runtime {
-    docker: docker
-    memory: "32GB"
-    cpu: threads
-  }
-}
-
-# get hybrid capture based QC metrics via Picard
-task collect_hs_metrics {
-  meta {
-    description: "Collect hybrid selection metrics using Picard to assess target enrichment performance"
-    outputs: {
-        picard_metrics: "Picard hybrid selection metrics summary file",
-        picard_pertarget: "Per-target coverage metrics file"
-    }
-  }
-
-  parameter_meta {
-    aligned_bam: "Input aligned BAM file"
-    ref_fasta: "Reference genome FASTA file"
-    ref_fasta_index: "Index file for the reference FASTA"
-    intervals: "Interval list file defining bait and target regions"
-    base_file_name: "Base name for output files"
-    docker: "Docker container image for GATK/Picard"
-  }
-
-  input {
-    File aligned_bam
-    File ref_fasta
-    File ref_fasta_index
-    File intervals
-    String base_file_name
-    String docker
-  }
-
-  command <<<
-    set -eo pipefail
-    gatk --java-options "-Xms64g -Xmx64g" \
-      CollectHsMetrics \
-      --INPUT "~{aligned_bam}" \
-      --OUTPUT "~{base_file_name}.picard.metrics.txt" \
-      --REFERENCE_SEQUENCE "~{ref_fasta}" \
-      --ALLELE_FRACTION 0.01 \
-      --BAIT_INTERVALS "~{intervals}" \
-      --TARGET_INTERVALS "~{intervals}" \
-      --PER_TARGET_COVERAGE "~{base_file_name}.picard.pertarget.txt" \
-      --VERBOSITY WARNING
-  >>>
-
-  output {
-    File picard_metrics = "~{base_file_name}.picard.metrics.txt"
-    File picard_pertarget = "~{base_file_name}.picard.pertarget.txt"
-  }
-
-  runtime {
-    docker: docker
-    cpu: 8
-    memory: "64 GB"
-  }
-}
-
+# Keep custom consensus processing task (specialized R script)
 task consensus_processing {
   meta {
     description: "Generate consensus variant calls by combining results from multiple variant callers"
@@ -639,7 +372,6 @@ task consensus_processing {
     sam_vars: "Annotated variant table from samtools/bcftools"
     mutect_vars: "Annotated variant table from GATK Mutect2"
     base_file_name: "Base name for output files"
-    docker: "Docker container image with R and consensus calling script"
   }
 
   input {
@@ -647,7 +379,6 @@ task consensus_processing {
     File sam_vars
     File mutect_vars
     String base_file_name
-    String docker
   }
 
   command <<<
@@ -663,229 +394,6 @@ task consensus_processing {
   runtime {
     cpu: 1
     memory: "8 GB"
-    docker: docker
-  }
-}
-
-# HaplotypeCaller per-sample
-task haplotype_caller {
-  meta {
-    description: "Call germline variants using GATK HaplotypeCaller"
-    outputs: {
-        haplotype_vcf: "Compressed VCF file containing germline variant calls",
-        haplotype_vcf_index: "Index file for the VCF output"
-    }
-  }
-
-  parameter_meta {
-    aligned_bam: "Input aligned BAM file"
-    aligned_bam_index: "Index file for the input BAM"
-    intervals: "Interval list file defining target regions"
-    ref_dict: "Reference genome sequence dictionary"
-    ref_fasta: "Reference genome FASTA file"
-    ref_fasta_index: "Index file for the reference FASTA"
-    dbsnp_vcf: "dbSNP VCF file for variant annotation"
-    dbsnp_index: "Index file for the dbSNP VCF"
-    base_file_name: "Base name for output files"
-    docker: "Docker container image for GATK"
-  }
-
-  input {
-    File aligned_bam
-    File aligned_bam_index
-    File intervals
-    File ref_dict
-    File ref_fasta
-    File ref_fasta_index
-    File dbsnp_vcf
-    File dbsnp_index
-    String base_file_name
-    String docker
-  }
-
-  command <<<
-    set -eo pipefail
-    gatk --java-options "-Xms8g -Xmx8g" \
-      HaplotypeCaller \
-      -R "~{ref_fasta}" \
-      -I "~{aligned_bam}" \
-      -O "~{base_file_name}.GATK.vcf.gz" \
-      --dbsnp "~{dbsnp_vcf}" \
-      --intervals "~{intervals}" \
-      --interval-padding 100 \
-      --verbosity WARNING 
-  >>>
-
-  output {
-    File haplotype_vcf = "~{base_file_name}.GATK.vcf.gz"
-    File haplotype_vcf_index = "~{base_file_name}.GATK.vcf.gz.tbi"
-  }
-
-  runtime {
-    docker: docker
-    memory: "12 GB"
-    cpu: 1
-  }
-}
-
-# Mutect 2 calling
-task mutect2_tumoronly {
-  meta {
-    description: "Call somatic variants using GATK Mutect2 in tumor-only mode with filtering"
-    outputs: {
-        mutect2_vcf: "Compressed VCF file containing filtered somatic variant calls",
-        mutect2_vcf_index: "Index file for the Mutect2 VCF output"
-    }
-  }
-
-  parameter_meta {
-    aligned_bam: "Input aligned BAM file"
-    aligned_bam_index: "Index file for the input BAM"
-    intervals: "Interval list file defining target regions"
-    ref_dict: "Reference genome sequence dictionary"
-    ref_fasta: "Reference genome FASTA file"
-    ref_fasta_index: "Index file for the reference FASTA"
-    genome_ref: "gnomAD population allele frequency VCF for germline resource"
-    genome_ref_index: "Index file for the gnomAD VCF"
-    base_file_name: "Base name for output files"
-    docker: "Docker container image for GATK"
-  }
-
-  input {
-    File aligned_bam
-    File aligned_bam_index
-    File intervals
-    File ref_dict
-    File ref_fasta
-    File ref_fasta_index
-    File genome_ref
-    File genome_ref_index
-    String base_file_name
-    String docker
-  }
-
-  command <<<
-    set -eo pipefail
-    gatk --java-options "-Xms16g -Xmx16g" \
-      Mutect2 \
-        -R "~{ref_fasta}" \
-        -I "~{aligned_bam}" \
-        -O preliminary.vcf.gz \
-        --intervals "~{intervals}" \
-        --interval-padding 100 \
-        --germline-resource "~{genome_ref}" \
-        --verbosity WARNING
-    gatk --java-options "-Xms16g -Xmx16g" \
-      FilterMutectCalls \
-        -V preliminary.vcf.gz \
-        -O "~{base_file_name}.mutect2.vcf.gz" \
-        -R "~{ref_fasta}" \
-        --stats preliminary.vcf.gz.stats \
-        --verbosity WARNING
-  >>>
-
-  output {
-    File mutect2_vcf = "~{base_file_name}.mutect2.vcf.gz"
-    File mutect2_vcf_index = "~{base_file_name}.mutect2.vcf.gz.tbi"
-  }
-
-  runtime {
-    docker: docker
-    memory: "24 GB"
-    cpu: 1
-  }
-}
-
-# Prepare bed file and check sorting
-task sort_bed {
-  meta {
-    description: "Sort BED file and convert to GATK interval list format for consistent interval processing"
-    outputs: {
-        intervals: "GATK interval list file sorted by genomic coordinates",
-        sorted_bed: "BED file sorted by genomic coordinates"
-    }
-  }
-
-  parameter_meta {
-    unsorted_bed: "Input BED file defining target regions (may be unsorted)"
-    ref_dict: "Reference genome sequence dictionary for interval list conversion"
-    docker: "Docker container image for GATK"
-  }
-
-  input {
-    File unsorted_bed
-    File ref_dict
-    String docker
-  }
-
-  command <<<
-    set -eo pipefail
-    sort -k1,1V -k2,2n -k3,3n "~{unsorted_bed}" > sorted.bed
-    gatk --java-options "-Dsamjdk.compression_level=5 -Xms4g -Xmx4g" \
-      BedToIntervalList \
-      --INPUT sorted.bed \
-      --OUTPUT sorted.interval_list \
-      --SEQUENCE_DICTIONARY "~{ref_dict}"
-  >>>
-
-  output {
-    File intervals = "sorted.interval_list"
-    File sorted_bed = "sorted.bed"
-  }
-
-  runtime {
-    docker: docker
-    memory: "8 GB"
-    cpu: 1
-  }
-}
-
-task mark_duplicates {
-  meta {
-    description: "Mark duplicate reads in aligned BAM file to improve variant calling accuracy"
-    outputs: {
-        markdup_bam: "BAM file with duplicate reads marked",
-        markdup_bai: "Index file for the duplicate-marked BAM",
-        duplicate_metrics: "Metrics file containing duplicate marking statistics"
-    }
-  }
-
-  parameter_meta {
-    raw_bam: "Input aligned BAM file"
-    raw_bai: "Index file for the input BAM"
-    markdup_bam_basename: "Base name for the output duplicate-marked BAM file"
-    metrics_filename: "Name for the duplicate metrics output file"
-    docker: "Docker container image for GATK"
-  }
-
-  input {
-    File raw_bam
-    File raw_bai
-    String markdup_bam_basename
-    String metrics_filename
-    String docker
-  }
-
-  command <<<
-    gatk --java-options "-Dsamjdk.compression_level=5 -Xms16g -Xmx16g" \
-      MarkDuplicates \
-      --INPUT "~{raw_bam}" \
-      --OUTPUT "~{markdup_bam_basename}.bam" \
-      --METRICS_FILE "~{metrics_filename}" \
-      --OPTICAL_DUPLICATE_PIXEL_DISTANCE 2500 \
-      --VERBOSITY WARNING
-    samtools index "~{markdup_bam_basename}.bam"
-  >>>
-
-  output {
-    File markdup_bam = "~{markdup_bam_basename}.bam"
-    File markdup_bai = "~{markdup_bam_basename}.bam.bai"
-    File duplicate_metrics = "~{metrics_filename}"
-  }
-
-  runtime {
-    docker: docker
-    memory: "24 GB"
-    cpu: 1
+    docker: "getwilds/consensus:0.1.1"
   }
 }
