@@ -14,7 +14,7 @@ workflow sra_star {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "WDL workflow to download raw sequencing data from SRA and align using STAR two-pass methodology"
-    url: "https://github.com/getwilds/ww-sra-star"
+    url: "https://github.com/getwilds/wilds-wdl-library/vignettes/ww-sra-star"
     outputs: {
         star_bam: "array of aligned bam files for each sample",
         star_bai: "array of corresponding index files for each aligned bam file",
@@ -41,8 +41,8 @@ workflow sra_star {
     RefGenome ref_genome
     Int sjdb_overhang = 100
     Int genome_sa_index_nbases = 14
-    Int ncpu = 2
-    Int memory_gb = 8
+    Int ncpu = 12
+    Int memory_gb = 64
   }
 
   call star_tasks.build_index { input:
