@@ -41,8 +41,8 @@ workflow sra_star {
     RefGenome ref_genome
     Int sjdb_overhang = 100
     Int genome_sa_index_nbases = 14
-    Int ncpu = 12
-    Int memory_gb = 64
+    Int ncpu = 2
+    Int memory_gb = 8
   }
 
   call star_tasks.build_index { input:
