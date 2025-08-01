@@ -1,29 +1,30 @@
 {
   "ww_leukemia.samples": [
     {
-      "omics_sample_name": "TESTDATA",
-      "molecular_id": "TEST",
-      "r1_fastq": "/path_to_inputs/TESTDATA_R1.fastq.gz",
-      "r2_fastq": "/path_to_inputs/TESTDATA_R2.fastq.gz"
+      "name": "TESTDATA",
+      "cramfiles": [
+        "/path_to_inputs/TESTDATA_1.cram",
+        "/path_to_inputs/TESTDATA_2.cram",
+        "/path_to_inputs/TESTDATA_3.cram",
+        "/path_to_inputs/TESTDATA_4.cram"
+      ]
     }
   ],
-  "ww_leukemia.bed_location": "/path_to_inputs/regions_of_interest.bed",
-  "ww_leukemia.ref_name": "hg19",
-  "ww_leukemia.ref_fasta": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta",
-  "ww_leukemia.ref_fasta_index": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.fai",
-  "ww_leukemia.ref_dict": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.dict",
-  "ww_leukemia.ref_pac": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.pac",
-  "ww_leukemia.ref_sa": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.sa",
-  "ww_leukemia.ref_amb": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.amb",
-  "ww_leukemia.ref_ann": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.ann",
-  "ww_leukemia.ref_bwt": "s3://broad-references/hg19/v0/Homo_sapiens_assembly19.fasta.bwt",
-  "ww_leukemia.dbsnp_vcf_index": "s3://broad-references/hg19/v0/dbsnp_138.b37.vcf.gz.tbi",
-  "ww_leukemia.dbsnp_vcf": "s3://broad-references/hg19/v0/dbsnp_138.b37.vcf.gz",
-  "ww_leukemia.known_indels_sites_indices": [
-    "s3://broad-references/hg19/v0/Mills_and_1000G_gold_standard.indels.b37.sites.vcf.idx"
-  ],
+  "ww_leukemia.ref_name": "hg38",
+  "ww_leukemia.ref_fasta": "s3://broad-references/hg38/v0/Homo_sapiens_assembly19.fasta",
+  "ww_leukemia.ref_fasta_index": "s3://broad-references/hg38/v0/Homo_sapiens_assembly19.fasta.fai",
+  "ww_leukemia.ref_dict": "s3://broad-references/hg38/v0/Homo_sapiens_assembly19.dict",
+  "ww_leukemia.wig_gc": "/path_to_inputs/gc_hg38_500kb.wig",
+  "ww_leukemia.wig_map": "/path_to_inputs/map_hg38_500kb.wig",
+  "ww_leukemia.panel_of_norm_rds": "/path_to_inputs/nextera_hg38_500kb_median_normAutosome_median.rds_median.n9.gr.rds",
+  "ww_leukemia.centromeres": "/path_to_inputs/GRCh38.GCA_000001405.2_centromere_acen.txt",
+  "ww_leukemia.dbsnp_vcf_index": "s3://broad-references/hg38/v0/dbsnp_138.b37.vcf.gz.tbi",
+  "ww_leukemia.dbsnp_vcf": "s3://broad-references/hg38/v0/dbsnp_138.b37.vcf.gz",
   "ww_leukemia.known_indels_sites_vcfs": [
-    "s3://broad-references/hg19/v0/Mills_and_1000G_gold_standard.indels.b37.sites.vcf"
+    "s3://broad-references/hg38/v0/Mills_and_1000G_gold_standard.indels.b37.sites.vcf"
+  ],
+  "ww_leukemia.known_indels_sites_indices": [
+    "s3://broad-references/hg38/v0/Mills_and_1000G_gold_standard.indels.b37.sites.vcf.idx"
   ],
   "ww_leukemia.af_only_gnomad": "/path_to_references/af-only-gnomad.raw.sites.b37.vcf.gz",
   "ww_leukemia.af_only_gnomad_index": "/path_to_references/af-only-gnomad.raw.sites.b37.vcf.gz.tbi",
