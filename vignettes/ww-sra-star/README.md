@@ -96,8 +96,8 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 | `ref_genome` | Reference genome information | RefGenome | Yes | - |
 | `sjdb_overhang` | STAR splice junction overhang | Int | No | 100 |
 | `genome_sa_index_nbases` | STAR index parameter | Int | No | 14 |
-| `ncpu` | Number of CPU cores | Int | No | 2 |
-| `memory_gb` | Memory allocation in GB | Int | No | 8 |
+| `ncpu` | Number of CPU cores | Int | No | 12 |
+| `memory_gb` | Memory allocation in GB | Int | No | 64 |
 
 ### RefGenome Structure
 
