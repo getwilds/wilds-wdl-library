@@ -90,13 +90,13 @@ This workflow integrates the following WILDS WDL modules:
 
 ```bash
 # Cromwell
-java -jar cromwell.jar run ww-leukemia-modular.wdl --inputs inputs.json --options options.json
+java -jar cromwell.jar run ww-leukemia.wdl --inputs inputs.json --options options.json
 
 # miniWDL
-miniwdl run ww-leukemia-modular.wdl -i inputs.json
+miniwdl run ww-leukemia.wdl -i inputs.json
 
 # Sprocket
-sprocket run ww-leukemia-modular.wdl inputs.json
+sprocket run ww-leukemia.wdl inputs.json
 ```
 
 ### Input Parameters
