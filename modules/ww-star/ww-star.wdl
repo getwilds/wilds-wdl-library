@@ -151,7 +151,11 @@ task build_index {
       --sjdbOverhang ~{sjdb_overhang} \
       --genomeSAindexNbases ~{genome_sa_index_nbases}
 
+    # Compress the index directory into a tarball
     tar -czf star_index.tar.gz star_index/*
+
+    # Clean up the index directory to save space
+    rm -rf star_index
   >>>
 
   output {

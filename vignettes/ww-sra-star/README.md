@@ -135,8 +135,8 @@ The vignette includes comprehensive validation that checks:
 ## Resource Considerations
 
 ### Compute Requirements
-- **Memory**: 64GB recommended for human genome alignment
-- **CPUs**: 8+ cores recommended for efficient processing
+- **Memory**: 64GB recommended for human genome alignment (8GB for testing purposes)
+- **CPUs**: 8+ cores recommended for efficient processing (2 cores for testing purposes)
 - **Storage**: Sufficient space for reference genome, FASTQ files, and outputs
 - **Network**: Stable internet connection for SRA downloads
 
