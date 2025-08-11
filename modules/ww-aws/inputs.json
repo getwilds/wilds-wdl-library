@@ -1,5 +1,7 @@
 {
   "aws_example.test_bucket_uri": "s3://superawesometestbucket/",
+  "aws_example.aws_config_file": "/path_to_mounted_directory/aws_config",
+  "aws_example.aws_credentials_file": "/path_to_mounted_directory/aws_credentials",
   "aws_example.cpu_cores": 2,
   "aws_example.memory_gb": 4
 }

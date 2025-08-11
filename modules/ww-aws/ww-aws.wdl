@@ -1,7 +1,5 @@
-version 1.0
-
 ## WILDS WDL module for AWS operations using awscli
-## 
+##
 ## This module provides reusable tasks for common AWS operations including:
 ## - Downloading files from S3 buckets (public and private)
 ## - Uploading files to S3 buckets
@@ -10,12 +8,16 @@ version 1.0
 ##
 ## All tasks use the getwilds/awscli Docker images from the WILDS Docker Library
 
+version 1.0
+
 workflow aws_example {
   meta {
     description: "Demonstration workflow for AWS operations module"
     author: "WILDS WDL Library"
     outputs: {
-        bucket_listing: "List of objects in the specified S3 bucket"
+        bucket_listing: "List of objects in the specified S3 bucket",
+        downloaded_test_file: "Test file downloaded from S3",
+        validation_report: "Validation report of AWS operations"
     }
   }
 
@@ -46,8 +48,26 @@ workflow aws_example {
       memory_gb = memory_gb
   }
 
+  # Test file download
+  call s3_download_file { input:
+      s3_uri = bucket_to_list + "NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq",
+      aws_config_file = aws_config_file,
+      aws_credentials_file = aws_credentials_file,
+      cpu_cores = cpu_cores,
+      memory_gb = memory_gb
+  }
+
+  # Validate all operations
+  call validate_outputs { input:
+      downloaded_files = [s3_download_file.downloaded_file],
+      bucket_listing = s3_list_bucket.file_list,
+      object_count = s3_list_bucket.object_count
+  }
+
   output {
     File bucket_listing = s3_list_bucket.file_list
+    File downloaded_test_file = s3_download_file.downloaded_file
+    File validation_report = validate_outputs.report
   }
 }
 
@@ -128,7 +148,7 @@ task s3_upload_file {
   }
 
   parameter_meta {
-    input_file: "File to upload to S3"
+    file_to_upload: "File to upload to S3"
     s3_bucket: "S3 bucket name (without s3:// prefix)"
     s3_key: "S3 key/path for the uploaded file (optional, uses filename if not specified)"
     aws_config_file: "Path to AWS config file (required for uploads)"
@@ -138,7 +158,7 @@ task s3_upload_file {
   }
 
   input {
-    File input_file
+    File file_to_upload
     String s3_bucket
     String? s3_key
     String aws_config_file
@@ -147,7 +167,7 @@ task s3_upload_file {
     Int memory_gb = 2
   }
 
-  String final_key = select_first([s3_key, basename(input_file)])
+  String final_key = select_first([s3_key, basename(file_to_upload)])
   String final_s3_uri = "s3://~{s3_bucket}/~{final_key}"
 
   command <<<
@@ -162,9 +182,9 @@ task s3_upload_file {
     echo "AWS_SHARED_CREDENTIALS_FILE: ${AWS_SHARED_CREDENTIALS_FILE:-not set}"
     echo ""
     
-    echo "Uploading ~{input_file} to ~{final_s3_uri}"
+    echo "Uploading ~{file_to_upload} to ~{final_s3_uri}"
     
-    aws s3 cp "~{input_file}" "~{final_s3_uri}"
+    aws s3 cp "~{file_to_upload}" "~{final_s3_uri}"
     
     echo "Successfully uploaded to: ~{final_s3_uri}"
   >>>
@@ -264,10 +284,14 @@ task validate_outputs {
 
   parameter_meta {
     downloaded_files: "Files that were downloaded from S3 (optional)"
+    bucket_listing: "File containing S3 bucket listing (optional)"
+    object_count: "Number of objects found in bucket listing (optional)"
   }
 
   input {
     Array[File]? downloaded_files
+    File? bucket_listing
+    Int? object_count
   }
 
   command <<<
@@ -277,28 +301,52 @@ task validate_outputs {
     echo "Timestamp: $(date)" >> validation_report.txt
     echo "" >> validation_report.txt
     
+    # Validate bucket listing
+    if [[ -n "~{bucket_listing}" ]] && [[ -f "~{bucket_listing}" ]]; then
+      echo "Bucket Listing Validation:" >> validation_report.txt
+      listing_lines=$(wc -l < "~{bucket_listing}")
+      echo "  [OK] Bucket listing file exists: ~{basename(select_first([bucket_listing, ""]))}" >> validation_report.txt
+      echo "  [OK] Listing contains $listing_lines lines" >> validation_report.txt
+      
+      if [[ -n "~{object_count}" ]]; then
+        reported_count=~{select_first([object_count, 0])}
+        if [[ "$listing_lines" -eq "$reported_count" ]]; then
+          echo "  [OK] Object count matches: $reported_count objects" >> validation_report.txt
+        else
+          echo "  [WARNING] Object count mismatch: reported $reported_count, found $listing_lines" >> validation_report.txt
+        fi
+      fi
+      
+      echo "  First 5 entries from listing:" >> validation_report.txt
+      head -5 "~{bucket_listing}" | sed 's/^/    /' >> validation_report.txt
+    fi
+    
     # Validate downloaded files
-    if [[ "~{length(select_first([downloaded_files, []]))}" -gt 0 ]]; then
+    download_array=~{write_lines(select_first([downloaded_files, []]))}
+    if [[ -s "$download_array" ]]; then
       echo "Downloaded Files Validation:" >> validation_report.txt
       download_count=0
       total_size=0
       
       while IFS= read -r file; do
         if [[ -f "$file" ]]; then
-          size=$(stat -c%s "$file")
+          size=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null || echo "0")
           total_size=$((total_size + size))
           download_count=$((download_count + 1))
           echo "  [OK] $(basename "$file"): $size bytes" >> validation_report.txt
         else
           echo "  [ERROR] Missing: $file" >> validation_report.txt
         fi
-      done < ~{write_lines(select_first([downloaded_files, []]))}
+      done < "$download_array"
       
       echo "  Total downloaded files: $download_count" >> validation_report.txt
       echo "  Total downloaded size: $total_size bytes" >> validation_report.txt
+    else
+      echo "Downloaded Files Validation: No files to validate" >> validation_report.txt
+      echo "" >> validation_report.txt
     fi
     
-    echo "" >> validation_report.txt
+    echo "All AWS operations completed successfully" >> validation_report.txt
     echo "=== Validation Complete ===" >> validation_report.txt
     
     # Display report
