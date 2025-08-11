@@ -1,0 +1,5 @@
+{
+  "aws_example.test_bucket_uri": "s3://superawesometestbucket/",
+  "aws_example.cpu_cores": 2,
+  "aws_example.memory_gb": 4
+}
