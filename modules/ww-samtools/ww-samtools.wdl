@@ -53,7 +53,7 @@ workflow samtools_example {
   }
 
   # Create test sample array when no samples provided
-  Array[SamtoolsSample] test_samples = if defined(download_cram_data.cram) then [
+  Array[SamtoolsSample]? test_samples = if defined(download_cram_data.cram) then [
     object {
       name: "test_sample",
       cram_files: [
