@@ -201,11 +201,10 @@ workflow ww_leukemia {
         cpu_cores = scatter_count
     }
 
-    # Run Mutect2 with internal parallelization
-    call gatk_tasks.mutect2_parallel { input:
+    # Run Mutect2
+    call gatk_tasks.mutect2 { input:
         bam = markdup_recal_metrics.recalibrated_bam,
         bam_index = markdup_recal_metrics.recalibrated_bai,
-        intervals = split_intervals.interval_files,
         reference_fasta = ref_fasta,
         reference_fasta_index = ref_fasta_index,
         reference_dict = ref_dict,
@@ -232,7 +231,7 @@ workflow ww_leukemia {
     }
 
     call annovar_tasks.annovar_annotate as annotateMutect { input:
-        vcf_to_annotate = mutect2_parallel.vcf,
+        vcf_to_annotate = mutect2.vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
         annovar_protocols = annovar_protocols
@@ -326,9 +325,9 @@ workflow ww_leukemia {
     Array[File] analysis_ready_bai = markdup_recal_metrics.recalibrated_bai
     Array[File] haplotype_vcf = haplotype_caller_parallel.vcf
     Array[File] mpileup_vcf = mpileup_call.mpileup_vcf
-    Array[File] mutect_vcf = mutect2_parallel.vcf
-    Array[File] mutect_vcf_index = mutect2_parallel.vcf_index
-    Array[File] mutect_stats = mutect2_parallel.stats_file
+    Array[File] mutect_vcf = mutect2.vcf
+    Array[File] mutect_vcf_index = mutect2.vcf_index
+    Array[File] mutect_stats = mutect2.stats_file
     Array[File] mutect_annotated_vcf = annotateMutect.annotated_vcf
     Array[File] mutect_annotated_table = annotateMutect.annotated_table
     Array[File] haplotype_annotated_vcf = annotateHaplotype.annotated_vcf
