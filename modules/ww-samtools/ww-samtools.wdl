@@ -135,7 +135,7 @@ task crams_to_fastq {
   runtime {
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
-    docker: "getwilds/samtools:1.11"
+    docker: "getwilds/samtools:1.19"
   }
 }
 
@@ -216,7 +216,7 @@ task validate_outputs {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: "getwilds/samtools:1.19"
     cpu: 1
     memory: "2 GB"
   }

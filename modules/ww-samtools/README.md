@@ -16,7 +16,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 - **Task**: `crams_to_fastq`, `validate_outputs`
 - **Workflow**: `samtools_example` (demonstration workflow executing all tasks)
-- **Container**: `getwilds/samtools:1.11`
+- **Container**: `getwilds/samtools:1.19`
 
 ## Tasks
 
