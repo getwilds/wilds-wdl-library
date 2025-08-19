@@ -53,7 +53,7 @@ workflow samtools_example {
   }
 
   # Create test sample array when no samples provided
-  Array[SamtoolsSample] test_samples = if defined(download_cram_data.cram) then [
+  Array[SamtoolsSample]? test_samples = if defined(download_cram_data.cram) then [
     object {
       name: "test_sample",
       cram_files: [
@@ -65,7 +65,7 @@ workflow samtools_example {
   ] else []
 
   # Create the samples array - either from input or from test data
-  Array[SamtoolsSample] final_samples = select_first([samples, test_samples])
+  Array[SamtoolsSample]? final_samples = select_first([samples, test_samples])
 
   scatter (sample in final_samples) {
     call crams_to_fastq { input:
