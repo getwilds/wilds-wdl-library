@@ -12,7 +12,7 @@ struct SamtoolsSample {
 
 workflow samtools_example {
   meta {
-    author: "WILDS Team"
+    author: "Emma Bishop"
     email: "wilds@fredhutch.org"
     description: "WDL workflow for processing genomic files with Samtools"
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-samtools"
