@@ -23,6 +23,7 @@ workflow aws_example {
 
   parameter_meta {
     test_bucket_uri: "S3 bucket/prefix to list (optional)"
+    test_download_file: "File to download from the S3 bucket (optional, uses a default test file if not provided)"
     aws_config_file: "Path to AWS config file (optional, uses public access if not provided)"
     aws_credentials_file: "Path to AWS credentials file (optional)"
     cpu_cores: "Number of CPU cores for AWS operations"
@@ -31,8 +32,9 @@ workflow aws_example {
 
   input {
     String? test_bucket_uri
-    String? aws_config_file
-    String? aws_credentials_file
+    String? test_download_file
+    File? aws_config_file
+    File? aws_credentials_file
     Int cpu_cores = 2
     Int memory_gb = 4
   }
@@ -49,8 +51,10 @@ workflow aws_example {
   }
 
   # Test file download
+  String file_to_download = select_first([test_download_file, "NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq"])
+
   call s3_download_file { input:
-      s3_uri = bucket_to_list + "NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq",
+      s3_uri = bucket_to_list + file_to_download,
       aws_config_file = aws_config_file,
       aws_credentials_file = aws_credentials_file,
       cpu_cores = cpu_cores,
@@ -91,8 +95,8 @@ task s3_download_file {
   input {
     String s3_uri
     String? output_filename
-    String? aws_config_file
-    String? aws_credentials_file
+    File? aws_config_file
+    File? aws_credentials_file
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -161,8 +165,8 @@ task s3_upload_file {
     File file_to_upload
     String s3_bucket
     String? s3_key
-    String aws_config_file
-    String? aws_credentials_file
+    File aws_config_file
+    File? aws_credentials_file
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -221,8 +225,8 @@ task s3_list_bucket {
 
   input {
     String s3_uri
-    String? aws_config_file
-    String? aws_credentials_file
+    File? aws_config_file
+    File? aws_credentials_file
     Boolean recursive = true
     Boolean human_readable = true
     Int cpu_cores = 1

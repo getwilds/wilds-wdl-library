@@ -26,8 +26,8 @@ Downloads a single file from an S3 bucket with support for both public and priva
 **Inputs:**
 - `s3_uri` (String): S3 URI of the file to download (e.g., s3://bucket/path/file.txt)
 - `output_filename` (String?): Name for the downloaded file (optional, uses original name if not specified)
-- `aws_config_file` (String?): Path to AWS config file (optional, uses --no-sign-request if not provided)
-- `aws_credentials_file` (String?): Path to AWS credentials file (optional)
+- `aws_config_file` (File?): Path to AWS config file (optional, uses --no-sign-request if not provided)
+- `aws_credentials_file` (File?): Path to AWS credentials file (optional)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 1)
 - `memory_gb` (Int): Memory allocation in GB (default: 2)
 
@@ -41,8 +41,8 @@ Uploads a single file to an S3 bucket (requires AWS credentials).
 - `file_to_upload` (File): File to upload to S3
 - `s3_bucket` (String): S3 bucket name (without s3:// prefix)
 - `s3_key` (String?): S3 key/path for the uploaded file (optional, uses filename if not specified)
-- `aws_config_file` (String): Path to AWS config file (required for uploads)
-- `aws_credentials_file` (String?): Path to AWS credentials file (optional)
+- `aws_config_file` (File): Path to AWS config file (required for uploads)
+- `aws_credentials_file` (File?): Path to AWS credentials file (optional)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 1)
 - `memory_gb` (Int): Memory allocation in GB (default: 2)
 
@@ -54,8 +54,8 @@ Lists contents of an S3 bucket or prefix with comprehensive configuration option
 
 **Inputs:**
 - `s3_uri` (String): S3 URI to list (e.g., s3://bucket/ or s3://bucket/prefix/)
-- `aws_config_file` (String?): Path to AWS config file (optional, uses --no-sign-request if not provided)
-- `aws_credentials_file` (String?): Path to AWS credentials file (optional)
+- `aws_config_file` (File?): Path to AWS config file (optional, uses --no-sign-request if not provided)
+- `aws_credentials_file` (File?): Path to AWS credentials file (optional)
 - `recursive` (Boolean): List recursively (default: true)
 - `human_readable` (Boolean): Use human-readable file sizes (default: true)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 1)
@@ -92,8 +92,8 @@ workflow my_data_processing_pipeline {
   input {
     Array[S3File] input_files
     String output_bucket
-    String? aws_config_file
-    String? aws_credentials_file
+    File? aws_config_file
+    File? aws_credentials_file
   }
   
   # Download files from S3
@@ -196,6 +196,25 @@ The module automatically handles two authentication scenarios:
 
 1. **Public Access**: When no `aws_config_file` is provided, operations use `--no-sign-request` for public bucket access
 2. **Authenticated Access**: When `aws_config_file` is provided, standard AWS credential chain is used
+
+## Security Considerations
+
+### **Credential File Management**
+
+**Important Security Notice**: When using AWS credentials with this module, copies of your credential and config files may be temporarily stored in the WDL execution engine's scratch directory. While these directories typically have restricted permissions, it's recommended to clean up your workspace after workflow completion to ensure credential files are completely removed.
+
+**Best practices:**
+- Delete workflow execution directories after completing your analysis
+- Use IAM roles with minimal required permissions when possible
+- Consider using temporary credentials for workflows
+- Regularly rotate AWS access keys used in workflows
+
+### **Authentication Recommendations**
+
+The module supports two authentication modes:
+
+1. **Public Access (Recommended for most use cases)**: When no `aws_config_file` is provided, operations automatically use `--no-sign-request` for public bucket access
+2. **Authenticated Access**: When `aws_config_file` is provided, standard AWS credential chain is used for private bucket operations
 
 ## Testing the Module
 
