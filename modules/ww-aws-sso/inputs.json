@@ -1,8 +1,8 @@
 {
-  "aws_example.test_bucket_uri": "s3://superawesometestbucket/",
-  "aws_example.test_download_file": "filename_to_download.txt",
-  "aws_example.aws_config_file": "/path_to_aws_directory/config",
-  "aws_example.aws_credentials_file": "/path_to_aws_directory/credentials",
-  "aws_example.cpu_cores": 2,
-  "aws_example.memory_gb": 4
+  "aws_sso_example.test_bucket_uri": "s3://superawesometestbucket/",
+  "aws_sso_example.test_download_file": "filename_to_download.txt",
+  "aws_sso_example.aws_config_file": "/path_to_aws_directory/config",
+  "aws_sso_example.aws_credentials_file": "/path_to_aws_directory/credentials",
+  "aws_sso_example.cpu_cores": 2,
+  "aws_sso_example.memory_gb": 4
 }
