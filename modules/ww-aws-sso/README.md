@@ -1,21 +1,23 @@
-# ww-aws
+# ww-aws-sso
 [![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL module for AWS operations using the [AWS CLI](https://aws.amazon.com/cli/).
+A WILDS WDL module for AWS operations using traditional AWS credentials and SSO authentication via the [AWS CLI](https://aws.amazon.com/cli/).
 
 ## Overview
 
-This module provides reusable WDL tasks for common AWS operations including downloading files from S3 buckets (both public and private), uploading files to S3, listing bucket contents, and syncing directories. The module supports both authenticated operations using AWS credentials and public bucket access without authentication.
+This module provides reusable WDL tasks for common AWS operations including downloading files from S3 buckets (both public and private), uploading files to S3, listing bucket contents, and syncing directories. The module supports both authenticated operations using traditional AWS credentials/SSO and public bucket access without authentication.
 
 Designed to be a foundational component within the WILDS ecosystem, this module is suitable for data management workflows, preprocessing pipelines, and integration into larger bioinformatics analyses that require cloud storage operations.
+
+Certificate-based authentication via IAM Roles Anywhere will be available soon via a companion module `ww-aws-iamra`.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
 - **Tasks**: `s3_download_file`, `s3_upload_file`, `s3_list_bucket`, `validate_outputs`
-- **Workflow**: `aws_example` (demonstration workflow executing all tasks)
+- **Workflow**: `aws_sso_example` (demonstration workflow executing all tasks)
 - **Container**: `getwilds/awscli:2.27.49`
 
 ## Tasks
@@ -81,7 +83,7 @@ Validates AWS operation outputs and generates a comprehensive summary report.
 ### Importing into Your Workflow
 
 ```wdl
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-aws/ww-aws.wdl" as aws_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-aws-sso/ww-aws-sso.wdl" as aws_sso_tasks
 
 struct S3File {
     String s3_uri
@@ -98,7 +100,7 @@ workflow my_data_processing_pipeline {
   
   # Download files from S3
   scatter (file in input_files) {
-    call aws_tasks.s3_download_file {
+    call aws_sso_tasks.s3_download_file {
       input:
         s3_uri = file.s3_uri,
         output_filename = file.local_name,
@@ -112,7 +114,7 @@ workflow my_data_processing_pipeline {
   
   # Upload results back to S3
   scatter (processed_file in processed_files) {
-    call aws_tasks.s3_upload_file {
+    call aws_sso_tasks.s3_upload_file {
       input:
         file_to_upload = processed_file,
         s3_bucket = output_bucket,
@@ -121,15 +123,9 @@ workflow my_data_processing_pipeline {
     }
   }
   
-  call aws_tasks.validate_outputs {
-    input:
-      downloaded_files = s3_download_file.downloaded_file
-  }
-  
   output {
     Array[File] downloaded_data = s3_download_file.downloaded_file
     Array[String] uploaded_uris = s3_upload_file.s3_uri
-    File validation_report = validate_outputs.report
   }
 }
 ```
@@ -138,16 +134,16 @@ workflow my_data_processing_pipeline {
 
 **Public bucket access (no credentials required):**
 ```wdl
-call aws_tasks.s3_download_file {
+call aws_sso_tasks.s3_download_file {
   input:
     s3_uri = "s3://gatk-test-data/wgs_fastq/NA12878_20k/sample.fastq",
     # No aws_config_file provided - uses --no-sign-request automatically
 }
 ```
 
-**Private bucket with credentials:**
+**Private bucket with SSO credentials:**
 ```wdl
-call aws_tasks.s3_download_file {
+call aws_sso_tasks.s3_download_file {
   input:
     s3_uri = "s3://my-private-bucket/data/sample.fastq",
     aws_config_file = "/path/to/aws_config",
@@ -158,7 +154,7 @@ call aws_tasks.s3_download_file {
 **Bucket inventory and selective downloading:**
 ```wdl
 # First, list bucket contents
-call aws_tasks.s3_list_bucket {
+call aws_sso_tasks.s3_list_bucket {
   input:
     s3_uri = "s3://my-data-bucket/experiment-2024/",
     recursive = true,
@@ -197,6 +193,22 @@ The module automatically handles two authentication scenarios:
 1. **Public Access**: When no `aws_config_file` is provided, operations use `--no-sign-request` for public bucket access
 2. **Authenticated Access**: When `aws_config_file` is provided, standard AWS credential chain is used
 
+### Example AWS Configuration Files
+
+**AWS Config File (`~/.aws/config`):**
+```ini
+[default]
+region = us-west-2
+output = json
+```
+
+**AWS Credentials File (`~/.aws/credentials`):**
+```ini
+[default]
+aws_access_key_id = AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+```
+
 ## Security Considerations
 
 ### **Credential File Management**
@@ -209,12 +221,10 @@ The module automatically handles two authentication scenarios:
 - Consider using temporary credentials for workflows
 - Regularly rotate AWS access keys used in workflows
 
-### **Authentication Recommendations**
-
-The module supports two authentication modes:
-
-1. **Public Access (Recommended for most use cases)**: When no `aws_config_file` is provided, operations automatically use `--no-sign-request` for public bucket access
-2. **Authenticated Access**: When `aws_config_file` is provided, standard AWS credential chain is used for private bucket operations
+**Not recommended:**
+- Hardcoding credentials in WDL files
+- Using root account credentials
+- Sharing credentials between users or systems
 
 ## Testing the Module
 
@@ -222,13 +232,13 @@ The module includes a demonstration workflow that can be tested independently:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-aws.wdl --inputs inputs.json
+java -jar cromwell.jar run ww-aws-sso.wdl --inputs inputs.json
 
 # Using miniWDL
-miniwdl run ww-aws.wdl -i inputs.json
+miniwdl run ww-aws-sso.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-aws.wdl inputs.json
+sprocket run ww-aws-sso.wdl inputs.json
 ```
 
 ### Automatic Demo Mode

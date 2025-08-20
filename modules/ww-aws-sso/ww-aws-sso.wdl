@@ -1,4 +1,4 @@
-## WILDS WDL module for AWS operations using awscli
+## WILDS WDL module for AWS operations using traditional SSO credentials via awscli
 ##
 ## This module provides reusable tasks for common AWS operations including:
 ## - Downloading files from S3 buckets (public and private)
@@ -10,7 +10,7 @@
 
 version 1.0
 
-workflow aws_example {
+workflow aws_sso_example {
   meta {
     description: "Demonstration workflow for AWS operations module"
     author: "WILDS WDL Library"
