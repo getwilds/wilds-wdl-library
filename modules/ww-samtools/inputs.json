@@ -1,8 +1,9 @@
 {
   "samtools_example.samples": [
     {
-      "name": "ERR1258306",
-      "cram_files": ["path/to/file1.cram", "path/to/file2.cram"]
+      "name": "SampleName",
+      "cram_files": ["path/to/file1.cram",
+                     "path/to/file2.cram"]
     }
   ],
   "samtools_example.reference_fasta": "path/to/ref.fasta",
