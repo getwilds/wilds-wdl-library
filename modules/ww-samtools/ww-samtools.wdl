@@ -115,12 +115,9 @@ task crams_to_fastq {
     set -eo pipefail
 
     # Merge CRAM/BAM/SAM files if more than one, then collate and convert to FASTQ
-    samtools merge -@ ~{cpu_cores} --reference "~{ref}" -u ~{sep=" " cram_files} | \
-    samtools collate -@ ~{cpu_cores} --reference "~{ref}" -u -O -T "$TMPDIR" | \
+    samtools merge -@ ~{cpu_cores} --reference "~{ref}" -u - ~{sep=" " cram_files} | \
+    samtools collate -@ ~{cpu_cores} --reference "~{ref}" -O - | \
     samtools fastq -@ ~{cpu_cores} --reference "~{ref}" -1 "~{name}_R1.fastq.gz" -2 "~{name}_R2.fastq.gz" -0 /dev/null -s /dev/null -
-
-    # Clean up temp directory
-    rm -rf "${TMPDIR:?}"/*
   >>>
 
   output {
