@@ -207,7 +207,10 @@ output = json
 [default]
 aws_access_key_id = AKIAIOSFODNN7EXAMPLE
 aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+aws_session_token = IQoJb3JpZ2luX2VjEHAaCXVzLXdlc3QtMSJIMEYCIQDExample+TokenHereExampleToken==
 ```
+
+**Note**: The `aws_session_token` is required when using temporary credentials (such as those obtained through AWS SSO, STS assume-role operations, or IAM roles). For permanent IAM user credentials, this field can be omitted.
 
 ## Security Considerations
 
@@ -218,7 +221,7 @@ aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 **Best practices:**
 - Delete workflow execution directories after completing your analysis
 - Use IAM roles with minimal required permissions when possible
-- Consider using temporary credentials for workflows
+- Prefer temporary credentials over permanent access keys for enhanced security
 - Regularly rotate AWS access keys used in workflows
 
 **Not recommended:**
