@@ -31,8 +31,8 @@ workflow samtools_example {
   }
 
   input {
-    Array[SamtoolsSample]? samples
     File? reference_fasta
+    Array[SamtoolsSample]? samples
     Int cpus = 2
     Int memory_gb = 8
   }
@@ -104,8 +104,8 @@ task crams_to_fastq {
   }
 
   input {
-    Array[File] cram_files
     File ref
+    Array[File] cram_files
     String name
     Int cpu_cores = 2
     Int memory_gb = 16
