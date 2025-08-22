@@ -12,7 +12,7 @@ struct SamtoolsSample {
 
 workflow samtools_example {
   meta {
-    author: "WILDS Team"
+    author: "Emma Bishop"
     email: "wilds@fredhutch.org"
     description: "WDL workflow for processing genomic files with Samtools"
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-samtools"
@@ -31,8 +31,8 @@ workflow samtools_example {
   }
 
   input {
-    Array[SamtoolsSample]? samples
     File? reference_fasta
+    Array[SamtoolsSample]? samples
     Int cpus = 2
     Int memory_gb = 8
   }
@@ -50,19 +50,14 @@ workflow samtools_example {
     call ww_testdata.download_cram_data { input:
         ref_fasta = genome_fasta
     }
-  }
-
-  # Create test sample array when no samples provided
-  Array[SamtoolsSample] test_samples = if defined(download_cram_data.cram) then [
-    object {
-      name: "test_sample",
-      cram_files: [
-        select_first([download_cram_data.cram]),
-        select_first([download_cram_data.cram]),
-        select_first([download_cram_data.cram])
-      ]
+    Array[File] test_cram_arr = [download_cram_data.cram]
+    Array[SamtoolsSample] test_samples = [
+      object {
+        name: "test_sample",
+        cram_files: test_cram_arr
     }
-  ] else []
+    ]
+  }
 
   # Create the samples array - either from input or from test data
   Array[SamtoolsSample] final_samples = select_first([samples, test_samples])
@@ -109,21 +104,20 @@ task crams_to_fastq {
   }
 
   input {
-    Array[File] cram_files
     File ref
+    Array[File] cram_files
     String name
     Int cpu_cores = 2
     Int memory_gb = 16
   }
 
   command <<<
-    # Merge CRAM/BAM/SAM files if more than one, then convert to FASTQ
-    samtools merge -@ ~{cpu_cores} --reference "~{ref}" -f "~{name}.merged.cram" ~{sep=" " cram_files} && \
-    samtools collate -u -O "~{name}.merged.cram" | \
-    samtools fastq --reference "~{ref}" -1 "~{name}_R1.fastq.gz" -2 "~{name}_R2.fastq.gz" -0 /dev/null -s /dev/null -
+    set -eo pipefail
 
-    # Cleaning up merged CRAM file to save space
-    rm -f "~{name}.merged.cram"
+    # Merge CRAM/BAM/SAM files if more than one, then collate and convert to FASTQ
+    samtools merge -@ ~{cpu_cores} --reference "~{ref}" -u - ~{sep=" " cram_files} | \
+    samtools collate -@ ~{cpu_cores} --reference "~{ref}" -O - | \
+    samtools fastq -@ ~{cpu_cores} --reference "~{ref}" -1 "~{name}_R1.fastq.gz" -2 "~{name}_R2.fastq.gz" -0 /dev/null -s /dev/null -
   >>>
 
   output {
@@ -135,7 +129,7 @@ task crams_to_fastq {
   runtime {
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
-    docker: "getwilds/samtools:1.11"
+    docker: "getwilds/samtools:1.19"
   }
 }
 
@@ -216,7 +210,7 @@ task validate_outputs {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: "getwilds/samtools:1.19"
     cpu: 1
     memory: "2 GB"
   }

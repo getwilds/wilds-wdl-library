@@ -16,7 +16,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 - **Task**: `crams_to_fastq`, `validate_outputs`
 - **Workflow**: `samtools_example` (demonstration workflow executing all tasks)
-- **Container**: `getwilds/samtools:1.11`
+- **Container**: `getwilds/samtools:1.19`
 
 ## Tasks
 
@@ -110,12 +110,14 @@ sprocket run ww-samtools.wdl inputs.json
 {
   "samtools_example.samples": [
     {
-      "name": "ERR1258306",
-      "cram_files": ["path/to/first.cram", "pat/to/second.cram"]
+      "name": "SampleName",
+      "cram_files": ["path/to/file1.cram",
+                     "path/to/file2.cram"]
     }
   ],
-  "samtools_example.cpus": 2,
-  "samtools_example.memory_gb": 4
+  "samtools_example.reference_fasta": "path/to/ref.fasta",
+  "samtools_example.cpus": 8,
+  "samtools_example.memory_gb": 64
 }
 ```
 
