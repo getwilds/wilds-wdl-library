@@ -50,17 +50,17 @@ workflow samtools_example {
     call ww_testdata.download_cram_data { input:
         ref_fasta = genome_fasta
     }
+    Array[File] test_cram_arr = [download_cram_data.cram]
+    Array[SamtoolsSample] test_samples = [
+      object {
+        name: "test_sample",
+        cram_files: test_cram_arr
+    }
+    ]
   }
 
   # Create the samples array - either from input or from test data
-  Array[SamtoolsSample] final_samples = if defined(samples) then
-    select_first([samples, []])
-  else if defined(download_cram_data.cram) then [
-    object {
-      name: "test_sample",
-      cram_files: [download_cram_data.cram]
-    }
-  ] else []
+  Array[SamtoolsSample] final_samples = select_first([samples, test_samples])
 
   scatter (sample in final_samples) {
     call crams_to_fastq { input:
