@@ -79,6 +79,8 @@ task annovar_annotate {
     ref_name: "Reference genome build name for Annovar annotation (e.g., 'hg38', 'hg19')"
     annovar_protocols: "Comma-separated list of annotation protocols to apply"
     annovar_operation: "Comma-separated list of operations corresponding to the protocols"
+    cpu_cores: "Number of CPU cores to allocate for the annotation task"
+    memory_gb: "Memory in GB to allocate for the annotation task"
   }
 
   input {
@@ -86,6 +88,8 @@ task annovar_annotate {
     String ref_name
     String annovar_protocols
     String annovar_operation
+    Int cpu_cores = 2
+    Int memory_gb = 8
   }
 
   String base_vcf_name = basename(vcf_to_annotate, ".vcf.gz")
@@ -109,8 +113,8 @@ task annovar_annotate {
 
   runtime {
     docker: "getwilds/annovar:~{ref_name}"
-    cpu: 1
-    memory: "2GB"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
   }
 }
 

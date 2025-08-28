@@ -25,6 +25,8 @@ Annotates variants using Annovar with customizable protocols and operations.
 - `ref_name` (String): Reference genome build name (hg19 or hg38)
 - `annovar_protocols` (String): Comma-separated list of annotation protocols
 - `annovar_operation` (String): Comma-separated list of operations corresponding to protocols
+- `cpu_cores` (Int, optional): Number of CPU cores to allocate (default: 2)
+- `memory_gb` (Int, optional): Memory in GB to allocate (default: 8)
 
 **Outputs**:
 - `annotated_vcf` (File): VCF file with Annovar annotations added
