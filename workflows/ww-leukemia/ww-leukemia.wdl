@@ -228,21 +228,27 @@ workflow ww_leukemia {
         vcf_to_annotate = mpileup_call.mpileup_vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols
+        annovar_protocols = annovar_protocols,
+        cpu_cores = 4,
+        memory_gb = 16
     }
 
     call annovar_tasks.annovar_annotate as annotateMutect { input:
         vcf_to_annotate = mutect2_parallel.vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols
+        annovar_protocols = annovar_protocols,
+        cpu_cores = 4,
+        memory_gb = 16
     }
 
     call annovar_tasks.annovar_annotate as annotateHaplotype { input:
         vcf_to_annotate = haplotype_caller_parallel.vcf,
         ref_name = ref_name,
         annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols
+        annovar_protocols = annovar_protocols,
+        cpu_cores = 4,
+        memory_gb = 16
     }
 
     # Keep custom consensus processing task
