@@ -62,7 +62,7 @@ workflow strelka_example {
   File final_ref_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
 
   # Download test data if necessary
-  if (!defined(samples)) {
+  if (!defined(samples) || !defined(normal_samples)) {
     call ww_testdata.download_bam_data as sample_data { }
   }
 
@@ -92,17 +92,12 @@ workflow strelka_example {
     }
   }
 
-  # Download test data if necessary
-  if (!defined(normal_samples)) {
-    call ww_testdata.download_bam_data as normal_data { }
-  }
-
   # Create normals array - either from input or from test data download
   Array[StrelkaSample] final_normal_samples = if defined(normal_samples) then select_first([normal_samples]) else [
     {
       "name": "normal_sample",
-      "bam": select_first([normal_data.bam]),
-      "bai": select_first([normal_data.bai])
+      "bam": select_first([sample_data.bam]),
+      "bai": select_first([sample_data.bai])
     }
   ]
 
@@ -381,50 +376,85 @@ task validate_outputs {
     echo "Generated: $(date)" >> validation_report.txt
     echo "" >> validation_report.txt
 
-    # Validate germline outputs
-    if [ ~{length(germline_vcfs)} -gt 0 ]; then
-      echo "Germline Variant Files:" >> validation_report.txt
-      for vcf in ~{sep=' ' germline_vcfs}; do
-        echo "  - $vcf" >> validation_report.txt
-        variant_count=$(zcat "$vcf" | grep -v "^#" | wc -l || echo "0")
-        echo "    Variants: $variant_count" >> validation_report.txt
-      done
-      echo "" >> validation_report.txt
-    fi
+    validation_passed=true
 
-    # Validate somatic outputs
-    if [ ~{length(somatic_snvs_vcfs)} -gt 0 ]; then
-      echo "Somatic Variant Files:" >> validation_report.txt
-      for i in $(seq 0 $((~{length(somatic_snvs_vcfs)} - 1))); do
-        snv_vcf=$(echo "~{sep=' ' somatic_snvs_vcfs}" | cut -d' ' -f$((i+1)))
-        indel_vcf=$(echo "~{sep=' ' somatic_indels_vcfs}" | cut -d' ' -f$((i+1)))
-        echo "  SNVs: $snv_vcf" >> validation_report.txt
-        echo "  Indels: $indel_vcf" >> validation_report.txt
-        
-        snv_count=$(zcat "$snv_vcf" | grep -v "^#" | wc -l || echo "0")
-        indel_count=$(zcat "$indel_vcf" | grep -v "^#" | wc -l || echo "0")
-        echo "    SNV count: $snv_count" >> validation_report.txt
-        echo "    Indel count: $indel_count" >> validation_report.txt
-        echo "" >> validation_report.txt
-      done
-    fi
+    # Check germline VCF files
+    echo "Germline VCF Files:" >> validation_report.txt
+    for vcf in ~{sep=" " germline_vcfs}; do
+        if [[ -f "$vcf" && -s "$vcf" ]]; then
+        echo "  $vcf - PASSED" >> validation_report.txt
+        else
+        echo "  $vcf - MISSING OR EMPTY" >> validation_report.txt
+        validation_passed=false
+        fi
+    done
 
-    # Validate file integrity
-    echo "File Integrity Checks:" >> validation_report.txt
-    all_files=(~{sep=' ' germline_vcfs} ~{sep=' ' germline_indices} ~{sep=' ' somatic_snvs_vcfs} ~{sep=' ' somatic_indels_vcfs} ~{sep=' ' somatic_snvs_indices} ~{sep=' ' somatic_indels_indices})
-    
-    for file in "${all_files[@]}"; do
-      if [ -f "$file" ]; then
-        size=$(stat -c%s "$file")
-        echo "  $file ($size bytes)" >> validation_report.txt
-      else
-        echo "  Missing: $file" >> validation_report.txt
-      fi
+    # Check germline VCF index files  
+    echo "Germline VCF Index Files:" >> validation_report.txt
+    for idx in ~{sep=" " germline_indices}; do
+        if [[ -f "$idx" && -s "$idx" ]]; then
+        echo "  $idx - PASSED" >> validation_report.txt
+        else
+        echo "  $idx - MISSING OR EMPTY" >> validation_report.txt
+        validation_passed=false
+        fi
+    done
+
+    # Check somatic SNV VCF files
+    echo "Somatic SNV VCF Files:" >> validation_report.txt
+    for vcf in ~{sep=" " somatic_snvs_vcfs}; do
+        if [[ -f "$vcf" && -s "$vcf" ]]; then
+        echo "  $vcf - PASSED" >> validation_report.txt
+        else
+        echo "  $vcf - MISSING OR EMPTY" >> validation_report.txt
+        validation_passed=false
+        fi
+    done
+
+    # Check somatic indel VCF files
+    echo "Somatic Indel VCF Files:" >> validation_report.txt
+    for vcf in ~{sep=" " somatic_indels_vcfs}; do
+        if [[ -f "$vcf" && -s "$vcf" ]]; then
+        echo "  $vcf - PASSED" >> validation_report.txt
+        else
+        echo "  $vcf - MISSING OR EMPTY" >> validation_report.txt
+        validation_passed=false
+        fi
+    done
+
+    # Check somatic SNV index files
+    echo "Somatic SNV Index Files:" >> validation_report.txt
+    for idx in ~{sep=" " somatic_snvs_indices}; do
+        if [[ -f "$idx" && -s "$idx" ]]; then
+        echo "  $idx - PASSED" >> validation_report.txt
+        else
+        echo "  $idx - MISSING OR EMPTY" >> validation_report.txt
+        validation_passed=false
+        fi
+    done
+
+    # Check somatic indel index files
+    echo "Somatic Indel Index Files:" >> validation_report.txt
+    for idx in ~{sep=" " somatic_indels_indices}; do
+        if [[ -f "$idx" && -s "$idx" ]]; then
+        echo "  $idx - PASSED" >> validation_report.txt
+        else
+        echo "  $idx - MISSING OR EMPTY" >> validation_report.txt
+        validation_passed=false
+        fi
     done
 
     echo "" >> validation_report.txt
+    echo "=== Summary ===" >> validation_report.txt
+    if [[ "$validation_passed" == "true" ]]; then
+        echo "Validation Status: PASSED" >> validation_report.txt
+    else
+        echo "Validation Status: FAILED" >> validation_report.txt
+        exit 1
+    fi
+
     echo "Validation completed successfully!" >> validation_report.txt
-  >>>
+    >>>
 
   output {
     File report = "validation_report.txt"
