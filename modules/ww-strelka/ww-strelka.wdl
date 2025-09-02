@@ -67,7 +67,7 @@ workflow strelka_example {
   File final_ref_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
 
   # Download test data if necessary
-  if (!defined(samples) || !defined(normal_samples)) {
+  if (!defined(samples)) {
     call ww_testdata.download_bam_data as sample_data { }
   }
 
@@ -103,17 +103,22 @@ workflow strelka_example {
     }
   }
 
-  # Create normals array - either from input or from test data download
-  Array[StrelkaSample] final_normal_samples = if defined(normal_samples) then select_first([normal_samples]) else [
-    {
-      "name": "normal_sample",
-      "bam": select_first([sample_data.bam]),
-      "bai": select_first([sample_data.bai])
-    }
-  ]
-
   # Somatic variant calling (tumor/normal pairs)
   if (call_somatic) {
+    # Download test data if necessary
+    if (!defined(normal_samples)) {
+      call ww_testdata.download_bam_data as normal_data { }
+    }
+
+    # Create normals array - either from input or from test data download
+    Array[StrelkaSample] final_normal_samples = if defined(normal_samples) then select_first([normal_samples]) else [
+      {
+        "name": "normal_sample",
+        "bam": select_first([normal_data.bam]),
+        "bai": select_first([normal_data.bai])
+      }
+    ]
+
     # Ensure we have matching numbers of tumor and normal samples
     Int sample_count = length(final_samples)
     Int normal_count = length(final_normal_samples)
