@@ -252,6 +252,7 @@ call my_bam_analysis {
 ### download_bam_data
 
 **Inputs**:
+- `filename` (String): Filename to save the BAM file as (default: "NA12878_chr1.bam")
 - `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 4)
 
