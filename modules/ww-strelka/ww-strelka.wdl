@@ -26,7 +26,8 @@ workflow strelka_example {
         somatic_indels_vcfs: "Somatic indel variant calls in VCF format with index files",
         somatic_snvs_vcf_indices: "Index files for somatic SNV VCFs",
         somatic_indels_vcf_indices: "Index files for somatic indel VCFs",
-        validation_report: "Validation report confirming all expected outputs were generated"
+        germline_validation_report: "Validation report for germline outputs",
+        somatic_validation_report: "Validation report for somatic outputs"
     }
   }
 
@@ -94,6 +95,12 @@ workflow strelka_example {
           memory_gb = memory_gb
       }
     }
+
+    # Validate germline outputs
+    call validate_germline_outputs { input:
+        germline_vcfs = strelka_germline.variants_vcf,
+        germline_indices = strelka_germline.variants_vcf_index
+    }
   }
 
   # Create normals array - either from input or from test data download
@@ -128,17 +135,15 @@ workflow strelka_example {
             memory_gb = memory_gb
         }
       }
-    }
-  }
 
-  # Validate outputs
-  call validate_outputs { input:
-      germline_vcfs = if call_germline && defined(strelka_germline.variants_vcf) then select_first([strelka_germline.variants_vcf]) else [],
-      germline_indices = if call_germline && defined(strelka_germline.variants_vcf_index) then select_first([strelka_germline.variants_vcf_index]) else [],
-      somatic_snvs_vcfs = if call_somatic && defined(strelka_somatic.somatic_snvs_vcf) then select_first([strelka_somatic.somatic_snvs_vcf]) else [],
-      somatic_indels_vcfs = if call_somatic && defined(strelka_somatic.somatic_indels_vcf) then select_first([strelka_somatic.somatic_indels_vcf]) else [],
-      somatic_snvs_indices = if call_somatic && defined(strelka_somatic.somatic_snvs_vcf_index) then select_first([strelka_somatic.somatic_snvs_vcf_index]) else [],
-      somatic_indels_indices = if call_somatic && defined(strelka_somatic.somatic_indels_vcf_index) then select_first([strelka_somatic.somatic_indels_vcf_index]) else []
+      # Validate somatic outputs
+      call validate_somatic_outputs { input:
+          somatic_snvs_vcfs = strelka_somatic.somatic_snvs_vcf,
+          somatic_indels_vcfs = strelka_somatic.somatic_indels_vcf,
+          somatic_snvs_indices = strelka_somatic.somatic_snvs_vcf_index,
+          somatic_indels_indices = strelka_somatic.somatic_indels_vcf_index
+      }
+    }
   }
 
   output {
@@ -148,7 +153,8 @@ workflow strelka_example {
     Array[File]? somatic_indels_vcfs = strelka_somatic.somatic_indels_vcf
     Array[File]? somatic_snvs_vcf_indices = strelka_somatic.somatic_snvs_vcf_index
     Array[File]? somatic_indels_vcf_indices = strelka_somatic.somatic_indels_vcf_index
-    File validation_report = validate_outputs.report
+    File? germline_validation_report = validate_germline_outputs.report
+    File? somatic_validation_report = validate_somatic_outputs.report
   }
 }
 
@@ -347,36 +353,28 @@ task strelka_somatic {
   }
 }
 
-task validate_outputs {
+task validate_germline_outputs {
   meta {
-    description: "Validate Strelka outputs and generate summary report"
+    description: "Validate Strelka germline outputs and generate summary report"
     outputs: {
-        report: "Validation summary with file checks and basic statistics"
+        report: "Validation summary with file checks and basic statistics for germline outputs"
     }
   }
 
   parameter_meta {
     germline_vcfs: "Array of germline VCF files to validate"
     germline_indices: "Array of germline VCF index files to validate"
-    somatic_snvs_vcfs: "Array of somatic SNV VCF files to validate"
-    somatic_indels_vcfs: "Array of somatic indel VCF files to validate"
-    somatic_snvs_indices: "Array of somatic SNV VCF index files to validate"
-    somatic_indels_indices: "Array of somatic indel VCF index files to validate"
   }
 
   input {
     Array[File] germline_vcfs
     Array[File] germline_indices
-    Array[File] somatic_snvs_vcfs
-    Array[File] somatic_indels_vcfs
-    Array[File] somatic_snvs_indices
-    Array[File] somatic_indels_indices
   }
 
   command <<<
     set -euo pipefail
 
-    echo "=== Strelka Validation Report ===" > validation_report.txt
+    echo "=== Strelka Germline Validation Report ===" > validation_report.txt
     echo "Generated: $(date)" >> validation_report.txt
     echo "" >> validation_report.txt
 
@@ -386,10 +384,12 @@ task validate_outputs {
     echo "Germline VCF Files:" >> validation_report.txt
     for vcf in ~{sep=" " germline_vcfs}; do
         if [[ -f "$vcf" && -s "$vcf" ]]; then
-        echo "  $vcf - PASSED" >> validation_report.txt
+            # Count variants
+            variant_count=$(zcat "$vcf" | grep -v "^#" | wc -l || echo "0")
+            echo "  $vcf - PASSED ($variant_count variants)" >> validation_report.txt
         else
-        echo "  $vcf - MISSING OR EMPTY" >> validation_report.txt
-        validation_passed=false
+            echo "  $vcf - MISSING OR EMPTY" >> validation_report.txt
+            validation_passed=false
         fi
     done
 
@@ -397,54 +397,10 @@ task validate_outputs {
     echo "Germline VCF Index Files:" >> validation_report.txt
     for idx in ~{sep=" " germline_indices}; do
         if [[ -f "$idx" && -s "$idx" ]]; then
-        echo "  $idx - PASSED" >> validation_report.txt
+            echo "  $idx - PASSED" >> validation_report.txt
         else
-        echo "  $idx - MISSING OR EMPTY" >> validation_report.txt
-        validation_passed=false
-        fi
-    done
-
-    # Check somatic SNV VCF files
-    echo "Somatic SNV VCF Files:" >> validation_report.txt
-    for vcf in ~{sep=" " somatic_snvs_vcfs}; do
-        if [[ -f "$vcf" && -s "$vcf" ]]; then
-        echo "  $vcf - PASSED" >> validation_report.txt
-        else
-        echo "  $vcf - MISSING OR EMPTY" >> validation_report.txt
-        validation_passed=false
-        fi
-    done
-
-    # Check somatic indel VCF files
-    echo "Somatic Indel VCF Files:" >> validation_report.txt
-    for vcf in ~{sep=" " somatic_indels_vcfs}; do
-        if [[ -f "$vcf" && -s "$vcf" ]]; then
-        echo "  $vcf - PASSED" >> validation_report.txt
-        else
-        echo "  $vcf - MISSING OR EMPTY" >> validation_report.txt
-        validation_passed=false
-        fi
-    done
-
-    # Check somatic SNV index files
-    echo "Somatic SNV Index Files:" >> validation_report.txt
-    for idx in ~{sep=" " somatic_snvs_indices}; do
-        if [[ -f "$idx" && -s "$idx" ]]; then
-        echo "  $idx - PASSED" >> validation_report.txt
-        else
-        echo "  $idx - MISSING OR EMPTY" >> validation_report.txt
-        validation_passed=false
-        fi
-    done
-
-    # Check somatic indel index files
-    echo "Somatic Indel Index Files:" >> validation_report.txt
-    for idx in ~{sep=" " somatic_indels_indices}; do
-        if [[ -f "$idx" && -s "$idx" ]]; then
-        echo "  $idx - PASSED" >> validation_report.txt
-        else
-        echo "  $idx - MISSING OR EMPTY" >> validation_report.txt
-        validation_passed=false
+            echo "  $idx - MISSING OR EMPTY" >> validation_report.txt
+            validation_passed=false
         fi
     done
 
@@ -452,12 +408,118 @@ task validate_outputs {
     echo "=== Summary ===" >> validation_report.txt
     if [[ "$validation_passed" == "true" ]]; then
         echo "Validation Status: PASSED" >> validation_report.txt
+        echo "All germline output files are present and non-empty." >> validation_report.txt
     else
         echo "Validation Status: FAILED" >> validation_report.txt
+        echo "One or more germline output files are missing or empty." >> validation_report.txt
         exit 1
     fi
 
-    echo "Validation completed successfully!" >> validation_report.txt
+    echo "Germline validation completed successfully!" >> validation_report.txt
+    >>>
+
+  output {
+    File report = "validation_report.txt"
+  }
+
+  runtime {
+    docker: "getwilds/strelka:2.9.10"
+    memory: "2 GB"
+    cpu: 1
+  }
+}
+
+task validate_somatic_outputs {
+  meta {
+    description: "Validate Strelka somatic outputs and generate summary report"
+    outputs: {
+        report: "Validation summary with file checks and basic statistics for somatic outputs"
+    }
+  }
+
+  parameter_meta {
+    somatic_snvs_vcfs: "Array of somatic SNV VCF files to validate"
+    somatic_indels_vcfs: "Array of somatic indel VCF files to validate"
+    somatic_snvs_indices: "Array of somatic SNV VCF index files to validate"
+    somatic_indels_indices: "Array of somatic indel VCF index files to validate"
+  }
+
+  input {
+    Array[File] somatic_snvs_vcfs
+    Array[File] somatic_indels_vcfs
+    Array[File] somatic_snvs_indices
+    Array[File] somatic_indels_indices
+  }
+
+  command <<<
+    set -euo pipefail
+
+    echo "=== Strelka Somatic Validation Report ===" > validation_report.txt
+    echo "Generated: $(date)" >> validation_report.txt
+    echo "" >> validation_report.txt
+
+    validation_passed=true
+
+    # Check somatic SNV VCF files
+    echo "Somatic SNV VCF Files:" >> validation_report.txt
+    for vcf in ~{sep=" " somatic_snvs_vcfs}; do
+        if [[ -f "$vcf" && -s "$vcf" ]]; then
+            # Count variants
+            variant_count=$(zcat "$vcf" | grep -v "^#" | wc -l || echo "0")
+            echo "  $vcf - PASSED ($variant_count SNVs)" >> validation_report.txt
+        else
+            echo "  $vcf - MISSING OR EMPTY" >> validation_report.txt
+            validation_passed=false
+        fi
+    done
+
+    # Check somatic indel VCF files
+    echo "Somatic Indel VCF Files:" >> validation_report.txt
+    for vcf in ~{sep=" " somatic_indels_vcfs}; do
+        if [[ -f "$vcf" && -s "$vcf" ]]; then
+            # Count variants
+            variant_count=$(zcat "$vcf" | grep -v "^#" | wc -l || echo "0")
+            echo "  $vcf - PASSED ($variant_count indels)" >> validation_report.txt
+        else
+            echo "  $vcf - MISSING OR EMPTY" >> validation_report.txt
+            validation_passed=false
+        fi
+    done
+
+    # Check somatic SNV index files
+    echo "Somatic SNV Index Files:" >> validation_report.txt
+    for idx in ~{sep=" " somatic_snvs_indices}; do
+        if [[ -f "$idx" && -s "$idx" ]]; then
+            echo "  $idx - PASSED" >> validation_report.txt
+        else
+            echo "  $idx - MISSING OR EMPTY" >> validation_report.txt
+            validation_passed=false
+        fi
+    done
+
+    # Check somatic indel index files
+    echo "Somatic Indel Index Files:" >> validation_report.txt
+    for idx in ~{sep=" " somatic_indels_indices}; do
+        if [[ -f "$idx" && -s "$idx" ]]; then
+            echo "  $idx - PASSED" >> validation_report.txt
+        else
+            echo "  $idx - MISSING OR EMPTY" >> validation_report.txt
+            validation_passed=false
+        fi
+    done
+
+    echo "" >> validation_report.txt
+    echo "=== Summary ===" >> validation_report.txt
+    if [[ "$validation_passed" == "true" ]]; then
+        echo "Validation Status: PASSED" >> validation_report.txt
+        echo "All somatic output files are present and non-empty." >> validation_report.txt
+    else
+        echo "Validation Status: FAILED" >> validation_report.txt
+        echo "One or more somatic output files are missing or empty." >> validation_report.txt
+        exit 1
+    fi
+
+    echo "Somatic validation completed successfully!" >> validation_report.txt
     >>>
 
   output {
