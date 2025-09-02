@@ -25,8 +25,7 @@ workflow strelka_example {
         somatic_indels_vcfs: "Somatic indel variant calls in VCF format with index files",
         somatic_snvs_vcf_indices: "Index files for somatic SNV VCFs",
         somatic_indels_vcf_indices: "Index files for somatic indel VCFs",
-        germline_validation_report: "Validation report for germline outputs",
-        somatic_validation_report: "Validation report for somatic outputs"
+        validation_report: "Combined validation report for germline and somatic outputs"
     }
   }
 
@@ -152,6 +151,11 @@ workflow strelka_example {
     }
   }
 
+  call combine_validation_reports { input:
+      germline_report = validate_germline_outputs.report,
+      somatic_report = validate_somatic_outputs.report
+  }
+
   output {
     Array[File]? germline_vcfs = strelka_germline.variants_vcf
     Array[File]? germline_vcf_indices = strelka_germline.variants_vcf_index
@@ -159,8 +163,7 @@ workflow strelka_example {
     Array[File]? somatic_indels_vcfs = strelka_somatic.somatic_indels_vcf
     Array[File]? somatic_snvs_vcf_indices = strelka_somatic.somatic_snvs_vcf_index
     Array[File]? somatic_indels_vcf_indices = strelka_somatic.somatic_indels_vcf_index
-    File? germline_validation_report = validate_germline_outputs.report
-    File? somatic_validation_report = validate_somatic_outputs.report
+    File validation_report = combine_validation_reports.report  # Single combined report
   }
 }
 
@@ -527,6 +530,91 @@ task validate_somatic_outputs {
 
     echo "Somatic validation completed successfully!" >> validation_report.txt
     >>>
+
+  output {
+    File report = "validation_report.txt"
+  }
+
+  runtime {
+    docker: "getwilds/strelka:2.9.10"
+    memory: "2 GB"
+    cpu: 1
+  }
+}
+
+task combine_validation_reports {
+  meta {
+    description: "Combine germline and somatic validation reports into a single report"
+    outputs: {
+        report: "Combined validation summary with both germline and somatic results"
+    }
+  }
+
+  parameter_meta {
+    germline_report: "Optional germline validation report"
+    somatic_report: "Optional somatic validation report"
+  }
+
+  input {
+    File? germline_report
+    File? somatic_report
+  }
+
+  command <<<
+    set -euo pipefail
+
+    echo "=== Strelka Combined Validation Report ===" > validation_report.txt
+    echo "Generated: $(date)" >> validation_report.txt
+    echo "" >> validation_report.txt
+
+    # Include germline report if provided
+    if [[ "~{defined(germline_report)}" == "true" ]]; then
+        echo "=== GERMLINE RESULTS ===" >> validation_report.txt
+        # Skip the header from the germline report and include the rest
+        tail -n +4 "~{germline_report}" >> validation_report.txt
+        echo "" >> validation_report.txt
+    fi
+
+    # Include somatic report if provided  
+    if [[ "~{defined(somatic_report)}" == "true" ]]; then
+        echo "=== SOMATIC RESULTS ===" >> validation_report.txt
+        # Skip the header from the somatic report and include the rest
+        tail -n +4 "~{somatic_report}" >> validation_report.txt
+        echo "" >> validation_report.txt
+    fi
+
+    # If neither report is provided, add a note
+    if [[ "~{defined(germline_report)}" == "false" && "~{defined(somatic_report)}" == "false" ]]; then
+        echo "No validation reports provided." >> validation_report.txt
+        echo "This may indicate that neither germline nor somatic calling was performed." >> validation_report.txt
+    fi
+
+    echo "=== COMBINED SUMMARY ===" >> validation_report.txt
+    
+    # Check if any validation failed by looking for "FAILED" in the reports
+    overall_status="PASSED"
+    
+    if [[ "~{defined(germline_report)}" == "true" ]]; then
+        if grep -q "Validation Status: FAILED" "~{germline_report}"; then
+            overall_status="FAILED"
+        fi
+    fi
+    
+    if [[ "~{defined(somatic_report)}" == "true" ]]; then
+        if grep -q "Validation Status: FAILED" "~{somatic_report}"; then
+            overall_status="FAILED"
+        fi
+    fi
+    
+    echo "Overall Validation Status: $overall_status" >> validation_report.txt
+    
+    if [[ "$overall_status" == "FAILED" ]]; then
+        echo "One or more validation checks failed. Please review the detailed results above." >> validation_report.txt
+        exit 1
+    else
+        echo "All validation checks passed successfully." >> validation_report.txt
+    fi
+  >>>
 
   output {
     File report = "validation_report.txt"
