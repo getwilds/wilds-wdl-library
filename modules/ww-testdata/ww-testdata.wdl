@@ -337,11 +337,13 @@ task download_bam_data {
   }
 
   parameter_meta {
+    filename: "Filename to save the BAM file as"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
 
   input {
+    String filename = "NA12878_chr1.bam"
     Int cpu_cores = 2
     Int memory_gb = 4
   }
@@ -360,15 +362,15 @@ task download_bam_data {
       sed 's/\tSA:Z:[^\t]*//' | \
       sed '/^@SQ/d' | \
       sed '1a@SQ\tSN:chr1\tLN:248956422' | \
-      samtools view -@ ~{cpu_cores} -b > NA12878_chr1.bam
+      samtools view -@ ~{cpu_cores} -b > "~{filename}"
 
     # Index the new BAM file
-    samtools index -@ ~{cpu_cores} NA12878_chr1.bam
+    samtools index -@ ~{cpu_cores} "~{filename}"
   >>>
 
   output {
-    File bam = "NA12878_chr1.bam"
-    File bai = "NA12878_chr1.bam.bai"
+    File bam = "~{filename}"
+    File bai = "~{filename}.bai"
   }
 
   runtime {

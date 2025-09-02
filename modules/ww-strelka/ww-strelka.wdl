@@ -4,8 +4,7 @@
 
 version 1.0
 
-# import "../ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-strelka/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct StrelkaSample {
     String name
@@ -107,7 +106,9 @@ workflow strelka_example {
   if (call_somatic) {
     # Download test data if necessary
     if (!defined(normal_samples)) {
-      call ww_testdata.download_bam_data as normal_data { }
+      call ww_testdata.download_bam_data as normal_data { input:
+        filename = "NA12878_chr1_normal.bam"
+      }
     }
 
     # Create normals array - either from input or from test data download
