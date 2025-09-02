@@ -21,7 +21,11 @@ workflow strelka_example {
     url: "https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-strelka"
     outputs: {
         germline_vcfs: "Germline variant calls in VCF format with index files",
-        somatic_vcfs: "Somatic variant calls in VCF format with index files (tumor/normal pairs)",
+        germline_vcf_indices: "Index files for germline VCFs",
+        somatic_snvs_vcfs: "Somatic SNV variant calls in VCF format with index files",
+        somatic_indels_vcfs: "Somatic indel variant calls in VCF format with index files",
+        somatic_snvs_vcf_indices: "Index files for somatic SNV VCFs",
+        somatic_indels_vcf_indices: "Index files for somatic indel VCFs",
         validation_report: "Validation report confirming all expected outputs were generated"
     }
   }
@@ -47,7 +51,7 @@ workflow strelka_example {
     File? target_regions_bed
     Boolean is_exome = false
     Boolean call_germline = true
-    Boolean call_somatic = false
+    Boolean call_somatic = true
     Int cpus = 4
     Int memory_gb = 8
   }
@@ -80,8 +84,8 @@ workflow strelka_example {
     scatter (sample in final_samples) {
       call strelka_germline { input:
           sample_name = sample.name,
-          bam_file = sample.bam,
-          bai_file = sample.bai,
+          bam = sample.bam,
+          bai = sample.bai,
           ref_fasta = final_ref_fasta,
           ref_fasta_index = final_ref_fasta_index,
           target_regions_bed = target_regions_bed,
@@ -106,7 +110,7 @@ workflow strelka_example {
     # Ensure we have matching numbers of tumor and normal samples
     Int sample_count = length(final_samples)
     Int normal_count = length(final_normal_samples)
-    
+
     if (sample_count == normal_count) {
       scatter (i in range(sample_count)) {
         call strelka_somatic { input:
@@ -159,8 +163,8 @@ task strelka_germline {
 
   parameter_meta {
     sample_name: "Name of the sample being analyzed"
-    bam_file: "Input BAM file for variant calling"
-    bai_file: "Index file for the input BAM"
+    bam: "Input BAM file for variant calling"
+    bai: "Index file for the input BAM"
     ref_fasta: "Reference genome FASTA file"
     ref_fasta_index: "Reference genome FASTA index file"
     target_regions_bed: "Optional BED file specifying regions to analyze"
@@ -171,8 +175,8 @@ task strelka_germline {
 
   input {
     String sample_name
-    File bam_file
-    File bai_file
+    File bam
+    File bai
     File ref_fasta
     File ref_fasta_index
     File? target_regions_bed
@@ -192,8 +196,8 @@ task strelka_germline {
 
     # Configure Strelka germline workflow
     configureStrelkaGermlineWorkflow.py \
-      --bam ~{bam_file} \
-      --referenceFasta ~{ref_fasta} \
+      --bam "~{bam}" \
+      --referenceFasta "~{ref_fasta}" \
       --runDir strelka_germline_output \
       ~{exome_flag} \
       ~{regions_flag}
@@ -204,8 +208,8 @@ task strelka_germline {
       -j ~{cpus}
 
     # Copy and rename output files
-    cp strelka_germline_output/results/variants/variants.vcf.gz ~{sample_name}.strelka.germline.vcf.gz
-    cp strelka_germline_output/results/variants/variants.vcf.gz.tbi ~{sample_name}.strelka.germline.vcf.gz.tbi
+    cp strelka_germline_output/results/variants/variants.vcf.gz "~{sample_name}.strelka.germline.vcf.gz"
+    cp strelka_germline_output/results/variants/variants.vcf.gz.tbi "~{sample_name}.strelka.germline.vcf.gz.tbi"
 
     # Basic validation
     echo "Validating output files..."
@@ -288,9 +292,9 @@ task strelka_somatic {
 
     # Configure Strelka somatic workflow
     configureStrelkaSomaticWorkflow.py \
-      --tumorBam ~{tumor_bam} \
-      --normalBam ~{normal_bam} \
-      --referenceFasta ~{ref_fasta} \
+      --tumorBam "~{tumor_bam}" \
+      --normalBam "~{normal_bam}" \
+      --referenceFasta "~{ref_fasta}" \
       --runDir strelka_somatic_output \
       ~{exome_flag} \
       ~{regions_flag}
@@ -301,10 +305,10 @@ task strelka_somatic {
       -j ~{cpus}
 
     # Copy and rename output files
-    cp strelka_somatic_output/results/variants/somatic.snvs.vcf.gz ~{tumor_sample_name}_vs_~{normal_sample_name}.strelka.somatic.snvs.vcf.gz
-    cp strelka_somatic_output/results/variants/somatic.snvs.vcf.gz.tbi ~{tumor_sample_name}_vs_~{normal_sample_name}.strelka.somatic.snvs.vcf.gz.tbi
-    cp strelka_somatic_output/results/variants/somatic.indels.vcf.gz ~{tumor_sample_name}_vs_~{normal_sample_name}.strelka.somatic.indels.vcf.gz
-    cp strelka_somatic_output/results/variants/somatic.indels.vcf.gz.tbi ~{tumor_sample_name}_vs_~{normal_sample_name}.strelka.somatic.indels.vcf.gz.tbi
+    cp strelka_somatic_output/results/variants/somatic.snvs.vcf.gz "~{tumor_sample_name}_vs_~{normal_sample_name}.strelka.somatic.snvs.vcf.gz"
+    cp strelka_somatic_output/results/variants/somatic.snvs.vcf.gz.tbi "~{tumor_sample_name}_vs_~{normal_sample_name}.strelka.somatic.snvs.vcf.gz.tbi"
+    cp strelka_somatic_output/results/variants/somatic.indels.vcf.gz "~{tumor_sample_name}_vs_~{normal_sample_name}.strelka.somatic.indels.vcf.gz"
+    cp strelka_somatic_output/results/variants/somatic.indels.vcf.gz.tbi "~{tumor_sample_name}_vs_~{normal_sample_name}.strelka.somatic.indels.vcf.gz.tbi"
 
     # Basic validation
     echo "Validating output files..."
