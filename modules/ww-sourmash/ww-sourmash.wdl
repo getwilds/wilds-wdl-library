@@ -221,13 +221,13 @@ task sourmash_search {
             -k ~{ksize} \
             --threshold ~{threshold} \
             --containment \
-            ~{query_sig} \
-            ~{database_sig} \
-            > ~{results_filename}
+            "~{query_sig}" \
+            "~{database_sig}" \
+            > "~{results_filename}"
     >>>
 
     output {
-        File results_file = "search_results.csv"
+        File results_file = "~{results_filename}"
     }
 
     runtime {
