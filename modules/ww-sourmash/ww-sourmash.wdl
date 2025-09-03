@@ -209,6 +209,10 @@ task sourmash_search {
         Int cpu_cores = 1
     }
 
+    String query_basename = basename(query_sig, ".sig")
+    String db_basename = basename(database_sig, ".sig")
+    String results_filename = query_basename + "_vs_" + db_basename + "_search_results.csv"
+
     command <<<
         set -eo pipefail
 
@@ -219,7 +223,7 @@ task sourmash_search {
             --containment \
             ~{query_sig} \
             ~{database_sig} \
-            > search_results.csv
+            > ~{results_filename}
     >>>
 
     output {
