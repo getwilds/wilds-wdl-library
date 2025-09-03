@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `validate_outputs`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `validate_outputs`
 - **Workflow**: `testdata_example` (demonstration workflow that executes all tasks)
 
 ## Tasks
@@ -82,10 +82,18 @@ Downloads gnomAD (Genome Aggregation Database) VCF files for population frequenc
 ### `download_annotsv_vcf`
 Downloads test VCF files for structural variant annotation workflows from the AnnotSV repository.
 
+### `generate_pasilla_counts`
+Generates DESeq2 test count matrices and metadata using the pasilla Bioconductor dataset raw files. This task creates:
+- Count matrix with genes as rows and samples as columns
+- Sample metadata file with experimental conditions
+- Gene annotation information including symbols and descriptions
+
+**Outputs**: Test data suitable for differential expression analysis workflows with DESeq2.
+
 ### `validate_outputs`
 Validates all downloaded test data files to ensure they exist and are non-empty.
 
-**Inputs**: All 18 output files from the download tasks
+**Inputs**: All 22 output files from the download and generation tasks
 **Outputs**: `report` (File): Validation summary confirming file presence and basic integrity
 
 ## Usage
@@ -201,6 +209,21 @@ call my_bam_analysis {
 }
 ```
 
+**Differential expression analysis**:
+```wdl
+call testdata.generate_pasilla_counts {
+  input:
+    n_samples = 7,
+    n_genes = 5000,
+    condition_name = "treatment"
+}
+call deseq2_tasks.run_deseq2 {
+  input:
+    counts_matrix = generate_pasilla_counts.counts_matrix,
+    sample_metadata = generate_pasilla_counts.sample_metadata
+}
+```
+
 ## Task Reference
 
 ### download_ref_data
@@ -313,6 +336,21 @@ call my_bam_analysis {
 **Outputs**:
 - `test_vcf` (File): Example VCF file for testing
 
+### generate_pasilla_counts
+
+**Inputs**:
+- `n_samples` (Int): Number of samples to include (default: 7, max: 7 for pasilla dataset)
+- `n_genes` (Int): Approximate number of genes to include (default: 10000)
+- `condition_name` (String): Name for the condition column in metadata (default: "condition")
+- `output_prefix` (String): Prefix for output files (default: "pasilla")
+- `memory_gb` (Int): Memory allocation (default: 4)
+- `cpu_cores` (Int): CPU allocation (default: 1)
+
+**Outputs**:
+- `counts_matrix` (File): Count matrix with genes as rows and samples as columns, suitable for DESeq2
+- `sample_metadata` (File): Sample metadata file with conditions and other sample information
+- `gene_info` (File): Gene annotation information including gene symbols and descriptions
+
 ### validate_outputs
 
 **Inputs**:
@@ -335,6 +373,9 @@ call my_bam_analysis {
 - `known_indels_vcf` (File): Known indels VCF to validate
 - `gnomad_vcf` (File): gnomAD VCF to validate
 - `annotsv_test_vcf` (File): AnnotSV test VCF file to validate
+- `pasilla_counts` (File): Pasilla counts matrix to validate
+- `pasilla_metadata` (File): Pasilla sample metadata to validate
+- `pasilla_gene_info` (File): Pasilla gene info to validate
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
 
@@ -351,14 +392,15 @@ All reference data is downloaded from authoritative public repositories:
 - **AnnotSV Repository**: Structural variant test data
 - **NCBI dbSNP**: Latest dbSNP variant database
 - **GATK Resource Bundle**: Known indels and gnomAD population frequencies
+- **Bioconductor pasilla dataset**: RNA-seq count data for differential expression testing
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
 
 ## Requirements
 
 ### Runtime Dependencies
-- **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`, `getwilds/bcftools:1.19`
-- **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), wget, aws CLI
+- **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`, `getwilds/bcftools:1.19`, `getwilds/deseq2:1.40.2`
+- **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), wget, aws CLI, R/Bioconductor (for DESeq2 test data generation)
 - **Network**: Internet access required for data downloads
 
 ### Resource Requirements
@@ -374,6 +416,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-bwa**: DNA alignment (requires reference FASTA)
 - **ww-ichorcna**: Copy number analysis (requires ichorCNA reference files)
 - **ww-annotsv**: Structural variant annotation (requires test VCF)
+- **ww-deseq2**: Differential expression analysis (requires count matrices and metadata)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:
