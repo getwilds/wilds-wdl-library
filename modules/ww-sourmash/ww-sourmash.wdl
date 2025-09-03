@@ -319,7 +319,7 @@ task validate_outputs {
 
         # Validate query signatures
         echo "Query Signatures:" >> validation_report.txt
-        ~{sep=' ' query_signatures} | tr ' ' '\n' | while read sig_file; do
+        for sig_file in ~{sep=' ' query_signatures}; do
             if [[ -f "$sig_file" && -s "$sig_file" ]]; then
                 # Count signatures in file
                 sig_count=$(sourmash sig info "$sig_file" 2>/dev/null | grep -c "signature" || echo "0")
@@ -333,7 +333,7 @@ task validate_outputs {
         # Validate database signatures
         echo "" >> validation_report.txt
         echo "Database Signatures:" >> validation_report.txt
-        ~{sep=' ' database_signatures} | tr ' ' '\n' | while read sig_file; do
+        for sig_file in ~{sep=' ' database_signatures}; do
             if [[ -f "$sig_file" && -s "$sig_file" ]]; then
                 sig_count=$(sourmash sig info "$sig_file" 2>/dev/null | grep -c "signature" || echo "0")
                 echo "  $sig_file - PASSED ($sig_count signatures)" >> validation_report.txt
@@ -346,7 +346,7 @@ task validate_outputs {
         # Validate search results
         echo "" >> validation_report.txt
         echo "Search Results:" >> validation_report.txt
-        ~{sep=' ' search_results} | tr ' ' '\n' | while read search_file; do
+        for search_file in ~{sep=' ' search_results}; do
             if [[ -f "$search_file" && -s "$search_file" ]]; then
                 result_count=$(tail -n +2 "$search_file" | wc -l)
                 echo "  $search_file - PASSED ($result_count matches found)" >> validation_report.txt
@@ -359,7 +359,7 @@ task validate_outputs {
         # Validate gather results
         echo "" >> validation_report.txt
         echo "Gather Results:" >> validation_report.txt
-        ~{sep=' ' gather_results} | tr ' ' '\n' | while read gather_file; do
+        for gather_file in ~{sep=' ' gather_results}; do
             if [[ -f "$gather_file" && -s "$gather_file" ]]; then
                 result_count=$(tail -n +2 "$gather_file" | wc -l)
                 echo "  $gather_file - PASSED ($result_count genome matches found)" >> validation_report.txt
