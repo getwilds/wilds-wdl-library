@@ -263,6 +263,9 @@ task sourmash_gather {
         Int cpu_cores = 2
     }
 
+    String query_basename = basename(query_sig, ".sig")
+    String results_filename = query_basename + "_gather_results.csv"
+
     command <<<
         set -eo pipefail
 
@@ -272,11 +275,11 @@ task sourmash_gather {
             --threshold ~{threshold} \
             ~{query_sig} \
             ~{sep=' ' database_sigs} \
-            -o gather_results.csv
+            -o "~{results_filename}"
     >>>
 
     output {
-        File results_file = "gather_results.csv"
+        File results_file = "~{results_filename}"
     }
 
     runtime {
