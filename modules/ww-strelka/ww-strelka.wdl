@@ -14,15 +14,15 @@ struct StrelkaSample {
 
 workflow strelka_example {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "WDL workflow for germline and somatic variant calling using Strelka"
     url: "https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-strelka"
     outputs: {
-        germline_vcfs: "Germline variant calls in VCF format with index files",
+        germline_vcfs: "Germline variant calls in compressed VCF format with index files",
         germline_vcf_indices: "Index files for germline VCFs",
-        somatic_snvs_vcfs: "Somatic SNV variant calls in VCF format with index files",
-        somatic_indels_vcfs: "Somatic indel variant calls in VCF format with index files",
+        somatic_snvs_vcfs: "Somatic SNV variant calls in compressed VCF format with index files",
+        somatic_indels_vcfs: "Somatic indel variant calls in compressed VCF format with index files",
         somatic_snvs_vcf_indices: "Index files for somatic SNV VCFs",
         somatic_indels_vcf_indices: "Index files for somatic indel VCFs",
         validation_report: "Combined validation report for germline and somatic outputs"
@@ -31,7 +31,7 @@ workflow strelka_example {
 
   parameter_meta {
     samples: "Optional array of StrelkaSample objects, each containing sample name, BAM file, and BAM index. If not provided, workflow will download test data."
-    normal_samples: "Optional array of normal samples for somatic variant calling. Should match with tumor samples by array index."
+    normal_samples: "Optional array of normal samples for somatic variant calling. Should be in the same order as tumor samples so that each patient has the same index in both arrays."
     ref_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
     ref_fasta_index: "Optional reference genome FASTA index file. If not provided, test data will be used."
     target_regions_bed: "Optional BED file of regions to target for calling (e.g., exons, specific genomic regions)"

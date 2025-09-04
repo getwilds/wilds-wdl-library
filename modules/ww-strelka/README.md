@@ -74,7 +74,7 @@ workflow my_germline_analysis {
     File reference_index
   }
   
-  # Create sample array
+  # Create sample array with zip (bam files on the 'left', their indices on the 'right')
   Array[Pairs] sample_pairs = zip(bam_files, bai_files)
   scatter (pair in sample_pairs) {
     String sample_name = basename(pair.left, ".bam")
@@ -159,6 +159,7 @@ miniwdl run ww-strelka.wdl -i inputs.json
 Performs germline variant calling on individual samples.
 
 **Inputs:**
+- Sample name
 - Sample BAM file and index
 - Reference genome FASTA and index
 - Optional target regions BED file
@@ -173,6 +174,7 @@ Performs germline variant calling on individual samples.
 Performs somatic variant calling on tumor/normal pairs.
 
 **Inputs:**
+- Tumor and normal sample names
 - Tumor and normal BAM files with indices
 - Reference genome FASTA and index
 - Optional target regions BED file
