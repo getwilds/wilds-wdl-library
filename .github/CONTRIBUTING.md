@@ -116,7 +116,7 @@ Each module must contain exactly these four files:
 
 Your WDL file must include:
 
-- **Version declaration**: Use WDL version 1.0 or higher
+- **Version declaration**: Use WDL version 1.0
 - **Task definitions**: Individual tool tasks with proper resource requirements
 - **Test workflow**: A `test_data` workflow that exercises all tasks
 - **Validation task**: A `validate_outputs` task that produces a text file report
