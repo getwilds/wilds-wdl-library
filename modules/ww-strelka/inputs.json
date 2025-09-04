@@ -1,0 +1,34 @@
+{
+  "strelka_example.samples": [
+    {
+      "name": "sample1",
+      "bam": "/path/to/sample1.aligned.bam",
+      "bai": "/path/to/sample1.aligned.bam.bai"
+    },
+    {
+      "name": "sample2", 
+      "bam": "/path/to/sample2.aligned.bam",
+      "bai": "/path/to/sample2.aligned.bam.bai"
+    }
+  ],
+  "strelka_example.normal_samples": [
+    {
+      "name": "normal1",
+      "bam": "/path/to/normal1.aligned.bam",
+      "bai": "/path/to/normal1.aligned.bam.bai"
+    },
+    {
+      "name": "normal2",
+      "bam": "/path/to/normal2.aligned.bam", 
+      "bai": "/path/to/normal2.aligned.bam.bai"
+    }
+  ],
+  "strelka_example.ref_fasta": "/path/to/reference_genome.fasta",
+  "strelka_example.ref_fasta_index": "/path/to/reference_genome.fasta.fai",
+  "strelka_example.target_regions_bed": "/path/to/target_regions.bed",
+  "strelka_example.is_exome": false,
+  "strelka_example.call_germline": true,
+  "strelka_example.call_somatic": true,
+  "strelka_example.cpus": 8,
+  "strelka_example.memory_gb": 16
+}
