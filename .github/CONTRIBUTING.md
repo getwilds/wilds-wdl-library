@@ -1,4 +1,4 @@
-# Contributing to WILDS WDL Library
+# Contributing to the WILDS WDL Library
 
 Thank you for your interest in contributing to the WILDS WDL Library! This document provides guidelines for contributing modules, vignettes, workflows, and improvements to our centralized collection of bioinformatics WDL infrastructure.
 
@@ -19,27 +19,17 @@ Thank you for your interest in contributing to the WILDS WDL Library! This docum
 
 Before contributing code changes, please:
 
-1. **Fork the repository** to your GitHub account
-2. **Clone your fork** locally:
-   ```bash
-   git clone https://github.com/your-username/wilds-wdl-library.git
-   cd wilds-wdl-library
-   ```
-3. **Set up development environment** with required tools:
-   - [miniWDL](https://github.com/chanzuckerberg/miniwdl) for local testing
-   - [Docker](https://www.docker.com/) for container execution
-   - A WDL-compatible workflow engine ([Cromwell](https://cromwell.readthedocs.io/), [miniWDL](https://github.com/chanzuckerberg/miniwdl), or [Sprocket](https://sprocket.bio/))
+1. **[Fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)** to your GitHub account
 
-4. **Create a feature branch** for your contribution:
-   ```bash
-   git checkout -b new-branch-name
-   ```
+2. **Set up your development environment** with the required tools:
+   - [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl) for local testing
+   - [Docker Desktop](https://www.docker.com/get-started/) for container execution
 
-   Commit and push your changes to this new branch.
+3. **Make code changes** and push them to your fork
 
-5. **Create a pull request (PR)** to merge your contribution branch into `main`.
+4. **Submit a pull request (PR)** to merge your contributions into the `main` branch of the original repo
     *   The title of your PR should briefly describe the change.
-    *   If your contribution resolves an issue, the body of your PR should contain `Fixes #issue-number`.
+    *   If your contribution resolves an issue, the body of your PR should contain `Fixes #issue-number`
 
 ## Repository Structure
 
@@ -80,25 +70,23 @@ wilds-wdl-library/
 
 - Fix typos, improve clarity, or add missing information
 - Enhance README files with better examples
-- Add usage tutorials and best practices
-- Contribute to the [WILDS documentation site](https://getwilds.org/)
 
-### 3. Module Contributions (Tier 1)
+### 3. Module Contributions
 
 - Focus on one high-utility bioinformatics tool
 - Follow standardized module structure
 - Include comprehensive testing and validation
 
-### 4. Vignette Contributions (Tier 2)
+### 4. Vignette Contributions
 
 - Combine 2-3 existing modules
 - Demonstrate common analysis patterns
 - Provide educational value for the community
 
-### 5. Workflow Contributions (Tier 3)
+### 5. Workflow Contributions
 
 - Create publication-ready analysis pipelines
-- Integrate multiple modules with custom logic
+- Integrate multiple modules
 - Include comprehensive validation with realistic datasets
 
 ## Module Development Guidelines
@@ -117,10 +105,11 @@ Each module must contain exactly these four files:
 Your WDL file must include:
 
 - **Version declaration**: Use WDL version 1.0
-- **Task definitions**: Individual tool tasks with proper resource requirements
-- **Test workflow**: A `test_data` workflow that exercises all tasks
-- **Validation task**: A `validate_outputs` task that produces a text file report
-- **Proper imports**: Use GitHub URLs for any external dependencies on existing WILDS WDL modules
+- **Example workflow**: A `toolname_example` workflow that uses all tasks
+- **Task definitions**: Individual tasks with proper resource requirements
+- **Validation task**: A `validate_outputs` task that produces `toolnamne_validation_report.txt`
+- **Proper imports**: Use GitHub URLs for dependencies on existing WILDS WDL modules (e.g. for downloading test data)
+- **Metadata documentation**: Describe properties of the workflow and tasks (e.g. inputs, outputs)
 
 Example structure:
 ```wdl
