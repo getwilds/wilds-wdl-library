@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `validate_outputs`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `validate_outputs`
 - **Workflow**: `testdata_example` (demonstration workflow that executes all tasks)
 
 ## Tasks
@@ -82,10 +82,21 @@ Downloads gnomAD (Genome Aggregation Database) VCF files for population frequenc
 ### `download_annotsv_vcf`
 Downloads test VCF files for structural variant annotation workflows from the AnnotSV repository.
 
+### `generate_pasilla_counts`
+Generates individual STAR-format count files using the pasilla Bioconductor dataset. This task:
+- Creates realistic `ReadsPerGene.out.tab` files that mimic STAR output
+- Includes proper STAR format with 4-line header containing mapping statistics
+- Generates strand-specific count columns (unstranded, forward, reverse)
+- Produces individual count files for each sample with balanced conditions
+- Outputs sample name and condition arrays for downstream processing
+- Enables testing of count matrix combination workflows
+
+This is particularly useful for testing RNA-seq workflows that start from individual STAR output files and need to combine them into a matrix for differential expression analysis.
+
 ### `validate_outputs`
 Validates all downloaded test data files to ensure they exist and are non-empty.
 
-**Inputs**: All 18 output files from the download tasks
+**Inputs**: All output files from the download tasks plus pasilla count files array
 **Outputs**: `report` (File): Validation summary confirming file presence and basic integrity
 
 ## Usage
@@ -138,6 +149,25 @@ call testdata.download_ref_data {
 call star_tasks.build_star_index {
   input:
     reference_fasta = download_ref_data.fasta
+}
+```
+
+**DESeq2 analysis with individual count files**:
+```wdl
+call testdata.generate_pasilla_counts {
+  input:
+    n_samples = 6,
+    n_genes = 5000
+}
+call combine_count_matrices {
+  input:
+    gene_count_files = generate_pasilla_counts.individual_count_files,
+    sample_names = generate_pasilla_counts.sample_names,
+    sample_conditions = generate_pasilla_counts.sample_conditions
+}
+call deseq2_analysis {
+  input:
+    counts_matrix = combine_count_matrices.counts_matrix
 }
 ```
 
@@ -314,6 +344,22 @@ call my_bam_analysis {
 **Outputs**:
 - `test_vcf` (File): Example VCF file for testing
 
+### generate_pasilla_counts
+
+**Inputs**:
+- `n_samples` (Int): Number of samples to include (default: 7, max: 7 for pasilla dataset)
+- `n_genes` (Int): Approximate number of genes to include (default: 10000)
+- `condition_name` (String): Name for the condition column in metadata (default: "condition")
+- `output_prefix` (String): Prefix for output files (default: "pasilla")
+- `memory_gb` (Int): Memory allocation in GB (default: 4)
+- `cpu_cores` (Int): CPU allocation (default: 1)
+
+**Outputs**:
+- `individual_count_files` (Array[File]): Individual STAR-format count files for each sample (*.ReadsPerGene.out.tab)
+- `sample_names` (Array[String]): Array of sample names corresponding to the count files
+- `sample_conditions` (Array[String]): Array of experimental conditions for each sample
+- `gene_info` (File): Gene annotation information including gene IDs
+
 ### validate_outputs
 
 **Inputs**:
@@ -336,6 +382,8 @@ call my_bam_analysis {
 - `known_indels_vcf` (File): Known indels VCF to validate
 - `gnomad_vcf` (File): gnomAD VCF to validate
 - `annotsv_test_vcf` (File): AnnotSV test VCF file to validate
+- `pasilla_counts` (Array[File]): Array of individual pasilla count files to validate
+- `pasilla_gene_info` (File): Pasilla gene annotation file to validate
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
 
@@ -352,14 +400,15 @@ All reference data is downloaded from authoritative public repositories:
 - **AnnotSV Repository**: Structural variant test data
 - **NCBI dbSNP**: Latest dbSNP variant database
 - **GATK Resource Bundle**: Known indels and gnomAD population frequencies
+- **Bioconductor pasilla package**: Example RNA-seq count data for DESeq2 testing
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
 
 ## Requirements
 
 ### Runtime Dependencies
-- **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`, `getwilds/bcftools:1.19`
-- **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), wget, aws CLI
+- **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`, `getwilds/bcftools:1.19`, `getwilds/deseq2:1.40.2`
+- **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), wget, aws CLI, R with DESeq2 and pasilla packages
 - **Network**: Internet access required for data downloads
 
 ### Resource Requirements
@@ -373,6 +422,7 @@ This module is specifically designed to support other WILDS modules:
 
 - **ww-star**: RNA-seq alignment (requires reference FASTA + GTF)
 - **ww-bwa**: DNA alignment (requires reference FASTA)
+- **ww-deseq2**: Differential expression analysis (uses individual count files from `generate_pasilla_counts`)
 - **ww-ichorcna**: Copy number analysis (requires ichorCNA reference files)
 - **ww-annotsv**: Structural variant annotation (requires test VCF)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
@@ -383,6 +433,7 @@ By centralizing test data downloads, `ww-testdata` enables:
 - Simplified module development and testing
 - Clear documentation of data dependencies
 - Built-in validation to ensure data integrity
+- Realistic testing scenarios that mirror production workflows
 
 ## Module Development
 
