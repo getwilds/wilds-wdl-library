@@ -32,8 +32,6 @@ workflow deseq2_example {
     reference_level: "Reference level for DESeq2 contrast (typically control condition)"
     contrast: "DESeq2 contrast string in format 'condition,treatment,control'"
     condition_column: "Column name in metadata containing experimental conditions"
-    alpha: "Significance threshold for adjusted p-values"
-    lfc_threshold: "Log fold change threshold for significance testing"
   }
 
   input {
@@ -45,10 +43,8 @@ workflow deseq2_example {
     File? sample_metadata
     # DESeq2 analysis parameters
     String condition_column = "condition"
-    String reference_level = "control"
-    String contrast = "condition,treatment,control"
-    Float alpha = 0.05
-    Float lfc_threshold = 0.0
+    String reference_level = ""
+    String contrast = ""
   }
 
   # Generate test data if user inputs are not provided
@@ -91,9 +87,7 @@ workflow deseq2_example {
       sample_metadata = final_sample_metadata,
       condition_column = condition_column,
       reference_level = reference_level,
-      contrast = contrast,
-      alpha = alpha,
-      lfc_threshold = lfc_threshold
+      contrast = contrast
   }
 
   call validate_deseq2_outputs { input:
@@ -189,8 +183,6 @@ task run_deseq2 {
     condition_column: "Column name in the metadata file that contains the experimental condition"
     reference_level: "Reference level for the contrast (typically the control condition)"
     contrast: "DESeq2 contrast string in the format 'condition,treatment,control'"
-    alpha: "Significance threshold for adjusted p-values"
-    lfc_threshold: "Log fold change threshold for significance testing"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
   }
@@ -201,8 +193,6 @@ task run_deseq2 {
     String condition_column = "condition"
     String reference_level = ""
     String contrast = ""
-    Float alpha = 0.05
-    Float lfc_threshold = 0.0
     Int memory_gb = 8
     Int cpu_cores = 2
   }
@@ -210,14 +200,12 @@ task run_deseq2 {
   command <<<
     set -eo pipefail
 
-    Rscript deseq2_analysis.R \
+    deseq2_analysis.R \
       --counts_file="~{counts_matrix}" \
       --metadata_file="~{sample_metadata}" \
       --condition_column="~{condition_column}" \
       --reference_level="~{reference_level}" \
       --contrast="~{contrast}" \
-      --alpha="~{alpha}" \
-      --lfc_threshold="~{lfc_threshold}" \
       --output_prefix="deseq2_results"
   >>>
 
