@@ -83,17 +83,20 @@ Downloads gnomAD (Genome Aggregation Database) VCF files for population frequenc
 Downloads test VCF files for structural variant annotation workflows from the AnnotSV repository.
 
 ### `generate_pasilla_counts`
-Generates DESeq2 test count matrices and metadata using the pasilla Bioconductor dataset raw files. This task creates:
-- Count matrix with genes as rows and samples as columns
-- Sample metadata file with experimental conditions
-- Gene annotation information including symbols and descriptions
+Generates individual STAR-format count files using the pasilla Bioconductor dataset. This task:
+- Creates realistic `ReadsPerGene.out.tab` files that mimic STAR output
+- Includes proper STAR format with 4-line header containing mapping statistics
+- Generates strand-specific count columns (unstranded, forward, reverse)
+- Produces individual count files for each sample with balanced conditions
+- Outputs sample name and condition arrays for downstream processing
+- Enables testing of count matrix combination workflows
 
-**Outputs**: Test data suitable for differential expression analysis workflows with DESeq2.
+This is particularly useful for testing RNA-seq workflows that start from individual STAR output files and need to combine them into a matrix for differential expression analysis.
 
 ### `validate_outputs`
 Validates all downloaded test data files to ensure they exist and are non-empty.
 
-**Inputs**: All 22 output files from the download and generation tasks
+**Inputs**: All output files from the download tasks plus pasilla count files array
 **Outputs**: `report` (File): Validation summary confirming file presence and basic integrity
 
 ## Usage
@@ -146,6 +149,25 @@ call testdata.download_ref_data {
 call star_tasks.build_star_index {
   input:
     reference_fasta = download_ref_data.fasta
+}
+```
+
+**DESeq2 analysis with individual count files**:
+```wdl
+call testdata.generate_pasilla_counts {
+  input:
+    n_samples = 6,
+    n_genes = 5000
+}
+call combine_count_matrices {
+  input:
+    gene_count_files = generate_pasilla_counts.individual_count_files,
+    sample_names = generate_pasilla_counts.sample_names,
+    sample_conditions = generate_pasilla_counts.sample_conditions
+}
+call deseq2_analysis {
+  input:
+    counts_matrix = combine_count_matrices.counts_matrix
 }
 ```
 
@@ -206,21 +228,6 @@ call my_bam_analysis {
   input:
     input_bam = download_bam_data.bam,
     input_bai = download_bam_data.bai
-}
-```
-
-**Differential expression analysis**:
-```wdl
-call testdata.generate_pasilla_counts {
-  input:
-    n_samples = 7,
-    n_genes = 5000,
-    condition_name = "treatment"
-}
-call deseq2_tasks.run_deseq2 {
-  input:
-    counts_matrix = generate_pasilla_counts.counts_matrix,
-    sample_metadata = generate_pasilla_counts.sample_metadata
 }
 ```
 
@@ -343,13 +350,14 @@ call deseq2_tasks.run_deseq2 {
 - `n_genes` (Int): Approximate number of genes to include (default: 10000)
 - `condition_name` (String): Name for the condition column in metadata (default: "condition")
 - `output_prefix` (String): Prefix for output files (default: "pasilla")
-- `memory_gb` (Int): Memory allocation (default: 4)
+- `memory_gb` (Int): Memory allocation in GB (default: 4)
 - `cpu_cores` (Int): CPU allocation (default: 1)
 
 **Outputs**:
-- `counts_matrix` (File): Count matrix with genes as rows and samples as columns, suitable for DESeq2
-- `sample_metadata` (File): Sample metadata file with conditions and other sample information
-- `gene_info` (File): Gene annotation information including gene symbols and descriptions
+- `individual_count_files` (Array[File]): Individual STAR-format count files for each sample (*.ReadsPerGene.out.tab)
+- `sample_names` (Array[String]): Array of sample names corresponding to the count files
+- `sample_conditions` (Array[String]): Array of experimental conditions for each sample
+- `gene_info` (File): Gene annotation information including gene IDs
 
 ### validate_outputs
 
@@ -373,9 +381,8 @@ call deseq2_tasks.run_deseq2 {
 - `known_indels_vcf` (File): Known indels VCF to validate
 - `gnomad_vcf` (File): gnomAD VCF to validate
 - `annotsv_test_vcf` (File): AnnotSV test VCF file to validate
-- `pasilla_counts` (File): Pasilla counts matrix to validate
-- `pasilla_metadata` (File): Pasilla sample metadata to validate
-- `pasilla_gene_info` (File): Pasilla gene info to validate
+- `pasilla_counts` (Array[File]): Array of individual pasilla count files to validate
+- `pasilla_gene_info` (File): Pasilla gene annotation file to validate
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
 
@@ -392,7 +399,7 @@ All reference data is downloaded from authoritative public repositories:
 - **AnnotSV Repository**: Structural variant test data
 - **NCBI dbSNP**: Latest dbSNP variant database
 - **GATK Resource Bundle**: Known indels and gnomAD population frequencies
-- **Bioconductor pasilla dataset**: RNA-seq count data for differential expression testing
+- **Bioconductor pasilla package**: Example RNA-seq count data for DESeq2 testing
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
 
@@ -400,7 +407,7 @@ Data integrity is maintained through the use of stable URLs and version-pinned r
 
 ### Runtime Dependencies
 - **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`, `getwilds/bcftools:1.19`, `getwilds/deseq2:1.40.2`
-- **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), wget, aws CLI, R/Bioconductor (for DESeq2 test data generation)
+- **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), wget, aws CLI, R with DESeq2 and pasilla packages
 - **Network**: Internet access required for data downloads
 
 ### Resource Requirements
@@ -414,9 +421,9 @@ This module is specifically designed to support other WILDS modules:
 
 - **ww-star**: RNA-seq alignment (requires reference FASTA + GTF)
 - **ww-bwa**: DNA alignment (requires reference FASTA)
+- **ww-deseq2**: Differential expression analysis (uses individual count files from `generate_pasilla_counts`)
 - **ww-ichorcna**: Copy number analysis (requires ichorCNA reference files)
 - **ww-annotsv**: Structural variant annotation (requires test VCF)
-- **ww-deseq2**: Differential expression analysis (requires count matrices and metadata)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:
@@ -425,6 +432,7 @@ By centralizing test data downloads, `ww-testdata` enables:
 - Simplified module development and testing
 - Clear documentation of data dependencies
 - Built-in validation to ensure data integrity
+- Realistic testing scenarios that mirror production workflows
 
 ## Module Development
 

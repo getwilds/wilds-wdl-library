@@ -29,9 +29,10 @@ workflow testdata_example {
         known_indels_vcf: "Known indels VCF for hg38",
         gnomad_vcf: "Gnomad VCF for hg38",
         annotsv_test_vcf: "Test VCF file for AnnotSV",
-        pasilla_counts: "Pasilla DESeq2 count matrix",
-        pasilla_metadata: "Pasilla sample metadata",
-        pasilla_gene_info: "Pasilla gene annotation information",
+        pasilla_counts: "Array of individual count files for each sample from Pasilla dataset",
+        pasilla_sample_names: "Array of sample names corresponding to the count files",
+        pasilla_sample_conditions: "Array of sample conditions corresponding to the count files",
+        pasilla_gene_info: "Gene annotation information including gene symbols and descriptions",
         validation_report: "Validation report summarizing all outputs"
     }
   }
@@ -106,8 +107,7 @@ workflow testdata_example {
     known_indels_vcf = download_known_indels_vcf.known_indels_vcf,
     gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
     annotsv_test_vcf = download_annotsv_vcf.test_vcf,
-    pasilla_counts = generate_pasilla_counts.counts_matrix,
-    pasilla_metadata = generate_pasilla_counts.sample_metadata,
+    pasilla_counts = generate_pasilla_counts.individual_count_files,
     pasilla_gene_info = generate_pasilla_counts.gene_info
   }
 
@@ -135,8 +135,9 @@ workflow testdata_example {
     File gnomad_vcf = download_gnomad_vcf.gnomad_vcf
     File annotsv_test_vcf = download_annotsv_vcf.test_vcf
     # Outputs from Pasilla DESeq2 count generation
-    File pasilla_counts = generate_pasilla_counts.counts_matrix
-    File pasilla_metadata = generate_pasilla_counts.sample_metadata
+    Array[File] pasilla_counts = generate_pasilla_counts.individual_count_files
+    Array[String] pasilla_sample_names = generate_pasilla_counts.sample_names
+    Array[String] pasilla_sample_conditions = generate_pasilla_counts.sample_conditions
     File pasilla_gene_info = generate_pasilla_counts.gene_info
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
@@ -628,8 +629,9 @@ task generate_pasilla_counts {
   meta {
     description: "Generate DESeq2 test count matrices and metadata using the pasilla Bioconductor dataset raw files"
     outputs: {
-        counts_matrix: "Count matrix with genes as rows and samples as columns, suitable for DESeq2",
-        sample_metadata: "Sample metadata file with conditions and other sample information",
+        individual_count_files: "Array of individual count files for each sample from Pasilla dataset",
+        sample_names: "Array of sample names corresponding to the count files",
+        sample_conditions: "Array of sample conditions corresponding to the count files",
         gene_info: "Gene annotation information including gene symbols and descriptions"
     }
   }
@@ -665,8 +667,9 @@ task generate_pasilla_counts {
   >>>
 
   output {
-    File counts_matrix = "~{output_prefix}_counts_matrix.txt"
-    File sample_metadata = "~{output_prefix}_sample_metadata.txt"
+    Array[File] individual_count_files = glob("*.ReadsPerGene.out.tab")
+    Array[String] sample_names = read_lines("~{output_prefix}_sample_names.txt")
+    Array[String] sample_conditions = read_lines("~{output_prefix}_sample_conditions.txt") 
     File gene_info = "~{output_prefix}_gene_info.txt"
   }
 
@@ -705,6 +708,8 @@ task validate_outputs {
     known_indels_vcf: "Known indels VCF to validate"
     gnomad_vcf: "gnomad VCF to validate"
     annotsv_test_vcf: "AnnotSV test VCF file to validate"
+    pasilla_counts: "Array of individual count files for each sample from Pasilla dataset to validate"
+    pasilla_gene_info: "Pasilla gene annotation information to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -729,8 +734,7 @@ task validate_outputs {
     File known_indels_vcf
     File gnomad_vcf
     File annotsv_test_vcf
-    File pasilla_counts
-    File pasilla_metadata
+    Array[File] pasilla_counts
     File pasilla_gene_info
     Int cpu_cores = 1
     Int memory_gb = 2
@@ -879,17 +883,17 @@ task validate_outputs {
       validation_passed=false
     fi
 
-    if [[ -f "~{pasilla_counts}" && -s "~{pasilla_counts}" ]]; then
-      echo "Pasilla counts matrix: ~{pasilla_counts} - PASSED" >> validation_report.txt
-    else
-      echo "Pasilla counts matrix: ~{pasilla_counts} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{pasilla_metadata}" && -s "~{pasilla_metadata}" ]]; then
-      echo "Pasilla sample metadata: ~{pasilla_metadata} - PASSED" >> validation_report.txt
-    else
-      echo "Pasilla sample metadata: ~{pasilla_metadata} - MISSING OR EMPTY" >> validation_report.txt
+    # Check if all pasilla count files exist and are non-empty
+    pasilla_count_passed=true
+    for count_file in ~{sep=' ' pasilla_counts}; do
+      if [[ -f "$count_file" && -s "$count_file" ]]; then
+        echo "Pasilla count file: $count_file - PASSED" >> validation_report.txt
+      else
+        echo "Pasilla count file: $count_file - MISSING OR EMPTY" >> validation_report.txt
+        pasilla_count_passed=false
+      fi
+    done
+    if [[ "$pasilla_count_passed" == "false" ]]; then
       validation_passed=false
     fi
 
@@ -903,7 +907,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 22"
+      echo "Total files validated: 20"
     } >> validation_report.txt
     if [[ "$validation_passed" == "true" ]]; then
       echo "Overall Status: PASSED" >> validation_report.txt
@@ -925,4 +929,3 @@ task validate_outputs {
     memory: "~{memory_gb} GB"
   }
 }
-
