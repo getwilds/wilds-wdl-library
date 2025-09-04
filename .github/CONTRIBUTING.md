@@ -112,30 +112,156 @@ Your WDL file must include:
 - **Metadata documentation**: Describe properties of the workflow and tasks (e.g. inputs, outputs)
 
 Example structure:
-```wdl
+```
+## WILDS WDL for performing analysis with toolname
+## Intended for use alone or as a modular component in the WILDS ecosystem
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/modules/ww-testdata/ww-testdata.wdl" as testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
-workflow test_data {
-  call testdata.get_test_data
-  call your_main_task { input: data = get_test_data.output }
-  call validate_outputs { input: results = your_main_task.output }
+# Struct for input samples
+struct MySample {
+  String name
+  File input_file
 }
 
-task your_main_task {
-  # Your tool implementation
+workflow example_workflow {
+  meta {
+    author: "Your Name"
+    email: "wilds@fredhutch.org"
+    description: "WDL workflow for performing analysis with toolname"
+    outputs: {
+      processed_files: "Processed output files from analysis",
+      validation_report: "Validation report confirming all expected outputs were generated"
+    }
+  }
+
+  parameter_meta {
+    samples: "MySample struct containing sample name and input file"
+    reference: "Reference file for analysis"
+    cpus: "Number of CPU cores allocated for each task"
+    memory_gb: "Memory in GB allocated for each task"
+  }
+
+  input {
+    Array[MySample]? samples
+    File? reference
+    Int cpus = 2
+    Int memory_gb = 4
+  }
+
+  # Use test data if no samples provided
+  if (!defined(samples)) {
+    call ww_testdata.download_fastq_data { }
+
+    Array[MySample] test_samples = [{
+      name: "test_sample",
+      input_file: download_fastq_data.r1_fastq
+    }]
+  }
+  Array[MySample] final_samples = select_first([samples, test_samples])
+
+  # Use test reference if none provided
+  if (!defined(reference)) {
+    call ww_testdata.download_ref_data { }
+  }
+  File final_reference = select_first([reference, download_ref_data.fasta])
+
+  # Process each sample
+  scatter (sample in final_samples) {
+    call process_sample {
+      input:
+        sample_name = sample.name,
+        input_file = sample.input_file,
+        reference_file = final_reference,
+        cpus = cpus,
+        memory_gb = memory_gb
+    }
+  }
+
+  # Validate all outputs
+  call validate_outputs {
+    input:
+      sample_names = process_sample.sample_name,
+      output_files = process_sample.processed_file
+  }
+
+  output {
+    Array[File] processed_files = process_sample.processed_file
+    File validation_report = validate_outputs.validation_report
+  }
+}
+
+task process_sample {
+  meta {
+    description: "Process input file using toolname"
+    outputs: {
+      processed_file: "Processed output file",
+      sample_name: "Name of processed sample"
+    }
+  }
+
+  parameter_meta {
+    sample_name: "Name of the sample being processed"
+    input_file: "Input file to process"
+    reference_file: "Reference file for analysis"
+    cpus: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    String sample_name
+    File input_file
+    File reference_file
+    Int cpus
+    Int memory_gb
+  }
+
+  command <<<
+    toolname process \
+      --input ~{input_file} \
+      --reference ~{reference_file} \
+      --threads ~{cpus} \
+      --output ~{sample_name}_processed.txt
+  >>>
+
+  runtime {
+    cpu: cpus
+    memory: "~{memory_gb} GB"
+    docker: "registry/toolname:version"
+  }
+
+  output {
+    File processed_file = "~{sample_name}_processed.txt"
+    String sample_name = sample_name
+  }
 }
 
 task validate_outputs {
-  input {
-    # Input validation parameters
+  meta {
+    description: "Validate that all expected outputs were generated"
   }
+
+  parameter_meta {
+    sample_names: "Array of sample names that were processed"
+    output_files: "Array of output files to validate"
+  }
+
+  input {
+    Array[String] sample_names
+    Array[File] output_files
+  }
+
   command <<<
-    # Generate validation report
-    echo "Validation report for module outputs" > validation_report.txt
-    # Add specific validation logic
+    # NOTE: See existing modules for examples
   >>>
+
+  runtime {
+    cpu: 1
+    memory: "2 GB"
+    docker: "registry/toolname:version"
+  }
+
   output {
     File validation_report = "validation_report.txt"
   }
@@ -211,7 +337,7 @@ Before submitting, test your contribution locally:
 ```bash
 # Test with miniWDL
 cd modules/your-module
-miniwdl run ww-your-module.wdl -i inputs.json
+miniwdl run ww-toolname.wdl -i inputs.json
 ```
 
 ### Test Data Requirements
