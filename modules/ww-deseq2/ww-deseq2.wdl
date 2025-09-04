@@ -90,7 +90,7 @@ workflow deseq2_example {
       contrast = contrast
   }
 
-  call validate_deseq2_outputs { input:
+  call validate_outputs { input:
       deseq2_results = run_deseq2.deseq2_results,
       deseq2_significant = run_deseq2.deseq2_significant,
       normalized_counts = run_deseq2.deseq2_normalized_counts,
@@ -106,7 +106,7 @@ workflow deseq2_example {
     File deseq2_pca_plot = run_deseq2.deseq2_pca_plot
     File deseq2_volcano_plot = run_deseq2.deseq2_volcano_plot
     File deseq2_heatmap = run_deseq2.deseq2_heatmap
-    File validation_report = validate_deseq2_outputs.validation_report
+    File validation_report = validate_outputs.validation_report
   }
 }
 
@@ -225,7 +225,7 @@ task run_deseq2 {
   }
 }
 
-task validate_deseq2_outputs {
+task validate_outputs {
   meta {
     description: "Validate DESeq2 analysis outputs for correctness and completeness"
     outputs: {
@@ -252,6 +252,7 @@ task validate_deseq2_outputs {
   command <<<
     set -eo pipefail
 
+    pip3 install pandas
     python3 << 'EOF'
 import pandas as pd
 import sys
