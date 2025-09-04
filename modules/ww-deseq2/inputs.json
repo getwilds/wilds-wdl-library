@@ -1,0 +1,10 @@
+{
+  "ww_deseq2_example.gene_count_files": [
+    "/path/to/sample1.ReadsPerGene.out.tab",
+    "/path/to/sample2.ReadsPerGene.out.tab"
+  ],
+  "ww_deseq2_example.sample_names": ["sample1", "sample2"],
+  "ww_deseq2_example.sample_conditions": ["control", "treatment"],
+  "ww_deseq2_example.reference_level": "control",
+  "ww_deseq2_example.contrast": "condition,treatment,control"
+}
