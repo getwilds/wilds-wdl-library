@@ -1,0 +1,14 @@
+{
+  "template_example.samples": [
+    {
+      "name": "sample_1",
+      "input_file": "/path/to/your/input1.txt"
+    },
+    {
+      "name": "sample_2", 
+      "input_file": "/path/to/your/input2.txt"
+    }
+  ],
+  "template_example.cpu_cores": 1,
+  "template_example.memory_gb": 4
+}
