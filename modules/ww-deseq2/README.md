@@ -41,7 +41,7 @@ Combines STAR gene count files from multiple samples into a single count matrix 
 - `sample_metadata` (File): Metadata file containing sample names and conditions
 
 ### `run_deseq2`
-Performs differential expression analysis using DESeq2 with comprehensive statistical analysis and visualization.
+Performs differential expression analysis using DESeq2 with comprehensive statistical analysis and visualization via a prewritten R script: [deseq2_analysis.R](https://github.com/getwilds/wilds-docker-library/blob/main/deseq2/deseq2_analysis.R)
 
 **Inputs:**
 - `counts_matrix` (File): Combined matrix of gene-level counts
@@ -53,8 +53,8 @@ Performs differential expression analysis using DESeq2 with comprehensive statis
 - `cpu_cores` (Int): Number of CPU cores (default: 2)
 
 **Outputs:**
-- `deseq2_results` (File): Complete DESeq2 differential expression results with statistics
-- `deseq2_significant` (File): Filtered results containing only statistically significant genes
+- `deseq2_results` (File): Complete DESeq2 differential expression results with statistics (used to make volcano plot)
+- `deseq2_significant` (File): Filtered results containing only statistically significant genes (used to make heatmap)
 - `deseq2_normalized_counts` (File): DESeq2 normalized count values for all samples
 - `deseq2_pca_plot` (File): Principal Component Analysis plot showing sample clustering
 - `deseq2_volcano_plot` (File): Volcano plot showing log fold change vs. statistical significance
