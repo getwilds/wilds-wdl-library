@@ -16,7 +16,6 @@ This module provides a complete template for creating new WILDS WDL modules. It 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
 
 - **Main WDL file**: `ww-template.wdl` - Contains all tasks and demonstration workflow
-- **Test inputs**: `inputs.json` - Example inputs for automated testing
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
@@ -91,13 +90,13 @@ The module includes a demonstration workflow that can be tested independently:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-template.wdl --inputs inputs.json
+java -jar cromwell.jar run ww-template.wdl
 
 # Using miniWDL
-miniwdl run ww-template.wdl -i inputs.json
+miniwdl run ww-template.wdl
 
 # Using Sprocket
-sprocket run ww-template.wdl inputs.json
+sprocket run ww-template.wdl
 ```
 
 ### Automatic Demo Mode
