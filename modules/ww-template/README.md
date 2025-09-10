@@ -3,11 +3,11 @@
 [![Project Status: Prototype – Useable, some support, open to feedback, unstable API.](https://getwilds.org/badges/badges/prototype.svg)](https://getwilds.org/badges/#prototype)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL template module demonstrating best practices for creating new modules. This functional template performs simple "hello world" operations and serves as both a working example and a copy-paste starting point for new tool integrations.
+A WILDS WDL template module demonstrating best practices for creating new modules. This functional template performs simple "hello world" operations purely for testing purposes and serves as a copy-paste starting point for new tool integrations.
 
 ## Overview
 
-This module provides a complete template for creating new WILDS WDL modules. It includes all the standard components and patterns used across the WILDS ecosystem, with simple echo-based functionality that demonstrates key concepts like validation, testing, and integration.
+This module provides a complete template for creating new WILDS WDL modules. It includes all the standard components and patterns used across the WILDS ecosystem, with simple echo-based functionality that demonstrates key concepts like testing and integration.
 
 **For Contributors**: Use this module as a starting point for wrapping new bioinformatics tools. Simply copy the structure and replace the echo commands with your tool's specific functionality.
 
@@ -34,15 +34,6 @@ Simple template processing task that creates a hello world output file.
 **Outputs:**
 - `output_file` (File): Simple text file with hello world message and sample information
 
-### `validate_outputs`
-
-Simple validation to check that output files exist and are non-empty.
-
-**Inputs:**
-- `output_files` (Array[File]): Array of output files to validate
-
-**Outputs:**
-- `report` (File): Basic validation report confirming file existence
 
 ## Usage as a Module
 
@@ -111,10 +102,9 @@ sprocket run ww-template.wdl inputs.json
 
 ### Automatic Demo Mode
 
-When no samples are provided, the workflow automatically:
+The workflow automatically:
 1. Downloads test FASTQ data using `ww-testdata`
 2. Processes the test data with the simple hello world functionality
-3. Validates all outputs and generates a basic report
 
 ## Docker Container
 
@@ -142,12 +132,6 @@ This template uses minimal resources by design:
 - `memory_gb`: Can be increased for memory-intensive tools
 - Resources should be adjusted based on your specific tool's requirements
 
-## Output Validation
-
-The module includes simple output validation that checks:
-- File existence and non-empty status
-- Basic file size reporting
-- Overall success/failure status
 
 ## Creating Your Own Module
 
@@ -163,14 +147,15 @@ To use this template for a new tool:
    - Update the workflow name from `template_example` to `yourtool_example`
 
 3. **Replace the simple commands**:
-   - Update Docker image to your tool's container (line 99)
-   - Replace the `echo` commands with your tool's actual commands (lines 89-95)
+   - Update Docker image to your tool's container
+   - Replace the `echo` commands with your tool's actual commands
    - Modify struct definitions for your tool's specific inputs if needed
    - Add any additional output files your tool generates
 
-4. **Update validation (optional)**:
-   - Add tool-specific checks in the `validate_outputs` task
-   - Check for expected file formats or content if needed
+4. **Add output validation (optional but encouraged)**:
+   - Consider adding a tool-specific validation task to check output quality
+   - Validate expected file formats, content structure, or tool-specific metrics
+   - This template omits validation for simplicity, but production modules benefit from it
 
 5. **Update documentation**:
    - Customize README.md with your tool's information
@@ -181,7 +166,6 @@ To use this template for a new tool:
 6. **Test thoroughly**:
    - Run the demo workflow to ensure functionality
    - Test with real data for your use case
-   - Verify all validation checks pass
 
 ## Contributing
 
