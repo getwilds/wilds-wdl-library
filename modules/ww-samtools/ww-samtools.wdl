@@ -23,52 +23,29 @@ workflow samtools_example {
     }
   }
 
-  parameter_meta {
-    samples: "Array of sample objects, each containing name and paths to CRAM/BAM/SAM files"
-    reference_fasta: "Reference genome FASTA file"
-    cpus: "Number of CPU cores allocated for each non-validation task"
-    memory_gb: "Memory in GB allocated for each non-validation task"
+  # Download test data
+  call ww_testdata.download_ref_data { }
+
+  call ww_testdata.download_cram_data { input:
+      ref_fasta = download_ref_data.fasta
   }
 
-  input {
-    File? reference_fasta
-    Array[SamtoolsSample]? samples
-    Int cpus = 2
-    Int memory_gb = 8
+  # Create test samples array
+  Array[File] test_cram_arr = [download_cram_data.cram]
+  Array[SamtoolsSample] final_samples = [
+    object {
+      name: "test_sample",
+      cram_files: test_cram_arr
   }
-
-  # If no reference genome provided, download test data
-  if (!defined(reference_fasta)) {
-    call ww_testdata.download_ref_data { }
-  }
-
-  # Determine which genome file to use
-  File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
-
-  # If no samples provided, download demonstration data
-  if (!defined(samples)) {
-    call ww_testdata.download_cram_data { input:
-        ref_fasta = genome_fasta
-    }
-    Array[File] test_cram_arr = [download_cram_data.cram]
-    Array[SamtoolsSample] test_samples = [
-      object {
-        name: "test_sample",
-        cram_files: test_cram_arr
-    }
-    ]
-  }
-
-  # Create the samples array - either from input or from test data
-  Array[SamtoolsSample] final_samples = select_first([samples, test_samples])
+  ]
 
   scatter (sample in final_samples) {
     call crams_to_fastq { input:
         cram_files = sample.cram_files,
-        ref = genome_fasta,
+        ref = download_ref_data.fasta,
         name = sample.name,
-        cpu_cores = cpus,
-        memory_gb = memory_gb
+        cpu_cores = 2,
+        memory_gb = 8
     }
   }
 

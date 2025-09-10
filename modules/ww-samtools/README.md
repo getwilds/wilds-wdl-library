@@ -91,34 +91,17 @@ This module pairs well with other WILDS modules:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that can be tested independently:
+The module includes a demonstration workflow that automatically downloads test data and runs without requiring input files:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-samtools.wdl --inputs inputs.json
+java -jar cromwell.jar run ww-samtools.wdl
 
 # Using miniWDL
-miniwdl run ww-samtools.wdl -i inputs.json
+miniwdl run ww-samtools.wdl
 
 # Using Sprocket
-sprocket run ww-samtools.wdl inputs.json
-```
-
-### Test Input Format
-
-```json
-{
-  "samtools_example.samples": [
-    {
-      "name": "SampleName",
-      "cram_files": ["path/to/file1.cram",
-                     "path/to/file2.cram"]
-    }
-  ],
-  "samtools_example.reference_fasta": "path/to/ref.fasta",
-  "samtools_example.cpus": 8,
-  "samtools_example.memory_gb": 64
-}
+sprocket run ww-samtools.wdl
 ```
 
 ## Requirements
