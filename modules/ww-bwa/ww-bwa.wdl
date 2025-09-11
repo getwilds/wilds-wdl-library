@@ -25,31 +25,8 @@ workflow bwa_example {
     }
   }
 
-  parameter_meta {
-    reference_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
-    samples: "Optional list of BwaSample objects, each containing sample name and FASTQ file(s). If not provided, workflow will download a demonstration sample from SRA"
-    paired: "Optional boolean indicating if reads are paired end (default: true)"
-    cpus: "Number of CPU cores allocated for each task in the workflow"
-    memory_gb: "Memory allocated for each task in the workflow in GB"
-  }
-
-  input {
-    File? reference_fasta
-    Array[BwaSample]? samples
-    Boolean paired = true
-    Int cpus = 2
-    Int memory_gb = 8
-  }
-
-   # If no reference genome provided, download test data
-  if (!defined(reference_fasta)) {
-    call ww_testdata.download_ref_data { }
-  }
-
-   # Determine which genome files to use
-  File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
-
-  # Handle samples - always download test data, but only use if no samples provided
+  # Download test data
+  call ww_testdata.download_ref_data { }
   call ww_testdata.download_fastq_data { }
   call ww_testdata.interleave_fastq { 
     input:
@@ -57,8 +34,8 @@ workflow bwa_example {
       r2_fq = download_fastq_data.r2_fastq
   }
 
-  # Create default samples from test data
-  Array[BwaSample] default_samples = [
+  # Create test samples array
+  Array[BwaSample] final_samples = [
     object {
       name: "demo_sample",
       reads: download_fastq_data.r1_fastq,
@@ -70,25 +47,22 @@ workflow bwa_example {
     }
   ]
 
-  # Use provided samples or default to test samples
-  Array[BwaSample] final_samples = select_first([samples, default_samples])
-
   call bwa_index { input:
-      reference_fasta = genome_fasta,
-      cpu_cores = cpus,
-      memory_gb = memory_gb
+      reference_fasta = download_ref_data.fasta,
+      cpu_cores = 2,
+      memory_gb = 8
   }
 
   scatter (sample in final_samples) {
     call bwa_mem { input:
         bwa_genome_tar = bwa_index.bwa_index_tar,
-        reference_fasta = genome_fasta,
+        reference_fasta = download_ref_data.fasta,
         reads = sample.reads,
         mates = sample.mates,
         name = sample.name,
-        paired_end = paired,
-        cpu_cores = cpus,
-        memory_gb = memory_gb
+        paired_end = true,
+        cpu_cores = 2,
+        memory_gb = 8
     }
   }
 
