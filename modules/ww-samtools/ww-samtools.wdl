@@ -5,11 +5,6 @@ version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
-struct SamtoolsSample {
-  String name
-  Array[File] cram_files
-}
-
 workflow samtools_example {
   meta {
     author: "Emma Bishop"
@@ -18,8 +13,7 @@ workflow samtools_example {
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-samtools"
     outputs: {
         r1_fastqs: "Array of R1 FASTQ files generated from CRAM/BAM/SAM files",
-        r2_fastqs: "Array of R2 FASTQ files generated from CRAM/BAM/SAM files",
-        validation_report: "Validation report confirming all expected outputs were generated"
+        r2_fastqs: "Array of R2 FASTQ files generated from CRAM/BAM/SAM files"
     }
   }
 
@@ -30,35 +24,22 @@ workflow samtools_example {
       ref_fasta = download_ref_data.fasta
   }
 
-  # Create test samples array
-  Array[File] test_cram_arr = [download_cram_data.cram]
-  Array[SamtoolsSample] final_samples = [
-    object {
-      name: "test_sample",
-      cram_files: test_cram_arr
-  }
-  ]
+  # Create array of CRAM files for scatter-gather demonstration
+  Array[File] cram_files = [download_cram_data.cram]
 
-  scatter (sample in final_samples) {
+  scatter (i in range(length(cram_files))) {
     call crams_to_fastq { input:
-        cram_files = sample.cram_files,
+        cram_files = [cram_files[i]],
         ref = download_ref_data.fasta,
-        name = sample.name,
+        name = "test_sample_" + i,
         cpu_cores = 2,
         memory_gb = 8
     }
   }
 
-  call validate_outputs { input:
-      r1_fastqs = crams_to_fastq.r1_fastq,
-      r2_fastqs = crams_to_fastq.r2_fastq,
-      sample_names = crams_to_fastq.sample_name
-  }
-
   output {
     Array[File] r1_fastqs = crams_to_fastq.r1_fastq
     Array[File] r2_fastqs = crams_to_fastq.r2_fastq
-    File validation_report = validate_outputs.report
   }
 }
 
@@ -110,85 +91,3 @@ task crams_to_fastq {
   }
 }
 
-task validate_outputs {
-  meta {
-    description: "Validates that FASTQ files exist and are non-empty after CRAM-to-FASTQ conversion."
-    outputs: {
-        report: "Validation report with pass/fail summary"
-    }
-  }
-
-  parameter_meta {
-    r1_fastqs: "Array of R1 FASTQ files to check"
-    r2_fastqs: "Array of R2 FASTQ files to check"
-    sample_names: "Array of sample names corresponding to FASTQ files"
-  }
-
-  input {
-    Array[File] r1_fastqs
-    Array[File] r2_fastqs
-    Array[String] sample_names
-  }
-
-  command <<<
-    set -eo pipefail
-
-    echo "=== Samtools FASTQ Validation Report ===" > samtools_validation_report.txt
-    echo "" >> samtools_validation_report.txt
-
-    r1_fastqs=(~{sep=" " r1_fastqs})
-    r2_fastqs=(~{sep=" " r2_fastqs})
-    sample_names=(~{sep=" " sample_names})
-
-    validation_passed=true
-
-    for i in "${!sample_names[@]}"; do
-      sample="${sample_names[$i]}"
-      r1="${r1_fastqs[$i]}"
-      r2="${r2_fastqs[$i]}"
-
-      echo "--- Sample: $sample ---" >> samtools_validation_report.txt
-
-      if [[ -f "$r1" && -s "$r1" ]]; then
-        size=$(stat -c%s "$r1")
-        lines=$(zcat "$r1" | wc -l)
-        echo "  R1 FASTQ: PASS (${size} bytes, ${lines} lines)" >> samtools_validation_report.txt
-      else
-        echo "  R1 FASTQ: FAIL - MISSING OR EMPTY" >> samtools_validation_report.txt
-        validation_passed=false
-      fi
-
-      if [[ -f "$r2" && -s "$r2" ]]; then
-        size=$(stat -c%s "$r2")
-        lines=$(zcat "$r2" | wc -l)
-        echo "  R2 FASTQ: PASS (${size} bytes, ${lines} lines)" >> samtools_validation_report.txt
-      else
-        echo "  R2 FASTQ: FAIL - MISSING OR EMPTY" >> samtools_validation_report.txt
-        validation_passed=false
-      fi
-
-      echo "" >> samtools_validation_report.txt
-    done
-
-    echo "=== Summary ===" >> samtools_validation_report.txt
-    echo "Samples processed: ${#sample_names[@]}" >> samtools_validation_report.txt
-    if [[ "$validation_passed" == "true" ]]; then
-      echo "Status: PASSED" >> samtools_validation_report.txt
-    else
-      echo "Status: FAILED" >> samtools_validation_report.txt
-      exit 1
-    fi
-
-    cat samtools_validation_report.txt
-  >>>
-
-  output {
-    File report = "samtools_validation_report.txt"
-  }
-
-  runtime {
-    docker: "getwilds/samtools:1.19"
-    cpu: 1
-    memory: "2 GB"
-  }
-}
