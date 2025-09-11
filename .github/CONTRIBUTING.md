@@ -22,7 +22,7 @@ Before contributing code changes, please:
 1. **[Fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)** to your GitHub account
 
 2. **Set up your development environment** with the required tools:
-   - [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl) for local testing
+   - [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl) for local testing (optional: [sprocket](https://sprocket.bio/installation.html) also)
    - [Docker Desktop](https://www.docker.com/get-started/) for container execution
 
 3. **Make code changes** and push them to your fork
@@ -35,20 +35,22 @@ Before contributing code changes, please:
 
 The WILDS WDL Library follows a three-tier architecture:
 
+- **Modules**: Collection of tasks that use a given tool
+- **Vignettes**: Small example pipelines that import module tasks
+- **Workflows**: Production-ready pipelines
+
 ```
 wilds-wdl-library/
-├── modules/           # Individual tool modules (Tier 1)
+├── modules/
 │   └── ww-toolname/
 │       ├── ww-toolname.wdl
-│       ├── options.json
-│       ├── inputs.json
 │       └── README.md
-├── vignettes/         # Educational workflow examples (Tier 2)
+├── vignettes/
 │   └── ww-example-name/
 │       ├── ww-example-name.wdl
 │       ├── inputs.json
 │       └── README.md
-├── workflows/         # Production-ready pipelines (Tier 3)
+├── workflows/
 │   └── ww-pipeline-name/
 │       ├── ww-pipeline-name.wdl
 │       ├── inputs.json
@@ -91,334 +93,94 @@ wilds-wdl-library/
 
 ## Module Development Guidelines
 
-### Required Files
+**See our [ww-template module](https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-template) as an example**
 
-Each module must contain exactly these four files:
+**The module folder must contain:**
 
 1. **`ww-toolname.wdl`** - Main WDL workflow file named for the tool it uses
-2. **`options.json`** - Runtime configuration options
-3. **`inputs.json`** - Example input parameters
-4. **`README.md`** - Comprehensive documentation
+2. **`README.md`** - Comprehensive documentation
 
-### WDL File Requirements
 
-Your WDL file must include:
+**Your WDL file must include:**
 
 - **Version declaration**: Use WDL version 1.0
-- **Example workflow**: A `toolname_example` workflow that uses all tasks
+- **Example workflow**: A `toolname_example` workflow that uses all tasks for testing
 - **Task definitions**: Individual tasks with proper resource requirements
-- **Validation task**: A `validate_outputs` task that produces `toolnamne_validation_report.txt`
 - **Proper imports**: Use GitHub URLs for dependencies on existing WILDS WDL modules (e.g. for downloading test data)
 - **Metadata documentation**: Describe properties of the workflow and tasks (e.g. inputs, outputs)
 
-Example structure:
-```
-## WILDS WDL for performing analysis with toolname
-## Intended for use alone or as a modular component in the WILDS ecosystem
-version 1.0
+**Parameter preferences:**
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+- Use descriptive parameter names
+- Include optional parameters with sensible defaults
+- Support both single samples and batch processing where applicable
 
-# Struct for input samples
-struct MySample {
-  String name
-  File input_file
-}
-
-workflow example_workflow {
-  meta {
-    author: "Your Name"
-    email: "wilds@fredhutch.org"
-    description: "WDL workflow for performing analysis with toolname"
-    outputs: {
-      processed_files: "Processed output files from analysis",
-      validation_report: "Validation report confirming all expected outputs were generated"
-    }
-  }
-
-  parameter_meta {
-    samples: "MySample struct containing sample name and input file"
-    reference: "Reference file for analysis"
-    cpus: "Number of CPU cores allocated for each task"
-    memory_gb: "Memory in GB allocated for each task"
-  }
-
-  input {
-    Array[MySample]? samples
-    File? reference
-    Int cpus = 2
-    Int memory_gb = 4
-  }
-
-  # Use test data if no samples provided
-  if (!defined(samples)) {
-    call ww_testdata.download_fastq_data { }
-
-    Array[MySample] test_samples = [{
-      name: "test_sample",
-      input_file: download_fastq_data.r1_fastq
-    }]
-  }
-  Array[MySample] final_samples = select_first([samples, test_samples])
-
-  # Use test reference if none provided
-  if (!defined(reference)) {
-    call ww_testdata.download_ref_data { }
-  }
-  File final_reference = select_first([reference, download_ref_data.fasta])
-
-  # Process each sample
-  scatter (sample in final_samples) {
-    call process_sample {
-      input:
-        sample_name = sample.name,
-        input_file = sample.input_file,
-        reference_file = final_reference,
-        cpus = cpus,
-        memory_gb = memory_gb
-    }
-  }
-
-  # Validate all outputs
-  call validate_outputs {
-    input:
-      sample_names = process_sample.sample_name,
-      output_files = process_sample.processed_file
-  }
-
-  output {
-    Array[File] processed_files = process_sample.processed_file
-    File validation_report = validate_outputs.validation_report
-  }
-}
-
-task process_sample {
-  meta {
-    description: "Process input file using toolname"
-    outputs: {
-      processed_file: "Processed output file",
-      sample_name: "Name of processed sample"
-    }
-  }
-
-  parameter_meta {
-    sample_name: "Name of the sample being processed"
-    input_file: "Input file to process"
-    reference_file: "Reference file for analysis"
-    cpus: "Number of CPU cores to use"
-    memory_gb: "Memory allocation in GB"
-  }
-
-  input {
-    String sample_name
-    File input_file
-    File reference_file
-    Int cpus
-    Int memory_gb
-  }
-
-  command <<<
-    toolname process \
-      --input ~{input_file} \
-      --reference ~{reference_file} \
-      --threads ~{cpus} \
-      --output ~{sample_name}_processed.txt
-  >>>
-
-  runtime {
-    cpu: cpus
-    memory: "~{memory_gb} GB"
-    docker: "registry/toolname:version"
-  }
-
-  output {
-    File processed_file = "~{sample_name}_processed.txt"
-    String sample_name = sample_name
-  }
-}
-
-task validate_outputs {
-  meta {
-    description: "Validate that all expected outputs were generated"
-  }
-
-  parameter_meta {
-    sample_names: "Array of sample names that were processed"
-    output_files: "Array of output files to validate"
-  }
-
-  input {
-    Array[String] sample_names
-    Array[File] output_files
-  }
-
-  command <<<
-    # NOTE: See existing modules for examples
-  >>>
-
-  runtime {
-    cpu: 1
-    memory: "2 GB"
-    docker: "registry/toolname:version"
-  }
-
-  output {
-    File validation_report = "validation_report.txt"
-  }
-}
-```
-
-### Container Requirements
+**Container preferences:**
 
 - Use containers from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library) when available
 - If creating new containers, follow WILDS container standards and consider contributing to the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library).
 - Specify exact container versions (avoid `latest` tags)
 - Document container dependencies in the README
 
-### Input/Output Specifications
-
-- Use descriptive parameter names
-- Provide comprehensive documentation for all inputs and outputs
-- Include optional parameters with sensible defaults
-- Support both single samples and batch processing where applicable
 
 ## Vignette Development Guidelines
 
-### Purpose and Scope
+**Vignettes should:**
 
-Vignettes should:
 - Combine 2-3 existing modules from the library
 - Demonstrate realistic analysis workflows
 - Serve as educational templates
 - Use publicly available test data
 
-### Required Components
 
-- **Integration focus**: Show how modules work together seamlessly
-- **Educational value**: Include explanatory comments and documentation
-- **Realistic examples**: Use authentic bioinformatics datasets
-- **Clear documentation**: Explain the biological/analytical context
+**No New Tasks Rule**
 
-### No New Tasks Rule
-
-Vignettes should **only** combine existing modules - do not create new task definitions. If you need new functionality, contribute it as a module first.
+- Vignettes should **only** combine existing modules - do not create new task definitions. If you need new functionality, contribute it as a module first.
 
 ## Workflow Development Guidelines
 
-### Production-Ready Standards
-
-Workflows represent the highest tier and must meet production standards:
+**Workflows represent the highest tier and must meet production standards:**
 
 - **Comprehensive validation**: Extensive testing with realistic datasets
 - **Scalability**: Support for large datasets and batch processing
-- **Documentation**: Thorough documentation
-
-### Publication Readiness
-
-- Include detailed documentation suitable that would be useful for a methods section
-- Provide and resource requirements and performance benchmarks if possible
-- Document software versions and parameter choices
+- **Documentation**: Thorough documentation to aid in publication
 
 ## Testing Requirements
 
-### Automated Testing
+### Local Tests
 
-All contributions must pass our automated testing pipeline which executes on a PR via GitHub Actions:
-
-- **Multi-executor validation**: Tested with Cromwell, miniWDL, and Sprocket
-- **Container verification**: All Docker images must be accessible and functional
-- **Syntax validation**: WDL syntax and structure validation
-- **Integration testing**: Cross-module compatibility testing
-
-### Local Testing
-
-Before submitting, test your contribution locally:
+Test your WDL locally before submitting a PR. You should at least use [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl) and optionally [sprocket](https://sprocket.bio/installation.html) also (which is more comprehensive)
 
 ```bash
-# Test with miniWDL
 cd modules/your-module
+
+# Linting
+miniwdl check ww-toolname.wdl
+sprocket lint ww-toolname.wdl
+
+# Test running
 miniwdl run ww-toolname.wdl -i inputs.json
+sprocket run ww-toolname.wdl inputs.json
 ```
 
-### Test Data Requirements
+### Test Data
 
 - Use the `ww-testdata` module for standardized test datasets
 - If you need additional test datasets, modify the `ww-testdata` module also
 - Include small, representative test files in your examples
 
-## Documentation Standards
+### Automated Tests
 
-### README Requirements
+All contributions must pass our automated testing pipeline which executes on a PR via GitHub Actions:
 
-Each contribution must include a comprehensive README.md:
-
-#### Module README Template
-
-````markdown
-# ww-toolname
-
-Brief description of the tool and its purpose.
-
-## Overview
-
-Detailed description of what the module does, its biological context, and use cases.
-
-## Inputs
-
-| Parameter | Type | Description | Required |
-|-----------|------|-------------|----------|
-| input_file | File | Description of input | Yes |
-| parameter | String | Description of parameter | No (default: value) |
-
-## Outputs
-
-| Output | Type | Description |
-|--------|------|-------------|
-| output_file | File | Description of output |
-
-## Usage
-
-### Basic Usage
-```bash
-miniwdl run ww-toolname.wdl -i inputs.json
-```
-
-### In Other Workflows
-```wdl
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/modules/ww-toolname/ww-toolname.wdl" as toolname
-```
-
-## Container
-
-- **Image**: `getwilds/toolname:version`
-- **Source**: [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library)
-
-## Testing
-
-Describe the test workflow and validation approach.
-
-## Citation
-
-Include appropriate citations for the underlying tool.
-````
-
-### Code Documentation
-
-- Use clear, descriptive variable names
-- Include inline comments for complex logic
-- Document runtime requirements and resource usage
-- Explain parameter choices and defaults
+- **Multi-executor validation**: Tests with Cromwell, miniWDL, and Sprocket
+- **Container verification**: All Docker images must be accessible and functional
+- **Syntax validation**: WDL syntax and structure validation
+- **Integration testing**: Cross-module compatibility testing
 
 ## Pull Request Process
 
-### Before Submitting Code Changes
-
-1. **Test thoroughly**: Ensure all tests pass locally
-2. **Update documentation**: Including the repository README as appropriate (e.g. when adding a new module)
-3. **Follow naming conventions**: Use the `ww-` prefix for all WDL files
-4. **Check file structure**: Ensure all required files are present (e.g. `inputs.json` when submitting a new module)
-
-### Submission Process
+After meeting the requirements above, submit a PR to merge your forked repo into `main`.
 
 1. **Create descriptive PR title**:
    - Examples: `Add BWA alignment module`, `RNA-seq analysis example vingette`
@@ -439,50 +201,7 @@ Your PR will be evaluated on:
 - **Standards compliance**: Does it follow WILDS conventions?
 - **Code quality**: Is the WDL code well-structured and readable?
 
-### CI/CD Validation
-
-All PRs must pass automated checks:
-
-- WDL syntax validation
-- Container accessibility testing
-- Multi-executor compatibility testing
-- Documentation completeness checks
-- Security scanning
-
-## Development Best Practices
-
-### WDL Best Practices
-
-- **Use appropriate WDL version**: Prefer version 1.0 or newer
-- **Resource specification**: Always specify CPU, memory, and disk requirements
-- **Error handling**: Include meaningful error messages and exit codes
-- **Modularity**: Create reusable tasks that can be imported by other workflows
-- **Parameter validation**: Validate inputs when possible
-
-### Container Best Practices
-
-- **Version pinning**: Always specify exact container versions
-- **Minimal images**: Use lightweight base images when possible
-- **Security**: Scan containers for vulnerabilities
-- **Documentation**: Document all installed tools and versions
-
-### Performance Considerations
-
-- **Resource estimation**: Provide accurate resource requirements
-- **Scalability**: Design for both small test runs and large production datasets
-- **Efficiency**: Optimize for computational and storage efficiency
-- **Monitoring**: Include logging for debugging and monitoring
-
-## Getting Help
-
-### Communication Channels
-
-- **GitHub Issues**: For bug reports and feature requests
-- **Email**: Contact the Fred Hutch Data Science Lab at [wilds@fredhutch.org](mailto:wilds@fredhutch.org)
-- **Documentation**: [WILDS Guide](https://getwilds.org/guide/)
-- **Fred Hutch Users**: [Scientific Computing Wiki](https://sciwiki.fredhutch.org/)
-
-### Mentorship
+## Help for new contributors
 
 New contributors are welcome! If you're new to WDL or bioinformatics workflows:
 
@@ -491,14 +210,8 @@ New contributors are welcome! If you're new to WDL or bioinformatics workflows:
 - Don't hesitate to ask questions in issues or via email. If you have a `uw.edu` or `fredhutch.org` email you can also ask questions in our `fh-data` [slack workspace]([https://hutchdatascience.org/joinslack/)
 - Consider starting with documentation contributions
 
-## Recognition
+For more questions you can contact the Fred Hutch Data Science Lab at [wilds@fredhutch.org](mailto:wilds@fredhutch.org)
 
-Contributors will be acknowledged in:
-
-- Repository contributor lists
-- Module-specific acknowledgments
-- WILDS project publications where appropriate
-- Community showcases and presentations
 
 ## Code of Conduct
 
