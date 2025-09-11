@@ -12,8 +12,8 @@ workflow samtools_example {
     description: "WDL workflow for processing genomic files with Samtools"
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-samtools"
     outputs: {
-        r1_fastqs: "Array of R1 FASTQ files generated from CRAM/BAM/SAM files",
-        r2_fastqs: "Array of R2 FASTQ files generated from CRAM/BAM/SAM files"
+        r1_fastqs: "R1 FASTQ files generated from CRAM/BAM/SAM files",
+        r2_fastqs: "R2 FASTQ files generated from CRAM/BAM/SAM files"
     }
   }
 
@@ -24,22 +24,18 @@ workflow samtools_example {
       ref_fasta = download_ref_data.fasta
   }
 
-  # Create array of CRAM files for scatter-gather demonstration
-  Array[File] cram_files = [download_cram_data.cram]
-
-  scatter (i in range(length(cram_files))) {
-    call crams_to_fastq { input:
-        cram_files = [cram_files[i]],
-        ref = download_ref_data.fasta,
-        name = "test_sample_" + i,
-        cpu_cores = 2,
-        memory_gb = 8
-    }
+  # Convert CRAM to FASTQ
+  call crams_to_fastq { input:
+      cram_files = [download_cram_data.cram],
+      ref = download_ref_data.fasta,
+      name = "test_sample",
+      cpu_cores = 2,
+      memory_gb = 8
   }
 
   output {
-    Array[File] r1_fastqs = crams_to_fastq.r1_fastq
-    Array[File] r2_fastqs = crams_to_fastq.r2_fastq
+    File r1_fastqs = crams_to_fastq.r1_fastq
+    File r2_fastqs = crams_to_fastq.r2_fastq
   }
 }
 
