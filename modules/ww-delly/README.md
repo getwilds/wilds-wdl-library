@@ -137,55 +137,23 @@ The module includes a demonstration workflow that can be tested independently:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-delly.wdl --inputs inputs.json
+java -jar cromwell.jar run ww-delly.wdl
 
 # Using miniWDL
-miniwdl run ww-delly.wdl -i inputs.json
+miniwdl run ww-delly.wdl
 
 # Using Sprocket
-sprocket run ww-delly.wdl inputs.json
+sprocket run ww-delly.wdl
 ```
 
-### Automatic Demo Mode
+### Automatic Test Data
 
-When no samples or reference files are provided, the workflow automatically:
+The demonstration workflow automatically:
 1. Downloads reference genome data using `ww-testdata`
 2. Downloads demonstration BAM data using `ww-testdata`
 3. Calls structural variants using Delly
 4. Validates all outputs
 
-### Test Input Format
-
-**Minimal input (uses automatic demo data):**
-```json
-{
-  "delly_example.sv_type": "",
-  "delly_example.cpus": 2,
-  "delly_example.memory_gb": 8
-}
-```
-
-**Full input (provide your own data):**
-```json
-{
-  "delly_example.samples": [
-    {
-      "name": "sample1",
-      "bam": "/path/to/sample1.aligned.bam",
-      "bai": "/path/to/sample1.aligned.bam.bai"
-    }
-  ],
-  "delly_example.ref_fasta": "/path/to/reference_genome.fasta",
-  "delly_example.ref_fasta_index": "/path/to/reference_genome.fasta.fai",
-  "delly_example.target_regions_bed": "/path/to/target_regions.bed",
-  "delly_example.exclude_regions_bed": "/path/to/exclude_regions.bed",
-  "delly_example.sv_type": "DEL",
-  "delly_example.cpus": 8,
-  "delly_example.memory_gb": 16
-}
-```
-
-**Note**: You can mix and match - provide some inputs and let others use test data.
 
 ## Configuration Guidelines
 
@@ -211,10 +179,6 @@ The module supports flexible resource configuration:
 - **exclude_regions_bed**: Skip problematic regions (highly recommended for whole-genome analysis)
 - Common exclusions: centromeres, telomeres, repetitive elements, assembly gaps
 
-### Demo Configuration
-
-- `sv_type`: Use specific SV type for faster demo runs
-- Resource parameters apply to both demo and user-provided data modes
 
 ## Requirements
 
@@ -227,7 +191,6 @@ The module supports flexible resource configuration:
 ## Features
 
 - **Standalone execution**: Complete workflow with automatic test data download
-- **Flexible input**: Use your own data or automatic demo data
 - **Comprehensive SV detection**: Supports all major structural variant types
 - **Flexible filtering**: Call specific SV types or all types
 - **Region targeting**: Focus calling on specific genomic regions of interest
