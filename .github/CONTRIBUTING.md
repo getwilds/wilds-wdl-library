@@ -22,7 +22,10 @@ Before contributing code changes, please:
 1. **[Fork the repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)** to your GitHub account
 
 2. **Set up your development environment** with the required tools:
-   - [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl) for local testing (optional: [sprocket](https://sprocket.bio/installation.html) also)
+   - For local testing:
+       - [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl)
+       - [sprocket](https://sprocket.bio/installation.html)
+       - [uv](https://docs.astral.sh/uv/getting-started/installation/) for automated local testing
    - [Docker Desktop](https://www.docker.com/get-started/) for container execution
 
 3. **Make code changes** and push them to your fork
@@ -149,19 +152,35 @@ wilds-wdl-library/
 
 ### Local Tests
 
-Test your WDL locally before submitting a PR. You should at least use [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl) and optionally [sprocket](https://sprocket.bio/installation.html) also (which is more comprehensive)
+Make sure you have these installed:
+
+- [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl)
+- [sprocket](https://sprocket.bio/installation.html)
+- [Docker Desktop](https://www.docker.com/get-started/) for container execution
+
+Test your WDL locally before submitting a PR:
 
 ```bash
 cd modules/your-module
 
-# Linting
+# Linting with miniwdl
 miniwdl check ww-toolname.wdl
-sprocket lint ww-toolname.wdl
+
+# Linting wiht sprocket (ignore things we don't care about)
+sprocket lint \
+  -e TodoComment \
+  -e ContainerUri \
+  -e TrailingComma \
+  -e CommentWhitespace \
+  -e UnusedInput \
+  ww-toolname.wdl
 
 # Test running
 miniwdl run ww-toolname.wdl -i inputs.json
 sprocket run ww-toolname.wdl inputs.json
 ```
+
+For automated local testing be sure to have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed also and use our Makefile.
 
 ### Test Data
 
