@@ -42,8 +42,8 @@ workflow manta_example {
   }
 
   output {
-    Array[File] manta_vcf = manta_call.vcf
-    Array[File] manta_vcf_index = manta_call.vcf_index
+    File manta_vcf = manta_call.vcf
+    File manta_vcf_index = manta_call.vcf_index
     File validation_report = validate_outputs.report
   }
 }
