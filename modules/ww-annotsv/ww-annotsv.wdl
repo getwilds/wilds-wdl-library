@@ -18,49 +18,23 @@ workflow annotsv_example {
     }
   }
 
-  parameter_meta {
-    vcfs: "Optional list of VCF files with structural variants. If not provided, test data will be used."
-    genome_build: "Reference genome build (GRCh37, GRCh38)"
-    annotation_mode: "Annotation mode: 'full' (one line per annotation) or 'split' (one line per SV)"
-    include_ci: "Include confidence intervals in breakpoint coordinates"
-    exclude_benign: "Exclude likely benign variants from output"
-    sv_min_size: "Minimum SV size to consider for annotation (default: 50)"
-    overlap_threshold: "Minimum overlap with genomic features (default: 70)"
-    cpus: "Number of CPU cores allocated for each task"
-    memory_gb: "Memory allocated for each task in GB"
-  }
+  # Download test data for annotation
+  call ww_testdata.download_annotsv_vcf { }
 
-  input {
-    Array[File]? vcfs
-    String genome_build = "GRCh38" # GRCh38 or GRCh37
-    String annotation_mode = "full"
-    Boolean include_ci = true
-    Boolean exclude_benign = false
-    Int sv_min_size = 50
-    Int overlap_threshold = 70
-    Int cpus = 4
-    Int memory_gb = 8
-  }
-
-  # If no VCFs provided, download test data
-  if (!defined(vcfs)) {
-    call ww_testdata.download_annotsv_vcf { }
-  }
-
-  # Determine which VCFs to use
-  Array[File] vcfs_to_process = if defined(vcfs) then select_first([vcfs]) else [select_first([download_annotsv_vcf.test_vcf])]
+  # Use test VCF data
+  Array[File] vcfs_to_process = [download_annotsv_vcf.test_vcf]
 
   scatter (vcf in vcfs_to_process) {
     call annotsv_annotate { input:
         raw_vcf = vcf,
-        genome_build = genome_build,
-        sv_min_size = sv_min_size,
-        annotation_mode = annotation_mode,
-        include_ci = include_ci,
-        overlap_threshold = overlap_threshold,
-        exclude_benign = exclude_benign,
-        cpu_cores = cpus,
-        memory_gb = memory_gb
+        genome_build = "GRCh38",
+        sv_min_size = 50,
+        annotation_mode = "full",
+        include_ci = true,
+        overlap_threshold = 70,
+        exclude_benign = false,
+        cpu_cores = 4,
+        memory_gb = 8
     }
   }
 

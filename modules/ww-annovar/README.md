@@ -89,36 +89,18 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow with comprehensive testing:
+The module includes a demonstration workflow that automatically downloads test data and runs without requiring input files:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-annovar.wdl --inputs inputs.json
+java -jar cromwell.jar run ww-annovar.wdl
 
 # Using miniWDL
-miniwdl run ww-annovar.wdl -i inputs.json
+miniwdl run ww-annovar.wdl
 
 # Using Sprocket
-sprocket run ww-annovar.wdl inputs.json
+sprocket run ww-annovar.wdl
 ```
-
-### Test Input Format
-
-When providing your own VCF files:
-
-```json
-{
-  "annovar_example.vcfs": [
-    "/path/to/your/variants_sample1.vcf.gz",
-    "/path/to/your/variants_sample2.vcf.gz"
-  ],
-  "annovar_example.ref_name": "hg38",
-  "annovar_example.protocols": "refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome",
-  "annovar_example.operation": "g,f,f,f,f,f"
-}
-```
-
-**Note**: If no `vcfs` array is provided in the inputs, the workflow will automatically download test data using the `ww-testdata` module.
 
 ## Annotation Configuration
 

@@ -19,37 +19,21 @@ workflow annovar_example {
     }
   }
 
-  parameter_meta {
-    vcfs: "Optional list of VCF files to annotate. If not provided, test data will be used."
-    ref_name: "Reference genome name (hg19 or hg38)"
-    protocols: "Comma-separated list of annotation protocols (e.g., 'refGene,gnomad211_exome,clinvar_20210123')"
-    operation: "Comma-separated list of operations corresponding to protocols (e.g. 'g,f,f')"
+  # Download test data for annotation
+  call ww_testdata.download_gnomad_vcf { input:
+      region = "chr1:1-10000000",
+      filter_name = "chr1"
   }
 
-  input {
-    Array[File]? vcfs
-    String ref_name = "hg38"
-    String protocols = "refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome"
-    String operation = "g,f,f,f,f,f"
-  }
-
-  # If no VCFs provided, download test data
-  if (!defined(vcfs)) {
-    call ww_testdata.download_gnomad_vcf { input:
-        region = "chr1:1-10000000",
-        filter_name = "chr1"
-    }
-  }
-
-  # Determine which VCFs to use
-  Array[File] vcfs_to_process = if defined(vcfs) then select_first([vcfs]) else [select_first([download_gnomad_vcf.gnomad_vcf])]
+  # Use test VCF data
+  Array[File] vcfs_to_process = [download_gnomad_vcf.gnomad_vcf]
 
   scatter (vcf in vcfs_to_process) {
     call annovar_annotate { input:
         vcf_to_annotate = vcf,
-        ref_name = ref_name,
-        annovar_protocols = protocols,
-        annovar_operation = operation
+        ref_name = "hg38",
+        annovar_protocols = "refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome",
+        annovar_operation = "g,f,f,f,f,f"
     }
   }
 

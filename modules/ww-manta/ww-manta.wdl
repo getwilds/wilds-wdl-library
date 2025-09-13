@@ -6,11 +6,6 @@ version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
-struct MantaSample {
-    String name
-    File bam
-    File bai
-}
 
 workflow manta_example {
   meta {
@@ -25,72 +20,30 @@ workflow manta_example {
     }
   }
 
-  parameter_meta {
-    samples: "List of sample objects, each containing name, BAM file, and BAM index"
-    ref_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
-    ref_fasta_index: "Optional reference genome FASTA index file. If not provided, test data will be used."
-    call_regions_bed: "Optional BED file to restrict calling to specific regions"
-    call_regions_index: "Index file for the optional BED file"
-    is_rna: "Boolean flag indicating if input data is RNA-seq (default: false for DNA)"
-    cpus: "Number of CPU cores allocated for each task in the workflow"
-    memory_gb: "Memory allocated for each task in the workflow in GB"
-  }
+  # Download test data
+  call ww_testdata.download_ref_data { }
+  call ww_testdata.download_bam_data { }
 
-  input {
-    Array[MantaSample]? samples
-    File? ref_fasta
-    File? ref_fasta_index
-    File? call_regions_bed
-    File? call_regions_index
-    Boolean is_rna = false
-    Int cpus = 2
-    Int memory_gb = 8
-  }
-
-  # Determine which genome files to use
-  if (!defined(ref_fasta) || !defined(ref_fasta_index)) {
-    call ww_testdata.download_ref_data { }
-  }
-  File genome_fasta = select_first([ref_fasta, download_ref_data.fasta])
-  File genome_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
-
-  # If no samples provided, download demonstration data
-  if (!defined(samples)) {
-    call ww_testdata.download_bam_data { }
-  }
-
-  # Create samples array - either from input or from test data download
-  Array[MantaSample] final_samples = if defined(samples) then select_first([samples]) else [
-    {
-      "name": "demo_sample",
-      "bam": select_first([download_bam_data.bam]),
-      "bai": select_first([download_bam_data.bai])
-    }
-  ]
-
-  scatter (sample in final_samples) {
-    call manta_call { input:
-        aligned_bam = sample.bam,
-        aligned_bam_index = sample.bai,
-        sample_name = sample.name,
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
-        call_regions_bed = call_regions_bed,
-        call_regions_index = call_regions_index,
-        is_rna = is_rna,
-        cpu_cores = cpus,
-        memory_gb = memory_gb
-    }
+  # Call structural variants on test sample
+  call manta_call { input:
+      aligned_bam = download_bam_data.bam,
+      aligned_bam_index = download_bam_data.bai,
+      sample_name = "demo_sample",
+      reference_fasta = download_ref_data.fasta,
+      reference_fasta_index = download_ref_data.fasta_index,
+      is_rna = false,
+      cpu_cores = 2,
+      memory_gb = 8
   }
 
   call validate_outputs { input:
-      vcf_files = manta_call.vcf,
-      vcf_index_files = manta_call.vcf_index
+      vcf_files = [manta_call.vcf],
+      vcf_index_files = [manta_call.vcf_index]
   }
 
   output {
-    Array[File] manta_vcf = manta_call.vcf
-    Array[File] manta_vcf_index = manta_call.vcf_index
+    File manta_vcf = manta_call.vcf
+    File manta_vcf_index = manta_call.vcf_index
     File validation_report = validate_outputs.report
   }
 }

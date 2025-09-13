@@ -8,17 +8,17 @@ A WILDS WDL module for differential expression analysis using DESeq2.
 
 This module provides reusable WDL tasks for comprehensive differential gene expression analysis using DESeq2. It handles the complete workflow from count matrix preparation through statistical analysis and visualization generation. The module supports both single-factor and complex experimental designs with comprehensive output validation.
 
-The module can run completely standalone with automatic test data generation, or integrate with existing count matrices and metadata files for production analyses.
+The module can run completely standalone with automatic test data generation. Individual tasks can be imported and used with existing count matrices and metadata files for production analyses.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
 - **Tasks**: `combine_count_matrices`, `run_deseq2`, `validate_outputs`
-- **Workflow**: `deseq2_example` (demonstration workflow with automatic test data support)
+- **Workflow**: `deseq2_example` (demonstration workflow using test data)
 - **Containers**: `getwilds/combine-counts:0.1.0`, `getwilds/deseq2:1.40.2`
-- **Dependencies**: Integrates with `ww-testdata` module for complete workflows
-- **Test Data**: Automatically generates Pasilla test dataset when not provided
+- **Dependencies**: Integrates with `ww-testdata` module for test data generation
+- **Test Data**: Uses Pasilla test dataset with 7 samples and 10,000 genes
 
 ## Tasks
 
@@ -164,58 +164,29 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that can be tested independently:
+The module includes a demonstration workflow that runs with test data and requires no inputs:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-deseq2.wdl --inputs inputs.json
+java -jar cromwell.jar run ww-deseq2.wdl
 
 # Using miniWDL
-miniwdl run ww-deseq2.wdl -i inputs.json
+miniwdl run ww-deseq2.wdl
 
 # Using Sprocket
-sprocket run ww-deseq2.wdl inputs.json
+sprocket run ww-deseq2.wdl
 ```
 
-### Automatic Demo Mode
+### Test Data Workflow
 
-When no count files or metadata are provided, the workflow automatically:
+The `deseq2_example` workflow automatically:
 1. Generates Pasilla test dataset using `ww-testdata`
 2. Combines individual count files into a count matrix
 3. Performs differential expression analysis with DESeq2
 4. Generates comprehensive visualizations
 5. Validates all outputs
 
-### Test Input Format
-
-When providing your own data:
-
-```json
-{
-  "deseq2_example.gene_count_files": [
-    "/path/to/sample1/ReadsPerGene.out.tab",
-    "/path/to/sample2/ReadsPerGene.out.tab",
-    "/path/to/sample3/ReadsPerGene.out.tab"
-  ],
-  "deseq2_example.sample_names": ["sample1", "sample2", "sample3"],
-  "deseq2_example.sample_conditions": ["control", "treated", "treated"],
-  "deseq2_example.condition_column": "condition",
-  "deseq2_example.reference_level": "control",
-  "deseq2_example.contrast": "condition,treated,control"
-}
-```
-
-Alternatively, with a pre-combined count matrix:
-
-```json
-{
-  "deseq2_example.counts_matrix": "/path/to/combined_counts.txt",
-  "deseq2_example.sample_metadata": "/path/to/metadata.txt",
-  "deseq2_example.condition_column": "treatment",
-  "deseq2_example.reference_level": "control",
-  "deseq2_example.contrast": "treatment,drug,control"
-}
-```
+No input files or parameters are required - the workflow uses pre-configured test data and parameters.
 
 ## Configuration Guidelines
 
@@ -235,11 +206,13 @@ The module supports flexible resource configuration:
 - **Reference Level**: Set control or baseline condition for proper fold change calculation
 - **Condition Column**: Ensure metadata column name matches your experimental design
 
-### Demo Configuration
+### Test Workflow Configuration
 
+The `deseq2_example` workflow:
 - Uses Pasilla dataset with 7 samples and 10,000 genes
 - Demonstrates basic treatment vs. control comparison
-- Resource parameters are optimized for demo data scale
+- Runs with fixed parameters optimized for test data
+- Requires no user inputs or configuration
 
 ## Requirements
 

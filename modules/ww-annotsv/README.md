@@ -96,39 +96,18 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow with comprehensive testing:
+The module includes a demonstration workflow that automatically downloads test data and runs without requiring input files:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-annotsv.wdl --inputs inputs.json --options options.json
+java -jar cromwell.jar run ww-annotsv.wdl
 
 # Using miniWDL
-miniwdl run ww-annotsv.wdl -i inputs.json
+miniwdl run ww-annotsv.wdl
 
 # Using Sprocket
-sprocket run ww-annotsv.wdl inputs.json
+sprocket run ww-annotsv.wdl
 ```
-
-### Test Input Format
-
-When providing your own VCF files:
-
-```json
-{
-  "annotsv_example.vcfs": [
-    "/path/to/structural_variants.vcf"
-  ],
-  "annotsv_example.genome_build": "GRCh38",
-  "annotsv_example.sv_min_size": 50,
-  "annotsv_example.annotation_mode": "full",
-  "annotsv_example.include_ci": true,
-  "annotsv_example.overlap_threshold": 70,
-  "annotsv_example.cpus": 4,
-  "annotsv_example.memory_gb": 8
-}
-```
-
-**Note**: If no `vcfs` array is provided in the inputs, the workflow will automatically download test data using the `ww-testdata` module.
 
 ## Configuration Guidelines
 

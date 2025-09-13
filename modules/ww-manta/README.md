@@ -130,55 +130,23 @@ The module includes a demonstration workflow that can be tested independently:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-manta.wdl --inputs inputs.json
+java -jar cromwell.jar run ww-manta.wdl
 
 # Using miniWDL
-miniwdl run ww-manta.wdl -i inputs.json
+miniwdl run ww-manta.wdl
 
 # Using Sprocket
-sprocket run ww-manta.wdl inputs.json
+sprocket run ww-manta.wdl
 ```
 
-### Automatic Demo Mode
+### Automatic Test Data
 
-When no samples or reference files are provided, the workflow automatically:
+The demonstration workflow automatically:
 1. Downloads reference genome data using `ww-testdata`
 2. Downloads demonstration BAM data using `ww-testdata`
 3. Calls structural variants using Manta
 4. Validates all outputs
 
-### Test Input Format
-
-**Minimal input (uses automatic demo data):**
-```json
-{
-  "manta_example.is_rna": false,
-  "manta_example.cpus": 2,
-  "manta_example.memory_gb": 8
-}
-```
-
-**Full input (provide your own data):**
-```json
-{
-  "manta_example.samples": [
-    {
-      "name": "sample1",
-      "bam": "/path/to/sample1.bam",
-      "bai": "/path/to/sample1.bam.bai"
-    }
-  ],
-  "manta_example.ref_fasta": "/path/to/reference.fasta",
-  "manta_example.ref_fasta_index": "/path/to/reference.fasta.fai",
-  "manta_example.call_regions_bed": "/path/to/target_regions.bed",
-  "manta_example.call_regions_index": "/path/to/target_regions.bed.tbi",
-  "manta_example.is_rna": false,
-  "manta_example.cpus": 8,
-  "manta_example.memory_gb": 16
-}
-```
-
-**Note**: You can mix and match - provide some inputs and let others use test data.
 
 ## Configuration Guidelines
 
@@ -202,10 +170,6 @@ The module supports flexible resource configuration:
 - **is_rna**: Enables RNA-seq mode with splice-aware algorithms
 - Resource allocation can be tuned for different compute environments
 
-### Demo Configuration
-
-- `is_rna`: Use false for faster demo runs with DNA-seq algorithms
-- Resource parameters apply to both demo and user-provided data modes
 
 ## Requirements
 
@@ -217,7 +181,6 @@ The module supports flexible resource configuration:
 ## Features
 
 - **Standalone execution**: Complete workflow with automatic test data download
-- **Flexible input**: Use your own data or automatic demo data
 - **Comprehensive SV detection**: Detects deletions, insertions, duplications, inversions, and translocations
 - **Multi-sample support**: Process multiple samples in parallel
 - **RNA-seq compatibility**: Specialized mode for RNA structural variant detection

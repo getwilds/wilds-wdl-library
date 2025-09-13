@@ -111,41 +111,20 @@ This module integrates well with other WILDS components:
 
 The module includes a demonstration workflow with comprehensive testing:
 
+The demonstration workflow automatically downloads test data and runs without requiring input files:
+
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-bcftools.wdl --inputs inputs.json --options options.json
+java -jar cromwell.jar run ww-bcftools.wdl
 
 # Using miniWDL
-miniwdl run ww-bcftools.wdl -i inputs.json
+miniwdl run ww-bcftools.wdl
 
 # Using Sprocket
-sprocket run ww-bcftools.wdl inputs.json
+sprocket run ww-bcftools.wdl
 ```
 
-### Test Input Format
-
-When providing your own data:
-
-```json
-{
-  "bcftools_example.samples": [
-    {
-      "name": "sample1",
-      "bam": "/path/to/sample1.bam",
-      "bai": "/path/to/sample1.bam.bai"
-    }
-  ],
-  "bcftools_example.ref_fasta": "/path/to/genome.fasta",
-  "bcftools_example.ref_fasta_index": "/path/to/genome.fasta.fai",
-  "bcftools_example.regions_bed": "/path/to/regions.bed",
-  "bcftools_example.max_depth": 10000,
-  "bcftools_example.max_idepth": 10000,
-  "bcftools_example.memory_gb": 8,
-  "bcftools_example.cpu_cores": 2
-}
-```
-
-**Note**: If no `samples`, `ref_fasta`, or `ref_fasta_index` are provided, the workflow will automatically download test data using the `ww-testdata` module.
+The demonstration workflow (`bcftools_example`) automatically downloads test data using the `ww-testdata` module and runs variant calling without requiring any input parameters.
 
 ## Configuration Guidelines
 
@@ -201,8 +180,7 @@ The module generates standard VCF files with the following characteristics:
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- Input BAM files must be sorted and indexed
-- Reference genome with FASTA index
+- Docker/Apptainer support for containerized execution
 - Docker/Apptainer support
 - Sufficient computational resources (8GB RAM recommended)
 

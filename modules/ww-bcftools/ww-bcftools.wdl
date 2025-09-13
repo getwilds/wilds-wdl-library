@@ -6,11 +6,6 @@ version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
-struct BcftoolsSample {
-    String name
-    File bam
-    File bai
-}
 
 workflow bcftools_example {
   meta {
@@ -19,76 +14,33 @@ workflow bcftools_example {
     description: "WDL workflow for variant calling using bcftools"
     url: "https://github.com/getwilds/wilds-wdl-library"
     outputs: {
-        variant_vcfs: "VCF files containing variants called by bcftools mpileup for each sample",
+        variant_vcf: "VCF file containing variants called by bcftools mpileup",
         validation_report: "validation report confirming all expected outputs were generated"
     }
   }
 
-  parameter_meta {
-    samples: "Optional list of sample objects, each containing name, BAM file, and BAM index. If not provided, workflow will download and align demonstration sample from SRA"
-    regions_bed: "Optional BED file specifying regions to analyze"
-    ref_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
-    ref_fasta_index: "Optional reference genome FASTA index file. If not provided, test data will be used."
-    max_depth: "Maximum read depth for mpileup (default: 10000)"
-    max_idepth: "Maximum per-sample depth for indel calling (default: 10000)"
-    memory_gb: "Memory allocated for each task in the workflow in GB"
-    cpu_cores: "Number of CPU cores allocated for each task in the workflow"
-  }
+  # Download test data
+  call ww_testdata.download_ref_data { }
+  call ww_testdata.download_bam_data { }
 
-  input {
-    Array[BcftoolsSample]? samples
-    File? regions_bed
-    File? ref_fasta
-    File? ref_fasta_index
-    Int max_depth = 10000
-    Int max_idepth = 10000
-    Int memory_gb = 8
-    Int cpu_cores = 2
-  }
-
-  # If no reference genome provided, download test data
-  if (!defined(ref_fasta) || !defined(ref_fasta_index)) {
-    call ww_testdata.download_ref_data { }
-  }
-
-  # Determine which genome files to use
-  File genome_fasta = select_first([ref_fasta, download_ref_data.fasta])
-  File genome_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
-
-  # If no samples provided, download demonstration data
-  if (!defined(samples)) {
-    call ww_testdata.download_bam_data { }
-  }
-
-  # Create samples array - either from input or from test data download
-  Array[BcftoolsSample] final_samples = if defined(samples) then select_first([samples]) else [
-    {
-      "name": "demo_sample",
-      "bam": select_first([download_bam_data.bam]),
-      "bai": select_first([download_bam_data.bai])
-    }
-  ]
-
-  scatter (sample in final_samples) {
-    call mpileup_call { input:
-        bam_file = sample.bam,
-        bam_index = sample.bai,
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
-        regions_bed = regions_bed,
-        max_depth = max_depth,
-        max_idepth = max_idepth,
-        memory_gb = memory_gb,
-        cpu_cores = cpu_cores
-    }
+  # Call variants on test sample
+  call mpileup_call { input:
+      bam_file = download_bam_data.bam,
+      bam_index = download_bam_data.bai,
+      reference_fasta = download_ref_data.fasta,
+      reference_fasta_index = download_ref_data.fasta_index,
+      max_depth = 10000,
+      max_idepth = 10000,
+      memory_gb = 8,
+      cpu_cores = 2
   }
 
   call validate_outputs { input:
-      vcf_files = mpileup_call.mpileup_vcf
+      vcf_files = [mpileup_call.mpileup_vcf]
   }
 
   output {
-    Array[File] variant_vcfs = mpileup_call.mpileup_vcf
+    File variant_vcf = mpileup_call.mpileup_vcf
     File validation_report = validate_outputs.report
   }
 }

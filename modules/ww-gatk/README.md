@@ -6,7 +6,7 @@ A WILDS WDL module for GATK variant calling and analysis tasks with automated pa
 
 ## Overview
 
-This module provides comprehensive variant calling capabilities using GATK (Genome Analysis Toolkit), supporting both germline and somatic variant detection workflows with **automatic interval-based parallelization** for optimal performance on whole genome sequencing (WGS) data. It includes duplicate marking, base quality score recalibration (BQSR), germline variant calling with HaplotypeCaller, somatic variant calling with Mutect2, and quality metrics collection. The module can run completely standalone with automatic test data download or integrate with existing BAM files and reference data.
+This module provides comprehensive variant calling capabilities using GATK (Genome Analysis Toolkit), supporting both germline and somatic variant detection workflows with **automatic interval-based parallelization** for optimal performance on whole genome sequencing (WGS) data. It includes duplicate marking, base quality score recalibration (BQSR), germline variant calling with HaplotypeCaller, somatic variant calling with Mutect2, and quality metrics collection. The module runs completely standalone with automatic test data download. Individual tasks can be imported and used with existing BAM files and reference data for production workflows.
 
 The module implements GATK best practices for variant calling, including proper duplicate marking, base quality recalibration using known variant sites, **automatic interval splitting for parallelization**, and provides comprehensive validation and reporting for quality assurance.
 
@@ -24,10 +24,10 @@ The module implements GATK best practices for variant calling, including proper 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
 - **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `validate_outputs`
-- **Workflow**: `gatk_example` (demonstration workflow with automatic test data support and parallelization)
+- **Workflow**: `gatk_example` (demonstration workflow using test data with parallelization)
 - **Container**: `getwilds/gatk:4.6.1.0`
 - **Dependencies**: Integrates with `ww-testdata` module for automatic reference genome and variant database downloads
-- **Test Data**: Automatically downloads reference genome, dbSNP, known indels, gnomAD, and aligned BAM data when not provided
+- **Test Data**: Uses reference genome, dbSNP, known indels, gnomAD, and aligned BAM data from test data module
 
 ## Tasks
 
@@ -305,41 +305,29 @@ Validates GATK outputs and generates comprehensive statistics report.
 
 ## Testing the Module
 
-The module includes a demonstration workflow that runs with minimal inputs:
+The module includes a demonstration workflow that runs with test data and requires no inputs:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-gatk.wdl --inputs inputs.json
+java -jar cromwell.jar run ww-gatk.wdl
 
 # Using miniWDL
-miniwdl run ww-gatk.wdl -i inputs.json
+miniwdl run ww-gatk.wdl
 
 # Using Sprocket
-sprocket run ww-gatk.wdl inputs.json
+sprocket run ww-gatk.wdl
 ```
 
-### Test Input Format
+### Test Data Workflow
 
-The demonstration workflow can run with an empty inputs file (`{}`) and will automatically download test data, or you can provide your own data:
+The `gatk_example` workflow automatically:
+1. Downloads reference genome data using `ww-testdata`
+2. Downloads variant databases (dbSNP, known indels, gnomAD)
+3. Downloads test BAM file for demonstration
+4. Performs complete GATK variant calling pipeline with parallelization
+5. Validates all outputs and generates comprehensive reports
 
-```json
-{
-  "gatk_example.samples": [
-    {
-      "name": "sample1",
-      "bam": "path/to/sample1.bam",
-      "bai": "path/to/sample1.bam.bai"
-    }
-  ],
-  "gatk_example.reference_fasta": "path/to/reference.fasta",
-  "gatk_example.reference_fasta_index": "path/to/reference.fasta.fai",
-  "gatk_example.dbsnp_vcf": "path/to/dbsnp.vcf.gz",
-  "gatk_example.known_indels_sites_vcfs": ["path/to/known_indels.vcf.gz"],
-  "gatk_example.gnomad_vcf": "path/to/gnomad.vcf.gz",
-  "gatk_example.intervals": "path/to/intervals.list",
-  "gatk_example.scatter_count": 24
-}
-```
+No input files or parameters are required - the workflow uses pre-configured test data and parameters optimized for demonstration purposes.
 
 ## Requirements
 
@@ -356,10 +344,10 @@ The demonstration workflow can run with an empty inputs file (`{}`) and will aut
 - **Intelligent interval splitting**: Uses GATK SplitIntervals for optimal load balancing
 - **Seamless result merging**: Transparent combination of parallel results
 - **Flexible processing modes**: Choose between individual tasks, combined processing, or different parallelization approaches
-- **Automatic test data**: Downloads reference genome, variant databases, and test BAM when not provided
+- **Test data integration**: Uses reference genome, variant databases, and test BAM from test data module
 - **Best practices implementation**: Follows GATK best practices for variant calling workflows
 - **Comprehensive validation**: Built-in output validation and quality reporting
-- **Flexible inputs**: Can run standalone or integrate with existing data
+- **No-input execution**: Runs standalone with test data, individual tasks available for production workflows
 - **Resource optimization**: Configurable memory and CPU allocation for each task
 
 ## Performance Considerations
@@ -384,7 +372,8 @@ The demonstration workflow can run with an empty inputs file (`{}`) and will aut
 - **Region targeting**: Using intervals files significantly reduces runtime and resource requirements
 
 ### Optimization Tips
-- **Use appropriate scatter_count**: Balance between parallelization and overhead (default 2 for testing, 24 for production)
+- **Test workflow uses**: Fixed scatter_count of 2 optimized for demonstration purposes
+- **Production workflows**: Import individual tasks and configure scatter_count of 24+ for production data
 - **Choose parallelization strategy**: Internal parallelization for single nodes, scatter-gather for distributed computing
 - **Ensure adequate CPU allocation**: More cores = better performance for variant calling
 - **Monitor memory usage**: Each parallel task needs sufficient memory
@@ -412,7 +401,7 @@ This module is automatically tested as part of the WILDS WDL Library CI/CD pipel
 ## Integration Patterns
 
 This module demonstrates several key patterns:
-- **Conditional data download**: Automatic fallback to test data when inputs not provided
+- **Test data integration**: Seamless use of test data module for demonstration workflows
 - **Resource management**: Coordinated memory allocation across compute-intensive tasks
 - **Best practices workflow**: Implementation of GATK recommended variant calling pipeline
 - **Comprehensive validation**: Quality assurance for complex multi-output workflows

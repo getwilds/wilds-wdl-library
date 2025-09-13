@@ -143,45 +143,25 @@ This module integrates seamlessly with other WILDS components:
 
 The module includes a demonstration workflow that can be tested independently:
 
+The demonstration workflow automatically downloads test data and runs without requiring input files:
+
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-star.wdl --inputs inputs.json
+java -jar cromwell.jar run ww-star.wdl
 
 # Using miniWDL
-miniwdl run ww-star.wdl -i inputs.json
+miniwdl run ww-star.wdl
 
 # Using Sprocket
-sprocket run ww-star.wdl inputs.json
+sprocket run ww-star.wdl
 ```
 
-### Automatic Demo Mode
-
-When no samples or reference files are provided, the workflow automatically:
+The demonstration workflow (`star_example`) automatically:
 1. Downloads reference genome data using `ww-testdata`
 2. Downloads demonstration FASTQ data using `ww-testdata`
 3. Builds STAR genome index
 4. Performs RNA-seq alignment using STAR two-pass methodology
 5. Validates all outputs
-
-### Test Input Format
-
-```json
-{
-  "star_example.samples": [
-    {
-      "name": "sample1",
-      "r1": "/path/to/sample1_R1.fastq.gz",
-      "r2": "/path/to/sample1_R2.fastq.gz"
-    }
-  ],
-  "star_example.ref_fasta": "/path/to/genome.fasta",
-  "star_example.ref_gtf": "/path/to/annotation.gtf",
-  "star_example.sjdb_overhang": 149,
-  "star_example.genome_sa_index_nbases": 14,
-  "star_example.cpus": 8,
-  "star_example.memory_gb": 64
-}
-```
 
 ## Configuration Guidelines
 
@@ -203,24 +183,18 @@ The module supports flexible resource configuration:
 - `star_threads`: Usually set slightly less than `cpu_cores` to leave resources for I/O
 - Resource allocation can be tuned for different compute environments
 
-### Demo Configuration
-
-- `sjdb_overhang`: Use 100 for demo runs with mixed read lengths
-- `genome_sa_index_nbases`: Use 14 for most reference genomes
-- Resource parameters apply to both demo and user-provided data modes
 
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
 - Docker/Apptainer support
-- Input FASTQ files must be gzip-compressed (when providing your own data)
-- Reference genome FASTA and GTF annotation files (when providing your own data)
+- Docker/Apptainer support for containerized execution
 - Sufficient computational resources (STAR can be memory-intensive for large genomes)
 
 ## Features
 
 - **Standalone execution**: Complete workflow with automatic test data download
-- **Flexible input**: Use your own data or automatic demo data
+- **Automatic test data**: Uses test data from `ww-testdata` module for demonstration
 - **Two-pass methodology**: Optimal splice junction detection using STAR's two-pass approach
 - **Comprehensive outputs**: BAM files, gene counts, splice junctions, and detailed logs
 - **Multi-sample support**: Process multiple samples in parallel

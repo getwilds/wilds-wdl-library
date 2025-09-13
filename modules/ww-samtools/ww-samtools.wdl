@@ -5,11 +5,6 @@ version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
-struct SamtoolsSample {
-  String name
-  Array[File] cram_files
-}
-
 workflow samtools_example {
   meta {
     author: "Emma Bishop"
@@ -17,71 +12,30 @@ workflow samtools_example {
     description: "WDL workflow for processing genomic files with Samtools"
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-samtools"
     outputs: {
-        r1_fastqs: "Array of R1 FASTQ files generated from CRAM/BAM/SAM files",
-        r2_fastqs: "Array of R2 FASTQ files generated from CRAM/BAM/SAM files",
-        validation_report: "Validation report confirming all expected outputs were generated"
+        r1_fastqs: "R1 FASTQ files generated from CRAM/BAM/SAM files",
+        r2_fastqs: "R2 FASTQ files generated from CRAM/BAM/SAM files"
     }
   }
 
-  parameter_meta {
-    samples: "Array of sample objects, each containing name and paths to CRAM/BAM/SAM files"
-    reference_fasta: "Reference genome FASTA file"
-    cpus: "Number of CPU cores allocated for each non-validation task"
-    memory_gb: "Memory in GB allocated for each non-validation task"
+  # Download test data
+  call ww_testdata.download_ref_data { }
+
+  call ww_testdata.download_cram_data { input:
+      ref_fasta = download_ref_data.fasta
   }
 
-  input {
-    File? reference_fasta
-    Array[SamtoolsSample]? samples
-    Int cpus = 2
-    Int memory_gb = 8
-  }
-
-  # If no reference genome provided, download test data
-  if (!defined(reference_fasta)) {
-    call ww_testdata.download_ref_data { }
-  }
-
-  # Determine which genome file to use
-  File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
-
-  # If no samples provided, download demonstration data
-  if (!defined(samples)) {
-    call ww_testdata.download_cram_data { input:
-        ref_fasta = genome_fasta
-    }
-    Array[File] test_cram_arr = [download_cram_data.cram]
-    Array[SamtoolsSample] test_samples = [
-      object {
-        name: "test_sample",
-        cram_files: test_cram_arr
-    }
-    ]
-  }
-
-  # Create the samples array - either from input or from test data
-  Array[SamtoolsSample] final_samples = select_first([samples, test_samples])
-
-  scatter (sample in final_samples) {
-    call crams_to_fastq { input:
-        cram_files = sample.cram_files,
-        ref = genome_fasta,
-        name = sample.name,
-        cpu_cores = cpus,
-        memory_gb = memory_gb
-    }
-  }
-
-  call validate_outputs { input:
-      r1_fastqs = crams_to_fastq.r1_fastq,
-      r2_fastqs = crams_to_fastq.r2_fastq,
-      sample_names = crams_to_fastq.sample_name
+  # Convert CRAM to FASTQ
+  call crams_to_fastq { input:
+      cram_files = [download_cram_data.cram],
+      ref = download_ref_data.fasta,
+      name = "test_sample",
+      cpu_cores = 2,
+      memory_gb = 8
   }
 
   output {
-    Array[File] r1_fastqs = crams_to_fastq.r1_fastq
-    Array[File] r2_fastqs = crams_to_fastq.r2_fastq
-    File validation_report = validate_outputs.report
+    File r1_fastqs = crams_to_fastq.r1_fastq
+    File r2_fastqs = crams_to_fastq.r2_fastq
   }
 }
 
@@ -133,85 +87,3 @@ task crams_to_fastq {
   }
 }
 
-task validate_outputs {
-  meta {
-    description: "Validates that FASTQ files exist and are non-empty after CRAM-to-FASTQ conversion."
-    outputs: {
-        report: "Validation report with pass/fail summary"
-    }
-  }
-
-  parameter_meta {
-    r1_fastqs: "Array of R1 FASTQ files to check"
-    r2_fastqs: "Array of R2 FASTQ files to check"
-    sample_names: "Array of sample names corresponding to FASTQ files"
-  }
-
-  input {
-    Array[File] r1_fastqs
-    Array[File] r2_fastqs
-    Array[String] sample_names
-  }
-
-  command <<<
-    set -eo pipefail
-
-    echo "=== Samtools FASTQ Validation Report ===" > samtools_validation_report.txt
-    echo "" >> samtools_validation_report.txt
-
-    r1_fastqs=(~{sep=" " r1_fastqs})
-    r2_fastqs=(~{sep=" " r2_fastqs})
-    sample_names=(~{sep=" " sample_names})
-
-    validation_passed=true
-
-    for i in "${!sample_names[@]}"; do
-      sample="${sample_names[$i]}"
-      r1="${r1_fastqs[$i]}"
-      r2="${r2_fastqs[$i]}"
-
-      echo "--- Sample: $sample ---" >> samtools_validation_report.txt
-
-      if [[ -f "$r1" && -s "$r1" ]]; then
-        size=$(stat -c%s "$r1")
-        lines=$(zcat "$r1" | wc -l)
-        echo "  R1 FASTQ: PASS (${size} bytes, ${lines} lines)" >> samtools_validation_report.txt
-      else
-        echo "  R1 FASTQ: FAIL - MISSING OR EMPTY" >> samtools_validation_report.txt
-        validation_passed=false
-      fi
-
-      if [[ -f "$r2" && -s "$r2" ]]; then
-        size=$(stat -c%s "$r2")
-        lines=$(zcat "$r2" | wc -l)
-        echo "  R2 FASTQ: PASS (${size} bytes, ${lines} lines)" >> samtools_validation_report.txt
-      else
-        echo "  R2 FASTQ: FAIL - MISSING OR EMPTY" >> samtools_validation_report.txt
-        validation_passed=false
-      fi
-
-      echo "" >> samtools_validation_report.txt
-    done
-
-    echo "=== Summary ===" >> samtools_validation_report.txt
-    echo "Samples processed: ${#sample_names[@]}" >> samtools_validation_report.txt
-    if [[ "$validation_passed" == "true" ]]; then
-      echo "Status: PASSED" >> samtools_validation_report.txt
-    else
-      echo "Status: FAILED" >> samtools_validation_report.txt
-      exit 1
-    fi
-
-    cat samtools_validation_report.txt
-  >>>
-
-  output {
-    File report = "samtools_validation_report.txt"
-  }
-
-  runtime {
-    docker: "getwilds/samtools:1.19"
-    cpu: 1
-    memory: "2 GB"
-  }
-}

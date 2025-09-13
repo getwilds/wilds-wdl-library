@@ -16,7 +16,7 @@ workflow gatk_example {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "WDL workflow demonstrating GATK variant calling tasks"
+    description: "WDL workflow demonstrating GATK variant calling tasks with test data"
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-gatk"
     outputs: {
         recalibrated_bams: "Array of base quality recalibrated BAM files",
@@ -28,88 +28,48 @@ workflow gatk_example {
     }
   }
 
-  parameter_meta {
-    samples: "Array of sample information objects containing BAM files and indices"
-    reference_fasta: "Reference genome FASTA file"
-    reference_fasta_index: "Reference genome FASTA index (.fai)"
-    dbsnp_vcf: "dbSNP VCF file for variant annotation and base recalibration"
-    known_indels_sites_vcfs: "Array of VCF files with known indel sites for BQSR"
-    gnomad_vcf: "gnomAD population allele frequency VCF for Mutect2"
-    intervals: "Optional interval list file defining target regions"
-    scatter_count: "Number of intervals to create for parallelization"
-  }
-
-  input {
-    Array[GatkSample]? samples
-    File? reference_fasta
-    File? reference_fasta_index
-    File? dbsnp_vcf
-    Array[File]? known_indels_sites_vcfs
-    File? gnomad_vcf
-    File? intervals
-    Int scatter_count = 2 # Only scattering over 2 intervals for testing purposes
-  }
-
-  # Determine which genome files to use
-  if (!defined(reference_fasta) || !defined(reference_fasta_index)) {
-    call ww_testdata.download_ref_data { }
-  }
-  File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
-  File genome_fasta_index = select_first([reference_fasta_index, download_ref_data.fasta_index])
+  # Download test data
+  call ww_testdata.download_ref_data { }
+  call ww_testdata.download_bam_data { }
 
   # Create reference dictionary
   call create_sequence_dictionary { input:
-      reference_fasta = genome_fasta
+      reference_fasta = download_ref_data.fasta
   }
 
-  # Determine which dbSNP vcf to use
-  if (!defined(dbsnp_vcf)) {
-    call ww_testdata.download_dbsnp_vcf { input:
-      region = "NC_000001.11:1-10000000",
-      filter_name = "chr1"
-    }
-  }
-  File final_dbsnp = select_first([dbsnp_vcf, download_dbsnp_vcf.dbsnp_vcf])
-
-  # Determine which known indels vcf to use
-  if (!defined(known_indels_sites_vcfs)) {
-    call ww_testdata.download_known_indels_vcf { input:
-      region = "chr1:1-10000000",
-      filter_name = "chr1"
-    }
-  }
-  Array[File] final_known_indels = select_first([known_indels_sites_vcfs, select_all([download_known_indels_vcf.known_indels_vcf])])
-
-  # Determine which gnomad vcf to use
-  if (!defined(gnomad_vcf)) {
-    call ww_testdata.download_gnomad_vcf { input:
-      region = "chr1:1-10000000",
-      filter_name = "chr1"
-    }
-  }
-  File final_gnomad = select_first([gnomad_vcf, download_gnomad_vcf.gnomad_vcf])
-
-  # If no samples provided, download demonstration data
-  if (!defined(samples)) {
-    call ww_testdata.download_bam_data { }
+  # Download dbSNP VCF
+  call ww_testdata.download_dbsnp_vcf { input:
+    region = "NC_000001.11:1-10000000",
+    filter_name = "chr1"
   }
 
-  # Create samples array - either from input or from BWA alignment
-  Array[GatkSample] final_samples = if defined(samples) then select_first([samples]) else [
+  # Download known indels VCF
+  call ww_testdata.download_known_indels_vcf { input:
+    region = "chr1:1-10000000",
+    filter_name = "chr1"
+  }
+
+  # Download gnomAD VCF
+  call ww_testdata.download_gnomad_vcf { input:
+    region = "chr1:1-10000000",
+    filter_name = "chr1"
+  }
+
+  # Create test samples array
+  Array[GatkSample] final_samples = [
     {
       "name": "demo_sample",
-      "bam": select_first([download_bam_data.bam]),
-      "bai": select_first([download_bam_data.bai])
+      "bam": download_bam_data.bam,
+      "bai": download_bam_data.bai
     }
   ]
 
   # Splitting intervals for parallel processing
   call split_intervals { input:
-      reference_fasta = genome_fasta,
-      reference_fasta_index = genome_fasta_index,
+      reference_fasta = download_ref_data.fasta,
+      reference_fasta_index = download_ref_data.fasta_index,
       reference_dict = create_sequence_dictionary.sequence_dict,
-      intervals = intervals,
-      scatter_count = scatter_count
+      scatter_count = 2
   }
 
   # Scattering across the samples provided
@@ -125,12 +85,11 @@ workflow gatk_example {
     call base_recalibrator { input:
         bam = mark_duplicates.markdup_bam,
         bam_index = mark_duplicates.markdup_bai,
-        intervals = intervals,
-        dbsnp_vcf = final_dbsnp,
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
+        dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf,
+        reference_fasta = download_ref_data.fasta,
+        reference_fasta_index = download_ref_data.fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
-        known_indels_sites_vcfs = final_known_indels,
+        known_indels_sites_vcfs = [download_known_indels_vcf.known_indels_vcf],
         base_file_name = sample.name
     }
 
@@ -138,9 +97,8 @@ workflow gatk_example {
     call collect_wgs_metrics { input:
         bam = base_recalibrator.recalibrated_bam,
         bam_index = base_recalibrator.recalibrated_bai,
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
-        intervals = intervals,
+        reference_fasta = download_ref_data.fasta,
+        reference_fasta_index = download_ref_data.fasta_index,
         base_file_name = sample.name
     }
 
@@ -148,13 +106,12 @@ workflow gatk_example {
     call markdup_recal_metrics { input:
         bam = sample.bam,
         bam_index = sample.bai,
-        dbsnp_vcf = final_dbsnp,
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
+        dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf,
+        reference_fasta = download_ref_data.fasta,
+        reference_fasta_index = download_ref_data.fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
-        known_indels_sites_vcfs = final_known_indels,
+        known_indels_sites_vcfs = [download_known_indels_vcf.known_indels_vcf],
         base_file_name = sample.name + ".combined",
-        intervals = intervals,
         minimum_mapping_quality = 20,
         minimum_base_quality = 20,
         coverage_cap = 250
@@ -165,8 +122,8 @@ workflow gatk_example {
       bam = base_recalibrator.recalibrated_bam,
       bam_index = base_recalibrator.recalibrated_bai,
       intervals = split_intervals.interval_files,
-      reference_fasta = genome_fasta,
-      reference_fasta_index = genome_fasta_index,
+      reference_fasta = download_ref_data.fasta,
+      reference_fasta_index = download_ref_data.fasta_index,
       reference_dict = create_sequence_dictionary.sequence_dict,
       output_basename = sample.name + ".recalibrated"
     }
@@ -177,10 +134,10 @@ workflow gatk_example {
         bam = print_reads.interval_bams[i],
         bam_index = print_reads.interval_bam_indices[i],
         intervals = split_intervals.interval_files[i],
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
+        reference_fasta = download_ref_data.fasta,
+        reference_fasta_index = download_ref_data.fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
-        dbsnp_vcf = final_dbsnp,
+        dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf,
         base_file_name = sample.name + "." + basename(split_intervals.interval_files[i], ".interval_list")
       }
 
@@ -188,10 +145,10 @@ workflow gatk_example {
         bam = print_reads.interval_bams[i],
         bam_index = print_reads.interval_bam_indices[i],
         intervals = split_intervals.interval_files[i],
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
+        reference_fasta = download_ref_data.fasta,
+        reference_fasta_index = download_ref_data.fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
-        gnomad_vcf = final_gnomad,
+        gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
         base_file_name = sample.name + "." + basename(split_intervals.interval_files[i], ".interval_list")
       }
     }
@@ -223,10 +180,10 @@ workflow gatk_example {
         bam = base_recalibrator.recalibrated_bam,
         bam_index = base_recalibrator.recalibrated_bai,
         intervals = split_intervals.interval_files,
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
+        reference_fasta = download_ref_data.fasta,
+        reference_fasta_index = download_ref_data.fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
-        dbsnp_vcf = final_dbsnp,
+        dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf,
         base_file_name = sample.name
     }
 
@@ -235,10 +192,10 @@ workflow gatk_example {
         bam = base_recalibrator.recalibrated_bam,
         bam_index = base_recalibrator.recalibrated_bai,
         intervals = split_intervals.interval_files,
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
+        reference_fasta = download_ref_data.fasta,
+        reference_fasta_index = download_ref_data.fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
-        gnomad_vcf = final_gnomad,
+        gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
         base_file_name = sample.name
     }
   }
