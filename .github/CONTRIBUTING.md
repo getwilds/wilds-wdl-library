@@ -118,12 +118,12 @@ wilds-wdl-library/
 - Include optional parameters with sensible defaults
 - Support both single samples and batch processing where applicable
 
-**Container preferences:**
+**Docker image preferences:**
 
-- Use containers from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library) when available
-- If creating new containers, follow WILDS container standards and consider contributing to the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library).
-- Specify exact container versions (avoid `latest` tags)
-- Document container dependencies in the README
+- Use images from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library) when available
+- If creating new images, follow WILDS container standards and consider contributing to the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library).
+- Specify exact image versions (avoid `latest` tags)
+- Document image dependencies in the README
 
 
 ## Vignette Development Guidelines
@@ -161,12 +161,12 @@ Make sure you have these installed:
 Test your WDL locally before submitting a PR:
 
 ```bash
-cd modules/your-module
+cd modules/ww-toolname
 
 # Linting with miniwdl
 miniwdl check ww-toolname.wdl
 
-# Linting wiht sprocket (ignore things we don't care about)
+# Linting with sprocket (ignoring things we don't care about)
 sprocket lint \
   -e TodoComment \
   -e ContainerUri \
@@ -176,15 +176,15 @@ sprocket lint \
   ww-toolname.wdl
 
 # Test running
-miniwdl run ww-toolname.wdl -i inputs.json
-sprocket run ww-toolname.wdl inputs.json
+miniwdl run ww-toolname.wdl
+sprocket run ww-toolname.wdl
 ```
 
 For automated local testing be sure to have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed also and use our Makefile.
 
 ### Test Data
 
-- Use the `ww-testdata` module for standardized test datasets
+- Use the [`ww-testdata` module](https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-testdata) for standardized test datasets
 - If you need additional test datasets, modify the `ww-testdata` module also
 - Include small, representative test files in your examples
 
@@ -208,7 +208,7 @@ After meeting the requirements above, submit a PR to merge your forked repo into
 
 3. **Link related issues**: Reference any GitHub issues your PR addresses
 
-4. **Request reviews**: Tag Emma Bishop (@emjbishop) or Taylor Firman (@tfirman)
+4. **Request reviews**: Tag Emma Bishop (@emjbishop) or Taylor Firman (@tefirman)
 
 ### Review Criteria
 
@@ -219,6 +219,7 @@ Your PR will be evaluated on:
 - **Documentation**: Is documentation clear and complete?
 - **Standards compliance**: Does it follow WILDS conventions?
 - **Code quality**: Is the WDL code well-structured and readable?
+- **Uniqueness**: Does it avoid duplicating existing functionality in the library?
 
 ## Help for new contributors
 
@@ -234,7 +235,7 @@ For more questions you can contact the Fred Hutch Data Science Lab at [wilds@fre
 
 ## Code of Conduct
 
-By participating in this project, you agree to abide by our code of conduct:
+By participating in this project, you agree to abide by our [code of conduct](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CODE_OF_CONDUCT.md):
 
 - **Be respectful**: Treat all community members with respect and kindness
 - **Be collaborative**: Work together constructively and help others learn
