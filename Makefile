@@ -25,3 +25,5 @@ lint_miniwdl:
 			uv run --python 3.13.5 --with miniwdl miniwdl check "$$file"; \
 		fi; \
 	done
+
+lint: lint_sprocket lint_miniwdl
