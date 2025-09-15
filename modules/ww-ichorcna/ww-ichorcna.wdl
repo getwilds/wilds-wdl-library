@@ -30,56 +30,18 @@ workflow ichorcna_example {
     }
   }
 
-  parameter_meta {
-    samples: "Array of sample information containing name and tarball of per-chromosome BED files of read counts"
-    wig_gc: "GC-content WIG file"
-    wig_map: "Mappability score WIG file"
-    panel_of_norm_rds: "RDS file of median corrected depth from panel of normals"
-    centromeres: "Text file containing Centromere locations"
-    sex: "User-specified: male or female"
-    genome: "Genome build (e.g. hg38)"
-    genome_style: "Chromosome naming convention (use UCSC if desired output is to have 'chr' string): NCBI or UCSC"
-    memory_gb: "Memory allocated for each task in the workflow in GB"
-    cpus: "Number of CPU cores allocated for each task in the workflow"
-    chrs_list: "Chromosomes to analyze as an array of strings (default: chr 1-22, X, and Y)"
-    chrs_vec: "Chromosomes to analyze as an R vector (default: chr 1-22, X, and Y)"
-  }
+  # Download ichorCNA reference data
+  call ww_testdata.download_ichor_data { }
 
-  input {
-    Array[IchorSample]? samples
-    File? wig_gc
-    File? wig_map
-    File? panel_of_norm_rds
-    File? centromeres
-    String sex = "male"
-    String genome = "hg38"
-    String genome_style = "UCSC"
-    Int memory_gb = 8
-    Int cpus = 2
-    Array[String] chrs_list = ["chr1"] # Limiting to chr1 for test workflow
-    String chrs_vec = "c(1)" # Limiting to chr1 for test workflow
-  }
+  # Download test sample data
+  call ww_testdata.download_bam_data { }
 
-  # Determine which ichorCNA data files to use
-  if (!defined(wig_gc) || !defined(wig_map) || !defined(panel_of_norm_rds) || !defined(centromeres)) {
-    call ww_testdata.download_ichor_data { }
-  }
-  File final_wig_gc = select_first([wig_gc, download_ichor_data.wig_gc])
-  File final_wig_map = select_first([wig_map, download_ichor_data.wig_map])
-  File final_panel_of_norm = select_first([panel_of_norm_rds, download_ichor_data.panel_of_norm_rds])
-  File final_centromeres = select_first([centromeres, download_ichor_data.centromeres])
-
-  # If no samples provided, download demonstration data
-  if (!defined(samples)) {
-    call ww_testdata.download_bam_data { }
-  }
-
-  # Create samples array - either from input or from test data download
-  Array[IchorSample] final_samples = if defined(samples) then select_first([samples]) else [
+  # Create test samples array
+  Array[IchorSample] final_samples = [
     {
       "name": "demo_sample",
-      "bam": select_first([download_bam_data.bam]),
-      "bam_index": select_first([download_bam_data.bai])
+      "bam": download_bam_data.bam,
+      "bam_index": download_bam_data.bai
     }
   ]
 
@@ -89,24 +51,24 @@ workflow ichorcna_example {
       bam_index = sample.bam_index,
       sample_name = sample.name,
       window_size = 500000,
-      chromosomes = chrs_list,
-      memory_gb = memory_gb,
-      cpus = cpus
+      chromosomes = ["chr1"],
+      memory_gb = 8,
+      cpus = 2
     }
 
     call ichorcna_call { input:
       wig_tumor = readcounter_wig.wig_file,
-      wig_gc = final_wig_gc,
-      wig_map = final_wig_map,
-      panel_of_norm_rds = final_panel_of_norm,
-      centromeres = final_centromeres,
+      wig_gc = download_ichor_data.wig_gc,
+      wig_map = download_ichor_data.wig_map,
+      panel_of_norm_rds = download_ichor_data.panel_of_norm_rds,
+      centromeres = download_ichor_data.centromeres,
       name = sample.name,
-      sex = sex,
-      chrs = chrs_vec,
-      genome = genome,
-      genome_style = genome_style,
-      cpus = cpus,
-      memory_gb = memory_gb
+      sex = "male",
+      chrs = "c(1)",
+      genome = "hg38",
+      genome_style = "UCSC",
+      cpus = 2,
+      memory_gb = 8
     }
   }
 
