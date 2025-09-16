@@ -26,7 +26,7 @@ lint_sprocket: ## Run sprocket lint on all WDL modules
 		fi; \
 	done
 
-lint_miniwdl: ## Run miniwdl lint on all WDL modules (use verbose=1 for detailed output)
+lint_miniwdl: ## Run miniwdl lint on all WDL modules (use VERBOSE=1 for detailed output)
 	@echo "Running miniwdl lint on all modules..."
 	@echo "Checking if uv is available..."
 	@if ! command -v uv >/dev/null 2>&1; then \
