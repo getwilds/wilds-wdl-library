@@ -58,18 +58,10 @@ jobs:
     -
       name: Run workflow with miniwdl
       run: |
-        mkdir -p test-output/miniwdl/${{ matrix.module }}
         module_dir="modules/${{ matrix.module }}"
         wdl_file="$module_dir/${{ matrix.module }}.wdl"
-        inputs_file="$module_dir/inputs.json"
-
         echo "Running ${{ matrix.module }} with miniwdl..."
-        miniwdl run "$wdl_file" --dir "test-output/miniwdl/${{ matrix.module }}"
-    -
-      name: Display validation report
-      run: |
-        echo "=== MiniWDL Validation Report ==="
-        find test-output/miniwdl -name "validation_report.txt" -exec cat {} \; 2>/dev/null || true
+        miniwdl run "$wdl_file"
 
   cromwell-test:
     needs: [discover-modules]
@@ -95,19 +87,10 @@ jobs:
     -
       name: Run workflow with Cromwell
       run: |
-        mkdir -p test-output/cromwell/${{ matrix.module }}
         module_dir="modules/${{ matrix.module }}"
         wdl_file="$module_dir/${{ matrix.module }}.wdl"
-        inputs_file="$module_dir/inputs.json"
-        options_file="$module_dir/options.json"
-
         echo "Running ${{ matrix.module }} with Cromwell..."
-        java -jar cromwell-86.jar run "$wdl_file" -o "$options_file"
-    -
-      name: Display validation report
-      run: |
-        echo "=== Cromwell Validation Report ==="
-        find . -name "validation_report.txt" -exec cat {} \; 2>/dev/null || true
+        java -jar cromwell-86.jar run "$wdl_file"
 
   sprocket-test:
     needs: [discover-modules]
@@ -137,12 +120,5 @@ jobs:
       run: |
         module_dir="modules/${{ matrix.module }}"
         wdl_file="$module_dir/${{ matrix.module }}.wdl"
-        inputs_file="$module_dir/inputs.json"
-
         echo "Running ${{ matrix.module }} with Sprocket..."
-        sprocket run --output "test-output/sprocket/${{ matrix.module }}" "$wdl_file"
-    -
-      name: Display validation report
-      run: |
-        echo "=== Sprocket Validation Report ==="
-        find test-output/sprocket -name "validation_report.txt" -exec cat {} \; 2>/dev/null || true
+        sprocket run "$wdl_file"

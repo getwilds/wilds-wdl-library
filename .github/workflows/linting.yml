@@ -58,14 +58,9 @@ jobs:
         for module_dir in modules/*/; do
           module_name=$(basename $module_dir)
           wdl_file="$module_dir$module_name.wdl"
-          inputs_file=$module_dir"inputs.json"
           
-          if [ -f "$wdl_file" ] && [ -f "$inputs_file" ]; then
-            echo "  [***] Validating $wdl_file with $inputs_file [***]"
-            java -jar womtool-86.jar validate "$wdl_file" -i "$inputs_file"
-            EXITCODE=$(($? || EXITCODE))
-          elif [ -f "$wdl_file" ]; then
-            echo "  [***] Validating $wdl_file (no inputs file found) [***]"
+          if [ -f "$wdl_file" ]; then
+            echo "  [***] Validating $wdl_file [***]"
             java -jar womtool-86.jar validate "$wdl_file"
             EXITCODE=$(($? || EXITCODE))
           fi
