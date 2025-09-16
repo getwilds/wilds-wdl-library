@@ -22,7 +22,7 @@ lint_miniwdl:
 	@for file in modules/*/*.wdl; do \
 		if [ -f "$$file" ]; then \
 			echo "Linting $$file"; \
-			uv run --python 3.13.5 --with miniwdl miniwdl check "$$file"; \
+			uv run --python 3.13 --with miniwdl miniwdl check "$$file"; \
 		fi; \
 	done
 
