@@ -45,17 +45,14 @@ def find_valid_modules():
             
         module_name = module_dir.name
         wdl_file = module_dir / f"{module_name}.wdl"
-        inputs_file = module_dir / "inputs.json"
         
-        if wdl_file.exists() and inputs_file.exists():
+        if wdl_file.exists():
             modules.append(module_name)
             print(f"Found valid module: {module_name}")
         else:
             print(f"Skipping {module_name} - missing required files")
             if not wdl_file.exists():
                 print(f"    Missing: {wdl_file}")
-            if not inputs_file.exists():
-                print(f"    Missing: {inputs_file}")
     
     return sorted(modules)
 

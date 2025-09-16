@@ -54,13 +54,17 @@ Complete, publication-ready analysis pipelines.
 git clone https://github.com/getwilds/wilds-wdl-library.git
 cd wilds-wdl-library
 
-# Run a module demonstration (update inputs json as needed)
+# Run a module test workflow (no inputs needed)
 cd modules/ww-star
-miniwdl run ww-star.wdl -i inputs.json
+miniwdl run ww-star.wdl
 
 # Run a complete vignette (update inputs json as needed)
-cd ../vignettes/ww-sra-star
+cd ../../vignettes/ww-sra-star
 miniwdl run ww-sra-star.wdl -i inputs.json
+
+# Run a full workflow (update inputs json as needed)
+cd ../../workflows/ww-leukemia
+miniwdl run ww-leukemia.wdl -i inputs.json
 ```
 
 ### Importing into Your Workflows

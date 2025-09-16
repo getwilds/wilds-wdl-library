@@ -9,33 +9,32 @@ Strelka is a small variant caller designed to detect single nucleotide variants 
 ### Key Features
 
 - **Dual calling modes**: Supports both germline and somatic variant calling
-- **Automatic test data**: Runs with demonstration data when no inputs provided
+- **Zero-configuration testing**: Test workflow requires no input parameters
 - **Exome optimization**: Specialized settings for exome sequencing analysis
 - **Parallel processing**: Multi-sample support with configurable resource allocation
 - **Comprehensive validation**: Built-in output validation and quality reporting
-- **Flexible targeting**: Optional BED file support for targeted regions
+- **Flexible targeting**: Tasks support optional BED file targeting for custom workflows
 - **Module integration**: Seamlessly integrates with other WILDS modules
 
-## Inputs
+## Test Workflow
 
-### Required Parameters
+### No Input Required
 
-None - the workflow will download demonstration data if no inputs are provided.
+The `strelka_example` test workflow requires no input parameters and automatically:
 
-### Optional Parameters
+1. Downloads test reference genome data via `ww-testdata`
+2. Downloads test tumor BAM data via `ww-testdata`
+3. Downloads test normal BAM data via `ww-testdata`
+4. Performs both germline and somatic variant calling
+5. Validates all outputs and generates comprehensive reports
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `samples` | Array[StrelkaSample] | None | Array of tumor samples with BAM files and indices |
-| `normal_samples` | Array[StrelkaSample] | None | Array of normal samples for somatic calling (must match tumor samples by index) |
-| `ref_fasta` | File | None | Reference genome FASTA file |
-| `ref_fasta_index` | File | None | Reference genome FASTA index file |
-| `target_regions_bed` | File | None | BED file of regions to target for calling |
-| `is_exome` | Boolean | false | Enable exome-specific optimizations |
-| `call_germline` | Boolean | true | Whether to perform germline variant calling |
-| `call_somatic` | Boolean | true | Whether to perform somatic variant calling |
-| `cpus` | Int | 4 | Number of CPU cores for each task |
-| `memory_gb` | Int | 8 | Memory allocation in GB for each task |
+### Hardcoded Test Settings
+
+- **Mode**: Both germline and somatic calling
+- **Exome**: Disabled (whole genome mode)
+- **Resources**: 4 CPUs, 8GB RAM per task
+- **Samples**: Single tumor/normal pair from test data
+- **Target regions**: None (genome-wide calling)
 
 ### StrelkaSample Structure
 
@@ -118,38 +117,15 @@ workflow my_somatic_analysis {
 }
 ```
 
-### Complete Workflow with Both Modes
+### Running the Test Workflow
 
 ```bash
-# Create input JSON
-cat > inputs.json << 'EOF'
-{
-  "strelka_example.samples": [
-    {
-      "name": "tumor_sample",
-      "bam": "/path/to/tumor.bam",
-      "bai": "/path/to/tumor.bam.bai"
-    }
-  ],
-  "strelka_example.normal_samples": [
-    {
-      "name": "normal_sample", 
-      "bam": "/path/to/normal.bam",
-      "bai": "/path/to/normal.bam.bai"
-    }
-  ],
-  "strelka_example.ref_fasta": "/path/to/reference.fasta",
-  "strelka_example.ref_fasta_index": "/path/to/reference.fasta.fai",
-  "strelka_example.call_germline": true,
-  "strelka_example.call_somatic": true,
-  "strelka_example.is_exome": false,
-  "strelka_example.cpus": 8,
-  "strelka_example.memory_gb": 16
-}
-EOF
+# No input file needed for test workflow
+miniwdl run ww-strelka.wdl
 
-# Execute workflow
-miniwdl run ww-strelka.wdl -i inputs.json
+# Or with other executors
+java -jar cromwell.jar run ww-strelka.wdl
+sprocket run ww-strelka.wdl
 ```
 
 ## Workflow Tasks

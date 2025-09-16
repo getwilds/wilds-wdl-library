@@ -8,7 +8,7 @@ A WILDS WDL module for structural variant calling using Smoove.
 
 This module provides reusable WDL tasks for structural variant (SV) calling using Smoove, a streamlined wrapper around lumpy-sv that simplifies structural variant detection. Smoove excels at calling deletions, duplications, inversions, and translocations from whole-genome sequencing data with high sensitivity and specificity.
 
-The module can run completely standalone with automatic test data download, or integrate with existing BAM files for production analyses.
+The module provides a zero-configuration test workflow that automatically downloads test data, and flexible tasks for integration with existing BAM files in production analyses.
 
 ## Module Structure
 
@@ -135,57 +135,32 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that can be tested independently:
+### No Input Required
+
+The `smoove_example` test workflow requires no input parameters and automatically:
+
+1. Downloads test reference genome data via `ww-testdata`
+2. Downloads test sample BAM data via `ww-testdata`
+3. Calls structural variants using Smoove with hardcoded settings
+4. Validates all outputs and generates comprehensive reports
+
+### Hardcoded Test Settings
+
+- **Sample**: Single demo sample from test data
+- **Resources**: 2 CPUs, 8GB RAM
+- **Regions**: No include/exclude filtering (genome-wide calling)
+- **Reference**: Test reference genome from ww-testdata
+
+### Running the Test Workflow
 
 ```bash
-# Using Cromwell
-java -jar cromwell.jar run ww-smoove.wdl --inputs inputs.json
+# No input file needed for test workflow
+miniwdl run ww-smoove.wdl
 
-# Using miniWDL
-miniwdl run ww-smoove.wdl -i inputs.json
-
-# Using Sprocket
-sprocket run ww-smoove.wdl inputs.json
+# Or with other executors
+java -jar cromwell.jar run ww-smoove.wdl
+sprocket run ww-smoove.wdl
 ```
-
-### Automatic Demo Mode
-
-When no samples or reference files are provided, the workflow automatically:
-1. Downloads reference genome data using `ww-testdata`
-2. Downloads demonstration BAM data using `ww-testdata`
-3. Calls structural variants using Smoove
-4. Validates all outputs
-
-### Test Input Format
-
-**Minimal input (uses automatic demo data):**
-```json
-{
-  "smoove_example.cpus": 2,
-  "smoove_example.memory_gb": 8
-}
-```
-
-**Full input (provide your own data):**
-```json
-{
-  "smoove_example.samples": [
-    {
-      "name": "sample1",
-      "bam": "/path/to/sample1.bam",
-      "bai": "/path/to/sample1.bam.bai"
-    }
-  ],
-  "smoove_example.ref_fasta": "/path/to/reference.fasta",
-  "smoove_example.ref_fasta_index": "/path/to/reference.fasta.fai",
-  "smoove_example.exclude_bed": "/path/to/exclude_regions.bed",
-  "smoove_example.include_bed": "/path/to/target_regions.bed",
-  "smoove_example.cpus": 8,
-  "smoove_example.memory_gb": 16
-}
-```
-
-**Note**: You can mix and match - provide some inputs and let others use test data.
 
 ## Configuration Guidelines
 
@@ -210,9 +185,10 @@ The module supports flexible resource configuration:
 - **exclude_bed**: Applied during variant calling to avoid problematic regions
 - **exclude_chroms**: Useful for excluding sex chromosomes or mitochondrial DNA
 
-### Demo Configuration
+### Custom Workflow Configuration
 
-- Resource parameters apply to both demo and user-provided data modes
+- The individual tasks support flexible resource and filtering configuration when used in custom workflows
+- The test workflow uses hardcoded settings optimized for testing
 
 ## Requirements
 
@@ -223,8 +199,8 @@ The module supports flexible resource configuration:
 
 ## Features
 
-- **Standalone execution**: Complete workflow with automatic test data download
-- **Flexible input**: Use your own data or automatic demo data
+- **Zero-configuration testing**: Test workflow requires no input parameters
+- **Standalone execution**: Complete test workflow with automatic test data download
 - **Streamlined SV calling**: Simplified interface to lumpy-sv algorithms
 - **Multi-sample support**: Process multiple samples in parallel
 - **Flexible filtering**: Multiple options for region inclusion/exclusion

@@ -30,53 +30,25 @@ workflow star_example {
     }
   }
 
-  parameter_meta {
-    samples: "List of sample objects, each containing name, r1/r2 fastq files, and condition information"
-    ref_fasta: "Reference genome FASTA file"
-    ref_gtf: "Reference genome GTF annotation file"
-    sjdb_overhang: "Length of the genomic sequence around the annotated junction to be used in constructing the splice junctions database"
-    genome_sa_index_nbases: "Length (bases) of the SA pre-indexing string, typically between 10-15 (scales with genome size)"
-    cpus: "Number of CPU cores allocated for each task in the workflow"
-    memory_gb: "Memory allocated for each task in the workflow in GB"
-  }
-
-  input {
-    Array[StarSample]? samples
-    File? ref_fasta
-    File? ref_gtf
-    Int sjdb_overhang = 100
-    Int genome_sa_index_nbases = 14
-    Int cpus = 2
-    Int memory_gb = 8
-  }
-
-  # Determine which genome files to use
-  if (!defined(ref_fasta) || !defined(ref_gtf)) {
-    call ww_testdata.download_ref_data { }
-  }
-  File genome_fasta = select_first([ref_fasta, download_ref_data.fasta])
-  File genome_gtf = select_first([ref_gtf, download_ref_data.gtf])
+  # Download test data
+  call ww_testdata.download_ref_data { }
+  call ww_testdata.download_fastq_data { }
 
   call build_index { input:
-      reference_fasta = genome_fasta,
-      reference_gtf = genome_gtf,
-      sjdb_overhang = sjdb_overhang,
-      genome_sa_index_nbases = genome_sa_index_nbases,
-      memory_gb = memory_gb,
-      cpu_cores = cpus
+      reference_fasta = download_ref_data.fasta,
+      reference_gtf = download_ref_data.gtf,
+      sjdb_overhang = 100,
+      genome_sa_index_nbases = 14,
+      memory_gb = 8,
+      cpu_cores = 2
   }
 
-  # If no samples provided, download demonstration data from SRA
-  if (!defined(samples)) {
-    call ww_testdata.download_fastq_data { }
-  }
-
-  # Create samples array - either from input or from SRA download
-  Array[StarSample] final_samples = if defined(samples) then select_first([samples]) else [
+  # Create test samples array
+  Array[StarSample] final_samples = [
     {
       "name": "demo_sample",
-      "r1": select_first([download_fastq_data.r1_fastq]),
-      "r2": select_first([download_fastq_data.r2_fastq])
+      "r1": download_fastq_data.r1_fastq,
+      "r2": download_fastq_data.r2_fastq
     }
   ]
 
@@ -86,9 +58,9 @@ workflow star_example {
         r1 = sample.r1,
         r2 = sample.r2,
         name = sample.name,
-        sjdb_overhang = sjdb_overhang,
-        memory_gb = memory_gb,
-        cpu_cores = cpus
+        sjdb_overhang = 100,
+        memory_gb = 8,
+        cpu_cores = 2
     }
   }
 

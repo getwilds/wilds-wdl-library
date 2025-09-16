@@ -13,9 +13,11 @@ Each module encapsulates a specific bioinformatics tool or process, making it ea
 - Maintain and update tools independently
 - Share common functionality across projects
 
-### **Comprehensive Testing**
+### **Zero-Configuration Testing**
 Every module includes a "unit test" workflow that:
-- Executes each task at least once with realistic inputs
+- Requires no input parameters or configuration
+- Automatically downloads realistic test data
+- Executes each task at least once with hardcoded inputs
 - Validates outputs to ensure correctness
 - Serves as living documentation of proper usage
 - Enables continuous integration testing
@@ -35,20 +37,13 @@ Each module directory contains the following standard components:
 ```
 modules/module-name/
 ├── module-name.wdl         # Main WDL file with tasks and demo workflow
-├── inputs.json             # Test inputs for the demo workflow
 └── README.md               # Module-specific documentation
 ```
 
 ### **Required Components**
 
-- **WDL File**: Contains all tasks plus a demonstration workflow
-- **Inputs JSON**: Provides realistic test data for automated testing
+- **WDL File**: Contains all tasks plus a zero-configuration demonstration workflow
 - **README**: Module-specific documentation with usage examples
-
-### **Optional Components**
-
-- **Options JSON**: Workflow execution configuration
-- **Additional Input Files**: Alternative input configurations for testing
 
 ## Available Modules
 
@@ -95,17 +90,19 @@ We recommend using GitHub URLs when importing WILDS WDL modules for a few reason
 
 ### **Running Demo Workflows**
 
-Each module can be executed independently for testing or demonstration:
+Each module can be executed independently for testing or demonstration with zero configuration:
 
 ```bash
 # Navigate to module directory
 cd modules/ww-star
 
-# Run with your preferred executor
-miniwdl run ww-star.wdl -i inputs.json
-java -jar cromwell.jar run ww-star.wdl --inputs inputs.json --options options.json
-sprocket run ww-star.wdl inputs.json
+# Run test workflow with your preferred executor (no inputs needed)
+miniwdl run ww-star.wdl
+java -jar cromwell.jar run ww-star.wdl
+sprocket run ww-star.wdl
 ```
+
+The demo workflows automatically download test data and use hardcoded settings optimized for testing.
 
 ## Testing and Validation
 

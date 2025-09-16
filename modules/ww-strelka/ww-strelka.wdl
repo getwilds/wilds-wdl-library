@@ -29,126 +29,80 @@ workflow strelka_example {
     }
   }
 
-  parameter_meta {
-    samples: "Optional array of StrelkaSample objects, each containing sample name, BAM file, and BAM index. If not provided, workflow will download test data."
-    normal_samples: "Optional array of normal samples for somatic variant calling. Should be in the same order as tumor samples so that each patient has the same index in both arrays."
-    ref_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
-    ref_fasta_index: "Optional reference genome FASTA index file. If not provided, test data will be used."
-    target_regions_bed: "Optional BED file of regions to target for calling (e.g., exons, specific genomic regions)"
-    is_exome: "Set to true for exome sequencing data (enables exome-specific optimizations)"
-    call_germline: "Whether to perform germline variant calling (default: true)"
-    call_somatic: "Whether to perform somatic variant calling (requires paired samples, default: false)"
-    cpus: "Number of CPU cores allocated for each task in the workflow"
-    memory_gb: "Memory allocated for each task in the workflow in GB"
-  }
 
-  input {
-    Array[StrelkaSample]? samples
-    Array[StrelkaSample]? normal_samples
-    File? ref_fasta
-    File? ref_fasta_index
-    File? target_regions_bed
-    Boolean is_exome = false
-    Boolean call_germline = true
-    Boolean call_somatic = true
-    Int cpus = 4
-    Int memory_gb = 8
-  }
+  # Download test reference data
+  call ww_testdata.download_ref_data { }
 
-  # Determine which genome files to use
-  if (!defined(ref_fasta) || !defined(ref_fasta_index)) {
-    call ww_testdata.download_ref_data { }
-  }
+  # Download test sample data
+  call ww_testdata.download_bam_data as sample_data { }
 
-  # Define final inputs
-  File final_ref_fasta = select_first([ref_fasta, download_ref_data.fasta])
-  File final_ref_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
-
-  # Download test data if necessary
-  if (!defined(samples)) {
-    call ww_testdata.download_bam_data as sample_data { }
-  }
-
-  # Create samples array - either from input or from test data download
-  Array[StrelkaSample] final_samples = if defined(samples) then select_first([samples]) else [
+  # Create test samples array
+  Array[StrelkaSample] final_samples = [
     {
       "name": "demo_sample",
-      "bam": select_first([sample_data.bam]),
-      "bai": select_first([sample_data.bai])
+      "bam": sample_data.bam,
+      "bai": sample_data.bai
     }
   ]
 
   # Germline variant calling
-  if (call_germline) {
-    scatter (sample in final_samples) {
-      call strelka_germline { input:
-          sample_name = sample.name,
-          bam = sample.bam,
-          bai = sample.bai,
-          ref_fasta = final_ref_fasta,
-          ref_fasta_index = final_ref_fasta_index,
-          target_regions_bed = target_regions_bed,
-          is_exome = is_exome,
-          cpus = cpus,
-          memory_gb = memory_gb
-      }
-    }
-
-    # Validate germline outputs
-    call validate_germline_outputs { input:
-        germline_vcfs = strelka_germline.variants_vcf,
-        germline_indices = strelka_germline.variants_vcf_index
+  scatter (sample in final_samples) {
+    call strelka_germline { input:
+        sample_name = sample.name,
+        bam = sample.bam,
+        bai = sample.bai,
+        ref_fasta = download_ref_data.fasta,
+        ref_fasta_index = download_ref_data.fasta_index,
+        is_exome = false,
+        cpus = 4,
+        memory_gb = 8
     }
   }
 
+  # Validate germline outputs
+  call validate_germline_outputs { input:
+      germline_vcfs = strelka_germline.variants_vcf,
+      germline_indices = strelka_germline.variants_vcf_index
+  }
+
   # Somatic variant calling (tumor/normal pairs)
-  if (call_somatic) {
-    # Download test data if necessary
-    if (!defined(normal_samples)) {
-      call ww_testdata.download_bam_data as normal_data { input:
-        filename = "NA12878_chr1_normal.bam"
-      }
+  # Download normal test data
+  call ww_testdata.download_bam_data as normal_data { input:
+    filename = "NA12878_chr1_normal.bam"
+  }
+
+  # Create normal samples array
+  Array[StrelkaSample] final_normal_samples = [
+    {
+      "name": "normal_sample",
+      "bam": normal_data.bam,
+      "bai": normal_data.bai
     }
+  ]
 
-    # Create normals array - either from input or from test data download
-    Array[StrelkaSample] final_normal_samples = if defined(normal_samples) then select_first([normal_samples]) else [
-      {
-        "name": "normal_sample",
-        "bam": select_first([normal_data.bam]),
-        "bai": select_first([normal_data.bai])
-      }
-    ]
-
-    # Ensure we have matching numbers of tumor and normal samples
-    Int sample_count = length(final_samples)
-    Int normal_count = length(final_normal_samples)
-
-    if (sample_count == normal_count) {
-      scatter (i in range(sample_count)) {
-        call strelka_somatic { input:
-            tumor_sample_name = final_samples[i].name,
-            tumor_bam = final_samples[i].bam,
-            tumor_bai = final_samples[i].bai,
-            normal_sample_name = final_normal_samples[i].name,
-            normal_bam = final_normal_samples[i].bam,
-            normal_bai = final_normal_samples[i].bai,
-            ref_fasta = final_ref_fasta,
-            ref_fasta_index = final_ref_fasta_index,
-            target_regions_bed = target_regions_bed,
-            is_exome = is_exome,
-            cpus = cpus,
-            memory_gb = memory_gb
-        }
-      }
-
-      # Validate somatic outputs
-      call validate_somatic_outputs { input:
-          somatic_snvs_vcfs = strelka_somatic.somatic_snvs_vcf,
-          somatic_indels_vcfs = strelka_somatic.somatic_indels_vcf,
-          somatic_snvs_indices = strelka_somatic.somatic_snvs_vcf_index,
-          somatic_indels_indices = strelka_somatic.somatic_indels_vcf_index
-      }
+  # Somatic variant calling for tumor/normal pairs
+  scatter (i in range(length(final_samples))) {
+    call strelka_somatic { input:
+        tumor_sample_name = final_samples[i].name,
+        tumor_bam = final_samples[i].bam,
+        tumor_bai = final_samples[i].bai,
+        normal_sample_name = final_normal_samples[i].name,
+        normal_bam = final_normal_samples[i].bam,
+        normal_bai = final_normal_samples[i].bai,
+        ref_fasta = download_ref_data.fasta,
+        ref_fasta_index = download_ref_data.fasta_index,
+        is_exome = false,
+        cpus = 4,
+        memory_gb = 8
     }
+  }
+
+  # Validate somatic outputs
+  call validate_somatic_outputs { input:
+      somatic_snvs_vcfs = strelka_somatic.somatic_snvs_vcf,
+      somatic_indels_vcfs = strelka_somatic.somatic_indels_vcf,
+      somatic_snvs_indices = strelka_somatic.somatic_snvs_vcf_index,
+      somatic_indels_indices = strelka_somatic.somatic_indels_vcf_index
   }
 
   call combine_validation_reports { input:

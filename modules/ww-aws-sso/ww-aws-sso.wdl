@@ -21,44 +21,18 @@ workflow aws_sso_example {
     }
   }
 
-  parameter_meta {
-    test_bucket_uri: "S3 bucket/prefix to list (optional)"
-    test_download_file: "File to download from the S3 bucket (optional, uses a default test file if not provided)"
-    aws_config_file: "Path to AWS config file (optional, uses public access if not provided)"
-    aws_credentials_file: "Path to AWS credentials file (optional)"
-    cpu_cores: "Number of CPU cores for AWS operations"
-    memory_gb: "Memory allocation for AWS operations"
-  }
-
-  input {
-    String? test_bucket_uri
-    String? test_download_file
-    File? aws_config_file
-    File? aws_credentials_file
-    Int cpu_cores = 2
-    Int memory_gb = 4
-  }
-
   # Test listing bucket contents
-  String bucket_to_list = select_first([test_bucket_uri, "s3://gatk-test-data/wgs_fastq/"])
-
   call s3_list_bucket { input:
-      s3_uri = bucket_to_list,
-      aws_config_file = aws_config_file,
-      aws_credentials_file = aws_credentials_file,
-      cpu_cores = cpu_cores,
-      memory_gb = memory_gb
+      s3_uri = "s3://gatk-test-data/wgs_fastq/",
+      cpu_cores = 2,
+      memory_gb = 4
   }
 
   # Test file download
-  String file_to_download = select_first([test_download_file, "NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq"])
-
   call s3_download_file { input:
-      s3_uri = bucket_to_list + file_to_download,
-      aws_config_file = aws_config_file,
-      aws_credentials_file = aws_credentials_file,
-      cpu_cores = cpu_cores,
-      memory_gb = memory_gb
+      s3_uri = "s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq",
+      cpu_cores = 2,
+      memory_gb = 4
   }
 
   # Validate all operations
