@@ -22,25 +22,15 @@ workflow sra_download {
     }
   }
 
-  parameter_meta {
-    sra_id_list: "list of SRA sample IDs to be pulled down"
-    n_cpu: "number of cpus to use during download"
-  }
-
-  input {
-    Array[String] sra_id_list = ["ERR1258306"]
-    Int n_cpu = 2
-  }
-
-  scatter (id in sra_id_list) {
+  scatter (id in ["ERR1258306"]) {
     call fastqdump { input:
         sra_id = id,
-        ncpu = n_cpu,
+        ncpu = 2,
     }
   }
 
   call validate_outputs { input:
-    sra_ids = sra_id_list,
+    sra_ids = ["ERR1258306"],
     r1_files = fastqdump.r1_end,
     r2_files = fastqdump.r2_end,
     is_paired_flags = fastqdump.is_paired_end
