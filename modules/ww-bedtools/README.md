@@ -162,39 +162,18 @@ The module includes a demonstration workflow with comprehensive testing:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-bedtools.wdl --inputs inputs.json --options options.json
+java -jar cromwell.jar run ww-bedtools.wdl
 
 # Using miniWDL
-miniwdl run ww-bedtools.wdl -i inputs.json
+miniwdl run ww-bedtools.wdl
 
 # Using Sprocket
-sprocket run ww-bedtools.wdl inputs.json
+sprocket run ww-bedtools.wdl
 ```
 
-### Test Input Format
+### Automatic Test Data
 
-When providing your own data:
-
-```json
-{
-  "bedtools_example.bed_file": "/path/to/intervals.bed",
-  "bedtools_example.samples": [
-    {
-      "name": "sample1",
-      "bam": "/path/to/sample1.bam",
-      "bam_index": "/path/to/sample1.bam.bai"
-    }
-  ],
-  "bedtools_example.reference_fasta": "/path/to/genome.fasta",
-  "bedtools_example.reference_index": "/path/to/genome.fasta.fai",
-  "bedtools_example.chromosomes": ["chr1", "chr2", "chr3"],
-  "bedtools_example.intersect_flags": "-header -wo",
-  "bedtools_example.cpus": 4,
-  "bedtools_example.memory_gb": 16
-}
-```
-
-**Note**: If no `bed_file`, `samples`, `reference_fasta`, or `reference_index` are provided, the workflow will automatically download test data using the `ww-testdata` module.
+The demonstration workflow automatically downloads all required test data using the `ww-testdata` module, including BED files, BAM files, and reference genome data.
 
 ## Configuration Guidelines
 
@@ -297,7 +276,7 @@ Tarball containing per-chromosome BED files with 500kb windows and read counts.
 ## Features
 
 - **Multiple analysis types**: Coverage, intersection, and window-based counting
-- **Automatic test data**: Downloads test data when no inputs provided
+- **Automatic test data**: Downloads all required test data automatically
 - **Parallel processing**: Chromosomes processed in parallel for efficiency
 - **Quality filtering**: Built-in MAPQ and pairing filters for reliable results
 - **Comprehensive validation**: Detailed output validation with file size and line counts

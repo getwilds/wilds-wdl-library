@@ -123,18 +123,25 @@ workflow my_analysis {
 }
 ```
 
-### Demonstration Workflow
+### Test Workflow
 
-Run the complete demonstration workflow to download a full test dataset:
+### No Input Required
+
+The `testdata_example` test workflow requires no input parameters and automatically downloads a complete test dataset with hardcoded settings:
+
+- **Chromosome**: chr1 only (for efficient testing)
+- **Reference version**: hg38 (latest standard)
+- **All test data types**: Reference, FASTQ, CRAM, BAM, ichorCNA, VCF files, and Pasilla counts
+
+### Running the Test Workflow
 
 ```bash
-# Navigate to module directory
-cd modules/ww-testdata
+# No input file needed for test workflow
+miniwdl run ww-testdata.wdl
 
-# Run with your preferred executor
-miniwdl run ww-testdata.wdl -i inputs.json
-java -jar cromwell.jar run ww-testdata.wdl --inputs inputs.json
-sprocket run ww-testdata.wdl inputs.json
+# Or with other executors
+java -jar cromwell.jar run ww-testdata.wdl
+sprocket run ww-testdata.wdl
 ```
 
 ### Common Integration Patterns
@@ -236,10 +243,12 @@ call my_bam_analysis {
 ### download_ref_data
 
 **Inputs**:
-- `chromo` (String): Chromosome to download (default: "chr1")
-- `version` (String): Genome version (default: "hg38")
+- `chromo` (String): Chromosome to download
+- `version` (String): Genome version
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
+
+**Note**: In the test workflow, `chromo` is hardcoded to "chr1" and `version` to "hg38".
 
 **Outputs**:
 - `fasta` (File): Reference chromosome FASTA file (decompressed)

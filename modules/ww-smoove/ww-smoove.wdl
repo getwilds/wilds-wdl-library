@@ -25,44 +25,19 @@ workflow smoove_example {
     }
   }
 
-  parameter_meta {
-    samples: "List of sample objects, each containing name, BAM file, and BAM index"
-    ref_fasta: "Reference genome FASTA file"
-    ref_fasta_index: "Reference genome FASTA index file"
-    exclude_bed: "Optional BED file defining regions to exclude from calling"
-    include_bed: "Optional BED file defining regions to include for calling"
-    cpus: "Number of CPU cores allocated for each task in the workflow"
-    memory_gb: "Memory allocated for each task in the workflow in GB"
-  }
 
-  input {
-    Array[SmooveSample]? samples
-    File? ref_fasta
-    File? ref_fasta_index
-    File? exclude_bed
-    File? include_bed
-    Int cpus = 2
-    Int memory_gb = 8
-  }
+  # Download test reference data
+  call ww_testdata.download_ref_data { }
 
-  # Determine which genome files to use
-  if (!defined(ref_fasta) || !defined(ref_fasta_index)) {
-    call ww_testdata.download_ref_data { }
-  }
-  File genome_fasta = select_first([ref_fasta, download_ref_data.fasta])
-  File genome_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
+  # Download test sample data
+  call ww_testdata.download_bam_data { }
 
-  # If no samples provided, download demonstration data
-  if (!defined(samples)) {
-    call ww_testdata.download_bam_data { }
-  }
-
-  # Create samples array - either from input or from BWA alignment
-  Array[SmooveSample] final_samples = if defined(samples) then select_first([samples]) else [
+  # Create test samples array
+  Array[SmooveSample] final_samples = [
     {
       "name": "demo_sample",
-      "bam": select_first([download_bam_data.bam]),
-      "bai": select_first([download_bam_data.bai])
+      "bam": download_bam_data.bam,
+      "bai": download_bam_data.bai
     }
   ]
 
@@ -71,12 +46,10 @@ workflow smoove_example {
         aligned_bam = sample.bam,
         aligned_bam_index = sample.bai,
         sample_name = sample.name,
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
-        target_regions_bed = include_bed,
-        exclude_bed = exclude_bed,
-        cpu_cores = cpus,
-        memory_gb = memory_gb
+        reference_fasta = download_ref_data.fasta,
+        reference_fasta_index = download_ref_data.fasta_index,
+        cpu_cores = 2,
+        memory_gb = 8
     }
   }
 

@@ -125,55 +125,26 @@ This module integrates seamlessly with other WILDS components:
 
 The module includes a demonstration workflow (`bwa_example`) with support for execution on multiple WDL backends:
 
+The demonstration workflow automatically downloads test data and runs without requiring input files:
+
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-bwa.wdl --inputs inputs.json --options options.json
+java -jar cromwell.jar run ww-bwa.wdl
 
 # Using miniWDL
-miniwdl run ww-bwa.wdl -i inputs.json
+miniwdl run ww-bwa.wdl
 
 # Using Sprocket
-sprocket run ww-bwa.wdl inputs.json
+sprocket run ww-bwa.wdl
 ```
 
-### Automatic Demo Mode
-
-When no samples or reference files are provided, the workflow automatically:
+The demonstration workflow (`bwa_example`) automatically:
 1. Downloads reference genome data using `ww-testdata`
 2. Downloads FASTQ test data using `ww-testdata`
 3. Builds BWA index from reference FASTA
 4. Aligns reads using BWA-MEM with proper read groups
 5. Sorts and indexes BAM output
 6. Validates all outputs with detailed statistics
-
-### Test Input Format
-
-**Minimal input (uses automatic demo data):**
-```json
-{
-  "bwa_example.demo_sra_id": "ERR1258306",
-  "bwa_example.cpus": 2,
-  "bwa_example.memory_gb": 8
-}
-```
-
-**Full input (provide your own data):**
-```json
-{
-  "bwa_example.samples": [
-    {
-      "name": "sample1",
-      "reads": "/path/to/sample1_R1.fastq.gz",
-      "mates": "/path/to/sample1_R2.fastq.gz"
-    }
-  ],
-  "bwa_example.reference_fasta": "/path/to/genome.fasta",
-  "bwa_example.cpus": 8,
-  "bwa_example.memory_gb": 32
-}
-```
-
-**Note**: If no `samples` or `reference_fasta` are provided, the workflow will automatically download test data using the `ww-testdata` module.
 
 ## Configuration Guidelines
 
@@ -191,22 +162,16 @@ The module supports flexible resource configuration:
 - **Read group information**: Automatically added using the sample name for downstream compatibility
 - **SAM to BAM conversion**: Includes sorting and indexing in a single step
 
-### Demo Configuration
-
-- `demo_sra_id`: Currently a placeholder parameter; actual demo uses test FASTQ data from `ww-testdata`
-- Resource parameters apply to both demo and user-provided data modes
-
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
 - Docker or Apptainer support
-- Sufficient memory for genome indexing (varies by genome size; 32GB for human genome)
-- Paired-end FASTQ files (when providing your own data)
+- Sufficient computational resources for alignment operations
 
 ## Features
 
 - **Standalone execution**: Complete workflow with automatic test data download
-- **Optional input**: Use your own data or automatic demo data from `ww-testdata`
+- **Automatic test data**: Uses test data from `ww-testdata` module for demonstration
 - **Paired-end or single-end input**: Use separate or interleaved paired-end FASTQs, or single-end data.
 - **BWA-MEM alignment**: Fast and accurate for reads 70bp to 1Mbp
 - **Automatic indexing**: Builds BWA index from reference FASTA with tarball packaging
@@ -219,52 +184,7 @@ The module supports flexible resource configuration:
 
 ## Advanced Usage
 
-### Resource Optimization for Large Genomes
-
-For human genome alignment:
-
-```json
-{
-  "bwa_example.cpus": 16,
-  "bwa_example.memory_gb": 64
-}
-```
-
-### Multiple Sample Processing
-
-```json
-{
-  "bwa_example.samples": [
-    {
-      "name": "control_1",
-      "reads": "/data/control_1_R1.fastq.gz",
-      "mates": "/data/control_1_R2.fastq.gz"
-    },
-    {
-      "name": "treatment_1",
-      "reads": "/data/treatment_1_interleaved.fastq.gz",
-      "mates": ""
-    }
-  ],
-  "bwa_example.cpus": 12,
-  "bwa_example.memory_gb": 48
-}
-```
-
-### Custom Reference Genome
-
-```json
-{
-  "bwa_example.reference_fasta": "/data/custom_genome.fasta",
-  "bwa_example.samples": [
-    {
-      "name": "sample1",
-      "reads": "/data/sample1_R1.fastq.gz",
-      "mates": "/data/sample1_R2.fastq.gz"
-    }
-  ]
-}
-```
+The module tasks can be customized with various parameters when imported into production workflows. See the "Usage as a Module" section for examples of integrating individual tasks with custom resource allocation and parameters.
 
 ## Module Development
 

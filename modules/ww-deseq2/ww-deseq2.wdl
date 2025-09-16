@@ -9,9 +9,9 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow deseq2_example {
   meta {
-    description: "Example workflow for ww-deseq2 module tasks with optional test data integration"
+    description: "Example workflow for ww-deseq2 module tasks with test data integration"
     outputs: {
-        combined_counts_matrix: "Combined count matrix from STAR gene counts or generated test data",
+        combined_counts_matrix: "Combined count matrix from generated test data",
         final_metadata: "Sample metadata file with experimental conditions",
         deseq2_all_results: "Complete DESeq2 differential expression results",
         deseq2_significant_results: "Filtered significant DESeq2 results",
@@ -23,83 +23,38 @@ workflow deseq2_example {
     }
   }
 
-  parameter_meta {
-    gene_count_files: "Optional array of STAR gene count files. If not provided, test data will be generated"
-    sample_names: "Optional array of sample names. If not provided, defaults will be used with test data"
-    sample_conditions: "Optional array of experimental conditions. If not provided, defaults will be used with test data"
-    counts_matrix: "Optional pre-combined count matrix. If provided, gene_count_files will be ignored"
-    sample_metadata: "Optional sample metadata file. If provided, sample metadata generation will be skipped"
-    reference_level: "Reference level for DESeq2 contrast (typically control condition)"
-    contrast: "DESeq2 contrast string in format 'condition,treatment,control'"
-    condition_column: "Column name in metadata containing experimental conditions"
+  # Generate test data
+  call testdata.generate_pasilla_counts as generate_test_data { input:
+      n_samples = 7,
+      n_genes = 10000,
+      condition_name = "condition"
   }
 
-  input {
-    # Optional user-provided inputs - if not provided, test data will be used
-    Array[File]? gene_count_files
-    Array[String]? sample_names
-    Array[String]? sample_conditions
-    File? counts_matrix
-    File? sample_metadata
-    # DESeq2 analysis parameters
-    String condition_column = "condition"
-    String reference_level = ""
-    String contrast = ""
+  # Combine the test count files
+  call combine_count_matrices { input:
+      gene_count_files = generate_test_data.individual_count_files,
+      sample_names = generate_test_data.sample_names,
+      sample_conditions = generate_test_data.sample_conditions
   }
-
-  # Generate test data if user inputs are not provided
-  if (!defined(counts_matrix) && !defined(gene_count_files)) {
-    call testdata.generate_pasilla_counts as generate_test_data { input:
-        n_samples = 7,
-        n_genes = 10000,
-        condition_name = condition_column
-    }
-  }
-
-  # Determine which count files and metadata to use for combination
-  Array[File] files_to_combine = select_first([gene_count_files, generate_test_data.individual_count_files])
-  Array[String] names_to_use = select_first([sample_names, generate_test_data.sample_names])
-  Array[String] conditions_to_use = select_first([sample_conditions, generate_test_data.sample_conditions])
-
-  # If we have individual count files (either user-provided or generated), combine them
-  # Skip this step only if user provided a pre-combined matrix
-  if (!defined(counts_matrix)) {
-    call combine_count_matrices { input:
-        gene_count_files = files_to_combine,
-        sample_names = names_to_use,
-        sample_conditions = conditions_to_use
-    }
-  }
-
-  # Determine which count matrix and metadata to use
-  File final_counts_matrix = select_first([
-    counts_matrix,  # User provided pre-combined matrix
-    combine_count_matrices.counts_matrix  # Combined from individual files
-  ])
-
-  File final_sample_metadata = select_first([
-    sample_metadata,  # User provided metadata
-    combine_count_matrices.sample_metadata  # Generated during combination
-  ])
 
   call run_deseq2 { input:
-      counts_matrix = final_counts_matrix,
-      sample_metadata = final_sample_metadata,
-      condition_column = condition_column,
-      reference_level = reference_level,
-      contrast = contrast
+      counts_matrix = combine_count_matrices.counts_matrix,
+      sample_metadata = combine_count_matrices.sample_metadata,
+      condition_column = "condition",
+      reference_level = "",
+      contrast = ""
   }
 
   call validate_outputs { input:
       deseq2_results = run_deseq2.deseq2_results,
       deseq2_significant = run_deseq2.deseq2_significant,
       normalized_counts = run_deseq2.deseq2_normalized_counts,
-      expected_samples = length(names_to_use)
+      expected_samples = length(generate_test_data.sample_names)
   }
 
   output {
-    File combined_counts_matrix = final_counts_matrix
-    File final_metadata = final_sample_metadata
+    File combined_counts_matrix = combine_count_matrices.counts_matrix
+    File final_metadata = combine_count_matrices.sample_metadata
     File deseq2_all_results = run_deseq2.deseq2_results
     File deseq2_significant_results = run_deseq2.deseq2_significant
     File deseq2_normalized_counts = run_deseq2.deseq2_normalized_counts
