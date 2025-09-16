@@ -81,27 +81,24 @@ This module pairs well with other WILDS modules:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that can be tested independently:
+### Test Workflow
+
+### No Input Required
+
+The `sra_download` test workflow requires no input parameters and automatically downloads data with hardcoded settings:
+
+- **SRA ID**: ERR1258306 (for efficient testing)
+- **CPU cores**: 2 (balanced performance)
+
+### Running the Test Workflow
 
 ```bash
-# Using Cromwell
-java -jar cromwell.jar run ww-sra.wdl --inputs inputs.json
+# No input file needed for test workflow
+miniwdl run ww-sra.wdl
 
-# Using miniWDL
-miniwdl run ww-sra.wdl -i inputs.json
-
-# Using Sprocket
-sprocket run ww-sra.wdl inputs.json
-```
-
-### Test Input Format
-
-**Custom input:**
-```json
-{
-  "sra_download.sra_id_list": ["SRR13191702", "SRR13191703"],
-  "sra_download.n_cpu": 4
-}
+# Or with other executors
+java -jar cromwell.jar run ww-sra.wdl
+sprocket run ww-sra.wdl
 ```
 
 ## Configuration Guidelines

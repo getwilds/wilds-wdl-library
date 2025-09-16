@@ -6,11 +6,6 @@ version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
-struct BedtoolsSample {
-    String name
-    File bam
-    File bam_index
-}
 
 #### WORKFLOW DEFINITION
 
@@ -22,108 +17,70 @@ workflow bedtools_example {
     url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-bedtools"
     version: "1.0"
     outputs: {
-        intersect_results: "BEDTools intersect output files for each sample",
-        coverage_results: "Read coverage results across BED intervals",
-        window_counts: "Tarballs of per-chromosome BED files of read counts",
+        intersect_result: "BEDTools intersect output file",
+        coverage_result: "Read coverage results across BED intervals",
+        window_count: "Tarball of per-chromosome BED files of read counts",
         validation_report: "Validation report summarizing file check results"
     }
   }
 
-  parameter_meta {
-    bed_file: "BED file containing genomic intervals of interest"
-    samples: "Array of sample information containing name, BAM file, and BAM index"
-    reference_fasta: "Reference genome FASTA file used for analysis"
-    reference_index: "Index file for the reference genome"
-    intersect_flags: "Flags for BEDTools intersect command"
-    chromosomes: "List of chromosomes to analyze for window-based counting"
-    tmp_dir : "Path to a temporary directory"
-    cpus: "Number of CPU cores allocated for each task in the workflow"
-    memory_gb: "Memory allocated for each task in the workflow in GB"
-  }
-
-  input {
-    File? bed_file
-    Array[BedtoolsSample]? samples
-    File? reference_fasta
-    File? reference_index
-    Array[String] chromosomes = [
-      "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
-      "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
-      "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"
-      ]
-    String intersect_flags = "-header -wo"
-    String tmp_dir = "/tmp"
-    Int cpus = 2
-    Int memory_gb = 8
-  }
-
-  # If no reference genome provided, download test data
-  if (!defined(reference_fasta) || !defined(reference_index) || !defined(bed_file)) {
-    call ww_testdata.download_ref_data { }
-  }
-
-  # Determine which genome files to use
-  File genome_fasta = select_first([reference_fasta, download_ref_data.fasta])
-  File genome_fasta_index = select_first([reference_index, download_ref_data.fasta_index])
-  File bed_file_final = select_first([bed_file, download_ref_data.bed])
-
-  # If no samples provided, download demonstration data
-  if (!defined(samples)) {
-    call ww_testdata.download_bam_data { }
-  }
-
-  # Create samples array - either from input or from test data download
-  Array[BedtoolsSample] final_samples = if defined(samples) then select_first([samples]) else [
-    {
-      "name": "demo_sample",
-      "bam": select_first([download_bam_data.bam]),
-      "bam_index": select_first([download_bam_data.bai])
-    }
+  # Hard-coded configuration for testing
+  Array[String] chromosomes = [
+    "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9",
+    "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17",
+    "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"
   ]
+  String intersect_flags = "-header -wo"
+  String tmp_dir = "/tmp"
+  Int cpus = 2
+  Int memory_gb = 8
 
-  scatter (sample in final_samples) {
-    call coverage { input:
-        bed_file = bed_file_final,
-        aligned_bam = sample.bam,
-        sample_name = sample.name,
-        cpu_cores = cpus,
-        memory_gb = memory_gb
-    }
+  # Download test data
+  call ww_testdata.download_ref_data { }
+  call ww_testdata.download_bam_data { }
 
-    call intersect { input:
-        bed_file = bed_file_final,
-        aligned_bam = sample.bam,
-        sample_name = sample.name,
-        flags = intersect_flags,
-        cpu_cores = cpus,
-        memory_gb = memory_gb
-    }
+  # Run bedtools analysis on test sample
+  call coverage { input:
+      bed_file = download_ref_data.bed,
+      aligned_bam = download_bam_data.bam,
+      sample_name = "demo_sample",
+      cpu_cores = cpus,
+      memory_gb = memory_gb
+  }
 
-    call makewindows { input:
-        bed_file = bed_file_final,
-        aligned_bam = sample.bam,
-        bam_index = sample.bam_index,
-        sample_name = sample.name,
-        reference_fasta = genome_fasta,
-        reference_index = genome_fasta_index,
-        list_chr = chromosomes,
-        tmp_dir = tmp_dir,
-        cpu_cores = cpus,
-        memory_gb = memory_gb
-    }
+  call intersect { input:
+      bed_file = download_ref_data.bed,
+      aligned_bam = download_bam_data.bam,
+      sample_name = "demo_sample",
+      flags = intersect_flags,
+      cpu_cores = cpus,
+      memory_gb = memory_gb
+  }
+
+  call makewindows { input:
+      bed_file = download_ref_data.bed,
+      aligned_bam = download_bam_data.bam,
+      bam_index = download_bam_data.bai,
+      sample_name = "demo_sample",
+      reference_fasta = download_ref_data.fasta,
+      reference_index = download_ref_data.fasta_index,
+      list_chr = chromosomes,
+      tmp_dir = tmp_dir,
+      cpu_cores = cpus,
+      memory_gb = memory_gb
   }
 
   call validate_outputs { input:
-      intersect_files = intersect.intersect_output,
-      coverage_files = coverage.mean_coverage,
-      window_count_files = makewindows.counts_bed,
-      sample_names = coverage.name
+      intersect_files = [intersect.intersect_output],
+      coverage_files = [coverage.mean_coverage],
+      window_count_files = [makewindows.counts_bed],
+      sample_names = [coverage.name]
   }
 
   output {
-    Array[File] intersect_results = intersect.intersect_output
-    Array[File] coverage_results = coverage.mean_coverage
-    Array[File] window_counts = makewindows.counts_bed
+    File intersect_result = intersect.intersect_output
+    File coverage_result = coverage.mean_coverage
+    File window_count = makewindows.counts_bed
     File validation_report = validate_outputs.report
   }
 }

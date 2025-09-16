@@ -37,20 +37,11 @@ workflow testdata_example {
     }
   }
 
-  parameter_meta {
-    chromo: "Chromosome to download (e.g., chr1, chr2, etc.)"
-    version: "Reference genome version (e.g., hg38, hg19)"
-  }
 
-  input {
-    String chromo = "chr1"
-    String version = "hg38"
-  }
-
-  # Pull down reference genome and index files for the specified chromosome
+  # Pull down reference genome and index files for chr1
   call download_ref_data { input:
-      chromo = chromo,
-      version = version
+      chromo = "chr1",
+      version = "hg38"
   }
 
   call download_fastq_data { }

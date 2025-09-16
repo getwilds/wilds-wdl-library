@@ -145,60 +145,30 @@ The module includes a demonstration workflow that can be tested independently:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-ichorcna.wdl --inputs inputs.json
+java -jar cromwell.jar run ww-ichorcna.wdl
 
 # Using miniWDL
-miniwdl run ww-ichorcna.wdl -i inputs.json
+miniwdl run ww-ichorcna.wdl
 
 # Using Sprocket
-sprocket run ww-ichorcna.wdl inputs.json
+sprocket run ww-ichorcna.wdl
 ```
 
 ### Automatic Demo Mode
 
-When no samples or reference files are provided, the workflow automatically:
+The test workflow (`ichorcna_example`) automatically:
 1. Downloads ichorCNA-specific data files using `ww-testdata`
 2. Downloads demonstration BAM data using `ww-testdata`
 3. Generates WIG files from BAM files using HMMcopy's readCounter
-4. Estimates tumor fraction using ichorCNA
+4. Estimates tumor fraction using ichorCNA with hardcoded test parameters
 5. Validates all outputs
 
-### Test Input Format
-
-**Minimal input (uses automatic demo data):**
-```json
-{
-  "ichorcna_example.sex": "male",
-  "ichorcna_example.genome": "hg38",
-  "ichorcna_example.memory_gb": 8,
-  "ichorcna_example.cpus": 2,
-  "ichorcna_example.chrs_list": ["chr1"],
-  "ichorcna_example.chrs_vec": "c(1)"
-}
-```
-
-**Full input (provide your own data):**
-```json
-{
-  "ichorcna_example.samples": [
-    {
-      "name": "sample1",
-      "bam": "/path/to/sample1.bam",
-      "bam_index": "/path/to/sample1.bam.bai"
-    }
-  ],
-  "ichorcna_example.wig_gc": "/path/to/gc_content.wig",
-  "ichorcna_example.wig_map": "/path/to/mappability.wig",
-  "ichorcna_example.panel_of_norm_rds": "/path/to/panel_of_normals.rds",
-  "ichorcna_example.centromeres": "/path/to/centromeres.txt",
-  "ichorcna_example.sex": "male",
-  "ichorcna_example.genome": "hg38",
-  "ichorcna_example.memory_gb": 16,
-  "ichorcna_example.cpus": 6
-}
-```
-
-**Note**: You can mix and match - provide some inputs and let others use test data.
+The test workflow requires no input parameters and uses the following hardcoded settings:
+- **Chromosomes**: Limited to chr1 only for fast testing
+- **Sex**: Male
+- **Genome**: hg38
+- **Resources**: 8GB RAM, 2 CPUs
+- **Sample**: Single demo sample from test data
 
 ## Configuration Guidelines
 
@@ -225,8 +195,8 @@ The module supports flexible resource configuration:
 
 ## Features
 
-- **Standalone execution**: Complete workflow with automatic test data download
-- **Flexible input**: Use your own data or automatic demo data
+- **Standalone execution**: Complete test workflow with automatic test data download
+- **Zero-configuration testing**: Test workflow requires no input parameters
 - **Tumor fraction estimation**: Estimates the proportion of tumor-derived cfDNA
 - **Copy number analysis**: Identifies genomic regions with copy number alterations
 - **Multiple solutions**: Evaluates different ploidy and normal contamination scenarios

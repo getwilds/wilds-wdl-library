@@ -6,11 +6,6 @@ version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
-struct DellySample {
-    String name
-    File bam
-    File bai
-}
 
 workflow delly_example {
   meta {
@@ -19,81 +14,36 @@ workflow delly_example {
     description: "WDL workflow for structural variant calling via Delly"
     url: "https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-delly"
     outputs: {
-        delly_vcfs: "Structural variant calls in BCF/VCF format",
-        delly_vcf_indices: "Index files for the BCF/VCF output",
+        delly_vcf: "Structural variant calls in BCF/VCF format",
+        delly_vcf_index: "Index file for the BCF/VCF output",
         validation_report: "Validation report confirming all expected outputs were generated"
     }
   }
 
-  parameter_meta {
-    samples: "Optional list of DellySample objects, each containing sample name, BAM file, and BAM index. If not provided, workflow will download and align a demonstration sample from SRA"
-    ref_fasta: "Optional reference genome FASTA file. If not provided, test data will be used."
-    ref_fasta_index: "Optional reference genome FASTA index file. If not provided, test data will be used."
-    target_regions_bed: "Optional BED file of regions to target for calling (e.g., exons, specific genomic regions)"
-    exclude_regions_bed: "Optional BED file of regions to exclude from calling (e.g., centromeres, telomeres)"
-    sv_type: "Type of structural variant to call (DEL, DUP, INV, TRA, INS, or leave empty for all types)"
-    cpus: "Number of CPU cores allocated for each task in the workflow"
-    memory_gb: "Memory allocated for each task in the workflow in GB"
-  }
+  # Download test data
+  call ww_testdata.download_ref_data { }
+  call ww_testdata.download_bam_data { }
 
-  input {
-    Array[DellySample]? samples
-    File? ref_fasta
-    File? ref_fasta_index
-    File? target_regions_bed
-    File? exclude_regions_bed
-    String sv_type = ""
-    Int cpus = 2
-    Int memory_gb = 8
-  }
-
-  # If no reference genome provided, download test data
-  if (!defined(ref_fasta) || !defined(ref_fasta_index)) {
-    call ww_testdata.download_ref_data { }
-  }
-
-  # Determine which genome files to use
-  File genome_fasta = select_first([ref_fasta, download_ref_data.fasta])
-  File genome_fasta_index = select_first([ref_fasta_index, download_ref_data.fasta_index])
-
-  # If no samples provided, download demonstration data
-  if (!defined(samples)) {
-    call ww_testdata.download_bam_data { }
-  }
-
-  # Create samples array - either from input or from test data download
-  Array[DellySample] final_samples = if defined(samples) then select_first([samples]) else [
-    {
-      "name": "demo_sample",
-      "bam": select_first([download_bam_data.bam]),
-      "bai": select_first([download_bam_data.bai])
-    }
-  ]
-
-  # Call structural variants using Delly for each sample
-  scatter (sample in final_samples) {
-    call delly_call { input:
-        aligned_bam = sample.bam,
-        aligned_bam_index = sample.bai,
-        reference_fasta = genome_fasta,
-        reference_fasta_index = genome_fasta_index,
-        target_regions_bed = target_regions_bed,
-        exclude_regions_bed = exclude_regions_bed,
-        sv_type = sv_type,
-        cpu_cores = cpus,
-        memory_gb = memory_gb
-    }
+  # Call structural variants on test sample
+  call delly_call { input:
+      aligned_bam = download_bam_data.bam,
+      aligned_bam_index = download_bam_data.bai,
+      reference_fasta = download_ref_data.fasta,
+      reference_fasta_index = download_ref_data.fasta_index,
+      sv_type = "",
+      cpu_cores = 2,
+      memory_gb = 8
   }
 
   # Validate all outputs at the end
   call validate_outputs { input:
-      delly_vcfs = delly_call.vcf,
-      delly_vcf_indices = delly_call.vcf_index
+      delly_vcfs = [delly_call.vcf],
+      delly_vcf_indices = [delly_call.vcf_index]
   }
 
   output {
-    Array[File] delly_vcfs = delly_call.vcf
-    Array[File] delly_vcf_indices = delly_call.vcf_index
+    File delly_vcf = delly_call.vcf
+    File delly_vcf_index = delly_call.vcf_index
     File validation_report = validate_outputs.report
   }
 }
