@@ -37,9 +37,9 @@ lint_miniwdl: ## Run miniwdl lint on all WDL modules (use VERBOSE=1 for detailed
 		if [ -f "$$file" ]; then \
 			echo "Linting $$file"; \
 			if [ "$(VERBOSE)" = "1" ]; then \
-				uv run --python 3.13.5 --with miniwdl miniwdl check "$$file"; \
+				uv run --python 3.13 --with miniwdl miniwdl check "$$file"; \
 			else \
-				result=`uv run --python 3.13.5 --with miniwdl miniwdl check "$$file"` || echo $$result; \
+				result=`uv run --python 3.13 --with miniwdl miniwdl check "$$file"` || echo $$result; \
 			fi; \
 		fi; \
 	done
