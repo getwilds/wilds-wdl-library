@@ -231,25 +231,31 @@ aws_session_token = IQoJb3JpZ2luX2VjEHAaCXVzLXdlc3QtMSJIMEYCIQDExample+TokenHere
 
 ## Testing the Module
 
-The module includes a demonstration workflow that can be tested independently:
+### No Input Required
+
+The `aws_sso_example` test workflow requires no input parameters and automatically:
+
+1. Lists contents of the GATK test data bucket using public access
+2. Downloads a specific test FASTQ file from the public bucket
+3. Validates all operations and generates a comprehensive report
+
+### Hardcoded Test Settings
+
+- **S3 Bucket**: `s3://gatk-test-data/wgs_fastq/` (public GATK test data)
+- **Test File**: `NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq`
+- **Authentication**: No credentials (uses `--no-sign-request` for public access)
+- **Resources**: 2 CPUs, 4GB RAM per task
+
+### Running the Test Workflow
 
 ```bash
-# Using Cromwell
-java -jar cromwell.jar run ww-aws-sso.wdl --inputs inputs.json
+# No input file needed for test workflow
+miniwdl run ww-aws-sso.wdl
 
-# Using miniWDL
-miniwdl run ww-aws-sso.wdl -i inputs.json
-
-# Using Sprocket
-sprocket run ww-aws-sso.wdl inputs.json
+# Or with other executors
+java -jar cromwell.jar run ww-aws-sso.wdl
+sprocket run ww-aws-sso.wdl
 ```
-
-### Automatic Demo Mode
-
-The demonstration workflow:
-1. Lists contents of the GATK test data bucket (public access)
-2. Downloads a sample FASTQ file from the public bucket
-3. Validates all operations and generates a comprehensive report
 
 ## Performance Considerations
 
