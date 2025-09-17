@@ -43,23 +43,17 @@ Run FastQC quality control analysis on FASTQ files.
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-fastqc/ww-fastqc.wdl" as fastqc_tasks
 
-struct FastQCSample {
-    String name
-    File? r1_fastq
-    File? r2_fastq
-}
-
 workflow my_analysis_pipeline {
   input {
-    Array[FastQCSample] samples
+    Array[File] r1_fastq_files
+    Array[File?] r2_fastq_files
   }
 
-  scatter (sample in samples) {
+  scatter (i in range(length(r1_fastq_files))) {
     call fastqc_tasks.run_fastqc {
       input:
-        sample_name = sample.name,
-        r1_fastq = sample.r1_fastq,
-        r2_fastq = sample.r2_fastq
+        r1_fastq = r1_fastq_files[i],
+        r2_fastq = r2_fastq_files[i]
     }
   }
 
@@ -76,7 +70,6 @@ workflow my_analysis_pipeline {
 ```wdl
 call fastqc_tasks.run_fastqc {
   input:
-    sample_name = "large_sample",
     r1_fastq = large_r1_file,
     r2_fastq = large_r2_file,
     cpu_cores = 4,
@@ -88,7 +81,6 @@ call fastqc_tasks.run_fastqc {
 ```wdl
 call fastqc_tasks.run_fastqc {
   input:
-    sample_name = "custom_adapters_sample",
     r1_fastq = input_r1,
     r2_fastq = input_r2,
     adapters = custom_adapters_file
@@ -99,7 +91,6 @@ call fastqc_tasks.run_fastqc {
 ```wdl
 call fastqc_tasks.run_fastqc {
   input:
-    sample_name = "single_end_sample",
     r1_fastq = single_end_fastq
 }
 ```
@@ -180,20 +171,20 @@ FastQC analyzes multiple quality aspects:
 ### Pre-alignment Quality Control
 ```wdl
 # Run FastQC before alignment to assess raw data quality
-call fastqc_tasks.run_fastqc { input: sample_name = "raw_qc", r1_fastq = raw_r1, r2_fastq = raw_r2 }
+call fastqc_tasks.run_fastqc { input: r1_fastq = raw_r1, r2_fastq = raw_r2 }
 ```
 
 ### Post-trimming Quality Assessment
 ```wdl
 # Compare quality before and after read trimming
-call fastqc_tasks.run_fastqc { input: sample_name = "post_trim_qc", r1_fastq = trimmed_r1, r2_fastq = trimmed_r2 }
+call fastqc_tasks.run_fastqc { input: r1_fastq = trimmed_r1, r2_fastq = trimmed_r2 }
 ```
 
 ### Batch Processing
 ```wdl
 # Process multiple samples in parallel
-scatter (sample in samples) {
-  call fastqc_tasks.run_fastqc { input: sample_name = sample.name, r1_fastq = sample.r1, r2_fastq = sample.r2 }
+scatter (i in range(length(r1_files))) {
+  call fastqc_tasks.run_fastqc { input: r1_fastq = r1_files[i], r2_fastq = r2_files[i] }
 }
 ```
 

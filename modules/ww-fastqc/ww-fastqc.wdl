@@ -8,13 +8,6 @@ version 1.0
 # Import testdata module for automatic demo functionality
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
-# Define data structures for sample inputs
-struct FastQCSample {
-    String name
-    File? r1_fastq
-    File? r2_fastq
-}
-
 #### WORKFLOW DEFINITION ####
 
 workflow fastqc_example {
@@ -24,7 +17,7 @@ workflow fastqc_example {
     description: "FastQC quality control analysis for high-throughput sequencing data"
     url: "https://github.com/getwilds/wilds-wdl-library"
     outputs: {
-        fastqc_html_reports: "Array of FastQC HTML quality control reports"
+        fastqc_html_reports: "Array of FastQC HTML quality control reports",
         fastqc_zip_reports: "Array of FastQC ZIP archives containing all report data"
     }
   }
@@ -32,33 +25,24 @@ workflow fastqc_example {
   # Auto-download test data for testing purposes
   call ww_testdata.download_fastq_data as download_demo_data { }
 
-  # Create samples array using test data
-  Array[FastQCSample] final_samples = [
-    {
-      "name": "demo_sample_paired",
-      "r1_fastq": download_demo_data.r1_fastq,
-      "r2_fastq": download_demo_data.r2_fastq
-    },
-    {
-      "name": "demo_sample_r1_only",
-      "r1_fastq": download_demo_data.r1_fastq
-    }
-  ]
+  # Process paired-end sample
+  call run_fastqc as run_fastqc_paired { input:
+      r1_fastq = download_demo_data.r1_fastq,
+      r2_fastq = download_demo_data.r2_fastq,
+      cpu_cores = 2,
+      memory_gb = 4
+  }
 
-  # Process each sample
-  scatter (sample in final_samples) {
-    call run_fastqc { input:
-        sample_name = sample.name,
-        r1_fastq = sample.r1_fastq,
-        r2_fastq = sample.r2_fastq,
-        cpu_cores = 2,
-        memory_gb = 4
-    }
+  # Process single-end sample (R1 only)
+  call run_fastqc as run_fastqc_single { input:
+      r1_fastq = download_demo_data.r1_fastq,
+      cpu_cores = 2,
+      memory_gb = 4
   }
 
   output {
-    Array[Array[File]] fastqc_html_reports = run_fastqc.html_reports
-    Array[Array[File]] fastqc_zip_reports = run_fastqc.zip_reports
+    Array[File] fastqc_html_reports = flatten([run_fastqc_paired.html_reports, run_fastqc_single.html_reports])
+    Array[File] fastqc_zip_reports = flatten([run_fastqc_paired.zip_reports, run_fastqc_single.zip_reports])
   }
 }
 
@@ -68,13 +52,12 @@ task run_fastqc {
   meta {
     description: "Run FastQC quality control analysis on FASTQ files"
     outputs: {
-        html_reports: "FastQC HTML quality control reports"
+        html_reports: "FastQC HTML quality control reports",
         zip_reports: "FastQC ZIP archives containing all report data"
     }
   }
 
   parameter_meta {
-    sample_name: "Name identifier for the sample"
     r1_fastq: "Read 1 FASTQ file (required)"
     r2_fastq: "Read 2 FASTQ file (optional for paired-end data)"
     cpu_cores: "Number of CPU cores allocated for FastQC"
@@ -85,7 +68,6 @@ task run_fastqc {
   }
 
   input {
-    String sample_name
     File? r1_fastq
     File? r2_fastq
     Int cpu_cores = 2
