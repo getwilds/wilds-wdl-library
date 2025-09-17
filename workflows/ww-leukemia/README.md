@@ -135,8 +135,6 @@ The workflow produces comprehensive outputs from each analysis step:
 #### Variant Calling Outputs
 | Output | Description |
 |--------|-------------|
-| `analysis_ready_bam` | Recalibrated BAM files ready for analysis |
-| `analysis_ready_bai` | Index files for recalibrated BAMs |
 | `haplotype_vcf` | GATK HaplotypeCaller variant calls |
 | `mpileup_vcf` | samtools/bcftools variant calls |
 | `mutect_vcf` | GATK Mutect2 variant calls |

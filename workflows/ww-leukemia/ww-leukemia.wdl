@@ -30,7 +30,6 @@
 ## 9. Copy number analysis and tumor fraction estimation using ichorCNA
 ##
 ## Output Files:
-## - Analysis-ready BAM files with base quality recalibration
 ## - Variant calls from three different callers (VCF format)
 ## - Annotated variants with functional and clinical annotations
 ## - Consensus variant calls combining evidence from all callers
@@ -65,8 +64,6 @@ workflow ww_leukemia {
     url: "https://github.com/getwilds/ww-leukemia"
     version: "2.0.0"
     outputs: {
-        analysis_ready_bam: "Array of recalibrated BAM files ready for downstream analysis",
-        analysis_ready_bai: "Array of index files for the recalibrated BAM files",
         haplotype_vcf: "Array of variant calls from GATK HaplotypeCaller",
         mpileup_vcf: "Array of variant calls from samtools/bcftools mpileup",
         mutect_vcf: "Array of variant calls from GATK Mutect2 (tumor-only mode)",
@@ -328,8 +325,6 @@ workflow ww_leukemia {
 
   # Outputs that will be retained when execution is complete
   output {
-    Array[File] analysis_ready_bam = markdup_recal_metrics.recalibrated_bam
-    Array[File] analysis_ready_bai = markdup_recal_metrics.recalibrated_bai
     Array[File] haplotype_vcf = haplotype_caller_parallel.vcf
     Array[File] mpileup_vcf = mpileup_call.mpileup_vcf
     Array[File] mutect_vcf = mutect2_parallel.vcf
