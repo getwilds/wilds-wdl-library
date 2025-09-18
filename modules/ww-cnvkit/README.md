@@ -32,10 +32,10 @@ Creates a CNVkit reference from normal samples or pooled reference data.
 **Inputs:**
 - `bam_files` (Array[File]): Array of BAM files for reference creation
 - `bam_indices` (Array[File]): Array of BAM index files corresponding to BAM files
+- `reference_fasta` (File): Reference genome FASTA file
+- `reference_fasta_index` (File): Reference genome FASTA index file
 - `target_bed` (File, optional): Target regions BED file
 - `antitarget_bed` (File, optional): Antitarget regions BED file
-- `reference_fasta` (File, optional): Reference genome FASTA file
-- `reference_fasta_index` (File, optional): Reference genome FASTA index file
 - `cpu_cores` (Int, default=4): Number of CPU cores to use
 - `memory_gb` (Int, default=16): Memory allocation in GB
 
@@ -76,8 +76,8 @@ workflow my_cnv_analysis {
     Array[File] normal_bais
     File tumor_bam
     File tumor_bai
-    File? reference_fasta
-    File? reference_fasta_index
+    File reference_fasta
+    File reference_fasta_index
   }
 
   # Create reference from normal samples

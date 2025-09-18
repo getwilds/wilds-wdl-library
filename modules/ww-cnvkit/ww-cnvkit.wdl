@@ -90,10 +90,10 @@ task create_reference {
   input {
     Array[File] bam_files
     Array[File] bam_indices
+    File reference_fasta
+    File reference_fasta_index
     File? target_bed
     File? antitarget_bed
-    File? reference_fasta
-    File? reference_fasta_index
     Int cpu_cores = 4
     Int memory_gb = 16
   }
@@ -101,17 +101,13 @@ task create_reference {
   command <<<
     set -eo pipefail
 
-    # Link FASTA index alongside FASTA file if both are provided
-    if [[ -n "~{reference_fasta}" && -n "~{reference_fasta_index}" ]]; then
-      # Create symbolic links with consistent naming
-      ln -sf ~{reference_fasta} reference.fa
-      ln -sf ~{reference_fasta_index} reference.fa.fai
-      fasta_arg="--fasta reference.fa"
-    else
-      fasta_arg=""
-    fi
+    # Link FASTA and index files to working directory
+    # If soft links aren't allowed on your HPC system, copy them locally instead
+    ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
+    ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
 
     # Link BAM files and their indices to working directory
+    # If soft links aren't allowed on your HPC system, copy them locally instead
     bam_array=(~{sep=' ' bam_files})
     bai_array=(~{sep=' ' bam_indices})
     linked_bams=""
@@ -122,8 +118,8 @@ task create_reference {
       bam_basename=$(basename "$bam_file")
 
       # Create symbolic links for BAM and BAI files
-      ln -sf "$bam_file" "$bam_basename"
-      ln -sf "$bai_file" "${bam_basename}.bai"
+      ln -s "$bam_file" "$bam_basename"
+      ln -s "$bai_file" "${bam_basename}.bai"
 
       linked_bams="$linked_bams $bam_basename"
     done
@@ -137,7 +133,7 @@ task create_reference {
         --normal \
         --targets ~{target_bed} \
         ~{"--antitargets " + antitarget_bed} \
-        ${fasta_arg} \
+        --fasta ~{basename(reference_fasta)} \
         --output-reference reference.cnn \
         --output-dir . \
         --processes ~{cpu_cores}
@@ -147,7 +143,7 @@ task create_reference {
         $linked_bams \
         --normal \
         --method wgs \
-        ${fasta_arg} \
+        --fasta ~{basename(reference_fasta)} \
         --output-reference reference.cnn \
         --output-dir . \
         --processes ~{cpu_cores}
