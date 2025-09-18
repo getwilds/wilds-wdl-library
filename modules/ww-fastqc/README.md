@@ -24,7 +24,7 @@ Run FastQC quality control analysis on FASTQ files.
 
 **Inputs:**
 - `sample_name` (String): Name identifier for the sample
-- `r1_fastq` (File, optional): Read 1 FASTQ file (required for analysis)
+- `r1_fastq` (File, optional): Read 1 FASTQ file (at least one FASTQ required for analysis)
 - `r2_fastq` (File, optional): Read 2 FASTQ file (optional for paired-end data)
 - `cpu_cores` (Int, default=2): Number of CPU cores allocated for FastQC
 - `memory_gb` (Int, default=4): Memory allocated for FastQC in GB
