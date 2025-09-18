@@ -1,17 +1,17 @@
 {
   "bwa_gatk.samples": [
     {
-      "name": "NA12878",
-      "reads": "gs://genomics-public-data/ftp-trace.ncbi.nih.gov/1000genomes/ftp/phase3/data/NA12878/sequence_read/SRR622461_1.filt.fastq.gz",
-      "mates": "gs://genomics-public-data/ftp-trace.ncbi.nih.gov/1000genomes/ftp/phase3/data/NA12878/sequence_read/SRR622461_2.filt.fastq.gz"
+      "name": "sample1",
+      "reads": "/path/to/sample1_R1_fastq.gz",
+      "mates": "/path/to/sample1_R2_fastq.gz"
     },
     {
-      "name": "NA12891",
-      "reads": "gs://genomics-public-data/ftp-trace.ncbi.nih.gov/1000genomes/ftp/phase3/data/NA12891/sequence_read/SRR622462_1.filt.fastq.gz",
-      "mates": "gs://genomics-public-data/ftp-trace.ncbi.nih.gov/1000genomes/ftp/phase3/data/NA12891/sequence_read/SRR622462_2.filt.fastq.gz"
+      "name": "sample2",
+      "reads": "/path/to/sample2_R1_fastq.gz",
+      "mates": "/path/to/sample2_R2_fastq.gz"
     }
   ],
-  "bwa_gatk.reference_fasta": "gs://gcp-public-data--broad-references/hg38/v0/Homo_sapiens_assembly38.fasta",
+  "bwa_gatk.reference_fasta": "/path/to/reference.fasta",
   "bwa_gatk.cpu_cores": 6,
   "bwa_gatk.memory_gb": 12
 }
