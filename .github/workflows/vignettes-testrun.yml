@@ -78,17 +78,6 @@ jobs:
         # Download GATK test FASTQs (see also: ww-testdata module)
         aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq ./test-data
         aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq ./test-data
-
-        # Download a specific version (3.1.1) of the SRA toolkit
-        wget -q https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.1.1/sratoolkit.3.1.1-ubuntu64.tar.gz
-        tar -xzf sratoolkit.3.1.1-ubuntu64.tar.gz
-        echo "$PWD/sratoolkit.3.1.1-ubuntu64/bin" >> $GITHUB_PATH
-        export PATH="$PWD/sratoolkit.3.1.1-ubuntu64/bin:$PATH"
-
-        # Download a small test RNA-seq sample (SRR13008264 - mouse RNA-seq, ~100MB)
-        fasterq-dump --split-files SRR13008264 -O test-data/
-        gzip test-data/SRR13008264_1.fastq test-data/SRR13008264_2.fastq
-        ls -la test-data/
     -
       name: Upload test data
       uses: actions/upload-artifact@v4
