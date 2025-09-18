@@ -74,7 +74,11 @@ jobs:
         # Extract only chromosome 22 annotations
         grep "^chr22[[:space:]]" test-data/hg38.ncbiRefSeq.gtf > test-data/chr22.gtf
         rm test-data/hg38.ncbiRefSeq.gtf
-        
+
+        # Download GATK test FASTQs (see also: ww-testdata module)
+        aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq ./test-data
+        aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq ./test-data
+
         # Download a specific version (3.1.1) of the SRA toolkit
         wget -q https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/3.1.1/sratoolkit.3.1.1-ubuntu64.tar.gz
         tar -xzf sratoolkit.3.1.1-ubuntu64.tar.gz

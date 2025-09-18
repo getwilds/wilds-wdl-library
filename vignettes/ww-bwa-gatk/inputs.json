@@ -1,17 +1,12 @@
 {
   "bwa_gatk.samples": [
     {
-      "name": "sample1",
-      "reads": "/path/to/sample1_R1_fastq.gz",
-      "mates": "/path/to/sample1_R2_fastq.gz"
-    },
-    {
-      "name": "sample2",
-      "reads": "/path/to/sample2_R1_fastq.gz",
-      "mates": "/path/to/sample2_R2_fastq.gz"
+      "name": "NA12878_20k",
+      "reads": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq",
+      "mates": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq"
     }
   ],
-  "bwa_gatk.reference_fasta": "/path/to/reference.fasta",
+  "bwa_gatk.reference_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.fa",
   "bwa_gatk.cpu_cores": 6,
   "bwa_gatk.memory_gb": 12
 }
