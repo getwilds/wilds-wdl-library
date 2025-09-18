@@ -1,4 +1,4 @@
 [check]
 deny_warnings = true
-hide_notes = false
+hide_notes = true
 except = ['TodoComment', 'ContainerUri', 'TrailingComma', 'CommentWhitespace', 'UnusedInput']
