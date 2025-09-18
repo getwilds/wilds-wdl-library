@@ -18,10 +18,10 @@ jobs:
     outputs:
       vignettes: ${{ steps.find-vignettes.outputs.vignettes }}
     steps:
-    - 
+    -
       name: Checkout
       uses: actions/checkout@v4
-    - 
+    -
       name: Find WDL vignettes
       id: find-vignettes
       run: |
@@ -32,7 +32,7 @@ jobs:
             vignette_name=$(basename "$vignette_dir")
             wdl_file="$vignette_dir$vignette_name.wdl"
             inputs_file="$vignette_dir/inputs.json"
-            
+
             if [ -f "$wdl_file" ] && [ -f "$inputs_file" ]; then
               vignettes+=("$vignette_name")
               echo "Found vignette: $vignette_name"
@@ -43,7 +43,7 @@ jobs:
             fi
           fi
         done
-        
+
         # Convert array to JSON format for matrix strategy
         if [ ${#vignettes[@]} -eq 0 ]; then
           vignettes_json="[]"
@@ -56,10 +56,10 @@ jobs:
   download-test-data:
     runs-on: ubuntu-latest
     steps:
-    - 
+    -
       name: Checkout
       uses: actions/checkout@v4
-    - 
+    -
       name: Download test data
       run: |
         mkdir -p test-data
@@ -80,12 +80,12 @@ jobs:
         tar -xzf sratoolkit.3.1.1-ubuntu64.tar.gz
         echo "$PWD/sratoolkit.3.1.1-ubuntu64/bin" >> $GITHUB_PATH
         export PATH="$PWD/sratoolkit.3.1.1-ubuntu64/bin:$PATH"
-        
+
         # Download a small test RNA-seq sample (SRR13008264 - mouse RNA-seq, ~100MB)
         fasterq-dump --split-files SRR13008264 -O test-data/
         gzip test-data/SRR13008264_1.fastq test-data/SRR13008264_2.fastq
         ls -la test-data/
-    - 
+    -
       name: Upload test data
       uses: actions/upload-artifact@v4
       with:
@@ -101,41 +101,41 @@ jobs:
         vignette: ${{ fromJson(needs.discover-vignettes.outputs.vignettes) }}
       fail-fast: false
     steps:
-    - 
+    -
       name: Checkout
       uses: actions/checkout@v4
-    - 
+    -
       name: Download test data
       uses: actions/download-artifact@v4
       with:
         name: test-data
         path: test-data/
-    - 
+    -
       name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: 3.13
-    - 
+    -
       name: Install miniwdl
       run: |
         python -m pip install --upgrade pip
         pip3 install miniwdl
-    - 
+    -
       name: Run workflow with miniwdl
       run: |
         mkdir -p test-output/miniwdl/${{ matrix.vignette }}
         vignette_dir="vignettes/${{ matrix.vignette }}"
         wdl_file="$vignette_dir/${{ matrix.vignette }}.wdl"
         inputs_file="$vignette_dir/inputs.json"
-        
+
         echo "Running ${{ matrix.vignette }} with miniwdl..."
         miniwdl run "$wdl_file" -i "$inputs_file" --dir "test-output/miniwdl/${{ matrix.vignette }}"
-    - 
+    -
       name: Display validation report
       run: |
         echo "=== MiniWDL Validation Report ==="
         find test-output/miniwdl -name "validation_report.txt" -exec cat {} \;
-  
+
   cromwell-test:
     needs: [discover-vignettes, download-test-data]
     runs-on: ubuntu-latest
@@ -144,26 +144,26 @@ jobs:
         vignette: ${{ fromJson(needs.discover-vignettes.outputs.vignettes) }}
       fail-fast: false
     steps:
-    - 
+    -
       name: Checkout
       uses: actions/checkout@v4
-    - 
+    -
       name: Download test data
       uses: actions/download-artifact@v4
       with:
         name: test-data
         path: test-data/
-    - 
+    -
       name: Set Up Java
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: '21'
-    - 
+    -
       name: Download Cromwell
       run: |
         wget -q https://github.com/broadinstitute/cromwell/releases/download/86/cromwell-86.jar
-    - 
+    -
       name: Run workflow with Cromwell
       run: |
         mkdir -p test-output/cromwell/${{ matrix.vignette }}
@@ -171,15 +171,15 @@ jobs:
         wdl_file="$vignette_dir/${{ matrix.vignette }}.wdl"
         inputs_file="$vignette_dir/inputs.json"
         options_file="$vignette_dir/options.json"
-        
+
         echo "Running ${{ matrix.vignette }} with Cromwell..."
         java -jar cromwell-86.jar run "$wdl_file" -i "$inputs_file" -o "$options_file"
-    - 
+    -
       name: Display validation report
       run: |
         echo "=== Cromwell Validation Report ==="
         find . -name "validation_report.txt" -exec cat {} \;
-  
+
   sprocket-test:
     needs: [discover-vignettes, download-test-data]
     runs-on: ubuntu-latest
@@ -188,37 +188,37 @@ jobs:
         vignette: ${{ fromJson(needs.discover-vignettes.outputs.vignettes) }}
       fail-fast: false
     steps:
-    - 
+    -
       name: Checkout
       uses: actions/checkout@v4
-    - 
+    -
       name: Download test data
       uses: actions/download-artifact@v4
       with:
         name: test-data
         path: test-data/
-    - 
+    -
       name: Set Up Rust
       uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
         override: true
-    - 
+    -
       name: Install cargo-binstall
       run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-    - 
+    -
       name: Install Sprocket
       run: cargo-binstall sprocket --version 0.12.2
-    - 
+    -
       name: Run workflow with Sprocket
       run: |
         vignette_dir="vignettes/${{ matrix.vignette }}"
         wdl_file="$vignette_dir/${{ matrix.vignette }}.wdl"
         inputs_file="$vignette_dir/inputs.json"
-        
+
         echo "Running ${{ matrix.vignette }} with Sprocket..."
         sprocket run --output "test-output/sprocket/${{ matrix.vignette }}" "$wdl_file" "$inputs_file"
-    - 
+    -
       name: Display validation report
       run: |
         echo "=== Sprocket Validation Report ==="
