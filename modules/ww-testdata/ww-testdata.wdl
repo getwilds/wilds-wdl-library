@@ -370,6 +370,9 @@ task download_bam_data {
 
     # Index the new BAM file
     samtools index -@ ~{cpu_cores} "~{filename}"
+
+    # Clean up intermediate files
+    rm NA12878.bam NA12878.bam.bai
   >>>
 
   output {
