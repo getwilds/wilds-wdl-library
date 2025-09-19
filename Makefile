@@ -13,12 +13,23 @@ help: ## Show this help message
 
 ##@ Linting
 
-lint_sprocket: ## Run sprocket lint on all modules or a specific module using MODULE=name
+check_for_sprocket:
 	@echo "Checking if sprocket is available..."
 	@if ! command -v sprocket >/dev/null 2>&1; then \
 		echo >&2 "Error: sprocket is not installed or not in PATH. Install sprocket (https://sprocket.bio/installation.html)"; \
 		exit 1; \
 	fi
+
+check_for_uv:
+	@echo "Checking if uv is available..."
+	@if ! command -v uv >/dev/null 2>&1; then \
+		echo >&2 "Error: uv is not installed or not in PATH. Install uv (https://docs.astral.sh/uv/getting-started/installation/)"; \
+		exit 1; \
+	fi
+
+##@ Linting
+
+lint_sprocket: check_for_sprocket ## Run sprocket lint on all modules or a specific module using MODULE=name
 	@if [ "$(MODULE)" != "*" ] && [ ! -d "modules/$(MODULE)" ]; then \
 		echo >&2 "Error: Module '$(MODULE)' not found in modules/ directory"; \
 		exit 1; \
@@ -31,12 +42,7 @@ lint_sprocket: ## Run sprocket lint on all modules or a specific module using MO
 		fi; \
 	done
 
-lint_miniwdl: ## Run miniwdl lint on all modules or a specific module using MODULE=name (use VERBOSE=1 for detailed output)
-	@echo "Checking if uv is available..."
-	@if ! command -v uv >/dev/null 2>&1; then \
-		echo >&2 "Error: uv is not installed or not in PATH. Install uv (https://docs.astral.sh/uv/getting-started/installation/)"; \
-		exit 1; \
-	fi
+lint_miniwdl: check_for_uv ## Run miniwdl lint on all modules or a specific module using MODULE=name (use VERBOSE=1 for detailed output)
 	@if [ "$(MODULE)" != "*" ] && [ ! -d "modules/$(MODULE)" ]; then \
 		echo >&2 "Error: Module '$(MODULE)' not found in modules/ directory"; \
 		exit 1; \
