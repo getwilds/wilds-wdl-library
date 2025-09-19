@@ -7,6 +7,6 @@
     }
   ],
   "bwa_gatk.reference_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.fa",
-  "bwa_gatk.cpu_cores": 6,
-  "bwa_gatk.memory_gb": 12
+  "bwa_gatk.cpu_cores": 4,
+  "bwa_gatk.memory_gb": 8
 }
