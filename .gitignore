@@ -2,3 +2,7 @@
 *-test.json
 .DS_Store
 **/.DS_Store
+
+# sprocket run outputs (runs, output - old sprocket versions)
+runs
+output

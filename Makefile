@@ -11,7 +11,6 @@ help: ## Show this help message
 	@echo "Targets:"
 	@awk 'BEGIN {FS = ":.*##"; printf "\033[36m\033[0m"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-##@ Linting
 
 check_for_sprocket:
 	@echo "Checking if sprocket is available..."
@@ -60,3 +59,19 @@ lint_miniwdl: check_for_uv ## Run miniwdl lint on all modules or a specific modu
 	done
 
 lint: lint_sprocket lint_miniwdl ## Run all linting checks
+
+##@ Run
+
+run_sprocket: check_for_sprocket ## Run sprocket run on all modules or a specific module using MODULE=name
+	@if [ "$(MODULE)" != "*" ] && [ ! -d "modules/$(MODULE)" ]; then \
+		echo >&2 "Error: Module '$(MODULE)' not found in modules/ directory"; \
+		exit 1; \
+	fi
+	@echo "Running sprocket run..."
+	@for file in modules/$(MODULE)/*.wdl; do \
+		if [ -f "$$file" ]; then \
+			echo "Testing sprocket run for $$file"; \
+			entrypoint=$$(grep '^workflow' "$$file" | awk '{print $$2}'); \
+			sprocket run "$$file" --entrypoint $$entrypoint; \
+		fi; \
+	done
