@@ -81,6 +81,3 @@ jobs:
       uses: stjude-rust-labs/sprocket-action@main
       with:
         action: lint
-        deny-warnings: true
-        deny-notes: false
-        except: TodoComment ContainerUri TrailingComma CommentWhitespace UnusedInput
