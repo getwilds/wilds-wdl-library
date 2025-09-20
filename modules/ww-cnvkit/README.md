@@ -223,9 +223,9 @@ CNVkit resource requirements depend on:
 - **Auto-target**: Automatically identifies target regions from BAM files
 
 ### CNV Detection Methods
-- **Threshold-based**: Default method using statistical thresholds
-- **CBS (Circular Binary Segmentation)**: Alternative segmentation algorithm
-- **HMM**: Hidden Markov Model for state-based calling
+- **Threshold-based**: Default method using statistical thresholds (currently implemented)
+
+*Note: CNVkit supports additional segmentation methods like CBS (Circular Binary Segmentation) and HMM (Hidden Markov Model), but these are not yet exposed as configurable options in this WDL module.*
 
 ## Output Files
 
