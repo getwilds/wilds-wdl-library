@@ -53,7 +53,7 @@ lint_miniwdl: check_for_uv ## Run miniwdl lint on all modules or a specific modu
 			if [ "$(VERBOSE)" = "1" ]; then \
 				uv run --python 3.13 --with miniwdl miniwdl check "$$file"; \
 			else \
-				result=`uv run --python 3.13 --with miniwdl miniwdl check "$$file"` || echo $$result; \
+				uv run --python 3.13 --with miniwdl miniwdl check "$$file" >/dev/null; \
 			fi; \
 		fi; \
 	done
