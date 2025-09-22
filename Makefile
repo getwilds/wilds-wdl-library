@@ -69,7 +69,7 @@ run_sprocket: check_for_sprocket check_module ## Run sprocket run on all modules
 	@echo "Running sprocket run..."
 	@for file in modules/$(MODULE)/*.wdl; do \
 		if [ -f "$$file" ]; then \
-			echo "Testing sprocket run for $$file"; \
+			echo "... for $$file"; \
 			entrypoint=$$(grep '^workflow' "$$file" | awk '{print $$2}'); \
 			sprocket run "$$file" --entrypoint $$entrypoint; \
 		fi; \
