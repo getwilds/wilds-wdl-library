@@ -83,3 +83,5 @@ run_miniwdl: check_for_uv check_module ## Run miniwdl run on all modules or a sp
 			uv run --python 3.13 --with miniwdl miniwdl run "$$file"; \
 		fi; \
 	done
+
+run: run_sprocket run_miniwdl ## Run all run checks
