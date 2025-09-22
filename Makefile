@@ -17,14 +17,19 @@ check_for_sprocket:
 	@if ! command -v sprocket >/dev/null 2>&1; then \
 		echo >&2 "Error: sprocket is not installed or not in PATH. Install sprocket (https://sprocket.bio/installation.html)"; \
 		exit 1; \
-	fi
+	else \
+	  echo "sprocket version $$(sprocket --version | awk '{print $$2}')"; \
+	fi;
 
 check_for_uv:
 	@echo "Checking if uv is available..."
 	@if ! command -v uv >/dev/null 2>&1; then \
 		echo >&2 "Error: uv is not installed or not in PATH. Install uv (https://docs.astral.sh/uv/getting-started/installation/)"; \
 		exit 1; \
-	fi
+	else \
+	  echo "uv version $$(uv --version | awk '{print $$2}')"; \
+		uv run --python 3.13 --with miniwdl python -c "from importlib.metadata import version; print(f'miniwdl v{version(\"miniwdl\")}')"; \
+	fi;
 
 check_module:
 	@if [ "$(MODULE)" != "*" ] && [ ! -d "modules/$(MODULE)" ]; then \
