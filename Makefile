@@ -26,13 +26,15 @@ check_for_uv:
 		exit 1; \
 	fi
 
-##@ Linting
-
-lint_sprocket: check_for_sprocket ## Run sprocket lint on all modules or a specific module using MODULE=name
+check_module:
 	@if [ "$(MODULE)" != "*" ] && [ ! -d "modules/$(MODULE)" ]; then \
 		echo >&2 "Error: Module '$(MODULE)' not found in modules/ directory"; \
 		exit 1; \
 	fi
+
+##@ Linting
+
+lint_sprocket: check_for_sprocket check_module ## Run sprocket lint on all modules or a specific module using MODULE=name
 	@echo "Running sprocket lint..."
 	@for dir in modules/$(MODULE)/; do \
 		if [ -d "$$dir" ]; then \
@@ -41,11 +43,7 @@ lint_sprocket: check_for_sprocket ## Run sprocket lint on all modules or a speci
 		fi; \
 	done
 
-lint_miniwdl: check_for_uv ## Run miniwdl lint on all modules or a specific module using MODULE=name (use VERBOSE=1 for detailed output)
-	@if [ "$(MODULE)" != "*" ] && [ ! -d "modules/$(MODULE)" ]; then \
-		echo >&2 "Error: Module '$(MODULE)' not found in modules/ directory"; \
-		exit 1; \
-	fi
+lint_miniwdl: check_for_uv check_module ## Run miniwdl lint on all modules or a specific module using MODULE=name (use VERBOSE=1 for detailed output)
 	@echo "Running miniwdl lint..."
 	@for file in modules/$(MODULE)/*.wdl; do \
 		if [ -f "$$file" ]; then \
@@ -62,11 +60,7 @@ lint: lint_sprocket lint_miniwdl ## Run all linting checks
 
 ##@ Run
 
-run_sprocket: check_for_sprocket ## Run sprocket run on all modules or a specific module using MODULE=name
-	@if [ "$(MODULE)" != "*" ] && [ ! -d "modules/$(MODULE)" ]; then \
-		echo >&2 "Error: Module '$(MODULE)' not found in modules/ directory"; \
-		exit 1; \
-	fi
+run_sprocket: check_for_sprocket check_module ## Run sprocket run on all modules or a specific module using MODULE=name
 	@echo "Running sprocket run..."
 	@for file in modules/$(MODULE)/*.wdl; do \
 		if [ -f "$$file" ]; then \
