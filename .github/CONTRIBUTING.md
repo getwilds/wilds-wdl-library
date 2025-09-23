@@ -107,7 +107,7 @@ wilds-wdl-library/
 **Your WDL file must include:**
 
 - **Version declaration**: Use WDL version 1.0
-- **Example workflow**: A `toolname_example` workflow that uses all tasks for testing
+- **Example workflow**: A `toolname_example` workflow that uses all tasks for testing (must follow the naming convention `{module}_example` where `{module}` is the tool name, e.g., `star_example` for `ww-star`)
 - **Task definitions**: Individual tasks with proper resource requirements
 - **Proper imports**: Use GitHub URLs for dependencies on existing WILDS WDL modules (e.g. for downloading test data)
 - **Metadata documentation**: Describe properties of the workflow and tasks (e.g. inputs, outputs)
@@ -156,9 +156,12 @@ Make sure you have these installed:
 
 - [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl)
 - [sprocket](https://sprocket.bio/installation.html)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) for automated testing with our Makefile
 - [Docker Desktop](https://www.docker.com/get-started/) for container execution
 
-Test your WDL locally before submitting a PR:
+#### Option 1: Manual Testing
+
+Test your WDL manually by navigating to the module directory:
 
 ```bash
 cd modules/ww-toolname
@@ -177,10 +180,31 @@ sprocket lint \
 
 # Test running
 miniwdl run ww-toolname.wdl
-sprocket run ww-toolname.wdl
+sprocket run ww-toolname.wdl --entrypoint toolname_example
 ```
 
-For automated local testing be sure to have [uv](https://docs.astral.sh/uv/getting-started/installation/) installed also and use our Makefile.
+#### Option 2: Automated Testing with Makefile (Recommended)
+
+Use our automated Makefile from the repository root for easier testing:
+
+```bash
+# Test a specific module (replace ww-toolname with your module name)
+make lint MODULE=ww-toolname          # Run all linting checks
+make lint_sprocket MODULE=ww-toolname # Run only sprocket linting
+make lint_miniwdl MODULE=ww-toolname  # Run only miniwdl linting
+make run_sprocket MODULE=ww-toolname  # Run sprocket with proper entrypoint
+make run_miniwdl MODULE=ww-toolname   # Run miniwdl
+
+# Test all modules
+make lint    # Lint all modules
+make run     # Run all modules with both sprocket and miniwdl
+```
+
+The Makefile automatically handles:
+- Proper entrypoint naming for sprocket (`{module}_example`)
+- Module discovery and validation
+- Dependency checking (sprocket, uv, etc.)
+- Consistent test execution across all modules
 
 ### Test Data
 
