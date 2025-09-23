@@ -8,7 +8,7 @@ version 1.0
 
 #### WORKFLOW DEFINITION
 
-workflow sra_download {
+workflow sra_example {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
