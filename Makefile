@@ -77,7 +77,7 @@ run_sprocket: check_for_sprocket check_module ## Run sprocket run on all modules
 
 run_miniwdl: check_for_uv check_module ## Run miniwdl run on all modules or a specific module using MODULE=name
 	@echo "Running miniwdl run..."
-	@for file in modules/$(MODULE)/*.wdl; do \
+	@set -e; for file in modules/$(MODULE)/*.wdl; do \
 		if [ -f "$$file" ]; then \
 			echo "... for $$file"; \
 			uv run --python 3.13 --with miniwdl miniwdl run "$$file"; \
