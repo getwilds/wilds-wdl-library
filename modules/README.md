@@ -99,7 +99,7 @@ cd modules/ww-star
 # Run test workflow with your preferred executor (no inputs needed)
 miniwdl run ww-star.wdl
 java -jar cromwell.jar run ww-star.wdl
-sprocket run ww-star.wdl
+sprocket run ww-star.wdl --entrypoint star_example
 ```
 
 The demo workflows automatically download test data and use hardcoded settings optimized for testing.
