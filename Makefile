@@ -11,18 +11,35 @@ help: ## Show this help message
 	@echo "Targets:"
 	@awk 'BEGIN {FS = ":.*##"; printf "\033[36m\033[0m"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-##@ Linting
 
-lint_sprocket: ## Run sprocket lint on all modules or a specific module using MODULE=name
+check_for_sprocket:
 	@echo "Checking if sprocket is available..."
 	@if ! command -v sprocket >/dev/null 2>&1; then \
 		echo >&2 "Error: sprocket is not installed or not in PATH. Install sprocket (https://sprocket.bio/installation.html)"; \
 		exit 1; \
-	fi
+	else \
+	  echo "sprocket version $$(sprocket --version | awk '{print $$2}')"; \
+	fi;
+
+check_for_uv:
+	@echo "Checking if uv is available..."
+	@if ! command -v uv >/dev/null 2>&1; then \
+		echo >&2 "Error: uv is not installed or not in PATH. Install uv (https://docs.astral.sh/uv/getting-started/installation/)"; \
+		exit 1; \
+	else \
+	  echo "uv version $$(uv --version | awk '{print $$2}')"; \
+		uv run --python 3.13 --with miniwdl python -c "from importlib.metadata import version; print(f'miniwdl v{version(\"miniwdl\")}')"; \
+	fi;
+
+check_module:
 	@if [ "$(MODULE)" != "*" ] && [ ! -d "modules/$(MODULE)" ]; then \
 		echo >&2 "Error: Module '$(MODULE)' not found in modules/ directory"; \
 		exit 1; \
 	fi
+
+##@ Linting
+
+lint_sprocket: check_for_sprocket check_module ## Run sprocket lint on all modules or a specific module using MODULE=name
 	@echo "Running sprocket lint..."
 	@for dir in modules/$(MODULE)/; do \
 		if [ -d "$$dir" ]; then \
@@ -31,16 +48,7 @@ lint_sprocket: ## Run sprocket lint on all modules or a specific module using MO
 		fi; \
 	done
 
-lint_miniwdl: ## Run miniwdl lint on all modules or a specific module using MODULE=name (use VERBOSE=1 for detailed output)
-	@echo "Checking if uv is available..."
-	@if ! command -v uv >/dev/null 2>&1; then \
-		echo >&2 "Error: uv is not installed or not in PATH. Install uv (https://docs.astral.sh/uv/getting-started/installation/)"; \
-		exit 1; \
-	fi
-	@if [ "$(MODULE)" != "*" ] && [ ! -d "modules/$(MODULE)" ]; then \
-		echo >&2 "Error: Module '$(MODULE)' not found in modules/ directory"; \
-		exit 1; \
-	fi
+lint_miniwdl: check_for_uv check_module ## Run miniwdl lint on all modules or a specific module using MODULE=name (use VERBOSE=1 for detailed output)
 	@echo "Running miniwdl lint..."
 	@for file in modules/$(MODULE)/*.wdl; do \
 		if [ -f "$$file" ]; then \
@@ -54,3 +62,28 @@ lint_miniwdl: ## Run miniwdl lint on all modules or a specific module using MODU
 	done
 
 lint: lint_sprocket lint_miniwdl ## Run all linting checks
+
+##@ Run
+
+run_sprocket: check_for_sprocket check_module ## Run sprocket run on all modules or a specific module using MODULE=name
+	@echo "Running sprocket run..."
+	@set -e; for file in modules/$(MODULE)/*.wdl; do \
+		if [ -f "$$file" ]; then \
+			echo "... for $$file"; \
+			module_name=$$(basename "$$(dirname "$$file")"); \
+			entrypoint=$$(echo "$$module_name" | sed 's/^ww-//' | sed 's/-/_/g')_example; \
+			echo "Using entrypoint: $$entrypoint"; \
+			sprocket run "$$file" --entrypoint $$entrypoint; \
+		fi; \
+	done
+
+run_miniwdl: check_for_uv check_module ## Run miniwdl run on all modules or a specific module using MODULE=name
+	@echo "Running miniwdl run..."
+	@set -e; for file in modules/$(MODULE)/*.wdl; do \
+		if [ -f "$$file" ]; then \
+			echo "... for $$file"; \
+			uv run --python 3.13 --with miniwdl miniwdl run "$$file"; \
+		fi; \
+	done
+
+run: run_sprocket run_miniwdl ## Run all run checks

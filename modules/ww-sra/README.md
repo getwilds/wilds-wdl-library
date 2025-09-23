@@ -15,7 +15,7 @@ The module uses `parallel-fastq-dump` for efficient, multi-threaded downloading 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
 - **Tasks**: `fastqdump`, `validate_outputs`
-- **Workflow**: `sra_download` (demonstration workflow that executes all tasks)
+- **Workflow**: `sra_example` (demonstration workflow that executes all tasks)
 - **Container**: `getwilds/sra-tools:3.1.1`
 
 ## Tasks
@@ -85,7 +85,7 @@ This module pairs well with other WILDS modules:
 
 ### No Input Required
 
-The `sra_download` test workflow requires no input parameters and automatically downloads data with hardcoded settings:
+The `sra_example` test workflow requires no input parameters and automatically downloads data with hardcoded settings:
 
 - **SRA ID**: ERR1258306 (for efficient testing)
 - **CPU cores**: 2 (balanced performance)
