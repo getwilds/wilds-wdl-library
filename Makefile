@@ -67,7 +67,7 @@ lint: lint_sprocket lint_miniwdl ## Run all linting checks
 
 run_sprocket: check_for_sprocket check_module ## Run sprocket run on all modules or a specific module using MODULE=name
 	@echo "Running sprocket run..."
-	@for file in modules/$(MODULE)/*.wdl; do \
+	@set -e; for file in modules/$(MODULE)/*.wdl; do \
 		if [ -f "$$file" ]; then \
 			echo "... for $$file"; \
 			entrypoint=$$(grep '^workflow' "$$file" | awk '{print $$2}'); \
