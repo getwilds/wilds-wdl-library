@@ -1,0 +1,12 @@
+{
+  "bwa_gatk.samples": [
+    {
+      "name": "NA12878_20k",
+      "reads": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq",
+      "mates": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq"
+    }
+  ],
+  "bwa_gatk.reference_fasta": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/chr22.fa",
+  "bwa_gatk.cpu_cores": 4,
+  "bwa_gatk.memory_gb": 8
+}
