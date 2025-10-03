@@ -116,7 +116,7 @@ jobs:
       name: Install Sprocket
       run: |
         cargo-binstall sprocket --version 0.15.0 -y
-        cargo install wdlparse
+        cargo install --git https://github.com/getwilds/wdlparse --tag v0.0.5
     -
       name: Run workflow with Sprocket
       run: |
