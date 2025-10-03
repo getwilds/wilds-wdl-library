@@ -31,6 +31,15 @@ check_for_uv:
 		uv run --python 3.13 --with miniwdl python -c "from importlib.metadata import version; print(f'miniwdl v{version(\"miniwdl\")}')"; \
 	fi;
 
+check_for_wdlparse:
+	@echo "Checking if wdlparse is available..."
+	@if ! command -v wdlparse >/dev/null 2>&1; then \
+		echo >&2 "Error: wdlparse is not installed or not in PATH. Install wdlparse (https://github.com/getwilds/wdlparse?tab=readme-ov-file#from-releases)"; \
+		exit 1; \
+	else \
+	  echo "wdlparse version $$(wdlparse --version | awk '{print $$2}')"; \
+	fi;
+
 check_module:
 	@if [ "$(MODULE)" != "*" ] && [ ! -d "modules/$(MODULE)" ]; then \
 		echo >&2 "Error: Module '$(MODULE)' not found in modules/ directory"; \
@@ -65,14 +74,13 @@ lint: lint_sprocket lint_miniwdl ## Run all linting checks
 
 ##@ Run
 
-run_sprocket: check_for_sprocket check_module ## Run sprocket run on all modules or a specific module using MODULE=name
+run_sprocket: check_for_sprocket check_module check_for_wdlparse ## Run sprocket run on all modules or a specific module using MODULE=name
 	@echo "Running sprocket run..."
 	@set -e; for file in modules/$(MODULE)/*.wdl; do \
 		if [ -f "$$file" ]; then \
 			echo "... for $$file"; \
-			module_name=$$(basename "$$(dirname "$$file")"); \
-			entrypoint=$$(echo "$$module_name" | sed 's/^ww-//' | sed 's/-/_/g')_example; \
-			echo "Using entrypoint: $$entrypoint"; \
+			entrypoint=$$(wdlparse parse --format json "$$file" | jq -r '.wdl.workflows[].name'); \
+			echo "... Using entrypoint: $$entrypoint"; \
 			sprocket run "$$file" --entrypoint $$entrypoint; \
 		fi; \
 	done
