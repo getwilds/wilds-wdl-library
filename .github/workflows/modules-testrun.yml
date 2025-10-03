@@ -116,7 +116,7 @@ jobs:
       name: Install Sprocket
       run: |
         cargo-binstall sprocket --version 0.15.0 -y
-        cargo-binstall wdlparse --version 0.1.0 -y
+        cargo install wdlparse --version 0.1.0
     -
       name: Run workflow with Sprocket
       run: |
