@@ -114,13 +114,13 @@ jobs:
       run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
     -
       name: Install Sprocket
-      run: cargo-binstall sprocket --version 0.15.0
+      run: cargo-binstall sprocket --version 0.15.0 wdlparse -y
     -
       name: Run workflow with Sprocket
       run: |
         module_dir="modules/${{ matrix.module }}"
         wdl_file="$module_dir/${{ matrix.module }}.wdl"
         # Convert ww-module-name to module_name_example
-        entrypoint=$(echo "${{ matrix.module }}" | sed 's/^ww-//' | sed 's/-/_/g')_example
+        entrypoint=$(wdlparse parse --format json "$wdl_file" | jq -r '.wdl.workflows[].name')
         echo "Running ${{ matrix.module }} with Sprocket using entrypoint: $entrypoint"
         sprocket run "$wdl_file" --entrypoint "$entrypoint"
