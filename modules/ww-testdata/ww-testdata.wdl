@@ -59,6 +59,8 @@ workflow testdata_example {
 
   call download_ichor_data { }
 
+  call download_tritonnp_data { }
+
   call download_dbsnp_vcf { input:
     region = "NC_000001.11:1-10000000",
     filter_name = "chr1"
@@ -424,6 +426,51 @@ task download_ichor_data {
     File wig_map = "map_hg38_500kb.wig"
     File centromeres = "GRCh38.GCA_000001405.2_centromere_acen.txt"
     File panel_of_norm_rds = "HD_ULP_PoN_500kb_median_normAutosome_mapScoreFiltered_median.rds"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_tritonnp_data {
+  meta {
+    description: "Downloads test data for TritonNP analysis"
+    outputs: {
+        annotation: "BED annotation file",
+        plot_list: "Genes to plot",
+        bam: "WGS test file",
+        bam_index: "WGS test file index"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -euo pipefail
+
+    # Download TritonNP reference data files
+    wget -q --no-check-certificate -O AR.bed https://github.com/caalo/TritonNP/raw/refs/heads/main/reference_data/AR.bed
+    wget -q --no-check-certificate -O plot_genes.txt https://github.com/caalo/TritonNP/raw/refs/heads/main/reference_data/plot_genes.txt
+    wget -q --no-check-certificate -O NA12878.bam https://github.com/caalo/TritonNP/raw/refs/heads/main/test_data/NA12878.bam
+    wget -q --no-check-certificate -O NA12878.bai https://github.com/caalo/TritonNP/raw/refs/heads/main/test_data/NA12878.bai
+  >>>
+
+  output {
+    File annotation = "AR.bed"
+    File plot_list = "plot_genes.txt"
+    File bam = "NA12878.bam"
+    File bam_index = "NA12878.bai"
   }
 
   runtime {
