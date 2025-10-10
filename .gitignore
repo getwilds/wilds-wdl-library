@@ -6,3 +6,9 @@
 # sprocket run outputs (runs, output - old sprocket versions)
 runs
 output
+
+# cromwell/womtool files
+cromwell*.jar
+womtool*.jar
+cromwell-executions/
+cromwell-workflow-logs/
