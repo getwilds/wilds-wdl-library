@@ -6,7 +6,7 @@ A WILDS WDL vignette demonstrating read alignment and initial quality control us
 
 ## Overview
 
-This vignette combines WILDS WDL modules to create the foundation of a DNA-seq processing pipeline. It integrates the `ww-bwa` and `ww-gatk` modules to perform sequence alignment and mark duplicate reads.
+This vignette combines WILDS WDL modules to create the foundation of a DNA-seq processing pipeline. It integrates the `ww-bwa` and `ww-gatk` modules to perform sequence alignment, mark duplicate reads, and recalibrate base quality scores.
 
 This vignette serves as both a functional workflow and a demonstration of modular WDL design patterns within the WILDS ecosystem.
 
@@ -25,14 +25,14 @@ This vignette is part of the [WILDS WDL Library](https://github.com/getwilds/wil
    - Generates aligned BAM files and their .BAI index files
 
 3. **Quality Control** (using `ww-gatk` module):
-   - Marks duplicate reads using GATK
-   - Generates BAM files with duplicate reads marked, and their .BAI index files
+   - Marks duplicate reads and recalibrates base quality scores using GATK
+   - Generates BAM files with marked duplicate reads and updated base quality scores and their .BAI index files
 
 ## Module Dependencies
 
 This vignette imports and uses:
 - **ww-bwa module**: For genome indexing and read alignment (`bwa_index`, `bwa_mem` tasks)
-- **ww-gatk module**: For marking duplicate reads (`mark_duplicates` task)
+- **ww-gatk module**: For marking duplicate reads and recalibrating base quality scores (`mark_duplicates`, `create_sequence_dictionary`, `base_recalibrator` tasks)
 
 ## Usage
 
@@ -57,6 +57,9 @@ Create an inputs JSON file with your sample(s) and reference genome. Modify the 
     }
   ],
   "bwa_gatk.reference_fasta": "/path/to/reference.fasta",
+  "bwa_gatk.reference_fasta_index": "/path/to/reference.fasta.fai",
+  "bwa_gatk.dbsnp_vcf": "/path/to/dbsnp.vcf",
+  "bwa_gatk.known_indels_vcf": ["/path/to/known1.vcf", "/path/to/known2.vcf"],
   "bwa_gatk.cpu_cores": 6,
   "bwa_gatk.memory_gb": 12
 }
@@ -89,6 +92,9 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 |-----------|-------------|------|-----------|---------|
 | `samples` | List of BwaSample objects | Array[File] | Yes | - |
 | `reference_fasta` | Reference genome FASTA file | File | Yes | - |
+| `reference_fasta_index` | Index for reference genome FASTA file | File | Yes | - |
+| `dbsnp_vcf` | dbSNP VCF file for known variants | File | Yes | - |
+| `known_indels_vcf` | List of VCFs with known indels | Array[File] | Yes | - |
 | `cpu_cores` | Number of CPU cores | Int | No | 6 |
 | `memory_gb` | Memory allocation in GB | Int | No | 12 |
 
@@ -106,10 +112,10 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 
 | Output | Description | Source Module |
 |--------|-------------|---------------|
-| `markdup_bam` | Duplicate-marked bam files for each sample | ww-gatk |
-| `markdup_bai` | Index files for each BAM | ww-gatk |
+| `recalibrated_bam` | Bam files with duplicate reads marked and base qualities recalibrated for each sample | ww-gatk |
+| `recalibrated_bai` | Index files for each BAM | ww-gatk |
 | `duplicate_metrics` | Duplicate marking statistics for each sample | ww-gatk |
-
+| `recalibration_report` | Base recalibration report table | ww-gatk |
 
 ## Resource Considerations
 
@@ -134,7 +140,6 @@ The modules used in this vignette are automatically tested as part of the WILDS 
 ## Extending the Vignette
 
 This vignette can be extended by:
-- Adding additional quality control modules (e.g., base quality recalibration via `ww-gatk` task `base_recalibrator`)
 - Adding downstream variant calling (e.g., via the modules `ww-gatk`, `ww-delly`, `ww-manta`, `ww-smoove`)
 
 ## Support
