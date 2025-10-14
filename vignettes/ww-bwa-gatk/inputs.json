@@ -8,9 +8,9 @@
   ],
     "bwa_gatk.samples": [
     {
-      "name": "NA12878_20k",
-      "reads": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq",
-      "mates": "/home/runner/work/wilds-wdl-library/wilds-wdl-library/test-data/H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq"
+      "name": "SampleName",
+      "reads": "/path/to/reads_1.fastq",
+      "mates": "/path/to/reads_2.fastq"
     }
   ],
   "bwa_gatk.cpu_cores": 6,
