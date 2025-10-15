@@ -50,22 +50,22 @@ check_module:
 		exit 1; \
 	fi
 
-check_java_21:
+check_java:
 	@echo "Checking your java version..."
 	@if ! command -v java >/dev/null 2>&1; then \
 		echo >&2 "Error: java is not installed or not in PATH."; \
-		echo >&2 "Install Java 21 from:"; \
+		echo >&2 "Install Java 17 or 21 from:"; \
 		echo >&2 "  - macOS: brew install openjdk@21 && sudo ln -sfn /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-21.jdk"; \
 		echo >&2 "  - Ubuntu/Debian: sudo apt install openjdk-21-jdk"; \
 		echo >&2 "  - Other: https://adoptium.net/?variant=openjdk21&jvmVariant=hotspot"; \
 		exit 1; \
 	else \
 		java_version=$$(java -version 2>&1 | head -n 1 | awk -F '"' '{print $$2}' | awk -F '.' '{print $$1}'); \
-		if [ "$$java_version" = "21" ]; then \
-			echo "Java 21 is installed and is the default version"; \
+		if [ "$$java_version" = "17" ] || [ "$$java_version" = "21" ]; then \
+			echo "Java $$java_version is installed and compatible with Cromwell"; \
 		else \
-			echo >&2 "Error: Default Java version is $$java_version, but Java 21 is required."; \
-			echo >&2 "Install Java 21 and set it as default:"; \
+			echo >&2 "Error: Default Java version is $$java_version, but Java 17 or 21 is required for Cromwell."; \
+			echo >&2 "Install Java 17 or 21 and set it as default:"; \
 			echo >&2 "  - macOS: brew install openjdk@21 && sudo ln -sfn /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-21.jdk"; \
 			echo >&2 "  - Ubuntu/Debian: sudo apt install openjdk-21-jdk && sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java"; \
 			echo >&2 "  - Other: https://adoptium.net/?variant=openjdk21&jvmVariant=hotspot"; \
@@ -125,7 +125,7 @@ lint_miniwdl: check_uv check_module ## Run miniwdl lint on all modules or a spec
 		fi; \
 	done
 
-lint_womtool: check_java_21 check_womtool check_module ## Run WOMtool validate on all modules or a specific module using MODULE=name
+lint_womtool: check_java check_womtool check_module ## Run WOMtool validate on all modules or a specific module using MODULE=name
 	@echo "Running WOMtool validate..."
 	@set -e; for file in modules/$(MODULE)/*.wdl; do \
 		if [ -f "$$file" ]; then \
@@ -159,7 +159,7 @@ run_miniwdl: check_uv check_module ## Run miniwdl run on all modules or a specif
 		fi; \
 	done
 
-run_cromwell: check_java_21 check_cromwell check_module ## Run Cromwell run on all modules or a specific module using MODULE=name
+run_cromwell: check_java check_cromwell check_module ## Run Cromwell run on all modules or a specific module using MODULE=name
 	@echo "Running Cromwell run..."
 	@set -e; for file in modules/$(MODULE)/*.wdl; do \
 		if [ -f "$$file" ]; then \
