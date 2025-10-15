@@ -50,7 +50,7 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         brew install colima docker
-        colima start
+        colima start --cpu 2 --memory 4 --disk 20 --vm-type=qemu
     -
       name: Set up Python
       uses: actions/setup-python@v5
@@ -86,7 +86,7 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         brew install colima docker
-        colima start
+        colima start --cpu 2 --memory 4 --disk 20 --vm-type=qemu
     -
       name: Set Up Java
       uses: actions/setup-java@v4
@@ -122,7 +122,7 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         brew install colima docker
-        colima start
+        colima start --cpu 2 --memory 4 --disk 20 --vm-type=qemu
     -
       name: Set Up Rust
       uses: dtolnay/rust-toolchain@stable
