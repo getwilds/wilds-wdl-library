@@ -46,11 +46,14 @@ jobs:
       name: Checkout
       uses: actions/checkout@v4
     -
-      name: Set up Docker (macOS)
+      name: Set up Podman (macOS)
       if: runner.os == 'macOS'
       run: |
-        brew install colima docker
-        colima start --cpu 2 --memory 4 --disk 20 --vm-type=qemu
+        brew install podman
+        podman machine init --cpus 2 --memory 4096 --disk-size 20
+        podman machine start
+        # Create docker-compatible symlink
+        sudo ln -sf $(which podman) /usr/local/bin/docker
     -
       name: Set up Python
       uses: actions/setup-python@v5
@@ -82,11 +85,14 @@ jobs:
       name: Checkout
       uses: actions/checkout@v4
     -
-      name: Set up Docker (macOS)
+      name: Set up Podman (macOS)
       if: runner.os == 'macOS'
       run: |
-        brew install colima docker
-        colima start --cpu 2 --memory 4 --disk 20 --vm-type=qemu
+        brew install podman
+        podman machine init --cpus 2 --memory 4096 --disk-size 20
+        podman machine start
+        # Create docker-compatible symlink
+        sudo ln -sf $(which podman) /usr/local/bin/docker
     -
       name: Set Up Java
       uses: actions/setup-java@v4
@@ -118,11 +124,14 @@ jobs:
       name: Checkout
       uses: actions/checkout@v4
     -
-      name: Set up Docker (macOS)
+      name: Set up Podman (macOS)
       if: runner.os == 'macOS'
       run: |
-        brew install colima docker
-        colima start --cpu 2 --memory 4 --disk 20 --vm-type=qemu
+        brew install podman
+        podman machine init --cpus 2 --memory 4096 --disk-size 20
+        podman machine start
+        # Create docker-compatible symlink
+        sudo ln -sf $(which podman) /usr/local/bin/docker
     -
       name: Set Up Rust
       uses: dtolnay/rust-toolchain@stable
