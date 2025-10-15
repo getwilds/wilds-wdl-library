@@ -39,8 +39,8 @@ workflow bwa_gatk {
     File dbsnp_vcf
     Array[File] known_indels_vcf
     Array[BwaSample] samples
-    Int cpu_cores = 6
-    Int memory_gb = 12
+    Int cpu_cores = 4
+    Int memory_gb = 8
   }
 
   # Build BWA index once for all samples
@@ -82,7 +82,9 @@ workflow bwa_gatk {
         reference_fasta_index = reference_fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
         known_indels_sites_vcfs = known_indels_vcf,
-        base_file_name = sample.name
+        base_file_name = sample.name,
+        memory_gb = memory_gb,
+        cpu_cores = cpu_cores
     }
   }
 
