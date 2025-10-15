@@ -36,10 +36,11 @@ jobs:
 
   miniwdl-test:
     needs: [discover-modules]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
+        os: [ubuntu-latest, macos-latest]
       fail-fast: false
     steps:
     -
@@ -65,10 +66,11 @@ jobs:
 
   cromwell-test:
     needs: [discover-modules]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
+        os: [ubuntu-latest, macos-latest]
       fail-fast: false
     steps:
     -
@@ -94,10 +96,11 @@ jobs:
 
   sprocket-test:
     needs: [discover-modules]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
+        os: [ubuntu-latest, macos-latest]
       fail-fast: false
     steps:
     -
