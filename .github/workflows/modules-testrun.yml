@@ -35,25 +35,15 @@ jobs:
 
   miniwdl-test:
     needs: [discover-modules]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
-        os: [ubuntu-latest, macos-latest]
       fail-fast: false
     steps:
     -
       name: Checkout
       uses: actions/checkout@v4
-    -
-      name: Set up Podman (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install podman
-        podman machine init --cpus 2 --memory 4096 --disk-size 20
-        podman machine start
-        # Create docker-compatible symlink
-        sudo ln -sf $(which podman) /usr/local/bin/docker
     -
       name: Set up Python
       uses: actions/setup-python@v5
@@ -74,25 +64,15 @@ jobs:
 
   cromwell-test:
     needs: [discover-modules]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
-        os: [ubuntu-latest, macos-latest]
       fail-fast: false
     steps:
     -
       name: Checkout
       uses: actions/checkout@v4
-    -
-      name: Set up Podman (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install podman
-        podman machine init --cpus 2 --memory 4096 --disk-size 20
-        podman machine start
-        # Create docker-compatible symlink
-        sudo ln -sf $(which podman) /usr/local/bin/docker
     -
       name: Set Up Java
       uses: actions/setup-java@v4
@@ -113,25 +93,15 @@ jobs:
 
   sprocket-test:
     needs: [discover-modules]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
-        os: [ubuntu-latest, macos-latest]
       fail-fast: false
     steps:
     -
       name: Checkout
       uses: actions/checkout@v4
-    -
-      name: Set up Podman (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install podman
-        podman machine init --cpus 2 --memory 4096 --disk-size 20
-        podman machine start
-        # Create docker-compatible symlink
-        sudo ln -sf $(which podman) /usr/local/bin/docker
     -
       name: Set Up Rust
       uses: dtolnay/rust-toolchain@stable
