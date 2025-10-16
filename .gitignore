@@ -6,3 +6,13 @@
 # sprocket run outputs (runs, output - old sprocket versions)
 runs
 output
+
+# cromwell/womtool files
+cromwell*.jar
+womtool*.jar
+cromwell-executions/
+cromwell-workflow-logs/
+
+# miniwdl test run outputs
+_LAST
+[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9]_*/
