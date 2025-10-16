@@ -54,7 +54,7 @@ check_java:
 	@echo "Checking your java version..."
 	@if ! command -v java >/dev/null 2>&1; then \
 		echo >&2 "Error: java is not installed or not in PATH."; \
-		echo >&2 "Install Java 17 or 21 from:"; \
+		echo >&2 "Install Java 17 or 21 (showing Java 21 instructions as an example):"; \
 		echo >&2 "  - macOS: brew install openjdk@21 && sudo ln -sfn /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-21.jdk"; \
 		echo >&2 "  - Ubuntu/Debian: sudo apt install openjdk-21-jdk"; \
 		echo >&2 "  - Other: https://adoptium.net/?variant=openjdk21&jvmVariant=hotspot"; \
@@ -65,7 +65,7 @@ check_java:
 			echo "Java $$java_version is installed and compatible with Cromwell"; \
 		else \
 			echo >&2 "Error: Default Java version is $$java_version, but Java 17 or 21 is required for Cromwell."; \
-			echo >&2 "Install Java 17 or 21 and set it as default:"; \
+			echo >&2 "Install Java 17 or 21 and set it as default (showing Java 21 instructions as an example):"; \
 			echo >&2 "  - macOS: brew install openjdk@21 && sudo ln -sfn /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-21.jdk"; \
 			echo >&2 "  - Ubuntu/Debian: sudo apt install openjdk-21-jdk && sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java"; \
 			echo >&2 "  - Other: https://adoptium.net/?variant=openjdk21&jvmVariant=hotspot"; \
