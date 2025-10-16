@@ -89,3 +89,4 @@ workflow sra_star {
     File validation_report = validate_outputs.report
   }
 }
+
