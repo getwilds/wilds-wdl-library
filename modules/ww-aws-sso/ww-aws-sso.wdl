@@ -10,45 +10,6 @@
 
 version 1.0
 
-workflow aws_sso_example {
-  meta {
-    description: "Demonstration workflow for AWS operations module"
-    author: "WILDS WDL Library"
-    outputs: {
-        bucket_listing: "List of objects in the specified S3 bucket",
-        downloaded_test_file: "Test file downloaded from S3",
-        validation_report: "Validation report of AWS operations"
-    }
-  }
-
-  # Test listing bucket contents
-  call s3_list_bucket { input:
-      s3_uri = "s3://gatk-test-data/wgs_fastq/",
-      cpu_cores = 2,
-      memory_gb = 4
-  }
-
-  # Test file download
-  call s3_download_file { input:
-      s3_uri = "s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq",
-      cpu_cores = 2,
-      memory_gb = 4
-  }
-
-  # Validate all operations
-  call validate_outputs { input:
-      downloaded_files = [s3_download_file.downloaded_file],
-      bucket_listing = s3_list_bucket.file_list,
-      object_count = s3_list_bucket.object_count
-  }
-
-  output {
-    File bucket_listing = s3_list_bucket.file_list
-    File downloaded_test_file = s3_download_file.downloaded_file
-    File validation_report = validate_outputs.report
-  }
-}
-
 task s3_download_file {
   meta {
     description: "Download a single file from an S3 bucket"
