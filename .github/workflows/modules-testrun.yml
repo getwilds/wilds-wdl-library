@@ -59,7 +59,7 @@ jobs:
       name: Run workflow with miniwdl
       run: |
         module_dir="modules/${{ matrix.module }}"
-        wdl_file="$module_dir/${{ matrix.module }}.wdl"
+        wdl_file="$module_dir/testrun.wdl"
         echo "Running ${{ matrix.module }} with miniwdl..."
         miniwdl run "$wdl_file"
 
@@ -88,7 +88,7 @@ jobs:
       name: Run workflow with Cromwell
       run: |
         module_dir="modules/${{ matrix.module }}"
-        wdl_file="$module_dir/${{ matrix.module }}.wdl"
+        wdl_file="$module_dir/testrun.wdl"
         echo "Running ${{ matrix.module }} with Cromwell..."
         java -jar cromwell-86.jar run "$wdl_file"
 
@@ -121,8 +121,8 @@ jobs:
       name: Run workflow with Sprocket
       run: |
         module_dir="modules/${{ matrix.module }}"
-        wdl_file="$module_dir/${{ matrix.module }}.wdl"
-        # Convert ww-module-name to module_name_example
+        wdl_file="$module_dir/testrun.wdl"
+        # Extract entrypoint from the WDL file
         entrypoint=$(wdlparse parse --format json "$wdl_file" | jq -r '.wdl.workflows[].name')
         echo "Running ${{ matrix.module }} with Sprocket using entrypoint: $entrypoint"
         sprocket run "$wdl_file" --entrypoint "$entrypoint"

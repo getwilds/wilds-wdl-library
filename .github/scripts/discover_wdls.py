@@ -15,23 +15,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Configuration for different item types
-ITEM_CONFIGS = {
-    'modules': {
-        'directory': 'modules',
-        'wdl_pattern': lambda name: f"{name}.wdl",  # modules/{name}/{name}.wdl
-        'output_key': 'modules',
-        'singular': 'module',
-        'plural': 'modules'
-    },
-    'vignettes': {
-        'directory': 'vignettes',
-        'wdl_pattern': lambda name: 'testrun.wdl',  # vignettes/{name}/testrun.wdl
-        'output_key': 'vignettes',
-        'singular': 'vignette',
-        'plural': 'vignettes'
-    }
-}
+# Valid item types
+VALID_TYPES = ['modules', 'vignettes']
 
 def get_changed_files():
     """Get list of changed files in PR, or None for workflow_dispatch"""
@@ -48,13 +33,14 @@ def get_changed_files():
             raise SystemExit(1)
     return None
 
-def find_valid_items(config):
-    """Find all directories with valid structure based on config"""
+def find_valid_items(item_type):
+    """Find all directories with valid structure (containing testrun.wdl)"""
     items = []
-    items_dir = Path(config['directory'])
+    items_dir = Path(item_type)
+    singular = item_type.rstrip('s')  # Remove trailing 's' for singular
 
     if not items_dir.exists():
-        print(f"No {config['directory']} directory found")
+        print(f"No {item_type} directory found")
         return items
 
     for item_dir in items_dir.iterdir():
@@ -62,17 +48,17 @@ def find_valid_items(config):
             continue
 
         item_name = item_dir.name
-        wdl_file = item_dir / config['wdl_pattern'](item_name)
+        wdl_file = item_dir / 'testrun.wdl'
 
         if wdl_file.exists():
             items.append(item_name)
-            print(f"Found valid {config['singular']}: {item_name}")
+            print(f"Found valid {singular}: {item_name}")
         else:
-            print(f"Skipping {item_name} - missing {wdl_file.name}")
+            print(f"Skipping {item_name} - missing testrun.wdl")
 
     return sorted(items)
 
-def filter_items_by_changes(items, changed_files, config):
+def filter_items_by_changes(items, changed_files, item_type):
     """Filter items to only those with changes"""
     if changed_files is None:
         print("No file filtering applied (potential git error), skipping...")
@@ -90,7 +76,7 @@ def filter_items_by_changes(items, changed_files, config):
 
     filtered = []
     for item in items:
-        item_files = [f for f in changed_files if f.startswith(f'{config["directory"]}/{item}/')]
+        item_files = [f for f in changed_files if f.startswith(f'{item_type}/{item}/')]
         if item_files:
             filtered.append(item)
             print(f"Including {item} ({len(item_files)} changed files)")
@@ -99,23 +85,24 @@ def filter_items_by_changes(items, changed_files, config):
 
     return filtered
 
-def handle_workflow_dispatch_input(items, dispatch_item, config):
+def handle_workflow_dispatch_input(items, dispatch_item, item_type):
     """Handle manual workflow dispatch input for specific item"""
     if dispatch_item is None:
         dispatch_item = ''
     dispatch_item = dispatch_item.strip()
+    singular = item_type.rstrip('s')  # Remove trailing 's' for singular
 
     if not dispatch_item:
-        print(f"No specific {config['singular']} requested for workflow_dispatch, running all {config['plural']}")
+        print(f"No specific {singular} requested for workflow_dispatch, running all {item_type}")
         return items
 
     # Check if the requested item exists and is valid
     if dispatch_item in items:
-        print(f"Running specific {config['singular']} from workflow_dispatch: {dispatch_item}")
+        print(f"Running specific {singular} from workflow_dispatch: {dispatch_item}")
         return [dispatch_item]
     else:
-        print(f"ERROR: Requested {config['singular']} '{dispatch_item}' not found or invalid")
-        print(f"Available {config['plural']}: {', '.join(items)}")
+        print(f"ERROR: Requested {singular} '{dispatch_item}' not found or invalid")
+        print(f"Available {item_type}: {', '.join(items)}")
         # Return empty list to fail gracefully rather than running wrong items
         return []
 
@@ -127,23 +114,23 @@ def main():
         raise SystemExit(1)
 
     item_type = sys.argv[1].lower()
-    if item_type not in ITEM_CONFIGS:
+    if item_type not in VALID_TYPES:
         print(f"ERROR: Invalid item type '{item_type}'")
-        print(f"Valid types: {', '.join(ITEM_CONFIGS.keys())}")
+        print(f"Valid types: {', '.join(VALID_TYPES)}")
         raise SystemExit(1)
 
-    config = ITEM_CONFIGS[item_type]
+    singular = item_type.rstrip('s')  # Remove trailing 's' for singular
 
     dispatch_item = None
     if len(sys.argv) > 2:
         dispatch_item = sys.argv[2]
-        print(f"Workflow dispatch {config['singular']} argument: '{dispatch_item}'")
+        print(f"Workflow dispatch {singular} argument: '{dispatch_item}'")
 
-    print(f"=== WILDS {config['plural'].title()} Discovery ===")
+    print(f"=== WILDS {item_type.title()} Discovery ===")
 
     # Find all valid items
-    all_items = find_valid_items(config)
-    print(f"\nFound {len(all_items)} valid {config['plural']}")
+    all_items = find_valid_items(item_type)
+    print(f"\nFound {len(all_items)} valid {item_type}")
 
     # Check event type
     event_name = os.environ.get('GITHUB_EVENT_NAME', '')
@@ -151,26 +138,26 @@ def main():
 
     if event_name == 'workflow_dispatch':
         # Handle manual workflow dispatch
-        final_items = handle_workflow_dispatch_input(all_items, dispatch_item, config)
+        final_items = handle_workflow_dispatch_input(all_items, dispatch_item, item_type)
     else:
         # Handle PR - filter by changes
         changed_files = get_changed_files()
-        final_items = filter_items_by_changes(all_items, changed_files, config)
+        final_items = filter_items_by_changes(all_items, changed_files, item_type)
 
-    print(f"\nFinal selection: {len(final_items)} {config['plural']}")
+    print(f"\nFinal selection: {len(final_items)} {item_type}")
     for item in final_items:
         print(f"  - {item}")
 
     # Output for GitHub Actions
     items_json = json.dumps(final_items)
 
-    # Write to GITHUB_OUTPUT using the appropriate key
+    # Write to GITHUB_OUTPUT using item_type as the key
     github_output = os.environ.get('GITHUB_OUTPUT')
     if github_output:
         with open(github_output, 'a') as f:
-            f.write(f"{config['output_key']}={items_json}\n")
+            f.write(f"{item_type}={items_json}\n")
     else:
-        print(f"{config['output_key']}={items_json}")
+        print(f"{item_type}={items_json}")
 
 if __name__ == "__main__":
     main()
