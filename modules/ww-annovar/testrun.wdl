@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-annovar/ww-annovar.wdl" as annovar
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-annovar/ww-annovar.wdl" as ww_annovar
 
 workflow annovar_example {
   # Download test data for annotation
@@ -14,7 +14,7 @@ workflow annovar_example {
   Array[File] vcfs_to_process = [download_gnomad_vcf.gnomad_vcf]
 
   scatter (vcf in vcfs_to_process) {
-    call annovar.annovar_annotate { input:
+    call ww_annovar.annovar_annotate { input:
         vcf_to_annotate = vcf,
         ref_name = "hg38",
         annovar_protocols = "refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome",
@@ -22,7 +22,7 @@ workflow annovar_example {
     }
   }
 
-  call annovar.validate_outputs { input:
+  call ww_annovar.validate_outputs { input:
       annotated_vcf_files = annovar_annotate.annotated_vcf,
       annotated_table_files = annovar_annotate.annotated_table
   }
