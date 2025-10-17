@@ -4,47 +4,6 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-
-
-workflow bcftools_example {
-  meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
-    description: "WDL workflow for variant calling using bcftools"
-    url: "https://github.com/getwilds/wilds-wdl-library"
-    outputs: {
-        variant_vcf: "VCF file containing variants called by bcftools mpileup",
-        validation_report: "validation report confirming all expected outputs were generated"
-    }
-  }
-
-  # Download test data
-  call ww_testdata.download_ref_data { }
-  call ww_testdata.download_bam_data { }
-
-  # Call variants on test sample
-  call mpileup_call { input:
-      bam_file = download_bam_data.bam,
-      bam_index = download_bam_data.bai,
-      reference_fasta = download_ref_data.fasta,
-      reference_fasta_index = download_ref_data.fasta_index,
-      max_depth = 10000,
-      max_idepth = 10000,
-      memory_gb = 8,
-      cpu_cores = 2
-  }
-
-  call validate_outputs { input:
-      vcf_files = [mpileup_call.mpileup_vcf]
-  }
-
-  output {
-    File variant_vcf = mpileup_call.mpileup_vcf
-    File validation_report = validate_outputs.report
-  }
-}
-
 task mpileup_call {
   meta {
     description: "Call variants using bcftools mpileup and call"
