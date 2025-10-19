@@ -62,7 +62,6 @@ workflow ww_leukemia {
     email: "wilds@fredhutch.org"
     description: "Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing with focus on leukemia analysis - Refactored with WILDS modules"
     url: "https://github.com/getwilds/ww-leukemia"
-    version: "2.0.0"
     outputs: {
         haplotype_vcf: "Array of variant calls from GATK HaplotypeCaller",
         mpileup_vcf: "Array of variant calls from samtools/bcftools mpileup",
@@ -101,15 +100,12 @@ workflow ww_leukemia {
     ref_fasta_index: "Index file (.fai) for the reference genome FASTA"
     ref_dict: "Sequence dictionary (.dict) for the reference genome"
     dbsnp_vcf: "dbSNP VCF file for base quality score recalibration and variant annotation"
-    dbsnp_vcf_index: "Index file for the dbSNP VCF"
     af_only_gnomad: "gnomAD allele frequency VCF file for Mutect2 germline resource"
-    af_only_gnomad_index: "Index file for the gnomAD allele frequency VCF"
     wig_gc: "GC-content WIG file"
     wig_map: "Mappability score WIG file"
     panel_of_norm_rds: "RDS file of median corrected depth from panel of normals"
     centromeres: "Text file containing Centromere locations"
     known_indels_sites_vcfs: "Array of VCF files containing known indel sites for base quality score recalibration"
-    known_indels_sites_indices: "Array of index files for the known indels VCF files"
     samples: "Array of sample information structs containing sample names, molecular IDs, and CRAM files"
     ref_name: "Reference genome build name (e.g., 'hg38', 'hg19') used for Annovar annotation"
     annovar_protocols: "Comma-separated list of Annovar annotation protocols to apply"
@@ -122,15 +118,12 @@ workflow ww_leukemia {
     File ref_fasta_index
     File ref_dict
     File dbsnp_vcf
-    File dbsnp_vcf_index
     File af_only_gnomad
-    File af_only_gnomad_index
     File wig_gc
     File wig_map
     File panel_of_norm_rds
     File centromeres
     Array[File] known_indels_sites_vcfs
-    Array[File] known_indels_sites_indices
     Array[SampleDetails] samples
     String ref_name
     String annovar_protocols
