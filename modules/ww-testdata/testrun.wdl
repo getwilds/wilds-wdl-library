@@ -43,7 +43,7 @@ workflow testdata_example {
 
   call ww_testdata.generate_pasilla_counts { }
 
-  call ww_testdata.validate_outputs { input:
+  call validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
     ref_dict = download_ref_data.dict,
@@ -105,6 +105,156 @@ workflow testdata_example {
     File pasilla_gene_info = generate_pasilla_counts.gene_info
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
+  }
+}
+
+task validate_outputs {
+  meta {
+    description: "Validates downloaded test data files to ensure they exist and are non-empty"
+    outputs: {
+        report: "Validation summary reporting file checks and basic statistics"
+    }
+  }
+
+  parameter_meta {
+    ref_fasta: "Reference genome FASTA file to validate"
+    ref_fasta_index: "Reference FASTA index file to validate"
+    ref_dict: "Reference FASTA dictionary file to validate"
+    ref_gtf: "GTF annotation file to validate"
+    ref_bed: "BED file to validate"
+    r1_fastq: "R1 FASTQ file to validate"
+    r2_fastq: "R2 FASTQ file to validate"
+    inter_fastq: "Interleaved FASTQ to validate"
+    cram: "CRAM file to validate"
+    crai: "CRAM index file to validate"
+    bam: "BAM file to validate"
+    bai: "BAM index file to validate"
+    ichor_gc_wig: "ichorCNA GC content file to validate"
+    ichor_map_wig: "ichorCNA mapping quality file to validate"
+    ichor_centromeres: "ichorCNA centromere locations file to validate"
+    ichor_panel_of_norm_rds: "ichorCNA panel of normals file to validate"
+    dbsnp_vcf: "dbSNP VCF to validate"
+    dbsnp_vcf_index: "dbSNP VCF index to validate"
+    known_indels_vcf: "Known indels VCF to validate"
+    known_indels_vcf_index: "Known indels VCF index to validate"
+    gnomad_vcf: "gnomad VCF to validate"
+    gnomad_vcf_index: "gnomad VCF index to validate"
+    annotsv_test_vcf: "AnnotSV test VCF file to validate"
+    pasilla_counts: "Array of individual count files for each sample from Pasilla dataset to validate"
+    pasilla_gene_info: "Pasilla gene annotation information to validate"
+    cpu_cores: "Number of CPU cores to use for validation"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    File ref_fasta
+    File ref_fasta_index
+    File ref_dict
+    File ref_gtf
+    File ref_bed
+    File r1_fastq
+    File r2_fastq
+    File inter_fastq
+    File cram
+    File crai
+    File bam
+    File bai
+    File ichor_gc_wig
+    File ichor_map_wig
+    File ichor_centromeres
+    File ichor_panel_of_norm_rds
+    File dbsnp_vcf
+    File dbsnp_vcf_index
+    File known_indels_vcf
+    File known_indels_vcf_index
+    File gnomad_vcf
+    File gnomad_vcf_index
+    File annotsv_test_vcf
+    Array[File] pasilla_counts
+    File pasilla_gene_info
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -euo pipefail
+
+    # Function to validate a file exists and is non-empty
+    validate_file() {
+      local file_path="$1"
+      local file_label="$2"
+
+      if [[ -f "$file_path" && -s "$file_path" ]]; then
+        echo "$file_label: $file_path - PASSED" >> validation_report.txt
+        return 0
+      else
+        echo "$file_label: $file_path - MISSING OR EMPTY" >> validation_report.txt
+        return 1
+      fi
+    }
+
+    echo "=== WILDS Test Data Validation Report ===" > validation_report.txt
+    echo "Generated on: $(date)" >> validation_report.txt
+    echo "" >> validation_report.txt
+
+    validation_passed=true
+
+    # Validate all files using the function
+    validate_file "~{ref_fasta}" "Reference FASTA" || validation_passed=false
+    validate_file "~{ref_fasta_index}" "Reference FASTA index" || validation_passed=false
+    validate_file "~{ref_dict}" "Reference FASTA dict" || validation_passed=false
+    validate_file "~{ref_gtf}" "GTF file" || validation_passed=false
+    validate_file "~{ref_bed}" "BED file" || validation_passed=false
+    validate_file "~{r1_fastq}" "R1 FASTQ" || validation_passed=false
+    validate_file "~{r2_fastq}" "R2 FASTQ" || validation_passed=false
+    validate_file "~{inter_fastq}" "Interleaved FASTQ" || validation_passed=false
+    validate_file "~{cram}" "CRAM file" || validation_passed=false
+    validate_file "~{crai}" "CRAM index" || validation_passed=false
+    validate_file "~{bam}" "BAM file" || validation_passed=false
+    validate_file "~{bai}" "BAM index" || validation_passed=false
+    validate_file "~{ichor_gc_wig}" "ichorCNA GC WIG" || validation_passed=false
+    validate_file "~{ichor_map_wig}" "ichorCNA MAP WIG" || validation_passed=false
+    validate_file "~{ichor_centromeres}" "ichorCNA centromeres" || validation_passed=false
+    validate_file "~{ichor_panel_of_norm_rds}" "ichorCNA panel of normals" || validation_passed=false
+    validate_file "~{dbsnp_vcf}" "dbSNP VCF" || validation_passed=false
+    validate_file "~{dbsnp_vcf_index}" "dbSNP VCF index" || validation_passed=false
+    validate_file "~{known_indels_vcf}" "Known Indels VCF" || validation_passed=false
+    validate_file "~{known_indels_vcf_index}" "Known Indels VCF index" || validation_passed=false
+    validate_file "~{gnomad_vcf}" "Gnomad VCF" || validation_passed=false
+    validate_file "~{gnomad_vcf_index}" "Gnomad VCF index" || validation_passed=false
+    validate_file "~{annotsv_test_vcf}" "AnnotSV test VCF" || validation_passed=false
+
+    # Validate pasilla count files
+    for count_file in ~{sep=' ' pasilla_counts}; do
+      validate_file "$count_file" "Pasilla count file" || validation_passed=false
+    done
+
+    validate_file "~{pasilla_gene_info}" "Pasilla gene info" || validation_passed=false
+
+    {
+      echo ""
+      echo "=== Validation Summary ==="
+      echo "Total files validated: 24"
+    } >> validation_report.txt
+
+    if [[ "$validation_passed" == "true" ]]; then
+      echo "Overall Status: PASSED" >> validation_report.txt
+    else
+      echo "Overall Status: FAILED" >> validation_report.txt
+      exit 1
+    fi
+
+    cat validation_report.txt
+  >>>
+
+  output {
+    File report = "validation_report.txt"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
   }
 }
 
