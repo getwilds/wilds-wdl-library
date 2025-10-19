@@ -4,137 +4,6 @@
 
 version 1.0
 
-workflow testdata_example {
-  meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
-    description: "WDL workflow for downloading reference data for WILDS WDL tests"
-    url: "https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-testdata"
-    outputs: {
-        ref_fasta: "Reference genome FASTA file",
-        ref_fasta_index: "Index file for the reference FASTA",
-        ref_gtf: "GTF file containing gene annotations for the specified chromosome",
-        ref_bed: "BED file covering the entire chromosome",
-        r1_fastq: "R1 fastq file downloaded for the sample in question",
-        r2_fastq: "R2 fastq file downloaded for the sample in question",
-        cram: "CRAM file downloaded for the sample in question",
-        crai: "Index file for the CRAM file",
-        bam: "BAM file downloaded for the sample in question",
-        bai: "Index file for the BAM file",
-        ichor_gc_wig: "GC content WIG file for hg38",
-        ichor_map_wig: "Mapping quality WIG file for hg38",
-        ichor_centromeres: "Centromere locations for hg38",
-        ichor_panel_of_norm_rds: "Panel of normals RDS file for hg38",
-        dbsnp_vcf: "dbSNP VCF for hg38",
-        known_indels_vcf: "Known indels VCF for hg38",
-        gnomad_vcf: "Gnomad VCF for hg38",
-        annotsv_test_vcf: "Test VCF file for AnnotSV",
-        pasilla_counts: "Array of individual count files for each sample from Pasilla dataset",
-        pasilla_sample_names: "Array of sample names corresponding to the count files",
-        pasilla_sample_conditions: "Array of sample conditions corresponding to the count files",
-        pasilla_gene_info: "Gene annotation information including gene symbols and descriptions",
-        validation_report: "Validation report summarizing all outputs"
-    }
-  }
-
-
-  # Pull down reference genome and index files for chr1
-  call download_ref_data { input:
-      chromo = "chr1",
-      version = "hg38"
-  }
-
-  call download_fastq_data { }
-
-  call interleave_fastq { input:
-    r1_fq = download_fastq_data.r1_fastq,
-    r2_fq = download_fastq_data.r2_fastq
-  }
-
-  call download_cram_data { input:
-    ref_fasta = download_ref_data.fasta
-  }
-
-  call download_bam_data { }
-
-  call download_ichor_data { }
-
-  call download_dbsnp_vcf { input:
-    region = "NC_000001.11:1-10000000",
-    filter_name = "chr1"
-  }
-
-  call download_known_indels_vcf { input:
-    region = "chr1:1-10000000",
-    filter_name = "chr1"
-  }
-
-  call download_gnomad_vcf { input:
-    region = "chr1:1-10000000",
-    filter_name = "chr1"
-  }
-
-  call download_annotsv_vcf { }
-
-  call generate_pasilla_counts { }
-
-  call validate_outputs { input:
-    ref_fasta = download_ref_data.fasta,
-    ref_fasta_index = download_ref_data.fasta_index,
-    ref_gtf = download_ref_data.gtf,
-    ref_bed = download_ref_data.bed,
-    r1_fastq = download_fastq_data.r1_fastq,
-    r2_fastq = download_fastq_data.r2_fastq,
-    inter_fastq = interleave_fastq.inter_fastq,
-    cram = download_cram_data.cram,
-    crai = download_cram_data.crai,
-    bam = download_bam_data.bam,
-    bai = download_bam_data.bai,
-    ichor_gc_wig = download_ichor_data.wig_gc,
-    ichor_map_wig = download_ichor_data.wig_map,
-    ichor_centromeres = download_ichor_data.centromeres,
-    ichor_panel_of_norm_rds = download_ichor_data.panel_of_norm_rds,
-    dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf,
-    known_indels_vcf = download_known_indels_vcf.known_indels_vcf,
-    gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
-    annotsv_test_vcf = download_annotsv_vcf.test_vcf,
-    pasilla_counts = generate_pasilla_counts.individual_count_files,
-    pasilla_gene_info = generate_pasilla_counts.gene_info
-  }
-
-  output {
-    # Outputs from the reference data download
-    File ref_fasta = download_ref_data.fasta
-    File ref_fasta_index = download_ref_data.fasta_index
-    File ref_gtf = download_ref_data.gtf
-    File ref_bed = download_ref_data.bed
-    # Outputs from the fastq, cram, and bam data downloads
-    File r1_fastq = download_fastq_data.r1_fastq
-    File r2_fastq = download_fastq_data.r2_fastq
-    File cram = download_cram_data.cram
-    File crai = download_cram_data.crai
-    File bam = download_bam_data.bam
-    File bai = download_bam_data.bai
-    # Outputs from the ichorCNA data download
-    File ichor_gc_wig = download_ichor_data.wig_gc
-    File ichor_map_wig = download_ichor_data.wig_map
-    File ichor_centromeres = download_ichor_data.centromeres
-    File ichor_panel_of_norm_rds = download_ichor_data.panel_of_norm_rds
-    # Outputs from VCF downloads
-    File dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf
-    File known_indels_vcf = download_known_indels_vcf.known_indels_vcf
-    File gnomad_vcf = download_gnomad_vcf.gnomad_vcf
-    File annotsv_test_vcf = download_annotsv_vcf.test_vcf
-    # Outputs from Pasilla DESeq2 count generation
-    Array[File] pasilla_counts = generate_pasilla_counts.individual_count_files
-    Array[String] pasilla_sample_names = generate_pasilla_counts.sample_names
-    Array[String] pasilla_sample_conditions = generate_pasilla_counts.sample_conditions
-    File pasilla_gene_info = generate_pasilla_counts.gene_info
-    # Validation report summarizing all outputs
-    File validation_report = validate_outputs.report
-  }
-}
-
 task download_ref_data {
   meta {
     description: "Downloads reference genome and index files for WILDS WDL test runs"
@@ -437,7 +306,8 @@ task download_dbsnp_vcf {
   meta {
     description: "Downloads dbSNP VCF files for GATK workflows"
     outputs: {
-        dbsnp_vcf: "dbSNP VCF file (filtered down if region specified)"
+        dbsnp_vcf: "dbSNP VCF file (filtered down if region specified)",
+        dbsnp_vcf_index: "Index file for the dbSNP VCF"
     }
   }
 
@@ -492,10 +362,14 @@ task download_dbsnp_vcf {
       https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz | \
     bcftools annotate --rename-chrs chr_mapping.txt \
       -O z -o "dbsnp.~{filter_name}.vcf.gz"
+    
+    # Index the filtered VCF
+    bcftools index --tbi "dbsnp.~{filter_name}.vcf.gz"
   >>>
 
   output {
     File dbsnp_vcf = "dbsnp.~{filter_name}.vcf.gz"
+    File dbsnp_vcf_index = "dbsnp.~{filter_name}.vcf.gz.tbi"
   }
 
   runtime {
@@ -549,7 +423,8 @@ task download_gnomad_vcf {
   meta {
     description: "Downloads gnomad VCF files for GATK workflows"
     outputs: {
-        gnomad_vcf: "Gnomad VCF file (filtered down if region specified)"
+        gnomad_vcf: "Gnomad VCF file (filtered down if region specified)",
+        gnomad_vcf_index: "Index file for the gnomad VCF"
     }
   }
 
@@ -572,10 +447,14 @@ task download_gnomad_vcf {
     bcftools view ~{if defined(region) then "-r " + region else ""} \
     https://storage.googleapis.com/gatk-best-practices/somatic-hg38/af-only-gnomad.hg38.vcf.gz \
     -O z -o "gnomad_af_only.~{filter_name}.vcf.gz"
+
+    # Index the filtered VCF
+    bcftools index --tbi "gnomad_af_only.~{filter_name}.vcf.gz"
   >>>
 
   output {
     File gnomad_vcf = "gnomad_af_only.~{filter_name}.vcf.gz"
+    File gnomad_vcf_index = "gnomad_af_only.~{filter_name}.vcf.gz.tbi"
   }
 
   runtime {
@@ -701,8 +580,10 @@ task validate_outputs {
     ichor_centromeres: "ichorCNA centromere locations file to validate"
     ichor_panel_of_norm_rds: "ichorCNA panel of normals file to validate"
     dbsnp_vcf: "dbSNP VCF to validate"
+    dbsnp_vcf_index: "dbSNP VCF index to validate"
     known_indels_vcf: "Known indels VCF to validate"
     gnomad_vcf: "gnomad VCF to validate"
+    gnomad_vcf_index: "gnomad VCF index to validate"
     annotsv_test_vcf: "AnnotSV test VCF file to validate"
     pasilla_counts: "Array of individual count files for each sample from Pasilla dataset to validate"
     pasilla_gene_info: "Pasilla gene annotation information to validate"
@@ -727,8 +608,10 @@ task validate_outputs {
     File ichor_centromeres
     File ichor_panel_of_norm_rds
     File dbsnp_vcf
+    File dbsnp_vcf_index
     File known_indels_vcf
     File gnomad_vcf
+    File gnomad_vcf_index
     File annotsv_test_vcf
     Array[File] pasilla_counts
     File pasilla_gene_info
@@ -858,6 +741,13 @@ task validate_outputs {
       validation_passed=false
     fi
 
+    if [[ -f "~{dbsnp_vcf_index}" && -s "~{dbsnp_vcf_index}" ]]; then
+      echo "dbSNP VCF index: ~{dbsnp_vcf_index} - PASSED" >> validation_report.txt
+    else
+      echo "dbSNP VCF index: ~{dbsnp_vcf_index} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
     if [[ -f "~{known_indels_vcf}" && -s "~{known_indels_vcf}" ]]; then
       echo "Known Indels VCF: ~{known_indels_vcf} - PASSED" >> validation_report.txt
     else
@@ -869,6 +759,13 @@ task validate_outputs {
       echo "Gnomad VCF: ~{gnomad_vcf} - PASSED" >> validation_report.txt
     else
       echo "Gnomad VCF: ~{gnomad_vcf} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{gnomad_vcf_index}" && -s "~{gnomad_vcf_index}" ]]; then
+      echo "Gnomad VCF index: ~{gnomad_vcf_index} - PASSED" >> validation_report.txt
+    else
+      echo "Gnomad VCF index: ~{gnomad_vcf_index} - MISSING OR EMPTY" >> validation_report.txt
       validation_passed=false
     fi
 
