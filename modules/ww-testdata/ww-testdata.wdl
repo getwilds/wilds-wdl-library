@@ -10,6 +10,7 @@ task download_ref_data {
     outputs: {
         fasta: "Reference genome FASTA file",
         fasta_index: "Index file for the reference FASTA",
+        dict: "Dictionary file for the reference FASTA",
         gtf: "GTF file containing gene annotations for the specified chromosome",
         bed: "BED file covering the entire chromosome"
     }
@@ -39,6 +40,9 @@ task download_ref_data {
     # Create FASTA index file (.fai) for bcftools and other tools
     samtools faidx "~{chromo}.fa"
 
+    # Create FASTA dictionary file (.dict) for GATK and other tools
+    samtools dict "~{chromo}.fa" > "~{chromo}.dict"
+
     # Download chromosome 1 GTF file
     wget -q -O "~{version}.ncbiRefSeq.gtf.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/bigZips/genes/~{version}.ncbiRefSeq.gtf.gz"
     gunzip "~{version}.ncbiRefSeq.gtf.gz"
@@ -55,6 +59,7 @@ task download_ref_data {
   output {
     File fasta = "~{chromo}.fa"
     File fasta_index = "~{chromo}.fa.fai"
+    File dict = "~{chromo}.dict"
     File gtf = "~{chromo}.gtf"
     File bed = "~{chromo}.bed"
   }
@@ -383,7 +388,8 @@ task download_known_indels_vcf {
   meta {
     description: "Downloads known indel VCF files for GATK workflows"
     outputs: {
-        known_indels_vcf: "Known indels VCF file (filtered down if region specified)"
+        known_indels_vcf: "Known indels VCF file (filtered down if region specified)",
+        known_indels_vcf_index: "Index file for the known indels VCF"
     }
   }
 
@@ -406,10 +412,14 @@ task download_known_indels_vcf {
     bcftools view ~{if defined(region) then "-r " + region else ""} \
     https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz \
     -O z -o "mills_1000g_known_indels.~{filter_name}.vcf.gz"
+
+    # Index the filtered VCF
+    bcftools index --tbi "mills_1000g_known_indels.~{filter_name}.vcf.gz"
   >>>
 
   output {
     File known_indels_vcf = "mills_1000g_known_indels.~{filter_name}.vcf.gz"
+    File known_indels_vcf_index = "mills_1000g_known_indels.~{filter_name}.vcf.gz.tbi"
   }
 
   runtime {
@@ -566,6 +576,7 @@ task validate_outputs {
   parameter_meta {
     ref_fasta: "Reference genome FASTA file to validate"
     ref_fasta_index: "Reference FASTA index file to validate"
+    ref_dict: "Reference FASTA dictionary file to validate"
     ref_gtf: "GTF annotation file to validate"
     ref_bed: "BED file to validate"
     r1_fastq: "R1 FASTQ file to validate"
@@ -582,6 +593,7 @@ task validate_outputs {
     dbsnp_vcf: "dbSNP VCF to validate"
     dbsnp_vcf_index: "dbSNP VCF index to validate"
     known_indels_vcf: "Known indels VCF to validate"
+    known_indels_vcf_index: "Known indels VCF index to validate"
     gnomad_vcf: "gnomad VCF to validate"
     gnomad_vcf_index: "gnomad VCF index to validate"
     annotsv_test_vcf: "AnnotSV test VCF file to validate"
@@ -594,6 +606,7 @@ task validate_outputs {
   input {
     File ref_fasta
     File ref_fasta_index
+    File ref_dict
     File ref_gtf
     File ref_bed
     File r1_fastq
@@ -610,6 +623,7 @@ task validate_outputs {
     File dbsnp_vcf
     File dbsnp_vcf_index
     File known_indels_vcf
+    File known_indels_vcf_index
     File gnomad_vcf
     File gnomad_vcf_index
     File annotsv_test_vcf
@@ -640,6 +654,13 @@ task validate_outputs {
       echo "Reference FASTA index: ~{ref_fasta_index} - PASSED" >> validation_report.txt
     else
       echo "Reference FASTA index: ~{ref_fasta_index} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{ref_dict}" && -s "~{ref_dict}" ]]; then
+      echo "Reference FASTA dict: ~{ref_dict} - PASSED" >> validation_report.txt
+    else
+      echo "Reference FASTA dict: ~{ref_dict} - MISSING OR EMPTY" >> validation_report.txt
       validation_passed=false
     fi
 
@@ -752,6 +773,13 @@ task validate_outputs {
       echo "Known Indels VCF: ~{known_indels_vcf} - PASSED" >> validation_report.txt
     else
       echo "Known Indels VCF: ~{known_indels_vcf} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{known_indels_vcf_index}" && -s "~{known_indels_vcf_index}" ]]; then
+      echo "Known Indels VCF index: ~{known_indels_vcf_index} - PASSED" >> validation_report.txt
+    else
+      echo "Known Indels VCF index: ~{known_indels_vcf_index} - MISSING OR EMPTY" >> validation_report.txt
       validation_passed=false
     fi
 

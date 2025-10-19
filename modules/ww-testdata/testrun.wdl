@@ -46,6 +46,7 @@ workflow testdata_example {
   call ww_testdata.validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
+    ref_dict = download_ref_data.dict,
     ref_gtf = download_ref_data.gtf,
     ref_bed = download_ref_data.bed,
     r1_fastq = download_fastq_data.r1_fastq,
@@ -62,6 +63,7 @@ workflow testdata_example {
     dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf,
     dbsnp_vcf_index = download_dbsnp_vcf.dbsnp_vcf_index,
     known_indels_vcf = download_known_indels_vcf.known_indels_vcf,
+    known_indels_vcf_index = download_known_indels_vcf.known_indels_vcf_index,
     gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
     gnomad_vcf_index = download_gnomad_vcf.gnomad_vcf_index,
     annotsv_test_vcf = download_annotsv_vcf.test_vcf,
@@ -73,6 +75,7 @@ workflow testdata_example {
     # Outputs from the reference data download
     File ref_fasta = download_ref_data.fasta
     File ref_fasta_index = download_ref_data.fasta_index
+    File ref_dict = download_ref_data.dict
     File ref_gtf = download_ref_data.gtf
     File ref_bed = download_ref_data.bed
     # Outputs from the fastq, cram, and bam data downloads
@@ -91,6 +94,7 @@ workflow testdata_example {
     File dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf
     File dbsnp_vcf_index = download_dbsnp_vcf.dbsnp_vcf_index
     File known_indels_vcf = download_known_indels_vcf.known_indels_vcf
+    File known_indels_vcf_index = download_known_indels_vcf.known_indels_vcf_index
     File gnomad_vcf = download_gnomad_vcf.gnomad_vcf
     File gnomad_vcf_index = download_gnomad_vcf.gnomad_vcf_index
     File annotsv_test_vcf = download_annotsv_vcf.test_vcf
