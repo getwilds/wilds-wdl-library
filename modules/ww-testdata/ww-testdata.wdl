@@ -450,7 +450,7 @@ task download_tritonnp_data {
         annotation: "BED annotation file",
         plot_list: "Genes to plot",
         bam: "WGS test file",
-        bam_index: "WGS test file index"
+        bam_index: "WGS test file index",
         bias: "GC bias"
     }
   }
