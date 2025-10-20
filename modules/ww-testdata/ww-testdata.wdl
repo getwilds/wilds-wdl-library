@@ -122,6 +122,14 @@ workflow testdata_example {
     File ichor_map_wig = download_ichor_data.wig_map
     File ichor_centromeres = download_ichor_data.centromeres
     File ichor_panel_of_norm_rds = download_ichor_data.panel_of_norm_rds
+    # Outputs from the TritonNP data download
+    File tritonnp_annotation = download_tritonnp_data.annotation
+    File tritonnp_plot_list = download_tritonnp_data.plot_list 
+    File tritonnp_bam = download_tritonnp_data.bam 
+    File tritonnp_bam_index = download_tritonnp_data.bam_index 
+    File tritonnp_bias = download_tritonnp_data.bias 
+    File tritonnp_reference = download_tritonnp_data.reference
+    File tritonnp_reference_index = download_tritonnp_data.reference_index
     # Outputs from VCF downloads
     File dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf
     File known_indels_vcf = download_known_indels_vcf.known_indels_vcf
@@ -443,6 +451,7 @@ task download_tritonnp_data {
         plot_list: "Genes to plot",
         bam: "WGS test file",
         bam_index: "WGS test file index"
+        bias: "GC bias"
     }
   }
 
@@ -464,6 +473,13 @@ task download_tritonnp_data {
     wget -q --no-check-certificate -O plot_genes.txt https://github.com/caalo/TritonNP/raw/refs/heads/main/reference_data/plot_genes.txt
     wget -q --no-check-certificate -O NA12878.bam https://github.com/caalo/TritonNP/raw/refs/heads/main/test_data/NA12878.bam
     wget -q --no-check-certificate -O NA12878.bai https://github.com/caalo/TritonNP/raw/refs/heads/main/test_data/NA12878.bai
+    wget -q --no-check-certificate -O NA12878.GC_bias.txt https://github.com/caalo/TritonNP/raw/refs/heads/main/test_data/NA12878.GC_bias.txt
+    #Download the entire hg19 reference genome
+    wget hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz
+    tar -zxvf chromFa.tar.gz
+    cat chr*.fa > hg19.fa
+    samtools faidx hg19.fa
+
   >>>
 
   output {
@@ -471,6 +487,9 @@ task download_tritonnp_data {
     File plot_list = "plot_genes.txt"
     File bam = "NA12878.bam"
     File bam_index = "NA12878.bai"
+    File bias = "NA12878.GC_bias.txt"
+    File reference = "hg19.fa"
+    File reference_index = "hg19.fa.fai"
   }
 
   runtime {
