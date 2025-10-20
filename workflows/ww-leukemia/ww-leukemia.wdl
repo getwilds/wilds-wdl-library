@@ -105,6 +105,8 @@ workflow ww_leukemia {
     wig_map: "Mappability score WIG file"
     panel_of_norm_rds: "RDS file of median corrected depth from panel of normals"
     centromeres: "Text file containing Centromere locations"
+    ichorcna_chromosomes: "Array of chromosomes for ichorCNA read counting (e.g., ['chr1', 'chr2', ...]). Default: all autosomes + sex chromosomes"
+    ichorcna_chrs_string: "R-style string of chromosomes for ichorCNA analysis (e.g., 'c(1:22, \"X\", \"Y\")'). Default: all autosomes + sex chromosomes"
     known_indels_sites_vcfs: "Array of VCF files containing known indel sites for base quality score recalibration"
     samples: "Array of sample information structs containing sample names, molecular IDs, and CRAM files"
     ref_name: "Reference genome build name (e.g., 'hg38', 'hg19') used for Annovar annotation"
@@ -127,6 +129,8 @@ workflow ww_leukemia {
     File wig_map
     File panel_of_norm_rds
     File centromeres
+    Array[String] ichorcna_chromosomes
+    String ichorcna_chrs_string
     Array[File] known_indels_sites_vcfs
     Array[SampleDetails] samples
     String ref_name
@@ -328,7 +332,7 @@ workflow ww_leukemia {
         bam_file = markdup_recal_metrics.recalibrated_bam,
         bam_index = markdup_recal_metrics.recalibrated_bai,
         sample_name = base_file_name,
-        chromosomes = ["chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"],
+        chromosomes = ichorcna_chromosomes,
         window_size = 500000,
         cpus = standard_cpus,
         memory_gb = standard_memory_gb
@@ -344,7 +348,7 @@ workflow ww_leukemia {
       sex = "male", # Defaulting to male for now, can be parameterized later
       genome = ref_name,
       genome_style = "UCSC", # Defaulting to UCSC style for now
-      chrs = "c(1:22, 'X', 'Y')",
+      chrs = ichorcna_chrs_string,
       cpus = standard_cpus,
       memory_gb = standard_memory_gb
     }

@@ -57,6 +57,9 @@ workflow leukemia_test {
       ref_name = "hg38",
       annovar_protocols = "refGene",
       annovar_operation = "g",
+      # ichorCNA chromosome settings for chr1-only test data
+      ichorcna_chromosomes = ["chr1"],
+      ichorcna_chrs_string = "c('1')",
       # Testing-friendly resource settings
       scatter_count = 2,  # Small scatter for testing
       high_intensity_cpus = 2,  # Reduced from production default of 8
