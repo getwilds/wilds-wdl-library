@@ -57,7 +57,12 @@ workflow leukemia_test {
       ref_name = "hg38",
       annovar_protocols = "refGene",
       annovar_operation = "g",
-      scatter_count = 2  # Small scatter for testing
+      # Testing-friendly resource settings
+      scatter_count = 2,  # Small scatter for testing
+      high_intensity_cpus = 2,  # Reduced from production default of 8
+      high_intensity_memory_gb = 4,  # Reduced from production default of 16
+      standard_cpus = 2,  # Reduced from production default of 4
+      standard_memory_gb = 4  # Reduced from production default of 8
   }
 
   output {
