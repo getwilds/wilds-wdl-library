@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 # Valid item types
-VALID_TYPES = ['modules', 'vignettes']
+VALID_TYPES = ['modules', 'vignettes', 'workflows']
 
 def get_changed_files():
     """Get list of changed files in PR, or None for workflow_dispatch"""
@@ -110,7 +110,7 @@ def main():
     # Parse command line arguments
     if len(sys.argv) < 2:
         print("ERROR: Item type not specified")
-        print("Usage: discover_wdls.py <modules|vignettes> [specific_item_name]")
+        print("Usage: discover_wdls.py <modules|vignettes|workflows> [specific_item_name]")
         raise SystemExit(1)
 
     item_type = sys.argv[1].lower()
