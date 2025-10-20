@@ -48,10 +48,12 @@ workflow leukemia_test {
       panel_of_norm_rds = download_ichor_data.panel_of_norm_rds,
       centromeres = download_ichor_data.centromeres,
       known_indels_sites_vcfs = [download_known_indels_vcf.known_indels_vcf],
-      samples = [{
-        "name": "test_sample",
-        "cramfiles": [download_cram_data.cram]
-      }],
+      samples = [
+        object {
+          name: "test_sample",
+          cramfiles: [download_cram_data.cram]
+        }
+      ],
       ref_name = "hg38",
       annovar_protocols = "refGene",
       annovar_operation = "g",
