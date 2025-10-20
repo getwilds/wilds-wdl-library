@@ -145,13 +145,15 @@ workflow ww_leukemia {
       reference_fasta_index = ref_fasta_index,
       reference_dict = ref_dict,
       scatter_count = scatter_count,
-      cpu_cores = standard_cpus
+      cpu_cores = standard_cpus,
+      memory_gb = standard_memory_gb
   }
 
   # Use BWA module for indexing
   call bwa_tasks.bwa_index { input:
       reference_fasta = ref_fasta,
-      cpu_cores = standard_cpus
+      cpu_cores = standard_cpus,
+      memory_gb = standard_memory_gb
   }
 
   scatter (sample in samples){
@@ -162,7 +164,8 @@ workflow ww_leukemia {
         cram_files = sample.cramfiles,
         ref = ref_fasta,
         name = sample.name,
-        cpu_cores = standard_cpus
+        cpu_cores = standard_cpus,
+        memory_gb = standard_memory_gb
     }
 
     # Use BWA module for alignment
@@ -186,7 +189,8 @@ workflow ww_leukemia {
         reference_dict = ref_dict,
         known_indels_sites_vcfs = known_indels_sites_vcfs,
         base_file_name = base_file_name,
-        cpu_cores = high_intensity_cpus
+        cpu_cores = high_intensity_cpus,
+        memory_gb = high_intensity_memory_gb
     }
 
     # Run HaplotypeCaller with internal parallelization
@@ -223,7 +227,8 @@ workflow ww_leukemia {
         bam_index = markdup_recal_metrics.recalibrated_bai,
         reference_fasta = ref_fasta,
         reference_fasta_index = ref_fasta_index,
-        cpu_cores = high_intensity_cpus
+        cpu_cores = high_intensity_cpus,
+        memory_gb = high_intensity_memory_gb
     }
 
     # Use Annovar module for variant annotation
@@ -269,7 +274,8 @@ workflow ww_leukemia {
         reference_fasta = ref_fasta,
         reference_fasta_index = ref_fasta_index,
         sample_name = base_file_name,
-        cpu_cores = high_intensity_cpus
+        cpu_cores = high_intensity_cpus,
+        memory_gb = high_intensity_memory_gb
     }
 
     # Use Smoove module for structural variants
@@ -279,7 +285,8 @@ workflow ww_leukemia {
         sample_name = base_file_name,
         reference_fasta = ref_fasta,
         reference_fasta_index = ref_fasta_index,
-        cpu_cores = high_intensity_cpus
+        cpu_cores = high_intensity_cpus,
+        memory_gb = high_intensity_memory_gb
     }
 
     # Use Delly module for structural variants
@@ -288,28 +295,32 @@ workflow ww_leukemia {
         aligned_bam_index = markdup_recal_metrics.recalibrated_bai,
         reference_fasta = ref_fasta,
         reference_fasta_index = ref_fasta_index,
-        cpu_cores = high_intensity_cpus
+        cpu_cores = high_intensity_cpus,
+        memory_gb = high_intensity_memory_gb
     }
 
     # Use AnnotSV module for Manta annotation
     call annotsv_tasks.annotsv_annotate as annotateManta { input:
         raw_vcf = manta_call.vcf,
         genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37",
-        cpu_cores = standard_cpus
+        cpu_cores = standard_cpus,
+        memory_gb = standard_memory_gb
     }
 
     # Use AnnotSV module for Smoove annotation
     call annotsv_tasks.annotsv_annotate as annotateSmoove { input:
         raw_vcf = smoove_call.vcf,
         genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37",
-        cpu_cores = standard_cpus
+        cpu_cores = standard_cpus,
+        memory_gb = standard_memory_gb
     }
 
     # Use AnnotSV module for Delly annotation
     call annotsv_tasks.annotsv_annotate as annotateDelly { input:
         raw_vcf = delly_call.vcf,
         genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37",
-        cpu_cores = standard_cpus
+        cpu_cores = standard_cpus,
+        memory_gb = standard_memory_gb
     }
 
     # Use ichorCNA module for tumor fraction analysis
@@ -319,7 +330,8 @@ workflow ww_leukemia {
         sample_name = base_file_name,
         chromosomes = ["chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"],
         window_size = 500000,
-        cpus = standard_cpus
+        cpus = standard_cpus,
+        memory_gb = standard_memory_gb
     }
 
     call ichorcna_tasks.ichorcna_call { input:
@@ -333,7 +345,8 @@ workflow ww_leukemia {
       genome = ref_name,
       genome_style = "UCSC", # Defaulting to UCSC style for now
       chrs = "c(1:22, 'X', 'Y')",
-      cpus = standard_cpus
+      cpus = standard_cpus,
+      memory_gb = standard_memory_gb
     }
   } # End scatter
 
