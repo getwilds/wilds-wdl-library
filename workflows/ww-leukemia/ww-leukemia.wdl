@@ -117,6 +117,7 @@ workflow ww_leukemia {
     high_intensity_memory_gb: "Memory allocation in GB for high-intensity tasks. Default: 16 for production, use 4-8 for testing"
     standard_cpus: "Number of CPU cores for standard-intensity tasks (bwa_index, crams_to_fastq, split_intervals, annovar, annotsv, ichorcna). Default: 4 for production, use 2 for testing"
     standard_memory_gb: "Memory allocation in GB for standard-intensity tasks. Default: 8 for production, use 4 for testing"
+    skip_annotations: "Skip variant and SV annotation tasks (annovar and annotsv). Set to true for CI/CD testing to reduce disk usage. Default: false (run all annotations)"
   }
 
   input {
@@ -141,6 +142,7 @@ workflow ww_leukemia {
     Int high_intensity_memory_gb = 16
     Int standard_cpus = 4
     Int standard_memory_gb = 8
+    Boolean skip_annotations = false
   }
 
   # Use GATK module for splitting intervals
@@ -235,40 +237,42 @@ workflow ww_leukemia {
         memory_gb = high_intensity_memory_gb
     }
 
-    # Use Annovar module for variant annotation
-    call annovar_tasks.annovar_annotate as annotateSAM { input:
-        vcf_to_annotate = mpileup_call.mpileup_vcf,
-        ref_name = ref_name,
-        annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols,
-        cpu_cores = standard_cpus,
-        memory_gb = standard_memory_gb
-    }
+    # Use Annovar module for variant annotation (skippable for CI/CD testing)
+    if (!skip_annotations) {
+      call annovar_tasks.annovar_annotate as annotateSAM { input:
+          vcf_to_annotate = mpileup_call.mpileup_vcf,
+          ref_name = ref_name,
+          annovar_operation = annovar_operation,
+          annovar_protocols = annovar_protocols,
+          cpu_cores = standard_cpus,
+          memory_gb = standard_memory_gb
+      }
 
-    call annovar_tasks.annovar_annotate as annotateMutect { input:
-        vcf_to_annotate = mutect2_parallel.vcf,
-        ref_name = ref_name,
-        annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols,
-        cpu_cores = standard_cpus,
-        memory_gb = standard_memory_gb
-    }
+      call annovar_tasks.annovar_annotate as annotateMutect { input:
+          vcf_to_annotate = mutect2_parallel.vcf,
+          ref_name = ref_name,
+          annovar_operation = annovar_operation,
+          annovar_protocols = annovar_protocols,
+          cpu_cores = standard_cpus,
+          memory_gb = standard_memory_gb
+      }
 
-    call annovar_tasks.annovar_annotate as annotateHaplotype { input:
-        vcf_to_annotate = haplotype_caller_parallel.vcf,
-        ref_name = ref_name,
-        annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols,
-        cpu_cores = standard_cpus,
-        memory_gb = standard_memory_gb
-    }
+      call annovar_tasks.annovar_annotate as annotateHaplotype { input:
+          vcf_to_annotate = haplotype_caller_parallel.vcf,
+          ref_name = ref_name,
+          annovar_operation = annovar_operation,
+          annovar_protocols = annovar_protocols,
+          cpu_cores = standard_cpus,
+          memory_gb = standard_memory_gb
+      }
 
-    # Keep custom consensus processing task
-    call consensus_processing { input:
-        gatk_vars = annotateHaplotype.annotated_table,
-        sam_vars = annotateSAM.annotated_table,
-        mutect_vars = annotateMutect.annotated_table,
-        base_file_name = base_file_name
+      # Keep custom consensus processing task
+      call consensus_processing { input:
+          gatk_vars = annotateHaplotype.annotated_table,
+          sam_vars = annotateSAM.annotated_table,
+          mutect_vars = annotateMutect.annotated_table,
+          base_file_name = base_file_name
+      }
     }
 
     # Use Manta module for structural variants
@@ -303,28 +307,28 @@ workflow ww_leukemia {
         memory_gb = high_intensity_memory_gb
     }
 
-    # Use AnnotSV module for Manta annotation
-    call annotsv_tasks.annotsv_annotate as annotateManta { input:
-        raw_vcf = manta_call.vcf,
-        genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37",
-        cpu_cores = standard_cpus,
-        memory_gb = standard_memory_gb
-    }
+    # Use AnnotSV module for SV annotation (skippable for CI/CD testing)
+    if (!skip_annotations) {
+      call annotsv_tasks.annotsv_annotate as annotateManta { input:
+          raw_vcf = manta_call.vcf,
+          genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37",
+          cpu_cores = standard_cpus,
+          memory_gb = standard_memory_gb
+      }
 
-    # Use AnnotSV module for Smoove annotation
-    call annotsv_tasks.annotsv_annotate as annotateSmoove { input:
-        raw_vcf = smoove_call.vcf,
-        genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37",
-        cpu_cores = standard_cpus,
-        memory_gb = standard_memory_gb
-    }
+      call annotsv_tasks.annotsv_annotate as annotateSmoove { input:
+          raw_vcf = smoove_call.vcf,
+          genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37",
+          cpu_cores = standard_cpus,
+          memory_gb = standard_memory_gb
+      }
 
-    # Use AnnotSV module for Delly annotation
-    call annotsv_tasks.annotsv_annotate as annotateDelly { input:
-        raw_vcf = delly_call.vcf,
-        genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37",
-        cpu_cores = standard_cpus,
-        memory_gb = standard_memory_gb
+      call annotsv_tasks.annotsv_annotate as annotateDelly { input:
+          raw_vcf = delly_call.vcf,
+          genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37",
+          cpu_cores = standard_cpus,
+          memory_gb = standard_memory_gb
+      }
     }
 
     # Use ichorCNA module for tumor fraction analysis
@@ -361,23 +365,23 @@ workflow ww_leukemia {
     Array[File] mutect_vcf = mutect2_parallel.vcf
     Array[File] mutect_vcf_index = mutect2_parallel.vcf_index
     Array[File] mutect_stats = mutect2_parallel.stats_file
-    Array[File] mutect_annotated_vcf = annotateMutect.annotated_vcf
-    Array[File] mutect_annotated_table = annotateMutect.annotated_table
-    Array[File] haplotype_annotated_vcf = annotateHaplotype.annotated_vcf
-    Array[File] haplotype_annotated_table = annotateHaplotype.annotated_table
-    Array[File] mpileup_annotated_vcf = annotateSAM.annotated_vcf
-    Array[File] mpileup_annotated_table = annotateSAM.annotated_table
+    Array[File] mutect_annotated_vcf = select_all(annotateMutect.annotated_vcf)
+    Array[File] mutect_annotated_table = select_all(annotateMutect.annotated_table)
+    Array[File] haplotype_annotated_vcf = select_all(annotateHaplotype.annotated_vcf)
+    Array[File] haplotype_annotated_table = select_all(annotateHaplotype.annotated_table)
+    Array[File] mpileup_annotated_vcf = select_all(annotateSAM.annotated_vcf)
+    Array[File] mpileup_annotated_table = select_all(annotateSAM.annotated_table)
     Array[File] gatk_wgs_metrics = markdup_recal_metrics.wgs_metrics
-    Array[File] consensus_variants = consensus_processing.consensus_tsv
+    Array[File] consensus_variants = select_all(consensus_processing.consensus_tsv)
     Array[File] manta_sv_vcf = manta_call.vcf
     Array[File] manta_sv_vcf_index = manta_call.vcf_index
-    Array[File] manta_sv_annotated_tsv = annotateManta.annotated_tsv
+    Array[File] manta_sv_annotated_tsv = select_all(annotateManta.annotated_tsv)
     Array[File] smoove_sv_vcf = smoove_call.vcf
     Array[File] smoove_sv_vcf_index = smoove_call.vcf_index
-    Array[File] smoove_sv_annotated_tsv = annotateSmoove.annotated_tsv
+    Array[File] smoove_sv_annotated_tsv = select_all(annotateSmoove.annotated_tsv)
     Array[File] delly_sv_bcf = delly_call.vcf
     Array[File] delly_sv_bcf_index = delly_call.vcf_index
-    Array[File] delly_sv_annotated_tsv = annotateDelly.annotated_tsv
+    Array[File] delly_sv_annotated_tsv = select_all(annotateDelly.annotated_tsv)
     Array[File] ichorcna_params = ichorcna_call.params
     Array[File] ichorcna_seg = ichorcna_call.seg
     Array[File] ichorcna_genomewide_pdf = ichorcna_call.genomewide_pdf

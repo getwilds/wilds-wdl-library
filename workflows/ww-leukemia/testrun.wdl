@@ -65,15 +65,16 @@ workflow leukemia_test {
       high_intensity_cpus = 2,  # Reduced from production default of 8
       high_intensity_memory_gb = 4,  # Reduced from production default of 16
       standard_cpus = 2,  # Reduced from production default of 4
-      standard_memory_gb = 4  # Reduced from production default of 8
+      standard_memory_gb = 4,  # Reduced from production default of 8
+      # Skip annotations to reduce disk usage in CI/CD (saves ~13GB Docker images)
+      skip_annotations = true
   }
 
   output {
-    # Key validation outputs
+    # Key validation outputs (annotation outputs excluded since skip_annotations = true)
     Array[File] haplotype_vcf = ww_leukemia.haplotype_vcf
     Array[File] mutect_vcf = ww_leukemia.mutect_vcf
     Array[File] mpileup_vcf = ww_leukemia.mpileup_vcf
-    Array[File] consensus_variants = ww_leukemia.consensus_variants
     Array[File] manta_sv_vcf = ww_leukemia.manta_sv_vcf
     Array[File] ichorcna_genomewide_pdf = ww_leukemia.ichorcna_genomewide_pdf
   }
