@@ -174,7 +174,7 @@ task download_cram_data {
 
     # Pull down BAM files from GATK test data bucket
     samtools view -@ ~{cpu_cores} -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1 | \
-    samtools view -@ ~{cpu_cores} -s 0.1 -b - > NA12878.bam
+    samtools view -@ ~{cpu_cores} -s 0.05 -b - > NA12878.bam
     samtools index -@ ~{cpu_cores} NA12878.bam
 
     # Only keep primary alignments from chr1 (no supplementary alignments)
@@ -191,6 +191,9 @@ task download_cram_data {
     # Convert BAM to CRAM using the provided reference FASTA
     samtools view -@ ~{cpu_cores} -C -T "~{ref_fasta}" -o NA12878_chr1.cram NA12878_chr1.bam
     samtools index -@ ~{cpu_cores} NA12878_chr1.cram
+
+    # Clean up intermediate files
+    rm NA12878.bam NA12878.bam.bai NA12878_chr1.bam NA12878_chr1.bam.bai NA12878_24RG_small.hg38.bai
   >>>
 
   output {
