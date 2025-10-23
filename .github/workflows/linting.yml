@@ -7,7 +7,7 @@ on:
 
 jobs:
   miniwdl_check:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - 
       name: Checkout
@@ -36,7 +36,7 @@ jobs:
         exit $EXITCODE
 
   womtoolval:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     -
       name: Checkout
@@ -68,7 +68,7 @@ jobs:
         exit $EXITCODE
 
   sprocket_lint:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - 
       name: Checkout
