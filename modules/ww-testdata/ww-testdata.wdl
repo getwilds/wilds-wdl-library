@@ -6,6 +6,8 @@ version 1.0
 
 task download_ref_data {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads reference genome and index files for WILDS WDL test runs"
     outputs: {
         fasta: "Reference genome FASTA file",
@@ -73,6 +75,8 @@ task download_ref_data {
 
 task download_fastq_data {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads small example FASTQ files for WILDS WDL test runs"
     outputs: {
         r1_fastq: "R1 fastq file downloaded for the sample in question",
@@ -109,6 +113,8 @@ task download_fastq_data {
 
 task interleave_fastq {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Interleaves a set of R1 and R2 FASTQ files"
     outputs: {
         inter_fastq: "Interleaved FASTQ"
@@ -150,6 +156,8 @@ task interleave_fastq {
 
 task download_cram_data {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads small example CRAM files for WILDS WDL test runs"
     outputs: {
         cram: "CRAM file downloaded for the sample in question",
@@ -210,6 +218,8 @@ task download_cram_data {
 
 task download_bam_data {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads small example BAM files for WILDS WDL test runs"
     outputs: {
         bam: "BAM file downloaded for the sample in question",
@@ -266,6 +276,8 @@ task download_bam_data {
 
 task download_ichor_data {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads reference data for ichorCNA analysis on hg38"
     outputs: {
         wig_gc: "GC content WIG file for hg38",
@@ -312,6 +324,8 @@ task download_ichor_data {
 
 task download_dbsnp_vcf {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads dbSNP VCF files for GATK workflows"
     outputs: {
         dbsnp_vcf: "dbSNP VCF file (filtered down if region specified)",
@@ -389,6 +403,8 @@ task download_dbsnp_vcf {
 
 task download_known_indels_vcf {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads known indel VCF files for GATK workflows"
     outputs: {
         known_indels_vcf: "Known indels VCF file (filtered down if region specified)",
@@ -434,6 +450,8 @@ task download_known_indels_vcf {
 
 task download_gnomad_vcf {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads gnomad VCF files for GATK workflows"
     outputs: {
         gnomad_vcf: "Gnomad VCF file (filtered down if region specified)",
@@ -479,6 +497,8 @@ task download_gnomad_vcf {
 
 task download_annotsv_vcf {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads test VCF files for structural variant annotation workflows"
     outputs: {
         test_vcf: "Test VCF file for AnnotSV"
@@ -515,6 +535,8 @@ task download_annotsv_vcf {
 
 task generate_pasilla_counts {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Generate DESeq2 test count matrices and metadata using the pasilla Bioconductor dataset raw files"
     outputs: {
         individual_count_files: "Array of individual count files for each sample from Pasilla dataset",

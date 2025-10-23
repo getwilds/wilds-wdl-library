@@ -3,44 +3,10 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-
-workflow samtools_example {
-  meta {
-    author: "Emma Bishop"
-    email: "wilds@fredhutch.org"
-    description: "WDL workflow for processing genomic files with Samtools"
-    url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-samtools"
-    outputs: {
-        r1_fastqs: "R1 FASTQ files generated from CRAM/BAM/SAM files",
-        r2_fastqs: "R2 FASTQ files generated from CRAM/BAM/SAM files"
-    }
-  }
-
-  # Download test data
-  call ww_testdata.download_ref_data { }
-
-  call ww_testdata.download_cram_data { input:
-      ref_fasta = download_ref_data.fasta
-  }
-
-  # Convert CRAM to FASTQ
-  call crams_to_fastq { input:
-      cram_files = [download_cram_data.cram],
-      ref = download_ref_data.fasta,
-      name = "test_sample",
-      cpu_cores = 2,
-      memory_gb = 8
-  }
-
-  output {
-    File r1_fastqs = crams_to_fastq.r1_fastq
-    File r2_fastqs = crams_to_fastq.r2_fastq
-  }
-}
-
 task crams_to_fastq {
   meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
     description: "Merge CRAM/BAM/SAM files and convert to FASTQ's using samtools."
     outputs: {
         r1_fastq: "R1 FASTQ file generated from merged CRAM/BAM/SAM file",
@@ -86,4 +52,3 @@ task crams_to_fastq {
     docker: "getwilds/samtools:1.19"
   }
 }
-
