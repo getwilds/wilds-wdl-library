@@ -16,7 +16,6 @@ This vignette is part of the [WILDS WDL Library](https://github.com/getwilds/wil
 
 - **Module Integration**: Combining `ww-sra` and `ww-star` modules
 - **Data Flow**: Seamless passing of outputs between modules
-- **Validation**: End-to-end validation of the complete pipeline
 - **Best Practices**: Modular workflow design patterns
 
 ## Pipeline Steps
@@ -33,13 +32,12 @@ This vignette is part of the [WILDS WDL Library](https://github.com/getwilds/wil
 3. **Two-Pass Alignment** (using `ww-star` module):
    - Performs STAR two-pass alignment for each sample
    - Generates BAM files, gene counts, and QC metrics
-   - Validates alignment outputs
 
 ## Module Dependencies
 
 This vignette imports and uses:
 - **ww-sra module**: For SRA data download (`fastqdump` task)
-- **ww-star module**: For genome indexing and alignment (`build_index`, `align_two_pass`, `validate_outputs` tasks)
+- **ww-star module**: For genome indexing and alignment (`build_index`, `align_two_pass` tasks)
 
 ## Usage
 
@@ -122,15 +120,6 @@ The vignette produces comprehensive outputs from both modules:
 | `star_log_progress` | STAR progress logs | ww-star |
 | `star_log` | STAR main logs | ww-star |
 | `star_sj` | Splice junction files | ww-star |
-| `validation_report` | Pipeline validation report | ww-star |
-
-## Validation and Quality Control
-
-The vignette includes comprehensive validation that checks:
-- Successful SRA downloads
-- STAR alignment completion
-- Output file integrity
-- Alignment statistics and metrics
 
 ## Resource Considerations
 
@@ -150,7 +139,6 @@ The vignette includes comprehensive validation that checks:
 This vignette is automatically tested as part of the WILDS WDL Library CI/CD pipeline:
 - Tests run on multiple WDL executors (Cromwell, miniWDL, Sprocket)
 - Uses real but small RNA-seq datasets for efficiency
-- Validates complete end-to-end functionality
 - Ensures module integration works correctly
 
 ## Integration Patterns
