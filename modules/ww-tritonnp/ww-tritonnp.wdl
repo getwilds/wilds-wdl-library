@@ -15,7 +15,7 @@ workflow tritonnp_example {
     description: "TritonNP module."
     url: "https://github.com/caalo/TritonNP"
     outputs: {
-        final_composite: "Aggregrated outputs from all files"
+        final_composite: "Aggregrated outputs from all files",
         fm_files: "Array of outputs from individal samples"
     }
   }
