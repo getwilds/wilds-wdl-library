@@ -10,12 +10,13 @@ import "https://raw.githubusercontent.com/caalo/wilds-wdl-library/refs/heads/ww-
 
 workflow tritonnp_example {
   meta {
-    author: "WILDS Development Team"
-    email: "wilds@fredhutch.org"
-    description: "WDL template module demonstrating WILDS best practices with simple hello world functionality"
-    url: "https://github.com/getwilds/wilds-wdl-library"
+    author: "Chris Lo"
+    email: "clo2@fredhutch.org"
+    description: "TritonNP module."
+    url: "https://github.com/caalo/TritonNP"
     outputs: {
-        output_files: "Array of simple output files with hello world message"
+        final_composite: "Aggregrated outputs from all files"
+        fm_files: "Array of outputs from individal samples"
     }
   }
 
@@ -74,6 +75,26 @@ workflow tritonnp_example {
 
 # Task definitions file (triton_tasks.wdl)
 task triton_main {
+  meta {
+    description: "Task for running TritonNP"
+    outputs: {
+        fm_files: "Array of outputs from TritonNP"
+    }
+  }
+  parameter_meta {
+    sample_name: "Sample name"
+    bam_path: "Path to BAM file"
+    bam_index_path: "Path to BAM index file"
+    bias_path: "Path to GC corrected file from Griffin"
+    annotation: "Path to BED file of genomic region to process on"
+    reference_genome: "Path to Reference genome file"
+    reference_genome_index: "Path to Reference genome file index"
+    results_dir: "Output directory name"
+    map_quality: "Mapping quality threshold as a positive integer"
+    size_range: "Size range as a tuple, such as 15 500"
+    cpus: "Number of CPUs to use"
+    plot_list: "File containing names of genes to plot."
+  }
   input {
     String sample_name
     File bam_path
@@ -126,10 +147,19 @@ task triton_main {
 }
 
 task combine_fms {
+  meta {
+    description: "Task for combine all sample outputs from TritonNP together"
+    outputs: {
+        final: "Filepath to the aggregrated outputs from TritonNP."
+    }
+  }
+  parameter_meta {
+    fm_files: "Array of output files from TritonNP"
+    results_dir: "Output directory name"
+  }
   input {
     Array[File] fm_files
     String results_dir
-    
   }
 
   command <<<
