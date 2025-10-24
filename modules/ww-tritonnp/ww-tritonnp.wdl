@@ -8,7 +8,7 @@ import "https://raw.githubusercontent.com/caalo/wilds-wdl-library/refs/heads/ww-
 
 #### WORKFLOW DEFINITION ####
 
-workflow TritonWorkflow {
+workflow tritonnp_example {
   meta {
     author: "WILDS Development Team"
     email: "wilds@fredhutch.org"
@@ -36,7 +36,7 @@ workflow TritonWorkflow {
   File plot_list = download_demo_data.plot_list
   Int map_quality = 20
   String size_range = "15 500"
-  Int triton_main_ncpus = 16
+  Int triton_main_ncpus = 4
 
   # Process each sample
   scatter (i in range(length(sample_names))) {
@@ -120,7 +120,7 @@ task triton_main {
 
   runtime {
     cpu: cpus
-    memory: "16 GB" 
+    memory: "4 GB" 
     docker: "python:bullseye" 
   }
 }
@@ -138,6 +138,8 @@ task combine_fms {
         
     #download script
     git clone https://github.com/caalo/TritonNP.git
+
+    python3 -m pip install pandas
 
     # Run cleanup script
     python TritonNP/CombinePhasingFM.py \
