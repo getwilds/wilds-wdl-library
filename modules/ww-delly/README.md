@@ -14,11 +14,10 @@ The module uses the latest Delly algorithms for precise breakpoint detection and
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `delly_call`, `validate_outputs`
-- **Workflow**: `delly_example` (demonstration workflow with automatic test data support)
+- **Tasks**: `delly_call`
+- **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
 - **Container**: `getwilds/delly:1.2.9`
 - **Dependencies**: Integrates with `ww-sra`, `ww-bwa`, and `ww-testdata` modules for complete workflows
-- **Test Data**: Automatically downloads reference genome and SRA data when not provided
 
 ## Tasks
 
@@ -40,16 +39,6 @@ Calls structural variants from aligned BAM files using Delly.
 - `vcf` (File): Structural variants in compressed VCF format
 - `vcf_index` (File): Index file for the VCF output
 - `summary` (File): Summary statistics and run information
-
-### `validate_outputs`
-Validates Delly outputs and generates a comprehensive report.
-
-**Inputs:**
-- `delly_vcfs` (Array[File]): Array of VCF files from Delly calling
-- `delly_vcf_indices` (Array[File]): Array of index files for the VCFs
-
-**Outputs:**
-- `report` (File): Comprehensive validation report with statistics
 
 ## Usage as a Module
 
@@ -133,22 +122,22 @@ This module pairs seamlessly with other WILDS modules:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that can be tested independently:
+The module includes a test workflow that can be tested independently:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-delly.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-delly.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-delly.wdl
+sprocket run testrun.wdl --entrypoint delly_example
 ```
 
 ### Automatic Test Data
 
-The demonstration workflow automatically:
+The test workflow automatically:
 1. Downloads reference genome data using `ww-testdata`
 2. Downloads demonstration BAM data using `ww-testdata`
 3. Calls structural variants using Delly
@@ -190,7 +179,6 @@ The module supports flexible resource configuration:
 
 ## Features
 
-- **Standalone execution**: Complete workflow with automatic test data download
 - **Comprehensive SV detection**: Supports all major structural variant types
 - **Flexible filtering**: Call specific SV types or all types
 - **Region targeting**: Focus calling on specific genomic regions of interest
@@ -199,7 +187,6 @@ The module supports flexible resource configuration:
 - **Quality validation**: Built-in output validation and statistics
 - **Module integration**: Seamlessly combines with ww-sra, ww-bwa, and ww-testdata
 - **Standardized output**: Compressed VCF format compatible with downstream tools
-- **Detailed reporting**: Comprehensive summaries with variant counts and run parameters
 
 ## Performance Considerations
 
@@ -214,7 +201,6 @@ The module supports flexible resource configuration:
 - **VCF files**: Contain structural variant calls in compressed VCF format with proper INFO and FORMAT fields
 - **VCF indices**: Enable rapid random access to variant regions (.csi format)
 - **Summary files**: Include variant counts, parameters used, SV type filters, and basic statistics
-- **Validation report**: Comprehensive validation with file integrity checks, format validation, and overall statistics
 
 ## Module Development
 

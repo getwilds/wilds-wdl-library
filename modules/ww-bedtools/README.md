@@ -14,10 +14,9 @@ The module is designed to be a foundational component within the WILDS ecosystem
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `coverage`, `intersect`, `makewindows`, `validate_outputs`
-- **Workflow**: `bedtools_example` (demonstration workflow that executes all tasks)
+- **Tasks**: `coverage`, `intersect`, `makewindows`
+- **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 - **Container**: `getwilds/bedtools:2.31.1`
-- **Test Data**: Automatically downloads test data when no inputs provided using `ww-testdata` module
 
 ## Tasks
 
@@ -69,18 +68,6 @@ Creates genomic windows and counts reads per window across specified chromosomes
 - `name` (String): Sample name that was processed
 - `counts_bed` (File): Tarball of per-chromosome BED files with read counts
 
-### `validate_outputs`
-Validates all BEDTools outputs and generates comprehensive statistics.
-
-**Inputs:**
-- `intersect_files` (Array[File]): BEDTools intersect output files
-- `coverage_files` (Array[File]): Coverage analysis results
-- `window_count_files` (Array[File]): Window count tarballs
-- `sample_names` (Array[String]): Sample names that were processed
-
-**Outputs:**
-- `report` (File): Validation report summarizing file check results
-
 ## Usage as a Module
 
 ### Importing into Your Workflow
@@ -131,14 +118,6 @@ workflow my_interval_analysis_pipeline {
     }
   }
   
-  call bedtools_tasks.validate_outputs {
-    input:
-      intersect_files = intersect.intersect_output,
-      coverage_files = coverage.mean_coverage,
-      window_count_files = makewindows.counts_bed,
-      sample_names = coverage.name
-  }
-  
   output {
     Array[File] intersect_results = intersect.intersect_output
     Array[File] coverage_results = coverage.mean_coverage
@@ -158,22 +137,22 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow with comprehensive testing:
+The module includes a test workflow with comprehensive testing:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-bedtools.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-bedtools.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-bedtools.wdl
+sprocket run testrun.wdl --entrypoint bedtools_example
 ```
 
 ### Automatic Test Data
 
-The demonstration workflow automatically downloads all required test data using the `ww-testdata` module, including BED files, BAM files, and reference genome data.
+The test workflow automatically downloads all required test data using the `ww-testdata` module, including BED files, BAM files, and reference genome data.
 
 ## Configuration Guidelines
 
@@ -276,10 +255,7 @@ Tarball containing per-chromosome BED files with 500kb windows and read counts.
 ## Features
 
 - **Multiple analysis types**: Coverage, intersection, and window-based counting
-- **Automatic test data**: Downloads all required test data automatically
-- **Parallel processing**: Chromosomes processed in parallel for efficiency
 - **Quality filtering**: Built-in MAPQ and pairing filters for reliable results
-- **Comprehensive validation**: Detailed output validation with file size and line counts
 - **Flexible configuration**: Customizable parameters for all major settings
 - **Integration ready**: Designed for use with other WILDS modules
 

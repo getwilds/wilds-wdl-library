@@ -16,8 +16,8 @@ Certificate-based authentication via IAM Roles Anywhere will be available soon v
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `s3_download_file`, `s3_upload_file`, `s3_list_bucket`, `validate_outputs`
-- **Workflow**: `aws_sso_example` (demonstration workflow executing all tasks)
+- **Tasks**: `s3_download_file`, `s3_upload_file`, `s3_list_bucket`
+- **Test workflow**: `testrun.wdl` (demonstration workflow executing all tasks)
 - **Container**: `getwilds/awscli:2.27.49`
 
 ## Tasks
@@ -66,17 +66,6 @@ Lists contents of an S3 bucket or prefix with comprehensive configuration option
 **Outputs:**
 - `file_list` (File): Text file containing list of S3 objects
 - `object_count` (Int): Number of objects found
-
-### `validate_outputs`
-Validates AWS operation outputs and generates a comprehensive summary report.
-
-**Inputs:**
-- `downloaded_files` (Array[File]?): Files that were downloaded from S3 (optional)
-- `bucket_listing` (File?): File containing S3 bucket listing (optional)
-- `object_count` (Int?): Number of objects found in bucket listing (optional)
-
-**Outputs:**
-- `report` (File): Validation report with AWS operation statistics
 
 ## Usage as a Module
 
@@ -249,12 +238,14 @@ The `aws_sso_example` test workflow requires no input parameters and automatical
 ### Running the Test Workflow
 
 ```bash
-# No input file needed for test workflow
-miniwdl run ww-aws-sso.wdl
+# Using miniWDL
+miniwdl run testrun.wdl
 
-# Or with other executors
-java -jar cromwell.jar run ww-aws-sso.wdl
-sprocket run ww-aws-sso.wdl
+# Using Sprocket
+sprocket run testrun.wdl --entrypoint aws_sso_example
+
+# Using Cromwell
+java -jar cromwell.jar run testrun.wdl
 ```
 
 ## Performance Considerations
