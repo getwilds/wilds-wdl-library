@@ -23,11 +23,9 @@ The module implements GATK best practices for variant calling, including proper 
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `validate_outputs`
-- **Workflow**: `gatk_example` (demonstration workflow using test data with parallelization)
+- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`
+- **Test workflow**: `testrun.wdl` (demonstration workflow using test data with parallelization)
 - **Container**: `getwilds/gatk:4.6.1.0`
-- **Dependencies**: Integrates with `ww-testdata` module for automatic reference genome and variant database downloads
-- **Test Data**: Uses reference genome, dbSNP, known indels, gnomAD, and aligned BAM data from test data module
 
 ## Tasks
 
@@ -271,25 +269,6 @@ Collects whole genome sequencing metrics using GATK CollectWgsMetrics.
 **Outputs:**
 - `metrics_file` (File): Comprehensive WGS metrics file with coverage and quality statistics
 
-### `validate_outputs`
-Validates GATK outputs and generates comprehensive statistics report.
-
-**Inputs:**
-- `markdup_bams` (Array[File]): Array of MarkDuplicates BAM files
-- `markdup_bais` (Array[File]): Array of MarkDuplicates BAM index files
-- `recalibrated_bams` (Array[File]): Array of recalibrated BAM files
-- `recalibrated_bais` (Array[File]): Array of recalibrated BAM index files
-- `sequential_bams` (Array[File]): Array of sequential Markdup-Recal-Metrics BAM files
-- `sequential_bais` (Array[File]): Array of sequential Markdup-Recal-Metrics BAM index files
-- `haplotype_vcfs` (Array[File]): Array of HaplotypeCaller VCF files called via scatter-gather parallelization
-- `mutect2_vcfs` (Array[File]): Array of Mutect2 VCF files called via scatter-gather parallelization
-- `parallel_haplotype_vcfs` (Array[File]): Array of HaplotypeCaller VCF files called via internal parallelization
-- `parallel_mutect2_vcfs` (Array[File]): Array of Mutect2 VCF files called via internal parallelization
-- `wgs_metrics` (Array[File]): Array of WGS metrics files
-
-**Outputs:**
-- `report` (File): Validation summary with file checks and basic statistics
-
 ## Workflow Parallelization Configuration
 
 **Default behavior:**
@@ -305,22 +284,22 @@ Validates GATK outputs and generates comprehensive statistics report.
 
 ## Testing the Module
 
-The module includes a demonstration workflow that runs with test data and requires no inputs:
+The module includes a test workflow that runs with test data and requires no inputs:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-gatk.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-gatk.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-gatk.wdl
+sprocket run testrun.wdl --entrypoint gatk_example
 ```
 
 ### Test Data Workflow
 
-The `gatk_example` workflow automatically:
+The test workflow automatically:
 1. Downloads reference genome data using `ww-testdata`
 2. Downloads variant databases (dbSNP, known indels, gnomAD)
 3. Downloads test BAM file for demonstration
@@ -344,10 +323,8 @@ No input files or parameters are required - the workflow uses pre-configured tes
 - **Intelligent interval splitting**: Uses GATK SplitIntervals for optimal load balancing
 - **Seamless result merging**: Transparent combination of parallel results
 - **Flexible processing modes**: Choose between individual tasks, combined processing, or different parallelization approaches
-- **Test data integration**: Uses reference genome, variant databases, and test BAM from test data module
 - **Best practices implementation**: Follows GATK best practices for variant calling workflows
 - **Comprehensive validation**: Built-in output validation and quality reporting
-- **No-input execution**: Runs standalone with test data, individual tasks available for production workflows
 - **Resource optimization**: Configurable memory and CPU allocation for each task
 
 ## Performance Considerations
@@ -372,7 +349,6 @@ No input files or parameters are required - the workflow uses pre-configured tes
 - **Region targeting**: Using intervals files significantly reduces runtime and resource requirements
 
 ### Optimization Tips
-- **Test workflow uses**: Fixed scatter_count of 2 optimized for demonstration purposes
 - **Production workflows**: Import individual tasks and configure scatter_count of 24+ for production data
 - **Choose parallelization strategy**: Internal parallelization for single nodes, scatter-gather for distributed computing
 - **Ensure adequate CPU allocation**: More cores = better performance for variant calling
@@ -386,7 +362,6 @@ No input files or parameters are required - the workflow uses pre-configured tes
 - **Germline VCFs**: HaplotypeCaller variant calls suitable for population genetics and clinical analysis (automatically merged from parallel processing)
 - **Somatic VCFs**: Mutect2 tumor-only somatic variant calls with filtering applied (automatically merged from parallel processing)
 - **QC metrics**: Comprehensive sequencing quality metrics including coverage statistics and duplicate rates
-- **Validation report**: Summary of pipeline execution with file verification and basic statistics
 
 ## Module Development
 
@@ -401,7 +376,6 @@ This module is automatically tested as part of the WILDS WDL Library CI/CD pipel
 ## Integration Patterns
 
 This module demonstrates several key patterns:
-- **Test data integration**: Seamless use of test data module for demonstration workflows
 - **Resource management**: Coordinated memory allocation across compute-intensive tasks
 - **Best practices workflow**: Implementation of GATK recommended variant calling pipeline
 - **Comprehensive validation**: Quality assurance for complex multi-output workflows
