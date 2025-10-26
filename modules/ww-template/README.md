@@ -114,6 +114,20 @@ This module uses the `getwilds/bwa:0.7.17` container image, which includes:
 - Basic Unix text processing tools
 - All necessary system dependencies for demonstration purposes
 
+## Citation
+
+If your module wraps a published tool or uses published reference data, include citation information here to ensure proper attribution.
+
+**Example format:**
+
+> Tool Name: [Paper Title]
+> Authors et al. (Year)
+> Journal Name, Volume(Issue), pages
+> DOI: [doi link]
+
+**Template Citation:**
+This template itself doesn't require citation, but the specific tools you wrap should be properly cited according to their authors' preferences.
+
 ## Template Information
 
 - **Purpose**: Simple template for creating new WILDS WDL modules

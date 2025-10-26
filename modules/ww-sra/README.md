@@ -6,7 +6,7 @@ A WILDS WDL module for downloading genomic data from the NCBI Sequence Read Arch
 
 ## Overview
 
-This module provides reusable WDL tasks for downloading sequencing data from the SRA using the SRA toolkit. It handles both single-end and paired-end reads, automatically detecting the read type and processing accordingly. The module includes built-in validation to ensure successful downloads.
+This module provides reusable WDL tasks for downloading sequencing data from the SRA using the SRA toolkit. It handles both single-end and paired-end reads, automatically detecting the read type and processing accordingly.
 
 The module uses `parallel-fastq-dump` for efficient, multi-threaded downloading of FASTQ files from SRA accessions.
 
@@ -14,8 +14,8 @@ The module uses `parallel-fastq-dump` for efficient, multi-threaded downloading 
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `fastqdump`, `validate_outputs`
-- **Workflow**: `sra_example` (demonstration workflow that executes all tasks)
+- **Tasks**: `fastqdump`
+- **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 - **Container**: `getwilds/sra-tools:3.1.1`
 
 ## Tasks
@@ -31,18 +31,6 @@ Downloads FASTQ files from SRA accessions with automatic paired-end detection.
 - `r1_end` (File): R1 FASTQ file
 - `r2_end` (File): R2 FASTQ file (empty for single-end)
 - `is_paired_end` (Boolean): Paired-end detection flag
-
-### `validate_outputs`
-Validates downloaded files and generates a report.
-
-**Inputs:**
-- `r1_files` (Array[File]): Array of R1 FASTQ files to validate
-- `r2_files` (Array[File]): Array of R2 FASTQ files to validate
-- `sra_ids` (Array[String]): List of SRA IDs that were processed
-- `is_paired_flags` (Array[Boolean]): Array of paired-end flags for each sample
-
-**Outputs:**
-- `report` (File): Validation summary
 
 ## Usage as a Module
 
@@ -81,11 +69,7 @@ This module pairs well with other WILDS modules:
 
 ## Testing the Module
 
-### Test Workflow
-
-### No Input Required
-
-The `sra_example` test workflow requires no input parameters and automatically downloads data with hardcoded settings:
+The `sra_example` test workflow in `testrun.wdl` requires no input parameters and automatically downloads data with hardcoded settings:
 
 - **SRA ID**: ERR1258306 (for efficient testing)
 - **CPU cores**: 2 (balanced performance)
@@ -93,12 +77,14 @@ The `sra_example` test workflow requires no input parameters and automatically d
 ### Running the Test Workflow
 
 ```bash
-# No input file needed for test workflow
-miniwdl run ww-sra.wdl
+# Using miniWDL
+miniwdl run testrun.wdl
 
-# Or with other executors
-java -jar cromwell.jar run ww-sra.wdl
-sprocket run ww-sra.wdl
+# Using Sprocket
+sprocket run testrun.wdl --entrypoint sra_example
+
+# Using Cromwell
+java -jar cromwell.jar run testrun.wdl
 ```
 
 ## Configuration Guidelines
@@ -128,9 +114,7 @@ The module supports flexible resource configuration:
 
 - **Automatic paired-end detection**: Determines read structure automatically
 - **Parallel downloading**: Multi-threaded downloads for improved performance
-- **Validation**: Built-in file validation and reporting
 - **Standardized output**: Consistent naming for downstream processing
-- **Error handling**: Robust error detection and reporting
 - **Cross-platform**: Works with SRA accessions from NCBI, ENA, and DDBJ
 
 ## Performance Considerations
@@ -144,7 +128,6 @@ The module supports flexible resource configuration:
 - **R1 FASTQ files**: Forward reads in gzip-compressed FASTQ format
 - **R2 FASTQ files**: Reverse reads for paired-end data (empty file for single-end)
 - **Paired-end flags**: Boolean indicators for read structure per sample
-- **Validation report**: Comprehensive validation with file integrity checks and download statistics
 
 ## Module Development
 

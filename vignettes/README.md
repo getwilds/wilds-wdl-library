@@ -34,14 +34,16 @@ Each vignette directory contains the following standard components:
 ```
 vignettes/vignette-name/
 ├── vignette-name.wdl    # Main workflow importing multiple modules
-├── inputs.json          # Test inputs for the complete pipeline
+├── testrun.wdl          # Zero-configuration test workflow
+├── inputs.json          # Example inputs for the complete pipeline
 └── README.md            # Vignette-specific documentation
 ```
 
 ### **Required Components**
 
 - **WDL File**: Main workflow that imports and combines modules
-- **Inputs Json**: Realistic test data for the complete pipeline
+- **Test Workflow**: `testrun.wdl` - Zero-configuration demonstration workflow with hardcoded test inputs
+- **Inputs JSON**: Example input configurations to use as a starting point for real data
 - **README**: Detailed documentation with usage examples and integration patterns
 
 ### **Optional Components**
@@ -57,17 +59,31 @@ vignettes/vignette-name/
 
 ## Using Vignettes
 
-### **As Complete Workflows**
+### **Testing and Demonstration**
 
-Vignettes can be executed as standalone pipelines:
+Vignettes include zero-configuration test workflows for demonstration:
 
 ```bash
 # Navigate to vignette directory
 cd vignettes/ww-sra-star
 
-# Run with your preferred executor
+# Run test workflow with your preferred executor (no inputs needed)
+miniwdl run testrun.wdl
+java -jar cromwell.jar run testrun.wdl
+sprocket run testrun.wdl
+```
+
+### **As Complete Workflows**
+
+Vignettes can be executed as standalone pipelines with your own data:
+
+```bash
+# Navigate to vignette directory
+cd vignettes/ww-sra-star
+
+# Run with your preferred executor using the example inputs.json as a starting point
 miniwdl run ww-sra-star.wdl -i inputs.json
-java -jar cromwell.jar run ww-sra-star.wdl --inputs inputs.json --options options.json
+java -jar cromwell.jar run ww-sra-star.wdl --inputs inputs.json
 sprocket run ww-sra-star.wdl inputs.json
 ```
 
