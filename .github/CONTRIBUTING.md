@@ -100,17 +100,25 @@ wilds-wdl-library/
 
 **The module folder must contain:**
 
-1. **`ww-toolname.wdl`** - Main WDL workflow file named for the tool it uses
-2. **`README.md`** - Comprehensive documentation
+1. **`ww-toolname.wdl`** - Main WDL file containing task definitions for the tool
+2. **`testrun.wdl`** - Test workflow demonstrating module functionality
+3. **`README.md`** - Comprehensive documentation
 
 
-**Your WDL file must include:**
+**Your main WDL file (`ww-toolname.wdl`) must include:**
 
 - **Version declaration**: Use WDL version 1.0
-- **Example workflow**: A `toolname_example` workflow that uses all tasks for testing (must follow the naming convention `{module}_example` where `{module}` is the tool name, e.g., `star_example` for `ww-star`)
 - **Task definitions**: Individual tasks with proper resource requirements
-- **Proper imports**: Use GitHub URLs for dependencies on existing WILDS WDL modules (e.g. for downloading test data)
-- **Metadata documentation**: Describe properties of the workflow and tasks (e.g. inputs, outputs)
+- **Metadata documentation**: Describe properties of tasks (e.g. inputs, outputs) using `meta` and `parameter_meta` blocks
+
+**Your test workflow file (`testrun.wdl`) must include:**
+
+- **Version declaration**: Use WDL version 1.0
+- **Module imports**: Import the module being tested and the `ww-testdata` module using GitHub URLs
+- **Sample struct definition**: Define a struct for organizing sample inputs if needed
+- **Test workflow**: A `toolname_example` workflow that demonstrates all tasks (must follow the naming convention `{module}_example` where `{module}` is the tool name, e.g., `star_example` for `ww-star`)
+- **Auto-download test data**: Use the `ww-testdata` module to automatically provision test data
+- **Validation task (optional)**: Consider including a validation task to verify output correctness
 
 **Parameter preferences:**
 
@@ -166,8 +174,9 @@ Test your WDL manually by navigating to the module directory:
 ```bash
 cd modules/ww-toolname
 
-# Linting with miniwdl
+# Linting with miniwdl (check both main module and test workflow)
 miniwdl check ww-toolname.wdl
+miniwdl check testrun.wdl
 
 # Linting with sprocket (ignoring things we don't care about)
 sprocket lint \
@@ -178,9 +187,17 @@ sprocket lint \
   -e UnusedInput \
   ww-toolname.wdl
 
-# Test running
-miniwdl run ww-toolname.wdl
-sprocket run ww-toolname.wdl --entrypoint toolname_example
+sprocket lint \
+  -e TodoComment \
+  -e ContainerUri \
+  -e TrailingComma \
+  -e CommentWhitespace \
+  -e UnusedInput \
+  testrun.wdl
+
+# Test running (use testrun.wdl for execution tests)
+miniwdl run testrun.wdl
+sprocket run testrun.wdl --entrypoint toolname_example
 ```
 
 #### Option 2: Automated Testing with Makefile (Recommended)
