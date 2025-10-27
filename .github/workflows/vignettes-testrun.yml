@@ -202,7 +202,7 @@ jobs:
         vignette_dir="vignettes/${{ matrix.vignette }}"
         wdl_file="$vignette_dir/${{ matrix.vignette }}.wdl"
         inputs_file="$vignette_dir/inputs.json"
-
+        
         echo "Running ${{ matrix.vignette }} with Sprocket..."
         sprocket run --output "test-output/sprocket/${{ matrix.vignette }}" "$wdl_file" "$inputs_file"
     - 
