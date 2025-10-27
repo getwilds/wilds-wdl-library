@@ -55,3 +55,4 @@ workflow bwa_gatk_example {
     Array[File] recalibration_report = bwa_gatk.recalibration_report
   }
 }
+

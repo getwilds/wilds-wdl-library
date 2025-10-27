@@ -95,3 +95,4 @@ workflow bwa_gatk {
     Array[File] recalibration_report = base_recalibrator.recalibration_report
   }
 }
+
