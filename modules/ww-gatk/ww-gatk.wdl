@@ -245,7 +245,7 @@ task create_sequence_dictionary {
     Int cpu_cores = 2
   }
 
-  String dict_basename = basename(reference_fasta, ".fa")
+  String dict_basename = basename(basename(reference_fasta, ".fa"), ".fasta")
 
   command <<<
     set -eo pipefail

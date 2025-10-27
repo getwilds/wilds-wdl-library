@@ -1,0 +1,18 @@
+{
+  "bwa_gatk.reference_fasta": "/path/to/reference.fasta",
+  "bwa_gatk.reference_fasta_index": "/path/to/reference.fasta.fai",
+  "bwa_gatk.dbsnp_vcf": "/path/to/dbsnp.vcf",
+  "bwa_gatk.known_indels_vcf": [
+    "/path/to/indels_1.vcf",
+    "/path/to/indels_2.vcf"
+  ],
+    "bwa_gatk.samples": [
+    {
+      "name": "SampleName",
+      "reads": "/path/to/reads_1.fastq",
+      "mates": "/path/to/reads_2.fastq"
+    }
+  ],
+  "bwa_gatk.cpu_cores": 6,
+  "bwa_gatk.memory_gb": 12
+}
