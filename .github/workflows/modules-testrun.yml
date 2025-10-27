@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   discover-modules:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       modules: ${{ steps.find-modules.outputs.modules }}
     steps:
@@ -36,7 +36,7 @@ jobs:
 
   miniwdl-test:
     needs: [discover-modules]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
@@ -65,7 +65,7 @@ jobs:
 
   cromwell-test:
     needs: [discover-modules]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
@@ -94,7 +94,7 @@ jobs:
 
   sprocket-test:
     needs: [discover-modules]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         module: ${{ fromJson(needs.discover-modules.outputs.modules) }}
