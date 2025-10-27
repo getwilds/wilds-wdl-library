@@ -143,10 +143,18 @@ wilds-wdl-library/
 - Serve as educational templates
 - Use publicly available test data
 
-
 **No New Tasks Rule**
 
 - Vignettes should **only** combine existing modules - do not create new task definitions. If you need new functionality, contribute it as a module first.
+
+**Vignette inputs.json**
+
+In order to pass the automated GitHub Action (GHA) tests, your `inputs.json` must:
+
+- Use no more than 4 CPUs (for the sprocket executor)
+- Use input files that get downloaded as part of the GHA.
+    - See the `download-test-data` job within `./github/workflows/vignettes-testrun.yml`
+    - Modify `vignettes-testrun.yml` as needed
 
 ## Workflow Development Guidelines
 
