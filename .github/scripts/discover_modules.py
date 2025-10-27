@@ -1,5 +1,8 @@
-#!/usr/bin/env python
-# -*-coding:utf-8 -*-
+#!/usr/bin/env -S uv run --script
+#
+# /// script
+# requires-python = "==3.13"
+# ///
 '''
 @File    :   discover_modules.py
 @Time    :   2025/07/01 22:47:23
