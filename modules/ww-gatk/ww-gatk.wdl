@@ -249,7 +249,7 @@ task create_sequence_dictionary {
 
   command <<<
     set -eo pipefail
-
+    
     gatk --java-options "-Xms~{memory_gb - 2}g -Xmx~{memory_gb - 1}g" \
       CreateSequenceDictionary \
       -R "~{reference_fasta}" \
@@ -366,7 +366,7 @@ task base_recalibrator {
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
+    
     # Generate vcf index files using GATK
     gatk IndexFeatureFile -I "~{dbsnp_vcf}"
     known_vcfs=(~{sep=" " known_indels_sites_vcfs})
@@ -450,7 +450,7 @@ task collect_wgs_metrics {
 
   command <<<
     set -eo pipefail
-
+    
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       CollectWgsMetrics \
       -I "~{bam}" \
@@ -531,7 +531,7 @@ task markdup_recal_metrics {
       --METRICS_FILE "~{base_file_name}.duplicate_metrics" \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 2500 \
       --VERBOSITY WARNING
-
+    
     # Index resulting bam file
     samtools index "~{base_file_name}.markdup.bam"
 
@@ -540,7 +540,7 @@ task markdup_recal_metrics {
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
+    
     # Generate vcf index files using GATK
     gatk IndexFeatureFile -I "~{dbsnp_vcf}"
     known_vcfs=(~{sep=" " known_indels_sites_vcfs})
@@ -635,23 +635,23 @@ task split_intervals {
 
   command <<<
     set -eo pipefail
-
+    
     # Add local symbolic link for reference files
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
+    
     # Create output directories
     mkdir -p scattered_intervals
-
+    
     # Create canonical chromosome intervals if filtering is enabled and no custom intervals provided
     if [[ "~{filter_to_canonical_chromosomes}" == "true" && ! -f "~{intervals}" ]]; then
       echo "Creating canonical chromosome intervals..."
       echo "@HD	VN:1.0	SO:coordinate" > canonical_chromosomes.interval_list
-
+      
       # Add sequence dictionary headers for canonical chromosomes only
       grep -E "^@SQ.*SN:(chr[1-9]|chr1[0-9]|chr2[0-2]|chrX|chrY|chrM)\s" "~{basename(reference_dict)}" >> canonical_chromosomes.interval_list || true
-
+      
       # Add interval entries for canonical chromosomes
       grep -E "^@SQ.*SN:(chr[1-9]|chr1[0-9]|chr2[0-2]|chrX|chrY|chrM)\s" "~{basename(reference_dict)}" | \
         awk '{
@@ -671,14 +671,14 @@ task split_intervals {
           }
           seq_name=""; seq_length="";
         }' >> canonical_chromosomes.interval_list
-
+      
       INTERVAL_ARG="--intervals canonical_chromosomes.interval_list"
     elif [[ -f "~{intervals}" ]]; then
       INTERVAL_ARG="--intervals ~{intervals}"
     else
       INTERVAL_ARG=""
     fi
-
+    
     # Run SplitIntervals
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       SplitIntervals \
@@ -687,7 +687,7 @@ task split_intervals {
       ${INTERVAL_ARG} \
       -O scattered_intervals/ \
       --verbosity WARNING
-
+    
     # List all created files for output
     find scattered_intervals/ -name "*.interval_list" | sort -V > interval_files.txt
   >>>
@@ -738,7 +738,7 @@ task print_reads {
 
   command <<<
     set -eo pipefail
-
+    
     # Add local symbolic link for reference files
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
@@ -747,13 +747,13 @@ task print_reads {
     # Create arrays to store output filenames
     bam_files=()
     bai_files=()
-
+    
     # Process each interval file
     counter=0
     for interval_file in ~{sep=" " intervals}; do
       interval_name=$(basename "$interval_file" .interval_list)
       output_bam="~{output_basename}.${counter}.${interval_name}.bam"
-
+      
       gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
         PrintReads \
         -R "~{basename(reference_fasta)}" \
@@ -762,12 +762,12 @@ task print_reads {
         -O "$output_bam" \
         --verbosity WARNING
       samtools index "$output_bam"
-
+      
       bam_files+=("$output_bam")
       bai_files+=("${output_bam}.bai")
       counter=$((counter + 1))
     done
-
+    
     # Write output file lists
     printf '%s\n' "${bam_files[@]}" > bam_files.txt
     printf '%s\n' "${bai_files[@]}" > bai_files.txt
@@ -822,7 +822,7 @@ task haplotype_caller {
 
   command <<<
     set -eo pipefail
-
+    
     # Add local symbolic link for reference fasta and dict
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
@@ -832,7 +832,7 @@ task haplotype_caller {
     # Create index for dbSNP vcf
     gatk IndexFeatureFile -I "~{dbsnp_vcf}"
 
-    # Run HaplotypeCaller
+    # Run HaplotypeCaller    
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       HaplotypeCaller \
       -R "~{basename(reference_fasta)}" \
@@ -895,7 +895,7 @@ task mutect2 {
 
   command <<<
     set -eo pipefail
-
+    
     # Add local symbolic link for reference fasta and dict
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
@@ -970,7 +970,7 @@ task merge_vcfs {
 
   command <<<
     set -eo pipefail
-
+    
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       MergeVcfs \
       -I ~{sep=" -I " vcfs} \
@@ -1015,7 +1015,7 @@ task merge_mutect_stats {
 
   command <<<
     set -eo pipefail
-
+    
     gatk --java-options "-Xms~{memory_gb - 2}g -Xmx~{memory_gb - 1}g" \
       MergeMutectStats \
       --stats ~{sep=" --stats " stats} \
@@ -1071,7 +1071,7 @@ task haplotype_caller_parallel {
 
   command <<<
     set -eo pipefail
-
+    
     # Add local symbolic link for reference fasta and dict
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
@@ -1088,12 +1088,12 @@ task haplotype_caller_parallel {
 
     # Create array of interval files
     intervals=(~{sep=" " intervals})
-
+    
     # Function to run HaplotypeCaller on a single interval
     run_haplotypecaller() {
       local interval_file=$1
       local interval_name=$(basename "$interval_file" .interval_list)
-
+      
       gatk --java-options "-Xms${mem_per_job}g -Xmx${mem_per_job}g" \
         HaplotypeCaller \
         -R "~{basename(reference_fasta)}" \
@@ -1119,7 +1119,7 @@ task haplotype_caller_parallel {
 
     # Collect all VCF files for merging
     find . -name "~{base_file_name}.*.vcf.gz" | sort -V > vcf_list.txt
-
+    
     # Merge VCFs using MergeVcfs with input list file
     gatk --java-options "-Xms4g -Xmx6g" \
       MergeVcfs \
@@ -1179,7 +1179,7 @@ task mutect2_parallel {
 
   command <<<
     set -eo pipefail
-
+    
     # Add local symbolic link for reference fasta and dict
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
@@ -1197,12 +1197,12 @@ task mutect2_parallel {
 
     # Create array of interval files
     intervals=(~{sep=" " intervals})
-
+    
     # Function to run Mutect2 on a single interval
     run_mutect2() {
       local interval_file=$1
       local interval_name=$(basename "$interval_file" .interval_list)
-
+      
       # Run Mutect2
       gatk --java-options "-Xms${mem_per_job}g -Xmx${mem_per_job}g" \
         Mutect2 \
@@ -1240,7 +1240,7 @@ task mutect2_parallel {
     # Collect VCF files and stats files for merging
     find . -name "~{base_file_name}.*.vcf.gz" -not -name "*.unfiltered.*" | sort -V > vcf_list.txt
     find . -name "~{base_file_name}.*.unfiltered.vcf.gz.stats" | sort -V > stats_list.txt
-
+    
     # Merge VCFs using input list file
     gatk --java-options "-Xms4g -Xmx6g" \
       MergeVcfs \
@@ -1315,19 +1315,19 @@ task validate_outputs {
 
   command <<<
     set -eo pipefail
-
+    
     echo "GATK Pipeline Validation Report" > validation_report.txt
     echo "Generated on: $(date)" >> validation_report.txt
     echo "======================================" >> validation_report.txt
     echo "" >> validation_report.txt
-
+    
     echo "Sample Summary:" >> validation_report.txt
     echo "Number of samples processed: ~{length(recalibrated_bams)}" >> validation_report.txt
     echo "" >> validation_report.txt
-
+    
     echo "File Validation:" >> validation_report.txt
     echo "Checking file existence and basic properties..." >> validation_report.txt
-
+    
     # Check MarkDuplicates BAM files
     for bam in ~{sep=" " markdup_bams}; do
       if [[ -f "$bam" ]]; then
@@ -1387,7 +1387,7 @@ task validate_outputs {
         echo "Missing Recal BAM Index: $bai" >> validation_report.txt
       fi
     done
-
+    
     # Check HaplotypeCaller VCFs if present
     for vcf in ~{sep=" " haplotype_vcfs}; do
       if [[ -f "$vcf" ]]; then
@@ -1397,7 +1397,7 @@ task validate_outputs {
         echo "Missing HaplotypeCaller VCF: $vcf" >> validation_report.txt
       fi
     done
-
+    
     # Check Mutect2 VCFs if present
     for vcf in ~{sep=" " mutect2_vcfs}; do
       if [[ -f "$vcf" ]]; then
@@ -1417,7 +1417,7 @@ task validate_outputs {
         echo "Missing Parallel HaplotypeCaller VCF: $vcf" >> validation_report.txt
       fi
     done
-
+    
     # Check Parallel Mutect2 VCFs if present
     for vcf in ~{sep=" " parallel_mutect2_vcfs}; do
       if [[ -f "$vcf" ]]; then
@@ -1427,7 +1427,7 @@ task validate_outputs {
         echo "Missing Parallel Mutect2 VCF: $vcf" >> validation_report.txt
       fi
     done
-
+    
     # Check metrics files
     for metrics in ~{sep=" " wgs_metrics}; do
       if [[ -f "$metrics" ]]; then
@@ -1436,7 +1436,7 @@ task validate_outputs {
         echo "Missing WGS Metrics: $metrics" >> validation_report.txt
       fi
     done
-
+    
     echo "" >> validation_report.txt
     echo "Validation completed successfully." >> validation_report.txt
   >>>
