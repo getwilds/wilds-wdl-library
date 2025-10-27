@@ -1254,7 +1254,7 @@ task mutect2_parallel {
     while IFS= read -r stats_file; do
       stats_args="${stats_args} --stats ${stats_file}"
     done < stats_list.txt
-
+    
     gatk --java-options "-Xms2g -Xmx3g" \
       MergeMutectStats \
       ${stats_args} \
