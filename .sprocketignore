@@ -1,0 +1,5 @@
+
+# Excluding test run WDL scripts
+modules/**/testrun.wdl
+vignettes/**/testrun.wdl
+workflows/**/testrun.wdl
