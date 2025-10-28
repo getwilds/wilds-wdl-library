@@ -164,11 +164,30 @@ This vignette can be extended by:
 - **ww-star-deseq2 workflow**: Extended pipeline with differential expression
 - **Other vignettes**: Additional integration examples
 
-## Testing
+## Testing the Vignette
 
-The vignette includes automated testing with:
-- Small test datasets (chromosome 22 subset)
-- Multiple WDL executor compatibility
+The vignette includes a test workflow with support for execution on multiple WDL backends that automatically runs with minimal test data:
+
+```bash
+# Using Cromwell
+java -jar cromwell.jar run testrun.wdl
+
+# Using miniWDL
+miniwdl run testrun.wdl
+
+# Using Sprocket
+sprocket run testrun.wdl --entrypoint sra_star_example
+```
+
+The test workflow automatically:
+1. Downloads a small SRA test dataset
+2. Builds STAR genome index from reference files
+3. Performs two-pass alignment
+4. Validates all outputs
+
+The vignette is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
+- Multiple WDL executors (Cromwell, miniWDL, Sprocket)
+- Small test datasets (chromosome 22 subset) for efficiency
 - Comprehensive output validation
 - Performance benchmarking
 

@@ -307,6 +307,36 @@ The workflow provides fine-grained control over computational resources through 
 - For testing on GitHub Actions or local machines, use the testing configuration
 - Higher scatter counts improve parallelization but require more concurrent resources
 
+## Testing the Workflow
+
+The workflow includes a test script with support for execution on multiple WDL backends that runs with minimal test data:
+
+```bash
+# Using Cromwell
+java -jar cromwell.jar run testrun.wdl
+
+# Using miniWDL
+miniwdl run testrun.wdl
+
+# Using Sprocket
+sprocket run testrun.wdl --entrypoint leukemia_example
+```
+
+The test workflow automatically:
+1. Downloads test CRAM files and reference data
+2. Runs the complete analysis pipeline with reduced resources
+3. Tests all major components (variant calling, SV detection, ichorCNA)
+4. Uses a subset of chromosomes for faster execution (chr1 only)
+5. Validates all outputs
+
+**Note**: The test run uses simplified inputs (single chromosome, reduced scatter count) optimized for CI/CD environments. For production analyses, use the full `ww-leukemia.wdl` workflow with comprehensive inputs.
+
+The workflow is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
+- Multiple WDL executors (Cromwell, miniWDL, Sprocket)
+- Test data subsets for efficiency
+- Comprehensive validation of all analysis components
+- Cross-platform compatibility testing
+
 ## Development Status
 
 **Current Status**: The workflow is production-ready and actively maintained as part of the WILDS WDL Library.
