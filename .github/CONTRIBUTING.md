@@ -101,7 +101,7 @@ wilds-wdl-library/
 **The module folder must contain:**
 
 1. **`ww-toolname.wdl`** - Main WDL file containing task definitions for the tool
-2. **`testrun.wdl`** - Test workflow demonstrating module functionality
+2. **`testrun.wdl`** - Test workflow demonstrating module functionality (must be named `testrun.wdl`)
 3. **`README.md`** - Comprehensive documentation
 
 
@@ -117,7 +117,7 @@ wilds-wdl-library/
 - **Module imports**: Import the module being tested and the `ww-testdata` module using GitHub URLs
 - **Sample struct definition**: Define a struct for organizing sample inputs if needed
 - **Test workflow**: A `toolname_example` workflow that demonstrates all tasks (must follow the naming convention `{module}_example` where `{module}` is the tool name, e.g., `star_example` for `ww-star`)
-- **Auto-download test data**: Use the `ww-testdata` module to automatically provision test data
+- **Auto-downloading of test data**: Use the `ww-testdata` module to automatically provision test data
 - **Validation task (optional)**: Consider including a validation task to verify output correctness
 
 **Parameter preferences:**
