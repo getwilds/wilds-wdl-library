@@ -8,17 +8,13 @@ A WILDS WDL module for structural variant calling using Smoove.
 
 This module provides reusable WDL tasks for structural variant (SV) calling using Smoove, a streamlined wrapper around lumpy-sv that simplifies structural variant detection. Smoove excels at calling deletions, duplications, inversions, and translocations from whole-genome sequencing data with high sensitivity and specificity.
 
-The module provides a zero-configuration test workflow that automatically downloads test data, and flexible tasks for integration with existing BAM files in production analyses.
-
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `smoove_call`, `validate_outputs`
+- **Tasks**: `smoove_call`
 - **Workflow**: `smoove_example` (demonstration workflow with automatic test data support)
 - **Container**: `brentp/smoove:latest`
-- **Dependencies**: Integrates with `ww-testdata` module for complete workflows
-- **Test Data**: Automatically downloads reference genome and BAM data when not provided
 
 ## Tasks
 
@@ -40,16 +36,6 @@ Calls structural variants using Smoove for a single sample.
 **Outputs:**
 - `vcf` (File): Compressed VCF file with structural variant calls
 - `vcf_index` (File): Index file for the VCF
-
-### `validate_outputs`
-Validates Smoove outputs and generates a comprehensive report.
-
-**Inputs:**
-- `vcf_files` (Array[File]): Array of VCF files to validate
-- `vcf_index_files` (Array[File]): Array of VCF index files to validate
-
-**Outputs:**
-- `report` (File): Validation summary with structural variant statistics
 
 ## Usage as a Module
 
@@ -80,12 +66,6 @@ workflow my_sv_pipeline {
         reference_fasta = reference_fasta,
         reference_fasta_index = reference_fasta_index
     }
-  }
-  
-  call smoove_tasks.validate_outputs {
-    input:
-      vcf_files = smoove_call.vcf,
-      vcf_index_files = smoove_call.vcf_index
   }
   
   output {
@@ -137,7 +117,7 @@ This module integrates seamlessly with other WILDS components:
 
 ### No Input Required
 
-The `smoove_example` test workflow requires no input parameters and automatically:
+The `smoove_example` test workflow in `testrun.wdl` requires no input parameters and automatically:
 
 1. Downloads test reference genome data via `ww-testdata`
 2. Downloads test sample BAM data via `ww-testdata`
@@ -154,11 +134,13 @@ The `smoove_example` test workflow requires no input parameters and automaticall
 ### Running the Test Workflow
 
 ```bash
-# No input file needed for test workflow
-miniwdl run ww-smoove.wdl
+# Using miniWDL
+miniwdl run testrun.wdl
 
-# Or with other executors
+# Using Cromwell
 java -jar cromwell.jar run ww-smoove.wdl
+
+# Using Sprocket
 sprocket run ww-smoove.wdl
 ```
 
@@ -199,21 +181,16 @@ The module supports flexible resource configuration:
 
 ## Features
 
-- **Zero-configuration testing**: Test workflow requires no input parameters
-- **Standalone execution**: Complete test workflow with automatic test data download
 - **Streamlined SV calling**: Simplified interface to lumpy-sv algorithms
 - **Multi-sample support**: Process multiple samples in parallel
 - **Flexible filtering**: Multiple options for region inclusion/exclusion
-- **Validation**: Built-in output validation and reporting
-- **Module integration**: Seamlessly combines with ww-testdata
-- **Robust**: Extensive error handling and cleanup
+- **Module integration**: Seamlessly combines with other WILDS WDL modules
 - **Compatible**: Works with multiple WDL executors
 
 ## Output Description
 
 - **VCF files**: Contain structural variant calls in compressed VCF format with lumpy-sv annotations
 - **VCF indices**: Enable rapid random access to variant regions (.tbi format)
-- **Validation report**: Comprehensive validation with file integrity checks, format validation, and variant counts
 
 ## Module Development
 

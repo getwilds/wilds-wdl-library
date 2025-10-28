@@ -14,10 +14,9 @@ The module is designed to be a foundational component within the WILDS ecosystem
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `annotsv_annotate`, `validate_outputs`
-- **Workflow**: `annotsv_example` (demonstration workflow that executes all tasks)
+- **Tasks**: `annotsv_annotate`
+- **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 - **Container**: `getwilds/annotsv:3.4.4`
-- **Test Data**: Automatically downloads test VCF when no input files provided
 
 ## Tasks
 
@@ -38,15 +37,6 @@ Annotates structural variants with comprehensive genomic and clinical informatio
 
 **Outputs:**
 - `annotated_tsv` (File): Tab-delimited file with detailed annotations per SV
-
-### `validate_outputs`
-Validates AnnotSV outputs and generates comprehensive statistics.
-
-**Inputs:**
-- `annotated_tsv_files` (Array[File]): Array of annotated TSV files to validate
-
-**Outputs:**
-- `report` (File): Validation summary with structural variant annotation statistics
 
 ## Usage as a Module
 
@@ -75,14 +65,8 @@ workflow my_sv_annotation_pipeline {
     }
   }
   
-  call annotsv_tasks.validate_outputs {
-    input:
-      annotated_tsv_files = annotsv_annotate.annotated_tsv
-  }
-  
   output {
     Array[File] annotated_variants = annotsv_annotate.annotated_tsv
-    File validation_report = validate_outputs.report
   }
 }
 ```
@@ -96,17 +80,17 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that automatically downloads test data and runs without requiring input files:
+The module includes a test workflow that automatically downloads test data and runs without requiring input files:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-annotsv.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-annotsv.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-annotsv.wdl
+sprocket run testrun.wdl --entrypoint annotsv_example
 ```
 
 ## Configuration Guidelines

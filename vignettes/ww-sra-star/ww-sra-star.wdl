@@ -22,8 +22,7 @@ workflow sra_star {
         star_log_final: "array of text files containing an overarching summary of the analysis performed for each sample",
         star_log_progress: "array of text files containing a detailed progress report for each sample",
         star_log: "array of text files containing STAR's raw command line output for each sample",
-        star_sj: "array of text files containing splice junction details for each sample being analyzed",
-        validation_report: "validation report confirming all expected outputs were generated correctly"
+        star_sj: "array of text files containing splice junction details for each sample being analyzed"
     }
   }
 
@@ -72,12 +71,6 @@ workflow sra_star {
     }
   }
 
-  call star_tasks.validate_outputs { input:
-    bam_files = align_two_pass.bam,
-    bai_files = align_two_pass.bai,
-    gene_count_files = align_two_pass.gene_counts
-  }
-
   output {
     Array[File] star_bam = align_two_pass.bam
     Array[File] star_bai = align_two_pass.bai
@@ -86,6 +79,6 @@ workflow sra_star {
     Array[File] star_log_progress = align_two_pass.log_progress
     Array[File] star_log = align_two_pass.log
     Array[File] star_sj = align_two_pass.sj_out
-    File validation_report = validate_outputs.report
   }
 }
+

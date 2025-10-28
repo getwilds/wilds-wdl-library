@@ -14,10 +14,9 @@ The module is designed to be a foundational component within the WILDS ecosystem
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `bwa_index`, `bwa_mem`, `validate_outputs`
-- **Workflow**: `bwa_example` (demonstration workflow with automatic test data support)
+- **Tasks**: `bwa_index`, `bwa_mem`
+- **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
 - **Container**: `getwilds/bwa:0.7.17`
-- **Test Data**: Automatically downloads reference genome and FASTQ data when not provided using `ww-testdata` module
 
 ## Tasks
 
@@ -48,16 +47,6 @@ Aligns paired-end reads to a reference using BWA-MEM with automatic read group a
 **Outputs:**
 - `sorted_bam` (File): Sorted BAM alignment file
 - `sorted_bai` (File): BAM index file
-
-### `validate_outputs`
-Validates alignment outputs and generates a comprehensive report.
-
-**Inputs:**
-- `bam_files` (Array[File]): Array of BAM files to validate
-- `bai_files` (Array[File]): Array of BAM index files to validate
-
-**Outputs:**
-- `report` (File): Validation summary with alignment statistics
 
 ## Usage as a Module
 
@@ -98,12 +87,6 @@ workflow my_alignment_pipeline {
     }
   }
 
-  call bwa_tasks.validate_outputs {
-    input:
-      bam_files = bwa_mem.sorted_bam,
-      bai_files = bwa_mem.sorted_bai
-  }
-
   output {
     Array[File] aligned_bams = bwa_mem.sorted_bam
     Array[File] aligned_bais = bwa_mem.sorted_bai
@@ -123,22 +106,20 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow (`bwa_example`) with support for execution on multiple WDL backends:
-
-The demonstration workflow automatically downloads test data and runs without requiring input files:
+The module includes a test workflow with support for execution on multiple WDL backends that automatically downloads test data and runs without requiring input files:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-bwa.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-bwa.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-bwa.wdl
+sprocket run testrun.wdl --entrypoint bwa_example
 ```
 
-The demonstration workflow (`bwa_example`) automatically:
+The test workflow automatically:
 1. Downloads reference genome data using `ww-testdata`
 2. Downloads FASTQ test data using `ww-testdata`
 3. Builds BWA index from reference FASTA
@@ -170,14 +151,11 @@ The module supports flexible resource configuration:
 
 ## Features
 
-- **Standalone execution**: Complete workflow with automatic test data download
-- **Automatic test data**: Uses test data from `ww-testdata` module for demonstration
 - **Paired-end or single-end input**: Use separate or interleaved paired-end FASTQs, or single-end data.
 - **BWA-MEM alignment**: Fast and accurate for reads 70bp to 1Mbp
 - **Automatic indexing**: Builds BWA index from reference FASTA with tarball packaging
 - **Sorted BAM output**: Ready for downstream analysis (variant calling, QC, etc.)
 - **Read group addition**: Proper read group tags for downstream compatibility
-- **Comprehensive validation**: Built-in output validation with alignment statistics
 - **Module integration**: Seamlessly integrates with `ww-testdata` and other WILDS modules
 - **Scalable**: Supports batch alignment across many samples
 - **Robust**: Includes error handling and thread optimization

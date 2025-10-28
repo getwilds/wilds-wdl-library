@@ -21,6 +21,7 @@ CNVkit is a Python library and command-line software toolkit to infer and visual
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
 
 - **Main WDL file**: `ww-cnvkit.wdl` - Contains all tasks and demonstration workflow
+- **Test workflow**: `testrun.wdl` - Demonstration workflow for testing and examples
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
@@ -161,18 +162,18 @@ The module includes a demonstration workflow that can be tested independently:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-cnvkit.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-cnvkit.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-cnvkit.wdl
+sprocket run testrun.wdl
 ```
 
 ### Automatic Demo Mode
 
-The `cnvkit_example` workflow automatically:
+The `cnvkit_example` workflow in `testrun.wdl` automatically:
 1. Downloads reference genome data (FASTA and index) using `ww-testdata`
 2. Downloads multiple test BAM files with unique sample names for reference creation
 3. Creates a CNVkit reference from the normal samples using WGS mode

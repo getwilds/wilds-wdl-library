@@ -16,7 +16,6 @@ This vignette is part of the [WILDS WDL Library](https://github.com/getwilds/wil
 
 - **Module Integration**: Combining `ww-sra` and `ww-star` modules
 - **Data Flow**: Seamless passing of outputs between modules
-- **Validation**: End-to-end validation of the complete pipeline
 - **Best Practices**: Modular workflow design patterns
 
 ## Pipeline Steps
@@ -33,13 +32,12 @@ This vignette is part of the [WILDS WDL Library](https://github.com/getwilds/wil
 3. **Two-Pass Alignment** (using `ww-star` module):
    - Performs STAR two-pass alignment for each sample
    - Generates BAM files, gene counts, and QC metrics
-   - Validates alignment outputs
 
 ## Module Dependencies
 
 This vignette imports and uses:
 - **ww-sra module**: For SRA data download (`fastqdump` task)
-- **ww-star module**: For genome indexing and alignment (`build_index`, `align_two_pass`, `validate_outputs` tasks)
+- **ww-star module**: For genome indexing and alignment (`build_index`, `align_two_pass` tasks)
 
 ## Usage
 
@@ -122,15 +120,6 @@ The vignette produces comprehensive outputs from both modules:
 | `star_log_progress` | STAR progress logs | ww-star |
 | `star_log` | STAR main logs | ww-star |
 | `star_sj` | Splice junction files | ww-star |
-| `validation_report` | Pipeline validation report | ww-star |
-
-## Validation and Quality Control
-
-The vignette includes comprehensive validation that checks:
-- Successful SRA downloads
-- STAR alignment completion
-- Output file integrity
-- Alignment statistics and metrics
 
 ## Resource Considerations
 
@@ -150,7 +139,6 @@ The vignette includes comprehensive validation that checks:
 This vignette is automatically tested as part of the WILDS WDL Library CI/CD pipeline:
 - Tests run on multiple WDL executors (Cromwell, miniWDL, Sprocket)
 - Uses real but small RNA-seq datasets for efficiency
-- Validates complete end-to-end functionality
 - Ensures module integration works correctly
 
 ## Integration Patterns
@@ -176,11 +164,30 @@ This vignette can be extended by:
 - **ww-star-deseq2 workflow**: Extended pipeline with differential expression
 - **Other vignettes**: Additional integration examples
 
-## Testing
+## Testing the Vignette
 
-The vignette includes automated testing with:
-- Small test datasets (chromosome 22 subset)
-- Multiple WDL executor compatibility
+The vignette includes a test workflow with support for execution on multiple WDL backends that automatically runs with minimal test data:
+
+```bash
+# Using Cromwell
+java -jar cromwell.jar run testrun.wdl
+
+# Using miniWDL
+miniwdl run testrun.wdl
+
+# Using Sprocket
+sprocket run testrun.wdl --entrypoint sra_star_example
+```
+
+The test workflow automatically:
+1. Downloads a small SRA test dataset
+2. Builds STAR genome index from reference files
+3. Performs two-pass alignment
+4. Validates all outputs
+
+The vignette is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
+- Multiple WDL executors (Cromwell, miniWDL, Sprocket)
+- Small test datasets (chromosome 22 subset) for efficiency
 - Comprehensive output validation
 - Performance benchmarking
 

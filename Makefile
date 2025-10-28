@@ -2,7 +2,7 @@
 
 # default values if not provided
 VERBOSE ?= 0
-MODULE ?= *
+NAME ?= *
 WOMTOOL ?= 86
 WOMTOOL_JAR ?= womtool-$(WOMTOOL).jar
 CROMWELL ?= 86
@@ -44,10 +44,12 @@ check_wdlparse:
 	  echo "wdlparse version $$(wdlparse --version | awk '{print $$2}')"; \
 	fi;
 
-check_module:
-	@if [ "$(MODULE)" != "*" ] && [ ! -d "modules/$(MODULE)" ]; then \
-		echo >&2 "Error: Module '$(MODULE)' not found in modules/ directory"; \
-		exit 1; \
+check_name:
+	@if [ "$(NAME)" != "*" ]; then \
+		if [ ! -d "modules/$(NAME)" ] && [ ! -d "vignettes/$(NAME)" ] && [ ! -d "workflows/$(NAME)" ]; then \
+			echo >&2 "Error: '$(NAME)' not found in modules/, vignettes/, or workflows/ directory"; \
+			exit 1; \
+		fi; \
 	fi
 
 check_java:
@@ -103,18 +105,18 @@ check_cromwell:
 
 ##@ Linting
 
-lint_sprocket: check_sprocket check_module ## Run sprocket lint on all modules or a specific module using MODULE=name
+lint_sprocket: check_sprocket check_name ## Run sprocket lint on modules, vignettes, and workflows (use NAME=foo for specific item)
 	@echo "Running sprocket lint..."
-	@for dir in modules/$(MODULE)/; do \
+	@for dir in modules/$(NAME)/ vignettes/$(NAME)/ workflows/$(NAME)/; do \
 		if [ -d "$$dir" ]; then \
 			echo "Linting $$dir"; \
 			sprocket lint "$$dir"; \
 		fi; \
 	done
 
-lint_miniwdl: check_uv check_module ## Run miniwdl lint on all modules or a specific module using MODULE=name (use VERBOSE=1 for detailed output)
+lint_miniwdl: check_uv check_name ## Run miniwdl lint on modules, vignettes, and workflows (use NAME=foo, VERBOSE=1 for details)
 	@echo "Running miniwdl lint..."
-	@for file in modules/$(MODULE)/*.wdl; do \
+	@for file in modules/$(NAME)/*.wdl vignettes/$(NAME)/*.wdl workflows/$(NAME)/*.wdl; do \
 		if [ -f "$$file" ]; then \
 			echo "Linting $$file"; \
 			if [ "$(VERBOSE)" = "1" ]; then \
@@ -125,9 +127,9 @@ lint_miniwdl: check_uv check_module ## Run miniwdl lint on all modules or a spec
 		fi; \
 	done
 
-lint_womtool: check_java check_womtool check_module ## Run WOMtool validate on all modules or a specific module using MODULE=name
+lint_womtool: check_java check_womtool check_name ## Run WOMtool validate on modules, vignettes, and workflows (use NAME=foo for specific item)
 	@echo "Running WOMtool validate..."
-	@set -e; for file in modules/$(MODULE)/*.wdl; do \
+	@set -e; for file in modules/$(NAME)/*.wdl vignettes/$(NAME)/*.wdl workflows/$(NAME)/*.wdl; do \
 		if [ -f "$$file" ]; then \
 			echo "Validating $$file"; \
 			java -jar $(WOMTOOL_JAR) validate "$$file"; \
@@ -139,33 +141,33 @@ lint: lint_sprocket lint_miniwdl lint_womtool ## Run all linting checks
 
 ##@ Run
 
-run_sprocket: check_sprocket check_module check_wdlparse ## Run sprocket run on all modules or a specific module using MODULE=name
-	@echo "Running sprocket run..."
-	@set -e; for file in modules/$(MODULE)/*.wdl; do \
-		if [ -f "$$file" ]; then \
-			echo "... for $$file"; \
-			entrypoint=$$(wdlparse parse --format json "$$file" | jq -r '.wdl.workflows[].name'); \
+run_sprocket: check_sprocket check_name check_wdlparse ## Run sprocket on testrun.wdl files (use NAME=foo for specific item)
+	@echo "Running sprocket on testrun.wdl files..."
+	@set -e; for dir in modules/$(NAME)/ vignettes/$(NAME)/ workflows/$(NAME)/; do \
+		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
+			echo "... Running $$(basename $$dir)"; \
+			entrypoint=$$(wdlparse parse --format json "$$dir/testrun.wdl" | jq -r '.wdl.workflows[].name'); \
 			echo "... Using entrypoint: $$entrypoint"; \
-			sprocket run "$$file" --entrypoint $$entrypoint; \
+			sprocket run "$$dir/testrun.wdl" --entrypoint $$entrypoint; \
 		fi; \
 	done
 
-run_miniwdl: check_uv check_module ## Run miniwdl run on all modules or a specific module using MODULE=name
-	@echo "Running miniwdl run..."
-	@set -e; for file in modules/$(MODULE)/*.wdl; do \
-		if [ -f "$$file" ]; then \
-			echo "... for $$file"; \
-			uv run --python 3.13 --with miniwdl miniwdl run "$$file"; \
+run_miniwdl: check_uv check_name ## Run miniwdl on testrun.wdl files (use NAME=foo for specific item)
+	@echo "Running miniwdl on testrun.wdl files..."
+	@set -e; for dir in modules/$(NAME)/ vignettes/$(NAME)/ workflows/$(NAME)/; do \
+		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
+			echo "... Running $$(basename $$dir)"; \
+			uv run --python 3.13 --with miniwdl miniwdl run "$$dir/testrun.wdl"; \
 		fi; \
 	done
 
-run_cromwell: check_java check_cromwell check_module ## Run Cromwell run on all modules or a specific module using MODULE=name
-	@echo "Running Cromwell run..."
-	@set -e; for file in modules/$(MODULE)/*.wdl; do \
-		if [ -f "$$file" ]; then \
-			echo "... for $$file"; \
-			java -jar $(CROMWELL_JAR) run "$$file"; \
+run_cromwell: check_java check_cromwell check_name ## Run Cromwell on testrun.wdl files (use NAME=foo for specific item)
+	@echo "Running Cromwell on testrun.wdl files..."
+	@set -e; for dir in modules/$(NAME)/ vignettes/$(NAME)/ workflows/$(NAME)/; do \
+		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
+			echo "... Running $$(basename $$dir)"; \
+			java -jar $(CROMWELL_JAR) run "$$dir/testrun.wdl"; \
 		fi; \
 	done
 
-run: run_sprocket run_miniwdl run_cromwell ## Run all run checks
+run: run_sprocket run_miniwdl run_cromwell ## Run all engines on testrun.wdl files

@@ -62,7 +62,6 @@ workflow ww_leukemia {
     email: "wilds@fredhutch.org"
     description: "Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing with focus on leukemia analysis - Refactored with WILDS modules"
     url: "https://github.com/getwilds/ww-leukemia"
-    version: "2.0.0"
     outputs: {
         haplotype_vcf: "Array of variant calls from GATK HaplotypeCaller",
         mpileup_vcf: "Array of variant calls from samtools/bcftools mpileup",
@@ -101,20 +100,24 @@ workflow ww_leukemia {
     ref_fasta_index: "Index file (.fai) for the reference genome FASTA"
     ref_dict: "Sequence dictionary (.dict) for the reference genome"
     dbsnp_vcf: "dbSNP VCF file for base quality score recalibration and variant annotation"
-    dbsnp_vcf_index: "Index file for the dbSNP VCF"
     af_only_gnomad: "gnomAD allele frequency VCF file for Mutect2 germline resource"
-    af_only_gnomad_index: "Index file for the gnomAD allele frequency VCF"
     wig_gc: "GC-content WIG file"
     wig_map: "Mappability score WIG file"
     panel_of_norm_rds: "RDS file of median corrected depth from panel of normals"
     centromeres: "Text file containing Centromere locations"
+    ichorcna_chromosomes: "Array of chromosomes for ichorCNA read counting (e.g., ['chr1', 'chr2', ...]). Default: all autosomes + sex chromosomes"
+    ichorcna_chrs_string: "R-style string of chromosomes for ichorCNA analysis (e.g., 'c(1:22, \"X\", \"Y\")'). Default: all autosomes + sex chromosomes"
     known_indels_sites_vcfs: "Array of VCF files containing known indel sites for base quality score recalibration"
-    known_indels_sites_indices: "Array of index files for the known indels VCF files"
     samples: "Array of sample information structs containing sample names, molecular IDs, and CRAM files"
     ref_name: "Reference genome build name (e.g., 'hg38', 'hg19') used for Annovar annotation"
     annovar_protocols: "Comma-separated list of Annovar annotation protocols to apply"
     annovar_operation: "Comma-separated list of Annovar operations corresponding to the protocols"
     scatter_count: "Number of intervals to scatter across for parallel processing"
+    high_intensity_cpus: "Number of CPU cores for high-intensity tasks (bwa_mem, markdup_recal_metrics, mpileup_call, SV callers). Default: 8 for production, use 2 for testing"
+    high_intensity_memory_gb: "Memory allocation in GB for high-intensity tasks. Default: 16 for production, use 4-8 for testing"
+    standard_cpus: "Number of CPU cores for standard-intensity tasks (bwa_index, crams_to_fastq, split_intervals, annovar, annotsv, ichorcna). Default: 4 for production, use 2 for testing"
+    standard_memory_gb: "Memory allocation in GB for standard-intensity tasks. Default: 8 for production, use 4 for testing"
+    skip_annotations: "Skip variant and SV annotation tasks (annovar and annotsv). Set to true for CI/CD testing to reduce disk usage. Default: false (run all annotations)"
   }
 
   input {
@@ -122,20 +125,24 @@ workflow ww_leukemia {
     File ref_fasta_index
     File ref_dict
     File dbsnp_vcf
-    File dbsnp_vcf_index
     File af_only_gnomad
-    File af_only_gnomad_index
     File wig_gc
     File wig_map
     File panel_of_norm_rds
     File centromeres
+    Array[String] ichorcna_chromosomes
+    String ichorcna_chrs_string
     Array[File] known_indels_sites_vcfs
-    Array[File] known_indels_sites_indices
     Array[SampleDetails] samples
     String ref_name
     String annovar_protocols
     String annovar_operation
     Int scatter_count = 32
+    Int high_intensity_cpus = 8
+    Int high_intensity_memory_gb = 16
+    Int standard_cpus = 4
+    Int standard_memory_gb = 8
+    Boolean skip_annotations = false
   }
 
   # Use GATK module for splitting intervals
@@ -143,12 +150,16 @@ workflow ww_leukemia {
       reference_fasta = ref_fasta,
       reference_fasta_index = ref_fasta_index,
       reference_dict = ref_dict,
-      scatter_count = scatter_count
+      scatter_count = scatter_count,
+      cpu_cores = standard_cpus,
+      memory_gb = standard_memory_gb
   }
 
   # Use BWA module for indexing
   call bwa_tasks.bwa_index { input:
-      reference_fasta = ref_fasta
+      reference_fasta = ref_fasta,
+      cpu_cores = standard_cpus,
+      memory_gb = standard_memory_gb
   }
 
   scatter (sample in samples){
@@ -158,7 +169,9 @@ workflow ww_leukemia {
     call samtools_tasks.crams_to_fastq { input:
         cram_files = sample.cramfiles,
         ref = ref_fasta,
-        name = sample.name
+        name = sample.name,
+        cpu_cores = standard_cpus,
+        memory_gb = standard_memory_gb
     }
 
     # Use BWA module for alignment
@@ -168,8 +181,8 @@ workflow ww_leukemia {
         reads = crams_to_fastq.r1_fastq,
         mates = crams_to_fastq.r2_fastq,
         name = base_file_name,
-        cpu_cores = 16,
-        memory_gb = 32
+        cpu_cores = high_intensity_cpus,
+        memory_gb = high_intensity_memory_gb
     }
 
     # Use GATK module for mark duplicates and base recalibration (combined)
@@ -181,7 +194,9 @@ workflow ww_leukemia {
         reference_fasta_index = ref_fasta_index,
         reference_dict = ref_dict,
         known_indels_sites_vcfs = known_indels_sites_vcfs,
-        base_file_name = base_file_name
+        base_file_name = base_file_name,
+        cpu_cores = high_intensity_cpus,
+        memory_gb = high_intensity_memory_gb
     }
 
     # Run HaplotypeCaller with internal parallelization
@@ -217,43 +232,47 @@ workflow ww_leukemia {
         bam_file = markdup_recal_metrics.recalibrated_bam,
         bam_index = markdup_recal_metrics.recalibrated_bai,
         reference_fasta = ref_fasta,
-        reference_fasta_index = ref_fasta_index
+        reference_fasta_index = ref_fasta_index,
+        cpu_cores = high_intensity_cpus,
+        memory_gb = high_intensity_memory_gb
     }
 
-    # Use Annovar module for variant annotation
-    call annovar_tasks.annovar_annotate as annotateSAM { input:
-        vcf_to_annotate = mpileup_call.mpileup_vcf,
-        ref_name = ref_name,
-        annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols,
-        cpu_cores = 4,
-        memory_gb = 16
-    }
+    # Use Annovar module for variant annotation (skippable for CI/CD testing)
+    if (!skip_annotations) {
+      call annovar_tasks.annovar_annotate as annotateSAM { input:
+          vcf_to_annotate = mpileup_call.mpileup_vcf,
+          ref_name = ref_name,
+          annovar_operation = annovar_operation,
+          annovar_protocols = annovar_protocols,
+          cpu_cores = standard_cpus,
+          memory_gb = standard_memory_gb
+      }
 
-    call annovar_tasks.annovar_annotate as annotateMutect { input:
-        vcf_to_annotate = mutect2_parallel.vcf,
-        ref_name = ref_name,
-        annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols,
-        cpu_cores = 4,
-        memory_gb = 16
-    }
+      call annovar_tasks.annovar_annotate as annotateMutect { input:
+          vcf_to_annotate = mutect2_parallel.vcf,
+          ref_name = ref_name,
+          annovar_operation = annovar_operation,
+          annovar_protocols = annovar_protocols,
+          cpu_cores = standard_cpus,
+          memory_gb = standard_memory_gb
+      }
 
-    call annovar_tasks.annovar_annotate as annotateHaplotype { input:
-        vcf_to_annotate = haplotype_caller_parallel.vcf,
-        ref_name = ref_name,
-        annovar_operation = annovar_operation,
-        annovar_protocols = annovar_protocols,
-        cpu_cores = 4,
-        memory_gb = 16
-    }
+      call annovar_tasks.annovar_annotate as annotateHaplotype { input:
+          vcf_to_annotate = haplotype_caller_parallel.vcf,
+          ref_name = ref_name,
+          annovar_operation = annovar_operation,
+          annovar_protocols = annovar_protocols,
+          cpu_cores = standard_cpus,
+          memory_gb = standard_memory_gb
+      }
 
-    # Keep custom consensus processing task
-    call consensus_processing { input:
-        gatk_vars = annotateHaplotype.annotated_table,
-        sam_vars = annotateSAM.annotated_table,
-        mutect_vars = annotateMutect.annotated_table,
-        base_file_name = base_file_name
+      # Keep custom consensus processing task
+      call consensus_processing { input:
+          gatk_vars = annotateHaplotype.annotated_table,
+          sam_vars = annotateSAM.annotated_table,
+          mutect_vars = annotateMutect.annotated_table,
+          base_file_name = base_file_name
+      }
     }
 
     # Use Manta module for structural variants
@@ -262,7 +281,9 @@ workflow ww_leukemia {
         aligned_bam_index = markdup_recal_metrics.recalibrated_bai,
         reference_fasta = ref_fasta,
         reference_fasta_index = ref_fasta_index,
-        sample_name = base_file_name
+        sample_name = base_file_name,
+        cpu_cores = high_intensity_cpus,
+        memory_gb = high_intensity_memory_gb
     }
 
     # Use Smoove module for structural variants
@@ -271,7 +292,9 @@ workflow ww_leukemia {
         aligned_bam_index = markdup_recal_metrics.recalibrated_bai,
         sample_name = base_file_name,
         reference_fasta = ref_fasta,
-        reference_fasta_index = ref_fasta_index
+        reference_fasta_index = ref_fasta_index,
+        cpu_cores = high_intensity_cpus,
+        memory_gb = high_intensity_memory_gb
     }
 
     # Use Delly module for structural variants
@@ -279,25 +302,33 @@ workflow ww_leukemia {
         aligned_bam = markdup_recal_metrics.recalibrated_bam,
         aligned_bam_index = markdup_recal_metrics.recalibrated_bai,
         reference_fasta = ref_fasta,
-        reference_fasta_index = ref_fasta_index
+        reference_fasta_index = ref_fasta_index,
+        cpu_cores = high_intensity_cpus,
+        memory_gb = high_intensity_memory_gb
     }
 
-    # Use AnnotSV module for Manta annotation
-    call annotsv_tasks.annotsv_annotate as annotateManta { input:
-        raw_vcf = manta_call.vcf,
-        genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37"
-    }
+    # Use AnnotSV module for SV annotation (skippable for CI/CD testing)
+    if (!skip_annotations) {
+      call annotsv_tasks.annotsv_annotate as annotateManta { input:
+          raw_vcf = manta_call.vcf,
+          genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37",
+          cpu_cores = standard_cpus,
+          memory_gb = standard_memory_gb
+      }
 
-    # Use AnnotSV module for Smoove annotation
-    call annotsv_tasks.annotsv_annotate as annotateSmoove { input:
-        raw_vcf = smoove_call.vcf,
-        genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37"
-    }
+      call annotsv_tasks.annotsv_annotate as annotateSmoove { input:
+          raw_vcf = smoove_call.vcf,
+          genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37",
+          cpu_cores = standard_cpus,
+          memory_gb = standard_memory_gb
+      }
 
-    # Use AnnotSV module for Delly annotation
-    call annotsv_tasks.annotsv_annotate as annotateDelly { input:
-        raw_vcf = delly_call.vcf,
-        genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37"
+      call annotsv_tasks.annotsv_annotate as annotateDelly { input:
+          raw_vcf = delly_call.vcf,
+          genome_build = if ref_name == "hg38" then "GRCh38" else "GRCh37",
+          cpu_cores = standard_cpus,
+          memory_gb = standard_memory_gb
+      }
     }
 
     # Use ichorCNA module for tumor fraction analysis
@@ -305,8 +336,10 @@ workflow ww_leukemia {
         bam_file = markdup_recal_metrics.recalibrated_bam,
         bam_index = markdup_recal_metrics.recalibrated_bai,
         sample_name = base_file_name,
-        chromosomes = ["chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"],
-        window_size = 500000
+        chromosomes = ichorcna_chromosomes,
+        window_size = 500000,
+        cpus = standard_cpus,
+        memory_gb = standard_memory_gb
     }
 
     call ichorcna_tasks.ichorcna_call { input:
@@ -319,7 +352,9 @@ workflow ww_leukemia {
       sex = "male", # Defaulting to male for now, can be parameterized later
       genome = ref_name,
       genome_style = "UCSC", # Defaulting to UCSC style for now
-      chrs = "c(1:22, 'X', 'Y')"
+      chrs = ichorcna_chrs_string,
+      cpus = standard_cpus,
+      memory_gb = standard_memory_gb
     }
   } # End scatter
 
@@ -330,23 +365,23 @@ workflow ww_leukemia {
     Array[File] mutect_vcf = mutect2_parallel.vcf
     Array[File] mutect_vcf_index = mutect2_parallel.vcf_index
     Array[File] mutect_stats = mutect2_parallel.stats_file
-    Array[File] mutect_annotated_vcf = annotateMutect.annotated_vcf
-    Array[File] mutect_annotated_table = annotateMutect.annotated_table
-    Array[File] haplotype_annotated_vcf = annotateHaplotype.annotated_vcf
-    Array[File] haplotype_annotated_table = annotateHaplotype.annotated_table
-    Array[File] mpileup_annotated_vcf = annotateSAM.annotated_vcf
-    Array[File] mpileup_annotated_table = annotateSAM.annotated_table
+    Array[File] mutect_annotated_vcf = select_all(annotateMutect.annotated_vcf)
+    Array[File] mutect_annotated_table = select_all(annotateMutect.annotated_table)
+    Array[File] haplotype_annotated_vcf = select_all(annotateHaplotype.annotated_vcf)
+    Array[File] haplotype_annotated_table = select_all(annotateHaplotype.annotated_table)
+    Array[File] mpileup_annotated_vcf = select_all(annotateSAM.annotated_vcf)
+    Array[File] mpileup_annotated_table = select_all(annotateSAM.annotated_table)
     Array[File] gatk_wgs_metrics = markdup_recal_metrics.wgs_metrics
-    Array[File] consensus_variants = consensus_processing.consensus_tsv
+    Array[File] consensus_variants = select_all(consensus_processing.consensus_tsv)
     Array[File] manta_sv_vcf = manta_call.vcf
     Array[File] manta_sv_vcf_index = manta_call.vcf_index
-    Array[File] manta_sv_annotated_tsv = annotateManta.annotated_tsv
+    Array[File] manta_sv_annotated_tsv = select_all(annotateManta.annotated_tsv)
     Array[File] smoove_sv_vcf = smoove_call.vcf
     Array[File] smoove_sv_vcf_index = smoove_call.vcf_index
-    Array[File] smoove_sv_annotated_tsv = annotateSmoove.annotated_tsv
+    Array[File] smoove_sv_annotated_tsv = select_all(annotateSmoove.annotated_tsv)
     Array[File] delly_sv_bcf = delly_call.vcf
     Array[File] delly_sv_bcf_index = delly_call.vcf_index
-    Array[File] delly_sv_annotated_tsv = annotateDelly.annotated_tsv
+    Array[File] delly_sv_annotated_tsv = select_all(annotateDelly.annotated_tsv)
     Array[File] ichorcna_params = ichorcna_call.params
     Array[File] ichorcna_seg = ichorcna_call.seg
     Array[File] ichorcna_genomewide_pdf = ichorcna_call.genomewide_pdf

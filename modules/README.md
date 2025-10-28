@@ -36,13 +36,15 @@ Each module directory contains the following standard components:
 
 ```
 modules/module-name/
-├── module-name.wdl         # Main WDL file with tasks and demo workflow
+├── module-name.wdl         # Main WDL file with task definitions
+├── testrun.wdl             # Zero-configuration test workflow
 └── README.md               # Module-specific documentation
 ```
 
 ### **Required Components**
 
-- **WDL File**: Contains all tasks plus a zero-configuration demonstration workflow
+- **WDL File**: Contains all task definitions for the module
+- **Test Workflow**: `testrun.wdl` - Zero-configuration demonstration workflow that exercises all tasks
 - **README**: Module-specific documentation with usage examples
 
 ## Available Modules
@@ -88,7 +90,7 @@ We recommend using GitHub URLs when importing WILDS WDL modules for a few reason
 - **Easy updates**: Switch between versions by changing the URL
 - **Modular usage**: Import only the modules you need
 
-### **Running Demo Workflows**
+### **Running Test Workflows**
 
 Each module can be executed independently for testing or demonstration with zero configuration:
 
@@ -97,12 +99,12 @@ Each module can be executed independently for testing or demonstration with zero
 cd modules/ww-star
 
 # Run test workflow with your preferred executor (no inputs needed)
-miniwdl run ww-star.wdl
-java -jar cromwell.jar run ww-star.wdl
-sprocket run ww-star.wdl --entrypoint star_example
+miniwdl run testrun.wdl
+java -jar cromwell.jar run testrun.wdl
+sprocket run testrun.wdl
 ```
 
-The demo workflows automatically download test data and use hardcoded settings optimized for testing.
+The test workflows automatically download test data and use hardcoded settings optimized for testing.
 
 ## Testing and Validation
 
