@@ -55,7 +55,7 @@ jobs:
           workflows/**/testrun.wdl
           EOF
           # Build docs
-          sprocket dev doc -v --homepage README.md --logo WILDSWDLLogo.svg .
+          sprocket dev doc -v --homepage README.md --logo WILDSWDLNameLogo.svg .
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

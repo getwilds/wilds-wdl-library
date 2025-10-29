@@ -8,8 +8,13 @@
 </tr>
 </table>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Project Status: Prototype – Useable, some support, open to feedback, unstable API.](https://getwilds.org/badges/badges/prototype.svg)](https://getwilds.org/badges/#prototype) [![WDL Executors](https://img.shields.io/badge/WDL-Cromwell%20%7C%20miniWDL%20%7C%20Sprocket-blue.svg)](https://github.com/getwilds/wilds-wdl-library) [![WDL](https://img.shields.io/badge/WDL-1.0-orange.svg)](https://openwdl.org/)<br>
-[![Module Tests](https://github.com/getwilds/wilds-wdl-library/actions/workflows/modules-testrun.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/modules-testrun.yml) [![Vignette Tests](https://github.com/getwilds/wilds-wdl-library/actions/workflows/vignettes-testrun.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/vignettes-testrun.yml) [![Linting](https://github.com/getwilds/wilds-wdl-library/actions/workflows/linting.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/linting.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Project Status: Prototype – Useable, some support, open to feedback, unstable API.](https://getwilds.org/badges/badges/prototype.svg)](https://getwilds.org/badges/#prototype)
+[![WDL Executors](https://img.shields.io/badge/WDL-Cromwell%20%7C%20miniWDL%20%7C%20Sprocket-blue.svg)](https://github.com/getwilds/wilds-wdl-library)
+[![WDL](https://img.shields.io/badge/WDL-1.0-orange.svg)](https://openwdl.org/)<br>
+[![Module Tests](https://github.com/getwilds/wilds-wdl-library/actions/workflows/modules-testrun.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/modules-testrun.yml)
+[![Vignette Tests](https://github.com/getwilds/wilds-wdl-library/actions/workflows/vignettes-testrun.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/vignettes-testrun.yml)
+[![Linting](https://github.com/getwilds/wilds-wdl-library/actions/workflows/linting.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/linting.yml)
 
 ## Overview
 
