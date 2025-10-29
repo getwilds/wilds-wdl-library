@@ -56,6 +56,8 @@ jobs:
           EOF
           # Build docs
           sprocket dev doc -v --homepage README.md --logo WILDSWDLNameLogo.svg .
+          # Post-process generated HTML files
+          uv run .github/scripts/postprocess_docs.py
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
