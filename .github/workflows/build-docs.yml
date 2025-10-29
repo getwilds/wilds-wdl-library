@@ -23,17 +23,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      -
-        name: Set Up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      -
-        name: Install cargo-binstall
+      - name: Set Up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-binstall
         run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-      -
-        name: Install Sprocket
+
+      - name: Install Sprocket
         run: |
           cargo-binstall sprocket --version 0.16.0 -y
 
