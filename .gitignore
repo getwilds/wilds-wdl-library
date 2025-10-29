@@ -7,6 +7,9 @@
 runs
 output
 
+# .sprocketignore is generated in CI for docs, don't commit it
+.sprocketignore
+
 # cromwell/womtool files
 cromwell*.jar
 womtool*.jar

@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 import re
+import os
 
 def is_interactive() -> bool:
     return hasattr(sys, "ps1")
@@ -21,8 +22,8 @@ def fetch_file(path: Path) -> list[str]:
 
 def convert_github_imports_to_relative(wdl_content: list[str], wdl_path: Path, root: Path) -> list[str]:
     """Convert GitHub URL imports to relative paths."""
-    # Pattern to match GitHub imports
-    github_pattern = r'import\s+"https://raw\.githubusercontent\.com/getwilds/wilds-wdl-library/[^"]+/([^"]+)"\s+as\s+'
+    # Pattern to match GitHub imports - capture everything after the branch name
+    github_pattern = r'import\s+"https://raw\.githubusercontent\.com/getwilds/wilds-wdl-library/refs/heads/[^/]+/(.+?)"\s+as\s+'
 
     converted_lines = []
     for line in wdl_content:
@@ -35,15 +36,12 @@ def convert_github_imports_to_relative(wdl_content: list[str], wdl_path: Path, r
             current_dir = wdl_path.parent
             target_path = root / github_path
 
-            try:
-                relative_path = target_path.relative_to(current_dir)
-            except ValueError:
-                # If relative_to fails, use a fallback approach
-                relative_path = Path("..") / github_path
+            # Use os.path.relpath to compute the relative path correctly
+            relative_path = os.path.relpath(target_path, current_dir)
 
             # Replace the GitHub URL with relative path
             new_line = re.sub(
-                r'import\s+"https://raw\.githubusercontent\.com/getwilds/wilds-wdl-library/[^"]+/[^"]+"\s+as\s+',
+                r'import\s+"https://raw\.githubusercontent\.com/getwilds/wilds-wdl-library/refs/heads/[^/]+/.+?"\s+as\s+',
                 f'import "{relative_path}" as ',
                 line
             )

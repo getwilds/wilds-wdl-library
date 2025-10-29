@@ -47,6 +47,13 @@ jobs:
         run: |
           # Join WDL dir specific README's into .wdl files
           uv run .github/scripts/make_preambles.py
+          # Create .sprocketignore to exclude testrun.wdl files from docs
+          cat > .sprocketignore << 'EOF'
+          # Excluding test run WDL's from documentation builds
+          modules/**/testrun.wdl
+          vignettes/**/testrun.wdl
+          workflows/**/testrun.wdl
+          EOF
           # Build docs
           sprocket dev doc -v --homepage README.md --logo WILDSWDLLogo.svg .
 
