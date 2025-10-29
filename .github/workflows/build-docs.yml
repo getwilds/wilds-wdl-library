@@ -45,8 +45,6 @@ jobs:
           # uv run .github/scripts/make-preambles.py
           # Build docs
           sprocket dev doc -v --homepage README.md --logo WILDSWDLLogo.svg .
-          # Copy assets to docs directory
-          cp -r assets docs/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -54,7 +52,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: 'docs'
 
       - name: Deploy to GitHub Pages
         id: deployment
