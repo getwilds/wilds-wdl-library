@@ -27,6 +27,5 @@ workflow sra_star_example {
     Array[File] star_log_progress = sra_star.star_log_progress
     Array[File] star_log = sra_star.star_log
     Array[File] star_sj = sra_star.star_sj
-    File validation_report = sra_star.validation_report
   }
 }
