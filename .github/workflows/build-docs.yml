@@ -12,6 +12,10 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build-docs:
     runs-on: ubuntu-latest
@@ -41,8 +45,8 @@ jobs:
 
       - name: Build docs
         run: |
-          # # Join WDL dir specific README's into .wdl files
-          # uv run .github/scripts/make-preambles.py
+          # Join WDL dir specific README's into .wdl files
+          uv run .github/scripts/make_preambles.py
           # Build docs
           sprocket dev doc -v --homepage README.md --logo WILDSWDLLogo.svg .
 
