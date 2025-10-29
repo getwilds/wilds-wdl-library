@@ -1,6 +1,6 @@
 <table>
 <tr>
-  <td><img src="WILDSWDLLogo.jpeg" width="400" alt="WILDS WDL logo"></td>
+  <td width="400"><img src="https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/WILDSWDLLogo.jpeg" width="400" alt="WILDS WDL logo"></td>
   <td>
     <h1>WILDS WDL Library</h1>
     <p>A centralized collection of bioinformatics WDL infrastructure providing reusable, well-tested components that can be combined to create powerful computational pipelines for genomics research.</p>
