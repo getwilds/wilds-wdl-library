@@ -1,0 +1,47 @@
+name: WDL Docs
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update Rust
+        run: rustup update stable && rustup default stable
+
+      - name: Build Sprocket
+        run: |
+          cargo install sprocket@0.16.0 --locked
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.10"
+          python-version: 3.13.5
+
+      - name: Build docs
+        run: |
+          # # Join WDL dir specific README's into .wdl files
+          # uv run .github/scripts/make-preambles.py
+          # Build docs
+          sprocket dev doc -v --homepage README.md --logo WILDSWDLLogo.svg .
+          # Copy assets to docs directory
+          cp -r assets docs/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
