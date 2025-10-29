@@ -6,6 +6,44 @@ import re
 import sys
 
 
+def set_default_sidebar_tab(html_content: str) -> str:
+    """
+    Set the default sidebar tab to 'Full Directory' instead of 'Workflows'.
+    Changes showWorkflows from true to false.
+    """
+    # Find and replace the showWorkflows initialization
+    fixed_content = html_content.replace(
+        'showWorkflows: $persist(true).using(sessionStorage)',
+        'showWorkflows: $persist(false).using(sessionStorage)'
+    )
+
+    return fixed_content
+
+
+def update_page_title(html_content: str, file_path: Path) -> str:
+    """
+    Update the page title for the homepage from 'Home' to 'WILDS WDL Library'.
+    Also updates the homepage header text.
+    Only applies to index.html files.
+    """
+    # Only update title for index.html files
+    if file_path.name == 'index.html':
+        # Check if this is the root index.html (not in subdirectories)
+        if file_path.parent.name == 'docs':
+            fixed_content = html_content.replace(
+                '<title>Home</title>',
+                '<title>WILDS WDL Library</title>'
+            )
+            # Also update the homepage header
+            fixed_content = fixed_content.replace(
+                '<h5 class="main__homepage-header">Home</h5>',
+                '<h5 class="main__homepage-header">WILDS WDL Library</h5>'
+            )
+            return fixed_content
+
+    return html_content
+
+
 def fix_badge_paragraphs(html_content: str) -> str:
     """
     Fix badge rendering by wrapping all badges in a single div with inline display.
@@ -45,6 +83,8 @@ def postprocess_html_file(file_path: Path) -> None:
         original_content = content
 
         # Apply fixes
+        content = update_page_title(content, file_path)
+        content = set_default_sidebar_tab(content)
         content = fix_badge_paragraphs(content)
 
         # Only write if content changed
