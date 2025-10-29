@@ -38,6 +38,7 @@ jobs:
         with:
           version: "0.8.10"
           python-version: 3.13.5
+          enable-cache: false
 
       - name: Build docs
         run: |
