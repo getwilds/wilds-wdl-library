@@ -8,16 +8,30 @@ import sys
 
 def fix_badge_paragraphs(html_content: str) -> str:
     """
-    Fix badge rendering by removing <p> tags around badge groups.
-    The markdown converter wraps badges in <p> tags causing line breaks.
-    We want badges to be inline elements with only the <br> controlling line breaks.
+    Fix badge rendering by wrapping all badges in a single div with inline display.
+    The markdown converter creates line breaks between badges, we want them inline.
     """
-    # Pattern to match the opening <p> tag before badges and remove it
-    # This looks for <p> followed by badge anchor tags
-    pattern = r'<p>(<a href="[^"]*"[^>]*><img src="https://(?:img\.shields\.io|getwilds\.org/badges)[^"]*"[^>]*></a>)'
+    # Pattern to match the entire badge section from first badge to closing </p>
+    # This captures: optional <p>, all badge links (with <br>), and closing </p>
+    pattern = r'(?:<p>)?(<a href="[^"]*"[^>]*><img src="https://(?:img\.shields\.io|getwilds\.org/badges)[^"]*"[^>]*></a>(?:\s*\n\s*<a href="[^"]*"[^>]*><img src="https://(?:img\.shields\.io|getwilds\.org/badges|github\.com/[^/]+/[^/]+/actions)[^"]*"[^>]*></a>|\s*<br>\s*)*)</p>'
 
-    # Remove the opening <p> tag before badges
-    fixed_content = re.sub(pattern, r'\1', html_content)
+    def replace_badges(match):
+        badge_content = match.group(1)
+        # Remove newlines between badges (but keep <br> tags)
+        badge_content = re.sub(r'>\s*\n\s*<a', '> <a', badge_content)
+
+        # Add inline display style to each anchor tag to force inline rendering
+        badge_content = re.sub(
+            r'<a href',
+            r'<a style="display: inline-block; margin-right: 4px;" href',
+            badge_content
+        )
+
+        # Wrap in a div with inline styling to keep badges inline
+        return f'<div style="line-height: 2.5; margin-bottom: 1em;">{badge_content}</div>'
+
+    # Replace the badge paragraph with a styled div
+    fixed_content = re.sub(pattern, replace_badges, html_content, flags=re.MULTILINE | re.DOTALL)
 
     return fixed_content
 
