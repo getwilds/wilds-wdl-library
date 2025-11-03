@@ -88,37 +88,6 @@ WILDS vignettes and workflows use GitHub URLs for imports, providing several adv
 - **Easy updates**: Switch between versions by changing the URL
 - **Modular usage**: Import only the modules you need
 
-## Available Components
-
-### Modules
-| Module | Tool | Container | Description |
-|--------|------|-----------|-------------|
-| `ww-annovar` | Variant Annotator | `getwilds/annovar:GRCh38` | Annotate genetic variants with ANNOVAR |
-| `ww-annotsv` | Structural Variant Annotator | `getwilds/annotsv:3.4.4` | Annotate structural variants with AnnotSV |
-| `ww-aws-sso` | AWS Operations | `getwilds/awscli:2.27.49` | AWS S3 operations with SSO and temporary credential support |
-| `ww-bcftools` | Utilities for Variant Calls | `getwilds/bcftools:1.19` | Call and analyze variants with BCFtools |
-| `ww-bedtools` | Utilities for Genomic Intervals | `getwilds/bedtools:2.31.1` | Work with genomic intervals |
-| `ww-bwa` | BWA Aligner | `getwilds/bwa:0.7.17` | Alignment with the Burrows-Wheeler Aligner |
-| `ww-delly` | Structural Variant Caller | `getwilds/delly:1.2.9` | Call structural variants with Delly |
-| `ww-gatk` | GATK Variant Calling | `getwilds/gatk:4.6.1.0` | Variant calling and processing with GATK |
-| `ww-ichorcna` | Tumor Fraction Estimator | `getwilds/ichorcna:0.2.0` | Estimate tumor fraction with ichorCNA |
-| `ww-manta` | Structural Variant Caller | `getwilds/manta:1.6.0` | Call structural variants with Manta |
-| `ww-samtools` | Utilities for SAM/BAM/CRAM Files | `getwilds/samtools:1.11` | Work with Sequence Alignment/Map (SAM) format files |
-| `ww-smoove` | Structural Variant Caller | `brentp/smoove:latest` | Call structural variants with Smoove |
-| `ww-sra` | SRA Toolkit | `getwilds/sra-tools:3.1.1` | Download sequencing data from NCBI SRA |
-| `ww-star` | STAR Aligner | `getwilds/star:2.7.6a` | RNA-seq alignment with two-pass methodology |
-| `ww-testdata` | Test Data Downloader | `getwilds/awscli:2.27.49` | Download reference genomes and test datasets |
-
-### Vignettes
-| Vignette | Modules | Description |
-|----------|---------|-------------|
-| `ww-sra-star` | `ww-sra` + `ww-star` | Complete RNA-seq pipeline from SRA download to alignment |
-
-### Workflows
-| Workflow | Description |
-|----------|-------------|
-| `ww-leukemia` | Consensus variant calling workflow for targeted DNA sequencing. |
-
 ## Supported Executors
 
 All components are tested with multiple WDL executors:

@@ -205,7 +205,7 @@ docs-preview: check_sprocket check_uv ## Build and serve documentation preview l
 	@echo "Step 6/7: Post-processing documentation..."
 	@uv run --python 3.13 .github/scripts/postprocess_docs.py
 	@echo "Step 7/7: Restoring original state..."
-	@git restore modules/ vignettes/ workflows/ 2>/dev/null || true
+	@git restore README.md modules/ vignettes/ workflows/ 2>/dev/null || true
 	@rm -f .sprocketignore
 	@if git stash list | grep -q "docs-preview: temporary stash before building docs"; then \
 		echo "... Restoring your previous changes"; \
