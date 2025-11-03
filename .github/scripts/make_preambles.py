@@ -70,8 +70,6 @@ def add_docs_callout_to_readme(readme_path: Path) -> None:
         "\n",
         "---\n",
         "\n",
-        "> **📚 Viewing the Documentation Site?**\n",
-        ">\n",
         "> Welcome to the WILDS WDL Library technical documentation! This site provides comprehensive documentation for all available WDL modules, vignettes, and workflows.\n",
         ">\n",
         "> **Getting Started:**\n",
