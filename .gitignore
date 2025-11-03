@@ -10,6 +10,9 @@ output
 # .sprocketignore is generated in CI for docs, don't commit it
 .sprocketignore
 
+# docs directory is generated locally and in CI, don't commit it
+docs/
+
 # cromwell/womtool files
 cromwell*.jar
 womtool*.jar

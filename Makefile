@@ -195,7 +195,7 @@ docs-preview: check_sprocket check_uv ## Build and serve documentation preview l
 		fi; \
 	fi
 	@echo "Step 2/7: Saving current state..."
-	@git stash push -u -m "docs-preview: temporary stash before building docs" -- modules/ vignettes/ workflows/ .sprocketignore 2>/dev/null || true
+	@git stash push -u -m "docs-preview: temporary stash before building docs" -- modules/ vignettes/ workflows/
 	@echo "Step 3/7: Creating preambles..."
 	@uv run --python 3.13 .github/scripts/make_preambles.py
 	@echo "Step 4/7: Creating .sprocketignore..."
