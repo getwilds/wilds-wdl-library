@@ -199,11 +199,11 @@ docs-preview: check_sprocket check_uv ## Build and serve documentation preview l
 	@echo "Step 3/7: Creating preambles..."
 	@uv run --python 3.13 .github/scripts/make_preambles.py
 	@echo "Step 4/7: Creating .sprocketignore..."
-	@cat > .sprocketignore << 'EOF' && \
-	# Excluding test run WDL's from documentation builds\n\
-	modules/**/testrun.wdl\n\
-	vignettes/**/testrun.wdl\n\
-	workflows/**/testrun.wdl\n\
+	@cat > .sprocketignore << 'EOF'
+	# Excluding test run WDL's from documentation builds
+	modules/**/testrun.wdl
+	vignettes/**/testrun.wdl
+	workflows/**/testrun.wdl
 	EOF
 	@echo "Step 5/7: Building docs with sprocket..."
 	@sprocket dev doc -v --homepage README.md --logo WILDSWDLNameLogo.svg .
