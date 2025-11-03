@@ -73,7 +73,6 @@ workflow tritonnp_example {
 
 #### TASK DEFINITIONS ####
 
-# Task definitions file (triton_tasks.wdl)
 task triton_main {
   meta {
     description: "Task for running TritonNP"
