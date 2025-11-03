@@ -12,6 +12,7 @@ Thank you for your interest in contributing to the WILDS WDL Library! This docum
 - [Workflow Development Guidelines](#workflow-development-guidelines)
 - [Testing Requirements](#testing-requirements)
 - [Documentation Standards](#documentation-standards)
+- [Documentation Website](#documentation-website)
 - [Pull Request Process](#pull-request-process)
 - [Code of Conduct](#code-of-conduct)
 
@@ -245,6 +246,85 @@ All contributions must pass our automated testing pipeline which executes on a P
 - **Container verification**: All Docker images must be accessible and functional
 - **Syntax validation**: WDL syntax and structure validation
 - **Integration testing**: Cross-module compatibility testing
+
+## Documentation Website
+
+The WILDS WDL Library includes an automatically-generated documentation website that provides comprehensive technical documentation for all modules, vignettes, and workflows. Understanding how this documentation works is important for contributors.
+
+### How Documentation is Generated
+
+The documentation website is built using [Sprocket](https://sprocket.bio/) and automatically deployed to GitHub Pages. The documentation is generated from:
+
+- **README files**: Each module, vignette, and workflow directory contains a README.md that becomes the documentation homepage for that component
+- **WDL files**: Task descriptions, inputs, outputs, and metadata are automatically extracted from WDL files
+- **Main README**: The repository's root README.md serves as the documentation site homepage
+
+### Automatic Deployment
+
+Documentation is automatically built and deployed when changes are merged to the `main` branch:
+
+1. The [build-docs.yml](.github/workflows/build-docs.yml) GitHub Actions workflow triggers on push to `main`
+2. The workflow runs the [make_preambles.py](.github/scripts/make_preambles.py) script to prepare WDL files
+3. Sprocket generates static HTML documentation
+4. The [postprocess_docs.py](.github/scripts/postprocess_docs.py) script applies final formatting
+5. Documentation is deployed to GitHub Pages at the repository's documentation URL
+
+**Important**: You don't need to build or commit documentation files - they are generated automatically in CI/CD.
+
+### Previewing Documentation Locally
+
+Before submitting a PR, you can preview how your changes will appear on the documentation website using the provided Makefile targets:
+
+#### Build and Preview Documentation
+
+```bash
+# Build documentation locally (mirrors the CI/CD process)
+make docs-preview
+
+# Serve the documentation on http://localhost:8000
+make docs-serve
+
+# Or do both in one command
+make docs
+```
+
+The `docs-preview` target will:
+- Check for uncommitted changes and warn you (docs are built from your last commit)
+- Safely stash any uncommitted work
+- Run the same build process as the GitHub Actions workflow
+- Generate documentation in the `docs/` directory
+- Restore your uncommitted changes when finished
+- Clean up all temporary build files
+
+**Note**: The `docs/` directory is gitignored and should never be committed to the repository.
+
+#### What Gets Built
+
+When you run `make docs-preview`, the build process:
+1. Prepends each module's README to its WDL file for better documentation context
+2. Converts GitHub import URLs to relative paths for local navigation
+3. Generates comprehensive HTML documentation for all tasks, workflows, and components
+4. Applies custom styling and post-processing
+
+### Documentation Best Practices
+
+When contributing, ensure your documentation is clear and complete:
+
+- **README files**: Write clear, user-focused descriptions of what your module/vignette/workflow does
+- **Task metadata**: Use `meta` blocks to document task purpose, authors, and other high-level information
+- **Parameter metadata**: Use `parameter_meta` blocks to describe all inputs and outputs
+- **Examples**: Include usage examples in README files
+- **Preview locally**: Always run `make docs-preview` before submitting a PR to verify how your documentation will appear
+
+### Troubleshooting Documentation Builds
+
+If you encounter issues with local documentation builds:
+
+- Ensure you have the required dependencies installed (`sprocket`, `uv`, `python 3.13`)
+- Check that you're running the command from the repository root
+- Review error messages - they often indicate issues with WDL syntax or README formatting
+
+For questions about documentation, please contact [wilds@fredhutch.org](mailto:wilds@fredhutch.org).
 
 ## Pull Request Process
 
