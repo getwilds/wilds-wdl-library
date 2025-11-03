@@ -90,7 +90,7 @@ task triton_main {
     reference_genome_index: "Path to Reference genome file index"
     results_dir: "Output directory name"
     map_quality: "Mapping quality threshold as a positive integer"
-    size_range: "Size range as a tuple, such as 15 500"
+    size_range: "Size range as a space-delimited string, such as '15 500'"
     cpus: "Number of CPUs to use"
     plot_list: "File containing names of genes to plot."
   }
