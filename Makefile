@@ -171,3 +171,59 @@ run_cromwell: check_java check_cromwell check_name ## Run Cromwell on testrun.wd
 	done
 
 run: run_sprocket run_miniwdl run_cromwell ## Run all engines on testrun.wdl files
+
+##@ Documentation
+
+docs-preview: check_sprocket check_uv ## Build and serve documentation preview locally
+	@echo "Building documentation preview..."
+	@echo "Step 1/7: Checking for uncommitted changes..."
+	@if git diff --quiet HEAD -- modules/ vignettes/ workflows/ && \
+	   ! git ls-files --others --exclude-standard modules/ vignettes/ workflows/ | grep -q .; then \
+		echo "... No uncommitted changes detected"; \
+	else \
+		echo ""; \
+		echo "WARNING: You have uncommitted changes in modules/, vignettes/, or workflows/"; \
+		echo "         The documentation will be built from your LAST COMMITTED version."; \
+		echo "         Your uncommitted changes will be preserved but NOT included in the preview."; \
+		echo "         To include them, commit your changes first, then run 'make docs-preview'."; \
+		echo ""; \
+		read -p "Continue anyway? [y/N] " -n 1 -r; \
+		echo ""; \
+		if [[ ! $$REPLY =~ ^[Yy]$$ ]]; then \
+			echo "Aborted."; \
+			exit 1; \
+		fi; \
+	fi
+	@echo "Step 2/7: Saving current state..."
+	@git stash push -u -m "docs-preview: temporary stash before building docs" -- modules/ vignettes/ workflows/
+	@echo "Step 3/7: Creating preambles..."
+	@uv run --python 3.13 .github/scripts/make_preambles.py
+	@echo "Step 4/7: Creating .sprocketignore..."
+	@printf '%s\n' '# Excluding test run WDL'\''s from documentation builds' 'modules/**/testrun.wdl' 'vignettes/**/testrun.wdl' 'workflows/**/testrun.wdl' > .sprocketignore
+	@echo "Step 5/7: Building docs with sprocket..."
+	@sprocket dev doc -v --homepage docs-README.md --logo WILDSWDLNameLogo.svg .
+	@echo "Step 6/7: Post-processing documentation..."
+	@uv run --python 3.13 .github/scripts/postprocess_docs.py
+	@echo "Step 7/7: Restoring original state..."
+	@git restore README.md modules/ vignettes/ workflows/ 2>/dev/null || true
+	@rm -f .sprocketignore
+	@if git stash list | grep -q "docs-preview: temporary stash before building docs"; then \
+		echo "... Restoring your previous changes"; \
+		git stash pop --index 2>/dev/null || git stash pop 2>/dev/null || true; \
+	fi
+	@echo ""
+	@echo "Documentation built successfully!"
+	@echo "To preview, run: make docs-serve"
+	@echo "Or open: docs/index.html"
+
+docs-serve: ## Serve documentation locally (requires docs to be built first)
+	@echo "Starting local documentation server..."
+	@if [ ! -d "docs" ]; then \
+		echo >&2 "Error: docs directory not found. Run 'make docs-preview' first."; \
+		exit 1; \
+	fi
+	@echo "Documentation will be available at: http://localhost:8000"
+	@echo "Press Ctrl+C to stop the server"
+	@cd docs && python3 -m http.server 8000
+
+docs: docs-preview docs-serve ## Build and serve documentation in one command

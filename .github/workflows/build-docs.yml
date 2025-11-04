@@ -1,0 +1,68 @@
+name: WDL Docs
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-binstall
+        run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+
+      - name: Install Sprocket
+        run: |
+          cargo-binstall sprocket --version 0.16.0 -y
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.10"
+          python-version: 3.13.5
+          enable-cache: false
+
+      - name: Build docs
+        run: |
+          # Join WDL dir specific README's into .wdl files
+          uv run .github/scripts/make_preambles.py
+          # Create .sprocketignore to exclude testrun.wdl files from docs
+          cat > .sprocketignore << 'EOF'
+          # Excluding test run WDL's from documentation builds
+          modules/**/testrun.wdl
+          vignettes/**/testrun.wdl
+          workflows/**/testrun.wdl
+          EOF
+          # Build docs
+          sprocket dev doc -v --homepage docs-README.md --logo WILDSWDLNameLogo.svg .
+          # Post-process generated HTML files
+          uv run .github/scripts/postprocess_docs.py
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
