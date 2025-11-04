@@ -91,9 +91,9 @@ WILDS vignettes and workflows use GitHub URLs for imports, providing several adv
 ## Supported Executors
 
 All components are tested with multiple WDL executors:
+- **[Sprocket](https://sprocket.bio/)**: Modern WDL executor with enhanced features
 - **[Cromwell](https://cromwell.readthedocs.io/)**: Production-grade workflow engine
 - **[miniWDL](https://github.com/chanzuckerberg/miniwdl)**: Lightweight local execution
-- **[Sprocket](https://sprocket.bio/)**: Modern WDL executor with enhanced features
 
 ## For Fred Hutch Users
 
