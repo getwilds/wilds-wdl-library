@@ -149,7 +149,7 @@ task combine_fms {
   meta {
     description: "Task for combine all sample outputs from TritonNP together"
     outputs: {
-        final: "Filepath to the aggregrated outputs from TritonNP."
+        final: "Aggregrated output file from TritonNP."
     }
   }
   parameter_meta {
