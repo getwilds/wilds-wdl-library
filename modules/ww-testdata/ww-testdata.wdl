@@ -451,7 +451,9 @@ task download_tritonnp_data {
         plot_list: "Genes to plot",
         bam: "WGS test file",
         bam_index: "WGS test file index",
-        bias: "GC bias"
+        bias: "GC bias",
+        reference: "hg19 reference genome fasta",
+        reference_index: "Index for hg19 reference genome fasta"
     }
   }
 
