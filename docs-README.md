@@ -71,15 +71,15 @@ cd wilds-wdl-library
 
 # Run a module test workflow (no inputs needed)
 cd modules/ww-star
-miniwdl run ww-star.wdl
+sprocket run testrun.wdl
 
 # Run a vignette (update inputs.json as needed)
 cd ../../vignettes/ww-sra-star
-miniwdl run ww-sra-star.wdl -i inputs.json
+sprocket run ww-sra-star.wdl -i inputs.json
 
 # Run a full workflow (update inputs.json as needed)
 cd ../../workflows/ww-leukemia
-miniwdl run ww-leukemia.wdl -i inputs.json
+sprocket run ww-leukemia.wdl -i inputs.json
 ```
 
 ---

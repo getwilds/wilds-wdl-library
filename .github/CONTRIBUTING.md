@@ -24,8 +24,8 @@ Before contributing code changes, please:
 
 2. **Set up your development environment** with the required tools:
    - For local testing:
+       - [sprocket](https://sprocket.bio/installation.html) (recommended)
        - [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl)
-       - [sprocket](https://sprocket.bio/installation.html)
        - [uv](https://docs.astral.sh/uv/getting-started/installation/) for automated local testing
    - [Docker Desktop](https://www.docker.com/get-started/) for container execution
 
@@ -171,8 +171,8 @@ In order to pass the automated GitHub Action (GHA) tests, your `inputs.json` mus
 
 Make sure you have these installed:
 
+- [sprocket](https://sprocket.bio/installation.html) (recommended)
 - [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl)
-- [sprocket](https://sprocket.bio/installation.html)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) for automated testing with our Makefile
 - [Docker Desktop](https://www.docker.com/get-started/) for container execution
 
@@ -205,8 +205,8 @@ sprocket lint \
   testrun.wdl
 
 # Test running (use testrun.wdl for execution tests)
-miniwdl run testrun.wdl
 sprocket run testrun.wdl --entrypoint toolname_example
+miniwdl run testrun.wdl
 ```
 
 #### Option 2: Automated Testing with Makefile (Recommended)
