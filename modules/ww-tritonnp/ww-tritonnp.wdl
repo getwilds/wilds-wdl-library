@@ -67,7 +67,7 @@ workflow tritonnp_example {
 
   output {
     File final_composite = combine_fms.final
-    Array[File] feature_files = triton_main.fm_file
+    Array[File] fm_files = triton_main.fm_file
   }
 }
 
