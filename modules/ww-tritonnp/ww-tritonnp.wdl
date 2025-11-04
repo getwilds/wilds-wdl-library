@@ -20,6 +20,10 @@ workflow tritonnp_example {
     }
   }
 
+  input {
+    Int ncpus = 4
+  }
+
   # Auto-download test data for testing purposes
   call ww_testdata.download_tritonnp_data as download_demo_data { }
 
@@ -29,15 +33,6 @@ workflow tritonnp_example {
   Array[File] bam_index_paths = [download_demo_data.bam_index]
   Array[File] bias_paths = [download_demo_data.bias]
   
-  # Global configuration parameters
-  String results_dir = "results"
-  File annotation = download_demo_data.annotation
-  File reference_genome = download_demo_data.reference
-  File reference_genome_index = download_demo_data.reference_index
-  File plot_list = download_demo_data.plot_list
-  Int map_quality = 20
-  String size_range = "15 500"
-  Int triton_main_ncpus = 4
 
   # Process each sample
   scatter (i in range(length(sample_names))) {
@@ -47,14 +42,14 @@ workflow tritonnp_example {
         bam_path = bam_paths[i],
         bam_index_path = bam_index_paths[i],
         bias_path = bias_paths[i],
-        annotation = annotation,
-        reference_genome = reference_genome,
-        reference_genome_index = reference_genome_index,
-        results_dir = results_dir,
-        map_quality = map_quality,
-        size_range = size_range,
-        cpus = triton_main_ncpus,
-        plot_list = plot_list
+        annotation = download_demo_data.annotation,
+        reference_genome = download_demo_data.reference,
+        reference_genome_index = download_demo_data.reference_index,
+        results_dir = "results",
+        map_quality = 20,
+        size_range = "15 500",
+        cpus = ncpus,
+        plot_list = download_demo_data.plot_list
     }
   }
 
