@@ -82,12 +82,12 @@ task triton_main {
   }
   parameter_meta {
     sample_name: "Sample name"
-    bam_path: "Path to BAM file"
-    bam_index_path: "Path to BAM index file"
-    bias_path: "Path to GC corrected file from Griffin"
-    annotation: "Path to BED file of genomic region to process on"
-    reference_genome: "Path to Reference genome file"
-    reference_genome_index: "Path to Reference genome file index"
+    bam_path: "BAM file"
+    bam_index_path: "BAM index file"
+    bias_path: "GC corrected file from Griffin"
+    annotation: "BED file of genomic region to process on"
+    reference_genome: "Reference genome file"
+    reference_genome_index: "Reference genome file index"
     results_dir: "Output directory name"
     map_quality: "Mapping quality threshold as a positive integer"
     size_range: "Size range as a space-delimited string, such as '15 500'"
@@ -149,7 +149,7 @@ task combine_fms {
   meta {
     description: "Task for combine all sample outputs from TritonNP together"
     outputs: {
-        final: "Filepath to the aggregrated outputs from TritonNP."
+        final: "Aggregrated output file from TritonNP."
     }
   }
   parameter_meta {
