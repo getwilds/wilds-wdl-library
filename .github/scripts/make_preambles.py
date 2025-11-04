@@ -51,59 +51,10 @@ def convert_github_imports_to_relative(wdl_content: list[str], wdl_path: Path, r
 
     return converted_lines
 
-def add_docs_callout_to_readme(readme_path: Path) -> None:
-    """Add documentation-specific callout to the main README."""
-    readme = fetch_file(readme_path)
-
-    # Find where to insert the callout (after the badges section, before ## Overview)
-    overview_index = None
-    for i, line in enumerate(readme):
-        if line.strip().startswith("## Overview"):
-            overview_index = i
-            break
-
-    if overview_index is None:
-        return  # Can't find insertion point, skip
-
-    # Create the callout box
-    callout = [
-        "\n",
-        "---\n",
-        "\n",
-        "Welcome to the WILDS WDL Library technical documentation! This site provides comprehensive documentation for all available WDL modules, vignettes, and workflows.\n",
-        "\n",
-        "**Getting Started:**\n",
-        "- Browse available components using the **sidebar navigation**\n",
-        "- Each module page includes task descriptions, inputs/outputs, and usage examples\n",
-        "- **Vignettes** demonstrate how to combine modules into common analysis patterns\n",
-        "- **Workflows** provide complete, production-ready analysis pipelines\n",
-        "\n",
-        "**Using Components in Your Workflows:**\n",
-        "- Import modules directly via GitHub URLs (see examples below)\n",
-        "- All components are tested with Cromwell, miniWDL, and Sprocket\n",
-        "- For contributing or development setup, see the sections below\n",
-        "\n",
-        "---\n",
-        "\n",
-    ]
-
-    # Insert the callout before ## Overview
-    readme = readme[:overview_index] + callout + readme[overview_index:]
-
-    # Write the modified README
-    with open(readme_path, "w", encoding="utf-8") as f:
-        f.writelines(readme)
-
-
 def make_preambles() -> None:
     root = get_root()
 
-    # First, modify the main README to add docs-specific callout
-    main_readme = root / "README.md"
-    if main_readme.exists():
-        add_docs_callout_to_readme(main_readme)
-
-    # Then process all WDL files
+    # Process all WDL files
     paths = list(root.glob("**/*.wdl"))
 
     for path in paths:

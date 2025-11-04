@@ -51,7 +51,7 @@ jobs:
           workflows/**/testrun.wdl
           EOF
           # Build docs
-          sprocket dev doc -v --homepage README.md --logo WILDSWDLNameLogo.svg .
+          sprocket dev doc -v --homepage docs-README.md --logo WILDSWDLNameLogo.svg .
           # Post-process generated HTML files
           uv run .github/scripts/postprocess_docs.py
 
