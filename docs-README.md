@@ -75,11 +75,11 @@ sprocket run testrun.wdl
 
 # Run a vignette (update inputs.json as needed)
 cd ../../vignettes/ww-sra-star
-sprocket run ww-sra-star.wdl -i inputs.json
+sprocket run ww-sra-star.wdl inputs.json
 
 # Run a full workflow (update inputs.json as needed)
 cd ../../workflows/ww-leukemia
-sprocket run ww-leukemia.wdl -i inputs.json
+sprocket run ww-leukemia.wdl inputs.json
 ```
 
 ---
