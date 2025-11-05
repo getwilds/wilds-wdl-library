@@ -1,6 +1,7 @@
 ## WILDS WDL for RNA-seq quality control analysis using RSeQC.
 ## Designed to be a modular component within the WILDS ecosystem that can be used
 ## independently or integrated with other WILDS workflows.
+## Note: For GTF to BED conversion, use the ww-bedops module.
 
 version 1.0
 
@@ -108,79 +109,6 @@ EOF
 
   runtime {
     docker: "getwilds/rseqc:5.0.4"
-    cpu: cpu_cores
-    memory: "~{memory_gb} GB"
-  }
-}
-
-task gtf_to_bed {
-  meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
-    description: "Convert GTF annotation file to BED12 format for RSeQC compatibility"
-    outputs: {
-        bed_file: "BED12-formatted annotation file ready for use with RSeQC"
-    }
-  }
-
-  parameter_meta {
-    gtf_file: "GTF annotation file to convert"
-    cpu_cores: "Number of CPU cores allocated for the task"
-    memory_gb: "Memory allocated for the task in GB"
-  }
-
-  input {
-    File gtf_file
-    Int cpu_cores = 1
-    Int memory_gb = 2
-  }
-
-  command <<<
-    set -eo pipefail
-
-    echo "Converting GTF to BED12 format..."
-    # Convert GTF to BED12 format
-    # Extract transcript features and convert to BED12 format
-    awk 'BEGIN{OFS="\t"}
-    $3=="transcript" {
-      # Extract chromosome, start, end, strand
-      chr=$1
-      start=$4-1  # Convert to 0-based
-      end=$5
-      strand=$7
-
-      # Extract gene_id and transcript_id from attributes using simpler string functions
-      # Look for gene_id "value" pattern
-      gene_id = ""
-      trans_id = ""
-
-      # Split the attributes field and extract IDs
-      n = split($0, parts, /gene_id "/)
-      if (n > 1) {
-        split(parts[2], gene_parts, /"/)
-        gene_id = gene_parts[1]
-      }
-
-      n = split($0, parts, /transcript_id "/)
-      if (n > 1) {
-        split(parts[2], trans_parts, /"/)
-        trans_id = trans_parts[1]
-      }
-
-      # Print BED12 format (simplified - using transcript as single exon)
-      # chr, start, end, name, score, strand, thickStart, thickEnd, itemRgb, blockCount, blockSizes, blockStarts
-      if (trans_id != "") {
-        print chr, start, end, trans_id, 0, strand, start, end, "0,0,0", 1, end-start, 0
-      }
-    }' "~{gtf_file}" > annotation.bed
-  >>>
-
-  output {
-    File bed_file = "annotation.bed"
-  }
-
-  runtime {
-    docker: "ubuntu:20.04"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

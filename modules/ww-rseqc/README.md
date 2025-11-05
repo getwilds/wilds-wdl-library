@@ -40,30 +40,54 @@ Run comprehensive RSeQC quality control metrics on aligned RNA-seq data.
 - `junction_log` (File): Junction annotation log
 - `rseqc_summary` (File): Summary report of all RSeQC metrics
 
+## GTF to BED Conversion
+
+RSeQC requires BED12 format annotation files. For GTF to BED conversion, use the **[ww-bedops](../ww-bedops/)** module:
+
+```wdl
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedops/ww-bedops.wdl" as bedops_tasks
+
+call bedops_tasks.gtf_to_bed {
+  input:
+    gtf_file = reference_gtf
+}
+```
+
+See the [ww-bedops documentation](../ww-bedops/) for more details.
+
 ## Usage as a Module
 
 ### Importing into Your Workflow
 
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rseqc/ww-rseqc.wdl" as rseqc_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedops/ww-bedops.wdl" as bedops_tasks
 
 workflow my_rnaseq_pipeline {
   input {
     File bam_file
     File bam_index
-    File bed_file
+    File gtf_file
     String sample_id
   }
 
+  # Convert GTF to BED format for RSeQC
+  call bedops_tasks.gtf_to_bed {
+    input:
+      gtf_file = gtf_file
+  }
+
+  # Run RSeQC QC metrics
   call rseqc_tasks.run_rseqc {
     input:
       bam_file = bam_file,
       bam_index = bam_index,
-      ref_bed = bed_file,
+      ref_bed = gtf_to_bed.bed_file,
       sample_name = sample_id
   }
 
   output {
+    File bed_annotation = gtf_to_bed.bed_file
     File read_dist = run_rseqc.read_distribution
     File coverage = run_rseqc.gene_body_coverage
     File strand_info = run_rseqc.infer_experiment
@@ -139,6 +163,8 @@ This module uses the **`getwilds/rseqc:5.0.4`** container image from the [WILDS 
 - All necessary dependencies
 - Optimized for reproducible RNA-seq QC analysis
 
+For GTF to BED conversion, the **[ww-bedops](../ww-bedops/)** module uses the **`getwilds/bedops:2.4.42`** container image.
+
 ## Citation
 
 If you use this module in your research, please cite RSeQC:
@@ -198,21 +224,8 @@ For larger datasets, consider increasing resources:
 ### Input Requirements
 - **BAM file**: Must be coordinate-sorted and indexed
 - **BED file**: Must be in 12-column BED format
-  - Can be generated from GTF using tools like `gtf2bed` or UCSC utilities
+  - Can be generated from GTF using the **[ww-bedops](../ww-bedops/)** module
   - Must match the reference genome used for alignment
-
-## Converting GTF to BED
-
-RSeQC requires BED12 format. You can convert GTF to BED using various tools:
-
-```bash
-# Using UCSC gtfToGenePred and genePredToBed
-gtfToGenePred input.gtf output.genePred
-genePredToBed output.genePred output.bed
-
-# Using bedops
-gtf2bed < input.gtf > output.bed
-```
 
 ## Contributing
 
