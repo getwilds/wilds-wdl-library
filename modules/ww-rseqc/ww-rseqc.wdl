@@ -11,10 +11,12 @@ task run_rseqc {
     description: "Run comprehensive RSeQC quality control metrics on aligned RNA-seq data"
     outputs: {
         read_distribution: "Distribution of reads across genomic features (CDS, UTR, introns, intergenic)",
-        gene_body_coverage: "Gene body coverage plot showing 5' to 3' bias",
+        gene_body_coverage: "Gene body coverage metrics (text file)",
+        gene_body_coverage_plot: "Gene body coverage plot showing 5' to 3' bias (PDF)",
         infer_experiment: "Results of strand specificity inference",
         bam_stat: "Basic alignment statistics from the BAM file",
-        junction_annotation: "Splice junction annotation and classification",
+        junction_xls: "Splice junction annotation in XLS format",
+        junction_log: "Junction annotation analysis log",
         rseqc_summary: "Summary report of all RSeQC metrics"
     }
   }
@@ -86,10 +88,8 @@ OUTPUT FILES:
 - ~{sample_name}.geneBodyCoverage.curves.pdf
 - ~{sample_name}.infer_experiment.txt
 - ~{sample_name}.bam_stat.txt
-- ~{sample_name}.junction.bed
+- ~{sample_name}.junction.xls
 - ~{sample_name}.junction_annotation.log
-- ~{sample_name}.splice_events.pdf
-- ~{sample_name}.splice_junction.pdf
 
 For detailed interpretation, please refer to RSeQC documentation:
 http://rseqc.sourceforge.net/
@@ -104,10 +104,8 @@ EOF
     File gene_body_coverage_plot = "~{sample_name}.geneBodyCoverage.curves.pdf"
     File infer_experiment = "~{sample_name}.infer_experiment.txt"
     File bam_stat = "~{sample_name}.bam_stat.txt"
-    File junction_bed = "~{sample_name}.junction.bed"
+    File junction_xls = "~{sample_name}.junction.xls"
     File junction_log = "~{sample_name}.junction_annotation.log"
-    File splice_events_plot = "~{sample_name}.splice_events.pdf"
-    File splice_junction_plot = "~{sample_name}.splice_junction.pdf"
     File rseqc_summary = "~{sample_name}.rseqc_summary.txt"
   }
 
