@@ -34,6 +34,18 @@ Run RNA-SeQC quality control metrics on aligned RNA-seq data.
 **Outputs:**
 - `rnaseqc_metrics` (File): Compressed tarball containing RNA-SeQC quality metrics and coverage reports
 
+### `collapse_gtf`
+
+Collapse GTF annotation file for RNA-SeQC compatibility by merging overlapping transcripts. RNA-SeQC requires a collapsed GTF format where overlapping transcripts are merged into gene-level features.
+
+**Inputs:**
+- `reference_gtf` (File): Reference genome GTF annotation file to collapse
+- `cpu_cores` (Int, default=1): Number of CPU cores allocated for the task
+- `memory_gb` (Int, default=4): Memory allocated for the task in GB
+
+**Outputs:**
+- `collapsed_gtf` (File): Collapsed GTF file with merged transcripts, ready for RNA-SeQC
+
 
 ## Usage as a Module
 
@@ -50,11 +62,18 @@ workflow my_rnaseq_pipeline {
     String sample_id
   }
 
+  # Collapse GTF for RNA-SeQC compatibility
+  call rnaseqc_tasks.collapse_gtf {
+    input:
+      reference_gtf = gtf_file
+  }
+
+  # Run RNA-SeQC with collapsed GTF
   call rnaseqc_tasks.run_rnaseqc {
     input:
       bam_file = bam_file,
       bam_index = bam_index,
-      ref_gtf = gtf_file,
+      ref_gtf = collapse_gtf.collapsed_gtf,
       sample_name = sample_id
   }
 
@@ -119,15 +138,23 @@ java -jar cromwell.jar run testrun.wdl
 The test workflow automatically:
 1. Downloads test reference data using `ww-testdata`
 2. Downloads test BAM data using `ww-testdata`
-3. Runs RNA-SeQC on the test data
-4. Demonstrates the module's tasks in a realistic workflow context
+3. Collapses the GTF file for RNA-SeQC compatibility
+4. Runs RNA-SeQC on the test data
+5. Demonstrates the module's tasks in a realistic workflow context
 
-## Docker Container
+## Docker Containers
 
-This module uses the `getwilds/rnaseqc:2.4.2` container image, which includes:
+This module uses two Docker container images:
+
+**`getwilds/rnaseqc:2.4.2`** (for `run_rnaseqc` task):
 - RNA-SeQC version 2.4.2
 - All necessary system dependencies
 - Optimized for reproducible RNA-seq QC analysis
+
+**`getwilds/gtf-smash:latest`** (for `collapse_gtf` task):
+- Python script `collapse_annotation.py` for GTF processing
+- Tools for collapsing GTF annotations for RNA-SeQC compatibility
+- Utilities for GTF file manipulation
 
 ## Citation
 

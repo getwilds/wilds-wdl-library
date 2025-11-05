@@ -53,3 +53,45 @@ task run_rnaseqc {
     memory: "~{memory_gb} GB"
   }
 }
+
+task collapse_gtf {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Collapse GTF annotation file for RNA-SeQC compatibility by merging overlapping transcripts"
+    outputs: {
+        collapsed_gtf: "Collapsed GTF file with merged transcripts, ready for RNA-SeQC"
+    }
+  }
+
+  parameter_meta {
+    reference_gtf: "Reference genome GTF annotation file to collapse"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+  }
+
+  input {
+    File reference_gtf
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -eo pipefail
+
+    echo "Collapsing GTF file for RNA-SeQC..."
+    collapse_annotation.py \
+      ~{reference_gtf} \
+      collapsed.gtf
+  >>>
+
+  output {
+    File collapsed_gtf = "collapsed.gtf"
+  }
+
+  runtime {
+    docker: "getwilds/gtf-smash:latest"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}

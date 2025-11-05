@@ -17,12 +17,18 @@ workflow rnaseqc_example {
       filename = "test_sample.bam"
   }
 
+  # Collapse GTF for RNA-SeQC compatibility
+  call ww_rnaseqc.collapse_gtf {
+    input:
+      reference_gtf = download_ref.gtf
+  }
+
   # Run RNA-SeQC on the test BAM file
   call ww_rnaseqc.run_rnaseqc {
     input:
       bam_file = download_bam.bam,
       bam_index = download_bam.bai,
-      ref_gtf = download_ref.gtf,
+      ref_gtf = collapse_gtf.collapsed_gtf,
       sample_name = "test_sample",
       cpu_cores = 2,
       memory_gb = 4
