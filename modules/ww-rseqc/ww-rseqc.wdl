@@ -110,7 +110,7 @@ EOF
   }
 
   runtime {
-    docker: "quay.io/biocontainers/rseqc:5.0.1--py39hf95cd2a_1"
+    docker: "getwilds/rseqc:5.0.4"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

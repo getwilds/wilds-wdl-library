@@ -134,8 +134,8 @@ The test workflow automatically:
 
 ## Docker Container
 
-This module uses the **`quay.io/biocontainers/rseqc:5.0.1--py39hf95cd2a_1`** container image, which includes:
-- RSeQC version 5.0.1
+This module uses the **`getwilds/rseqc:5.0.4`** container image from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library), which includes:
+- RSeQC version 5.0.4
 - Python 3.9 environment
 - All necessary dependencies
 - Optimized for reproducible RNA-seq QC analysis
