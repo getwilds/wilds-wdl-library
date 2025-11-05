@@ -154,16 +154,29 @@ task gtf_to_bed {
       end=$5
       strand=$7
 
-      # Extract gene_id and transcript_id from attributes
-      match($0, /gene_id "([^"]+)"/, gene_arr)
-      match($0, /transcript_id "([^"]+)"/, trans_arr)
+      # Extract gene_id and transcript_id from attributes using simpler string functions
+      # Look for gene_id "value" pattern
+      gene_id = ""
+      trans_id = ""
 
-      gene_id = gene_arr[1]
-      trans_id = trans_arr[1]
+      # Split the attributes field and extract IDs
+      n = split($0, parts, /gene_id "/)
+      if (n > 1) {
+        split(parts[2], gene_parts, /"/)
+        gene_id = gene_parts[1]
+      }
+
+      n = split($0, parts, /transcript_id "/)
+      if (n > 1) {
+        split(parts[2], trans_parts, /"/)
+        trans_id = trans_parts[1]
+      }
 
       # Print BED12 format (simplified - using transcript as single exon)
       # chr, start, end, name, score, strand, thickStart, thickEnd, itemRgb, blockCount, blockSizes, blockStarts
-      print chr, start, end, trans_id, 0, strand, start, end, "0,0,0", 1, end-start, 0
+      if (trans_id != "") {
+        print chr, start, end, trans_id, 0, strand, start, end, "0,0,0", 1, end-start, 0
+      }
     }' "~{gtf_file}" > annotation.bed
   >>>
 
