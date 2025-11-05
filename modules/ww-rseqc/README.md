@@ -34,7 +34,6 @@ Run comprehensive RSeQC quality control metrics on aligned RNA-seq data.
 **Outputs:**
 - `read_distribution` (File): Distribution of reads across genomic features
 - `gene_body_coverage` (File): Gene body coverage metrics (text file)
-- `gene_body_coverage_plot` (File): Gene body coverage plot (PDF)
 - `infer_experiment` (File): Strand specificity inference results
 - `bam_stat` (File): Basic BAM alignment statistics
 - `junction_xls` (File): Splice junction annotation in XLS format

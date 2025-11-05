@@ -12,7 +12,6 @@ task run_rseqc {
     outputs: {
         read_distribution: "Distribution of reads across genomic features (CDS, UTR, introns, intergenic)",
         gene_body_coverage: "Gene body coverage metrics (text file)",
-        gene_body_coverage_plot: "Gene body coverage plot showing 5' to 3' bias (PDF)",
         infer_experiment: "Results of strand specificity inference",
         bam_stat: "Basic alignment statistics from the BAM file",
         junction_xls: "Splice junction annotation in XLS format",
@@ -85,7 +84,6 @@ OUTPUT FILES:
 ================================================================================
 - ~{sample_name}.read_distribution.txt
 - ~{sample_name}.geneBodyCoverage.txt
-- ~{sample_name}.geneBodyCoverage.curves.pdf
 - ~{sample_name}.infer_experiment.txt
 - ~{sample_name}.bam_stat.txt
 - ~{sample_name}.junction.xls
@@ -101,7 +99,6 @@ EOF
   output {
     File read_distribution = "~{sample_name}.read_distribution.txt"
     File gene_body_coverage = "~{sample_name}.geneBodyCoverage.txt"
-    File gene_body_coverage_plot = "~{sample_name}.geneBodyCoverage.curves.pdf"
     File infer_experiment = "~{sample_name}.infer_experiment.txt"
     File bam_stat = "~{sample_name}.bam_stat.txt"
     File junction_xls = "~{sample_name}.junction.xls"
