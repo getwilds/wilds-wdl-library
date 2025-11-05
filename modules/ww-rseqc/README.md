@@ -1,84 +1,76 @@
-# ww-rnaseqc Module
+# ww-rseqc Module
 
 [![Project Status: Prototype – Useable, some support, open to feedback, unstable API.](https://getwilds.org/badges/badges/prototype.svg)](https://getwilds.org/badges/#prototype)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL module for running RNA-SeQC quality control analysis on aligned RNA-seq data.
+A WILDS WDL module for running comprehensive RNA-seq quality control analysis using RSeQC.
 
 ## Overview
 
-This module provides WDL tasks for running RNA-SeQC, a tool for comprehensive quality control metrics on RNA-seq BAM files. RNA-SeQC generates detailed QC metrics including gene coverage, strand specificity, rRNA content, and transcript integrity numbers.
+This module provides WDL tasks for running RSeQC, a comprehensive toolkit for RNA-seq quality control. RSeQC generates detailed QC metrics including read distribution, gene body coverage, strand specificity, and splice junction analysis.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
 
-- **Main WDL file**: `ww-rnaseqc.wdl` - Contains task definitions for the module
+- **Main WDL file**: `ww-rseqc.wdl` - Contains task definitions for the module
 - **Test workflow**: `testrun.wdl` - Demonstration workflow for testing and examples
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
 
-### `run_rnaseqc`
+### `run_rseqc`
 
-Run RNA-SeQC quality control metrics on aligned RNA-seq data.
+Run comprehensive RSeQC quality control metrics on aligned RNA-seq data.
 
 **Inputs:**
 - `bam_file` (File): Aligned reads in BAM format
 - `bam_index` (File): Index file for the aligned BAM file
-- `ref_gtf` (File): Reference genome GTF annotation file (collapsed)
+- `ref_bed` (File): Reference genome annotation in BED format (12-column)
 - `sample_name` (String): Sample name for output files
 - `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=4): Memory allocated for the task in GB
 
 **Outputs:**
-- `rnaseqc_metrics` (File): Compressed tarball containing RNA-SeQC quality metrics and coverage reports
-
-### `collapse_gtf`
-
-Collapse GTF annotation file for RNA-SeQC compatibility by merging overlapping transcripts. RNA-SeQC requires a collapsed GTF format where overlapping transcripts are merged into gene-level features.
-
-**Inputs:**
-- `reference_gtf` (File): Reference genome GTF annotation file to collapse
-- `cpu_cores` (Int, default=1): Number of CPU cores allocated for the task
-- `memory_gb` (Int, default=4): Memory allocated for the task in GB
-
-**Outputs:**
-- `collapsed_gtf` (File): Collapsed GTF file with merged transcripts, ready for RNA-SeQC
-
+- `read_distribution` (File): Distribution of reads across genomic features
+- `gene_body_coverage` (File): Gene body coverage metrics
+- `gene_body_coverage_plot` (File): Gene body coverage plot (PDF)
+- `infer_experiment` (File): Strand specificity inference results
+- `bam_stat` (File): Basic BAM alignment statistics
+- `junction_bed` (File): Splice junction coordinates in BED format
+- `junction_log` (File): Junction annotation log
+- `splice_events_plot` (File): Splice events visualization (PDF)
+- `splice_junction_plot` (File): Splice junction visualization (PDF)
+- `rseqc_summary` (File): Summary report of all RSeQC metrics
 
 ## Usage as a Module
 
 ### Importing into Your Workflow
 
 ```wdl
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rnaseqc/ww-rnaseqc.wdl" as rnaseqc_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rseqc/ww-rseqc.wdl" as rseqc_tasks
 
 workflow my_rnaseq_pipeline {
   input {
     File bam_file
     File bam_index
-    File gtf_file
+    File bed_file
     String sample_id
   }
 
-  # Collapse GTF for RNA-SeQC compatibility
-  call rnaseqc_tasks.collapse_gtf {
-    input:
-      reference_gtf = gtf_file
-  }
-
-  # Run RNA-SeQC with collapsed GTF
-  call rnaseqc_tasks.run_rnaseqc {
+  call rseqc_tasks.run_rseqc {
     input:
       bam_file = bam_file,
       bam_index = bam_index,
-      ref_gtf = collapse_gtf.collapsed_gtf,
+      ref_bed = bed_file,
       sample_name = sample_id
   }
 
   output {
-    File qc_metrics = run_rnaseqc.rnaseqc_metrics
+    File read_dist = run_rseqc.read_distribution
+    File coverage = run_rseqc.gene_body_coverage
+    File strand_info = run_rseqc.infer_experiment
+    File qc_summary = run_rseqc.rseqc_summary
   }
 }
 ```
@@ -87,11 +79,11 @@ workflow my_rnaseq_pipeline {
 
 **Custom resource allocation:**
 ```wdl
-call rnaseqc_tasks.run_rnaseqc {
+call rseqc_tasks.run_rseqc {
   input:
     bam_file = large_bam,
     bam_index = large_bam_index,
-    ref_gtf = reference_gtf,
+    ref_bed = annotation_bed,
     sample_name = "high_depth_sample",
     cpu_cores = 4,
     memory_gb = 8
@@ -101,11 +93,11 @@ call rnaseqc_tasks.run_rnaseqc {
 **Processing multiple samples:**
 ```wdl
 scatter (sample in samples) {
-  call rnaseqc_tasks.run_rnaseqc {
+  call rseqc_tasks.run_rseqc {
     input:
       bam_file = sample.bam,
       bam_index = sample.bai,
-      ref_gtf = reference_gtf,
+      ref_bed = reference_bed,
       sample_name = sample.name
   }
 }
@@ -114,7 +106,7 @@ scatter (sample in samples) {
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
-- **ww-star**: Use STAR alignment outputs directly as inputs to RNA-SeQC
+- **ww-star**: Use STAR alignment outputs directly as inputs to RSeQC
 - **ww-testdata**: Automatic provisioning of test data for demonstrations
 - **RNA-seq workflows**: Integrate QC into comprehensive RNA-seq analysis pipelines
 
@@ -124,7 +116,7 @@ The module includes a test workflow (`testrun.wdl`) that can be run independentl
 
 ```bash
 # Using Sprocket (recommended)
-sprocket run testrun.wdl --entrypoint rnaseqc_example
+sprocket run testrun.wdl --entrypoint rseqc_example
 
 # Using miniWDL
 miniwdl run testrun.wdl
@@ -138,50 +130,61 @@ java -jar cromwell.jar run testrun.wdl
 The test workflow automatically:
 1. Downloads test reference data using `ww-testdata`
 2. Downloads test BAM data using `ww-testdata`
-3. Collapses the GTF file for RNA-SeQC compatibility
-4. Runs RNA-SeQC on the test data
+3. Converts GTF to BED format for RSeQC
+4. Runs RSeQC on the test data
 5. Demonstrates the module's tasks in a realistic workflow context
 
-## Docker Containers
+## Docker Container
 
-This module uses two Docker container images:
-
-**`getwilds/rnaseqc:2.4.2`** (for `run_rnaseqc` task):
-- RNA-SeQC version 2.4.2
-- All necessary system dependencies
+This module uses the **`quay.io/biocontainers/rseqc:5.0.1--py39hf95cd2a_1`** container image, which includes:
+- RSeQC version 5.0.1
+- Python 3.9 environment
+- All necessary dependencies
 - Optimized for reproducible RNA-seq QC analysis
-
-**`getwilds/gtf-smash:latest`** (for `collapse_gtf` task):
-- Python script `collapse_annotation.py` for GTF processing
-- Tools for collapsing GTF annotations for RNA-SeQC compatibility
-- Utilities for GTF file manipulation
 
 ## Citation
 
-If you use this module in your research, please cite RNA-SeQC:
+If you use this module in your research, please cite RSeQC:
 
-> **RNA-SeQC: Comprehensive Quality Control for RNA Sequencing Data**
-> DeLuca DS, Levin JZ, Sivachenko A, Fennell T, Nazaire MD, Williams C, Reich M, Winckler W, Getz G.
-> Bioinformatics. 2012 Jun 1;28(11):1530-2.
-> DOI: [10.1093/bioinformatics/bts196](https://doi.org/10.1093/bioinformatics/bts196)
+> **RSeQC: quality control of RNA-seq experiments**
+> Wang L, Wang S, Li W.
+> Bioinformatics. 2012 Aug 15;28(16):2184-5.
+> DOI: [10.1093/bioinformatics/bts356](https://doi.org/10.1093/bioinformatics/bts356)
 
-## RNA-SeQC Output Metrics
+## RSeQC Analyses Performed
 
-RNA-SeQC generates comprehensive quality control metrics including:
+### 1. Read Distribution
+Analyzes how reads are distributed across different genomic features:
+- CDS (coding sequence)
+- 5' UTR and 3' UTR
+- Introns
+- Intergenic regions
 
-### Key Metrics
-- **Mapping statistics**: Total reads, mapped reads, unique reads
-- **Gene coverage**: 5' to 3' gene body coverage
-- **Strand specificity**: Sense vs. antisense mapping rates
-- **rRNA content**: Proportion of reads mapping to ribosomal RNA
-- **Transcript integrity**: Fragment coverage uniformity
-- **Exonic/intronic/intergenic rates**: Read distribution across genomic features
+### 2. Gene Body Coverage
+Assesses the uniformity of coverage along gene bodies:
+- Detects 5' or 3' coverage bias
+- Important for assessing RNA degradation
+- Generates coverage curve plots
 
-### Output Files
-The compressed tarball contains:
-- `metrics.tsv`: Tab-delimited summary of all QC metrics
-- `coverage.tsv`: Gene body coverage distribution
-- Various plots and supplementary files
+### 3. Infer Experiment
+Determines the strand-specificity of the RNA-seq library:
+- Unstranded
+- Sense-stranded
+- Antisense-stranded
+
+### 4. BAM Statistics
+Provides basic alignment statistics:
+- Total reads
+- Mapped reads
+- Properly paired reads
+- Duplicate reads
+
+### 5. Junction Annotation
+Classifies and analyzes splice junctions:
+- Known splice junctions
+- Novel splice junctions
+- Partial novel junctions
+- Junction plots and statistics
 
 ## Parameters and Resource Requirements
 
@@ -197,8 +200,22 @@ For larger datasets, consider increasing resources:
 
 ### Input Requirements
 - **BAM file**: Must be coordinate-sorted and indexed
-- **GTF file**: Must match the reference genome used for alignment
-- RNA-SeQC works best with GTF files that have been "collapsed" (merged overlapping transcripts)
+- **BED file**: Must be in 12-column BED format
+  - Can be generated from GTF using tools like `gtf2bed` or UCSC utilities
+  - Must match the reference genome used for alignment
+
+## Converting GTF to BED
+
+RSeQC requires BED12 format. You can convert GTF to BED using various tools:
+
+```bash
+# Using UCSC gtfToGenePred and genePredToBed
+gtfToGenePred input.gtf output.genePred
+genePredToBed output.genePred output.bed
+
+# Using bedops
+gtf2bed < input.gtf > output.bed
+```
 
 ## Contributing
 
@@ -217,7 +234,7 @@ For questions about this module or to report issues:
 
 ## Related Resources
 
-- **[RNA-SeQC GitHub](https://github.com/getzlab/rnaseqc)**: Official RNA-SeQC repository
+- **[RSeQC Documentation](http://rseqc.sourceforge.net/)**: Official RSeQC documentation and tutorials
 - **[WILDS Docker Library](https://github.com/getwilds/wilds-docker-library)**: Container images used by WDL workflows
 - **[WILDS Documentation](https://getwilds.org/)**: Comprehensive guides and best practices
 - **[WDL Specification](https://openwdl.org/)**: Official WDL language documentation
