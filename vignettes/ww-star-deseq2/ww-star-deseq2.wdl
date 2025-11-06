@@ -49,6 +49,8 @@ workflow star_deseq2 {
     reference_genome: "Optional reference genome object containing name, fasta, and gtf files (if not provided, GRCh38 will be downloaded)"
     reference_level: "Reference level for DESeq2 contrast (e.g., 'control' when comparing treatment vs. control)"
     contrast: "DESeq2 contrast string in the format 'condition,treatment,control'"
+    star_cpu: "Number of CPU cores for STAR alignment tasks"
+    star_memory_gb: "Memory allocation in GB for STAR alignment tasks"
   }
 
   input {
@@ -56,11 +58,15 @@ workflow star_deseq2 {
     RefGenome reference_genome
     String reference_level = ""
     String contrast = ""
+    Int star_cpu = 8
+    Int star_memory_gb = 64
   }
 
   call star_tasks.build_index { input:
       reference_fasta = reference_genome.fasta,
-      reference_gtf = reference_genome.gtf
+      reference_gtf = reference_genome.gtf,
+      cpu_cores = star_cpu,
+      memory_gb = star_memory_gb
   }
 
   # Convert GTF to BED for RSeQC
@@ -76,7 +82,9 @@ workflow star_deseq2 {
         star_genome_tar = build_index.star_index_tar,
         r1 = sample.r1,
         r2 = sample.r2,
-        name = sample.name + "." + reference_genome.name
+        name = sample.name + "." + reference_genome.name,
+        cpu_cores = star_cpu,
+        memory_gb = star_memory_gb
     }
 
     call rseqc_tasks.run_rseqc { input:

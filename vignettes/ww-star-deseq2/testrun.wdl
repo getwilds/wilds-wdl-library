@@ -51,7 +51,9 @@ workflow star_deseq2_example {
       samples = [sample1, sample2],
       reference_genome = reference,
       reference_level = "control",
-      contrast = "condition,treatment,control"
+      contrast = "condition,treatment,control",
+      star_cpu = 2,
+      star_memory_gb = 8
   }
 
   output {
