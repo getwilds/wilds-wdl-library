@@ -8,6 +8,7 @@ workflow sra_example {
     call ww_sra.fastqdump { input:
         sra_id = id,
         ncpu = 2,
+        max_reads = 1000
     }
   }
 
