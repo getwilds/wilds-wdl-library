@@ -69,6 +69,9 @@ workflow star_deseq2 {
   }
 
   scatter (sample in samples) {
+    String sample_name = sample.name
+    String sample_condition = sample.condition
+
     call star_tasks.align_two_pass { input:
         star_genome_tar = build_index.star_index_tar,
         r1 = sample.r1,
@@ -86,8 +89,8 @@ workflow star_deseq2 {
 
   call deseq2_tasks.combine_count_matrices { input:
       gene_count_files = align_two_pass.gene_counts,
-      sample_names = samples.name,
-      sample_conditions = samples.condition
+      sample_names = sample_name,
+      sample_conditions = sample_condition
   }
 
   call deseq2_tasks.run_deseq2 { input:
