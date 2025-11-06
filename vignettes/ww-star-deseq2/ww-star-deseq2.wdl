@@ -51,6 +51,7 @@ workflow star_deseq2 {
     contrast: "DESeq2 contrast string in the format 'condition,treatment,control'"
     star_cpu: "Number of CPU cores for STAR alignment tasks"
     star_memory_gb: "Memory allocation in GB for STAR alignment tasks"
+    genome_sa_index_nbases: "Length of the SA pre-indexing string for STAR (typically 10-15, scales with genome size)"
   }
 
   input {
@@ -60,13 +61,15 @@ workflow star_deseq2 {
     String contrast = ""
     Int star_cpu = 8
     Int star_memory_gb = 64
+    Int genome_sa_index_nbases = 14
   }
 
   call star_tasks.build_index { input:
       reference_fasta = reference_genome.fasta,
       reference_gtf = reference_genome.gtf,
       cpu_cores = star_cpu,
-      memory_gb = star_memory_gb
+      memory_gb = star_memory_gb,
+      genome_sa_index_nbases = genome_sa_index_nbases
   }
 
   # Convert GTF to BED for RSeQC
