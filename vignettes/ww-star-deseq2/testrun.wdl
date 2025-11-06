@@ -22,12 +22,10 @@ workflow star_deseq2_example {
   call ww_testdata.download_ref_data { }
 
   # Download RNA-seq data from SRA (DESeq2 vignette dataset - airway study)
-  # Using 2 treated + 2 untreated samples for testing
-  # Limiting to 1M reads per sample for memory efficiency on CI runners
+  # Using 1 treated + 1 untreated sample for testing (reduced from 4 to 2 samples due to disk space constraints on CI runners)
+  # Limiting to 500K reads per sample for disk space efficiency on CI runners (GitHub runners have ~14GB disk)
   call ww_sra.fastqdump as untreated1 { input: sra_id = "SRR1039509", ncpu = 2, max_reads = 500000 }
-  call ww_sra.fastqdump as untreated2 { input: sra_id = "SRR1039513", ncpu = 2, max_reads = 500000 }
   call ww_sra.fastqdump as treated1 { input: sra_id = "SRR1039508", ncpu = 2, max_reads = 500000 }
-  call ww_sra.fastqdump as treated2 { input: sra_id = "SRR1039512", ncpu = 2, max_reads = 500000 }
 
   # Construct SampleInfo structs from SRA downloads
   SampleInfo sample1 = {
@@ -38,23 +36,9 @@ workflow star_deseq2_example {
   }
 
   SampleInfo sample2 = {
-    "name": "untreated_2",
-    "r1": untreated2.r1_end,
-    "r2": untreated2.r2_end,
-    "condition": "untreated"
-  }
-
-  SampleInfo sample3 = {
     "name": "treated_1",
     "r1": treated1.r1_end,
     "r2": treated1.r2_end,
-    "condition": "treated"
-  }
-
-  SampleInfo sample4 = {
-    "name": "treated_2",
-    "r1": treated2.r1_end,
-    "r2": treated2.r2_end,
     "condition": "treated"
   }
 
@@ -68,7 +52,7 @@ workflow star_deseq2_example {
   # Run actual STAR-DESeq2 workflow
   call star_deseq2_workflow.star_deseq2 {
     input:
-      samples = [sample1, sample2, sample3, sample4],
+      samples = [sample1, sample2],
       reference_genome = reference,
       reference_level = "untreated",
       contrast = "condition,treated,untreated",
