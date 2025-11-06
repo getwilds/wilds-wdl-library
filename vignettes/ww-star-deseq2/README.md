@@ -87,7 +87,9 @@ Create an inputs JSON file with your samples and reference genome:
     "gtf": "/path/to/annotation.gtf"
   },
   "star_deseq2.reference_level": "control",
-  "star_deseq2.contrast": "condition,treatment,control"
+  "star_deseq2.contrast": "condition,treatment,control",
+  "star_deseq2.star_cpu": 8,
+  "star_deseq2.star_memory_gb": 64
 }
 ```
 
@@ -120,6 +122,8 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 | `reference_genome` | Reference genome information (name, fasta, gtf) | RefGenome | Yes | - |
 | `reference_level` | Reference level for DESeq2 contrast (e.g., 'control') | String | No | "" |
 | `contrast` | DESeq2 contrast string (e.g., 'condition,treatment,control') | String | No | "" |
+| `star_cpu` | Number of CPU cores for STAR alignment tasks | Int | No | 8 |
+| `star_memory_gb` | Memory allocation in GB for STAR alignment tasks | Int | No | 64 |
 
 ### SampleInfo Structure
 
@@ -168,20 +172,21 @@ The vignette produces comprehensive outputs from all modules:
 ## Resource Considerations
 
 ### Compute Requirements
-- **Memory**: 64GB recommended for human genome alignment (8GB for testing purposes)
-- **CPUs**: 8+ cores recommended for efficient processing (2 cores for testing purposes)
+- **Memory**: 64GB recommended for human genome alignment (6GB minimum for chr1 testing)
+- **CPUs**: 8+ cores recommended for efficient processing (2 cores minimum for testing)
 - **Storage**: Sufficient space for reference genome, STAR index, BAM files, and analysis outputs
-- **Network**: Stable internet connection for module imports
+- **Network**: Stable internet connection for module imports and SRA downloads
 
 ### Optimization Tips
 - Use call caching to save intermediate files if the pipeline crashes partway
-- Consider smaller test datasets (e.g., chromosome subsets) for development
+- Adjust `star_cpu` and `star_memory_gb` parameters based on available resources
+- For testing on limited hardware (e.g., GitHub Actions runners), use chr1 subset and reduce CPU/memory allocation
 - Ensure adequate replicates per condition (3+ recommended) for robust DESeq2 analysis
-- Adjust STAR parameters based on genome size and read characteristics
+- The workflow supports resource customization via `star_cpu` and `star_memory_gb` input parameters
 
 ## Testing the Vignette
 
-The vignette includes a test workflow that automatically runs with minimal test data:
+The vignette includes a test workflow that uses real RNA-seq data from the DESeq2 airway dataset:
 
 ```bash
 # Using Cromwell
@@ -196,18 +201,27 @@ sprocket run testrun.wdl --entrypoint star_deseq2_example
 
 The test workflow automatically:
 1. Downloads small reference genome data (chromosome 1 subset)
-2. Downloads test FASTQ files
+2. Downloads real RNA-seq data from SRA (4 samples from DESeq2 airway study: 2 untreated + 2 dexamethasone-treated)
 3. Builds STAR genome index
-4. Performs alignment for two test samples
-5. Runs RSeQC quality control
-6. Combines count matrices
-7. Performs differential expression analysis
-8. Validates all outputs
+4. Performs two-pass alignment for all samples
+5. Converts GTF to BED12 format for RSeQC compatibility
+6. Runs RSeQC quality control on aligned BAM files
+7. Combines gene count matrices from all samples
+8. Performs DESeq2 differential expression analysis
+9. Generates PCA plots, volcano plots, and heatmaps
+10. Validates all outputs
+
+**Test Dataset Details:**
+- Uses 4 samples from SRA (SRR1039508, SRR1039509, SRR1039512, SRR1039513)
+- Real paired-end RNA-seq from human airway smooth muscle cells
+- 2 untreated samples + 2 dexamethasone-treated samples
+- Aligns to chromosome 1 subset for efficiency
+- Resource requirements: 2 CPUs / 6GB RAM (fits GitHub Actions runners)
 
 The vignette is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
-- Small test datasets for efficiency
-- Comprehensive output validation
+- Real RNA-seq data that validates RSeQC and DESeq2 functionality
+- Comprehensive output validation including plots and statistical results
 - Performance benchmarking
 
 ## Integration Patterns
