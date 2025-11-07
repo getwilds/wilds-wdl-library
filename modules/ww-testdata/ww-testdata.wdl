@@ -50,7 +50,7 @@ task download_ref_data {
     REGION="~{if defined(region) then region else ""}"
     if [ -n "$REGION" ]; then
       samtools faidx temp.fa
-      samtools faidx temp.fa "~{chromo}:$REGION" > "~{final_output_name}.fa"
+      samtools faidx temp.fa "~{chromo}:$REGION" | sed "s/>~{chromo}:$REGION/>~{chromo}/" > "~{final_output_name}.fa"
       rm temp.fa temp.fa.fai
     else
       mv temp.fa "~{final_output_name}.fa"
