@@ -44,6 +44,45 @@ def update_page_title(html_content: str, file_path: Path) -> str:
     return html_content
 
 
+def set_accordions_closed(html_content: str) -> str:
+    """
+    Set all sidebar accordion items to be closed by default, except top-level folders.
+    Keeps 'modules', 'vignettes', and 'workflows' visible but collapsed.
+
+    showChildrenCache controls whether folder contents are visible (accordion state).
+        - Should be FALSE for all folders (including top-level) so they start collapsed
+    showSelfCache controls whether child nodes themselves are shown.
+        - Should be TRUE for top-level folders so they're visible
+        - Should be FALSE for nested items so they're hidden until parent is expanded
+    """
+    # Top-level folders that should be visible
+    top_level_keys = ["'modules'", "'vignettes'", "'workflows'"]
+
+    # Pattern to match showChildrenCache - set ALL to false (all folders start collapsed)
+    children_pattern = r"showChildrenCache: \$persist\(\{[^}]+\}\)\.using\(sessionStorage\)"
+
+    def set_all_false(match):
+        return match.group(0).replace(': true', ': false')
+
+    fixed_content = re.sub(children_pattern, set_all_false, html_content)
+
+    # Pattern to match showSelfCache - set top-level to true, rest to false
+    self_pattern = r"showSelfCache: \$persist\(\{[^}]+\}\)\.using\(sessionStorage\)"
+
+    def set_self_cache(match):
+        matched_text = match.group(0)
+        # First, set ALL values to false
+        result = matched_text.replace(': true', ': false')
+        # Then, set top-level folders back to true (they should be visible)
+        for key in top_level_keys:
+            result = result.replace(f"{key}: false", f"{key}: true")
+        return result
+
+    fixed_content = re.sub(self_pattern, set_self_cache, fixed_content)
+
+    return fixed_content
+
+
 def fix_badge_paragraphs(html_content: str) -> str:
     """
     Fix badge rendering by wrapping all badges in a single div with inline display.
@@ -85,6 +124,7 @@ def postprocess_html_file(file_path: Path) -> None:
         # Apply fixes
         content = update_page_title(content, file_path)
         content = set_default_sidebar_tab(content)
+        content = set_accordions_closed(content)
         content = fix_badge_paragraphs(content)
 
         # Only write if content changed
