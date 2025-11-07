@@ -28,11 +28,11 @@ workflow star_deseq2_example {
 
   # Download RNA-seq data from SRA (DESeq2 vignette dataset - airway study)
   # Using 2 treated + 2 untreated samples (DESeq2 requires >=2 replicates per condition)
-  # Limiting to 500K reads per sample for disk space efficiency on CI runners (GitHub runners have ~14GB disk)
-  call ww_sra.fastqdump as untreated1 { input: sra_id = "SRR1039509", ncpu = 2, max_reads = 500000 }
-  call ww_sra.fastqdump as untreated2 { input: sra_id = "SRR1039513", ncpu = 2, max_reads = 500000 }
-  call ww_sra.fastqdump as treated1 { input: sra_id = "SRR1039508", ncpu = 2, max_reads = 500000 }
-  call ww_sra.fastqdump as treated2 { input: sra_id = "SRR1039512", ncpu = 2, max_reads = 500000 }
+  # Using 2M reads per sample to ensure sufficient gene coverage for DESeq2 vst() (requires >1000 genes with counts)
+  call ww_sra.fastqdump as untreated1 { input: sra_id = "SRR1039509", ncpu = 2, max_reads = 2000000 }
+  call ww_sra.fastqdump as untreated2 { input: sra_id = "SRR1039513", ncpu = 2, max_reads = 2000000 }
+  call ww_sra.fastqdump as treated1 { input: sra_id = "SRR1039508", ncpu = 2, max_reads = 2000000 }
+  call ww_sra.fastqdump as treated2 { input: sra_id = "SRR1039512", ncpu = 2, max_reads = 2000000 }
 
   # Construct SampleInfo structs from SRA downloads
   SampleInfo sample1 = {
