@@ -6,7 +6,7 @@ workflow testdata_example {
   # Pull down reference genome and index files for chr1
   call ww_testdata.download_ref_data { input:
       chromo = "chr1",
-      version = "hg38"
+      version = "hg38",
       region = "chr1:1-100000000"
   }
 
