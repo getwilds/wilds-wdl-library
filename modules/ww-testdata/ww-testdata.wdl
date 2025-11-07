@@ -44,15 +44,16 @@ task download_ref_data {
     # Download chromosome fasta
     wget -q -O "~{chromo}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"
     gunzip "~{chromo}.fa.gz"
+    mv "~{chromo}.fa" temp.fa
 
     # Subset to specified region if provided
     REGION="~{if defined(region) then region else ""}"
     if [ -n "$REGION" ]; then
-      samtools faidx "~{chromo}.fa"
-      samtools faidx "~{chromo}.fa" "~{chromo}:$REGION" > "~{final_output_name}.fa"
-      rm "~{chromo}.fa"
+      samtools faidx temp.fa
+      samtools faidx temp.fa "~{chromo}:$REGION" > "~{final_output_name}.fa"
+      rm temp.fa temp.fa.fai
     else
-      mv "~{chromo}.fa" "~{final_output_name}.fa"
+      mv temp.fa "~{final_output_name}.fa"
     fi
 
     # Create FASTA index file (.fai) for bcftools and other tools
@@ -65,7 +66,7 @@ task download_ref_data {
     wget -q -O "~{version}.ncbiRefSeq.gtf.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/bigZips/genes/~{version}.ncbiRefSeq.gtf.gz"
     gunzip "~{version}.ncbiRefSeq.gtf.gz"
     # Extract only chromosome annotations
-    grep "^~{chromo}[[:space:]]" "~{version}.ncbiRefSeq.gtf" > "~{chromo}.gtf"
+    grep "^~{chromo}[[:space:]]" "~{version}.ncbiRefSeq.gtf" > temp.gtf
     rm "~{version}.ncbiRefSeq.gtf"
 
     # If region is specified, filter GTF to only include genes in that region
@@ -74,10 +75,10 @@ task download_ref_data {
       REGION_START=$(echo "$REGION" | cut -d'-' -f1)
       REGION_END=$(echo "$REGION" | cut -d'-' -f2)
       # Filter GTF to only include features within the region
-      awk -v start="$REGION_START" -v end="$REGION_END" '$4 <= end && $5 >= start' "~{chromo}.gtf" > "~{final_output_name}.gtf"
-      rm "~{chromo}.gtf"
+      awk -v start="$REGION_START" -v end="$REGION_END" '$4 <= end && $5 >= start' temp.gtf > "~{final_output_name}.gtf"
+      rm temp.gtf
     else
-      mv "~{chromo}.gtf" "~{final_output_name}.gtf"
+      mv temp.gtf "~{final_output_name}.gtf"
     fi
 
     # Create a BED file covering the entire chromosome/region

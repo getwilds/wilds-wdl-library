@@ -7,7 +7,7 @@ workflow testdata_example {
   call ww_testdata.download_ref_data { input:
       chromo = "chr1",
       version = "hg38",
-      region = "chr1:1-100000000"
+      region = "1-10000000"
   }
 
   call ww_testdata.download_fastq_data { }
