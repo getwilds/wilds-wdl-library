@@ -19,11 +19,11 @@ struct RefGenome {
 
 workflow star_deseq2_example {
   # Call ww_testdata tasks to get test reference data
-  # Using first 30Mb of chr1 for reduced disk space usage
+  # Using first 100Mb of chr1 for reduced disk space usage while ensuring enough genes for DESeq2 vst()
   call ww_testdata.download_ref_data {
     input:
-      region = "1-30000000",
-      output_name = "chr1_30M"
+      region = "1-100000000",
+      output_name = "chr1_100M"
   }
 
   # Download RNA-seq data from SRA (DESeq2 vignette dataset - airway study)
@@ -65,7 +65,7 @@ workflow star_deseq2_example {
 
   # Construct RefGenome struct
   RefGenome reference = {
-    "name": "chr1_30M",
+    "name": "chr1_100M",
     "fasta": download_ref_data.fasta,
     "gtf": download_ref_data.gtf
   }
