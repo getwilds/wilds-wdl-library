@@ -21,6 +21,8 @@ task download_ref_data {
   parameter_meta {
     chromo: "Chromosome to download (e.g., chr1, chr2, etc.)"
     version: "Reference genome version (e.g., hg38, hg19)"
+    region: "Optional region coordinates to extract from chromosome in format '1-30000000'. If not specified, uses entire chromosome."
+    output_name: "Optional name for output files (default: uses chromo name)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -28,9 +30,13 @@ task download_ref_data {
   input {
     String chromo = "chr1"
     String version = "hg38"
+    String? region
+    String? output_name
     Int cpu_cores = 1
     Int memory_gb = 4
   }
+
+  String final_output_name = select_first([output_name, chromo])
 
   command <<<
     set -euo pipefail
@@ -39,31 +45,53 @@ task download_ref_data {
     wget -q -O "~{chromo}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"
     gunzip "~{chromo}.fa.gz"
 
+    # Subset to specified region if provided
+    REGION="~{if defined(region) then region else ""}"
+    if [ -n "$REGION" ]; then
+      samtools faidx "~{chromo}.fa"
+      samtools faidx "~{chromo}.fa" "~{chromo}:$REGION" > "~{final_output_name}.fa"
+      rm "~{chromo}.fa"
+    else
+      mv "~{chromo}.fa" "~{final_output_name}.fa"
+    fi
+
     # Create FASTA index file (.fai) for bcftools and other tools
-    samtools faidx "~{chromo}.fa"
+    samtools faidx "~{final_output_name}.fa"
 
     # Create FASTA dictionary file (.dict) for GATK and other tools
-    samtools dict "~{chromo}.fa" > "~{chromo}.dict"
+    samtools dict "~{final_output_name}.fa" > "~{final_output_name}.dict"
 
-    # Download chromosome 1 GTF file
+    # Download GTF file
     wget -q -O "~{version}.ncbiRefSeq.gtf.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/bigZips/genes/~{version}.ncbiRefSeq.gtf.gz"
     gunzip "~{version}.ncbiRefSeq.gtf.gz"
     # Extract only chromosome annotations
     grep "^~{chromo}[[:space:]]" "~{version}.ncbiRefSeq.gtf" > "~{chromo}.gtf"
     rm "~{version}.ncbiRefSeq.gtf"
 
-    # Create a BED file covering the entire chromosome
-    # Get chromosome length from the FASTA file
-    CHR_LENGTH=$(($(grep -v "^>" "~{chromo}.fa" | tr -d '\n' | wc -c)))
-    echo -e "~{chromo}\t0\t${CHR_LENGTH}" > "~{chromo}.bed"
+    # If region is specified, filter GTF to only include genes in that region
+    if [ -n "$REGION" ]; then
+      # Extract start and end positions from region (format: 1-30000000)
+      REGION_START=$(echo "$REGION" | cut -d'-' -f1)
+      REGION_END=$(echo "$REGION" | cut -d'-' -f2)
+      # Filter GTF to only include features within the region
+      awk -v start="$REGION_START" -v end="$REGION_END" '$4 <= end && $5 >= start' "~{chromo}.gtf" > "~{final_output_name}.gtf"
+      rm "~{chromo}.gtf"
+    else
+      mv "~{chromo}.gtf" "~{final_output_name}.gtf"
+    fi
+
+    # Create a BED file covering the entire chromosome/region
+    # Get length from the FASTA file
+    CHR_LENGTH=$(($(grep -v "^>" "~{final_output_name}.fa" | tr -d '\n' | wc -c)))
+    echo -e "~{chromo}\t0\t${CHR_LENGTH}" > "~{final_output_name}.bed"
   >>>
 
   output {
-    File fasta = "~{chromo}.fa"
-    File fasta_index = "~{chromo}.fa.fai"
-    File dict = "~{chromo}.dict"
-    File gtf = "~{chromo}.gtf"
-    File bed = "~{chromo}.bed"
+    File fasta = "~{final_output_name}.fa"
+    File fasta_index = "~{final_output_name}.fa.fai"
+    File dict = "~{final_output_name}.dict"
+    File gtf = "~{final_output_name}.gtf"
+    File bed = "~{final_output_name}.bed"
   }
 
   runtime {

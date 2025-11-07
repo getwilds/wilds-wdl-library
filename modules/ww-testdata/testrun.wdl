@@ -1,12 +1,13 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-star-deseq/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow testdata_example {
   # Pull down reference genome and index files for chr1
   call ww_testdata.download_ref_data { input:
       chromo = "chr1",
       version = "hg38"
+      region = "chr1:1-100000000"
   }
 
   call ww_testdata.download_fastq_data { }
