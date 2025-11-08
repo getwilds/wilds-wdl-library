@@ -1123,17 +1123,16 @@ task fastq_to_sam {
   command <<<
     set -eo pipefail
 
-    gatk --java-options "-Dsamjdk.compression_level=5 -Xms~{memory_gb - 2}g -Xmx~{memory_gb - 1}g" \
+    gatk --java-options "-Dsamjdk.compression_level=5 -Xms~{memory_gb - 2}g" \
       FastqToSam \
-      --FASTQ ~{sep=" --FASTQ " r1_fastq} \
-      --FASTQ2 ~{sep=" --FASTQ2 " r2_fastq} \
+      --FASTQ ~{sep=" " r1_fastq} \
+      --FASTQ2 ~{sep=" " r2_fastq} \
       --OUTPUT "~{base_file_name}.unmapped.bam" \
       --READ_GROUP_NAME "~{rg_name}" \
       --SAMPLE_NAME "~{sample_name}" \
       --LIBRARY_NAME "~{lib_name}" \
       --PLATFORM "~{platform}" \
-      --SEQUENCING_CENTER "~{seq_center}" \
-      --VERBOSITY WARNING
+      --SEQUENCING_CENTER "~{seq_center}"
   >>>
 
   output {
@@ -1180,14 +1179,12 @@ task validate_sam_file {
   command <<<
     set -eo pipefail
 
-    gatk --java-options "-Dsamjdk.compression_level=5 -Xms~{memory_gb - 2}g -Xmx~{memory_gb - 1}g" \
+    gatk --java-options "-Dsamjdk.compression_level=5 -Xms~{memory_gb - 2}g" \
       ValidateSamFile \
       --INPUT "~{input_file}" \
       ~{if defined(reference_fasta) then "--REFERENCE_SEQUENCE " + reference_fasta else ""} \
       --MODE ~{mode} \
-      --IGNORE_WARNINGS ~{ignore_warnings} \
-      --VERBOSITY WARNING \
-      > "~{base_file_name}.validation.txt"
+      --IGNORE_WARNINGS ~{ignore_warnings} > "~{base_file_name}.validation.txt"
   >>>
 
   output {

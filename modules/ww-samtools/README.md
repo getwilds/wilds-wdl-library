@@ -34,7 +34,7 @@ Merges one or more CRAM/BAM/SAM files for a sample, sorts by read name, and conv
 
 ### `merge_bams_to_cram`
 
-Merges multiple BAM files into a single queryname-sorted CRAM file using samtools merge and collate. The output CRAM is sorted by query name (read name), which is appropriate for unmapped reads and does not support indexing.
+Merges multiple BAM files into a single CRAM file using samtools merge.
 
 **Inputs:**
 - `bams_to_merge` (Array[File]): Array of BAM files to merge into a single CRAM file
@@ -43,9 +43,8 @@ Merges multiple BAM files into a single queryname-sorted CRAM file using samtool
 - `memory_gb` (Int): Memory allocation in GB (default: 12)
 
 **Outputs:**
-- `cram` (File): Merged queryname-sorted CRAM file containing all reads from input BAMs
-
-**Note:** The output CRAM is sorted by query name and does not have an index file. CRAM indexes are only applicable to coordinate-sorted files.
+- `cram` (File): Merged CRAM file containing all reads from input BAMs
+- `crai` (File): Index file for the merged CRAM
 
 ## Usage as a Module
 
