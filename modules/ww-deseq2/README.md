@@ -43,6 +43,12 @@ Combines STAR gene count files from multiple samples into a single count matrix 
 ### `run_deseq2`
 Performs differential expression analysis using DESeq2 with comprehensive statistical analysis and visualization via a prewritten R script: [deseq2_analysis.R](https://github.com/getwilds/wilds-docker-library/blob/main/deseq2/deseq2_analysis.R)
 
+The task automatically selects the appropriate variance-stabilizing transformation method based on dataset size:
+- **≥1000 genes with counts**: Uses `vst()` for fast, efficient transformation
+- **<1000 genes with counts**: Uses `rlog()` for more robust transformation on smaller datasets
+
+This ensures the analysis works reliably across diverse dataset sizes, from small pilot studies to large-scale experiments.
+
 **Inputs:**
 - `counts_matrix` (File): Combined matrix of gene-level counts
 - `sample_metadata` (File): Sample metadata with experimental conditions
