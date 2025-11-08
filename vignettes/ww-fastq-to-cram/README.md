@@ -115,18 +115,20 @@ sprocket run ww-fastq-to-cram.wdl -i inputs.json
 
 ## Outputs
 
-- `unmapped_crams` (Array[File]): Unmapped CRAM files (one per sample)
-- `unmapped_cram_indexes` (Array[File]): CRAM index files (.crai)
+- `unmapped_crams` (Array[File]): Queryname-sorted unmapped CRAM files (one per sample)
 - `validation_reports` (Array[File]): Validation reports for each CRAM
+
+**Note:** The output CRAMs are sorted by query name (read name) and do not have index files. CRAM indexes are only applicable to coordinate-sorted files.
 
 ## Use Cases
 
 This vignette is ideal for:
 
-1. **Multi-source sequencing**: When the same library was sequenced across multiple flowcells, lanes, or runs and needs to be consolidated
-2. **Data archival**: Converting FASTQ files to the more compact CRAM format for long-term storage
-3. **Pre-alignment processing**: Creating unmapped CRAMs with proper read group metadata before alignment
+1. **Multi-source sequencing**: When the same library was sequenced across multiple flowcells, lanes, or runs and needs to be consolidated with proper read group tracking
+2. **Metadata consolidation**: Preserving sample, library, and sequencing center information in standardized SAM/BAM/CRAM format headers
+3. **Pre-alignment processing**: Creating unmapped CRAMs with proper read group metadata before alignment (required input format for many GATK workflows)
 4. **Quality control**: Validating file formats before proceeding with downstream analysis
+5. **Pipeline compatibility**: Converting FASTQs to the SAM/BAM/CRAM format expected by alignment and variant calling pipelines
 
 ## Read Group Convention
 
@@ -143,8 +145,8 @@ This ensures unique read group identifiers even when the same sample is sequence
 
 - **CPU allocation**: The workflow benefits from multiple cores for merging operations (recommend 4-8 cores)
 - **Memory usage**: GATK FastqToSam typically requires 8GB RAM per task
-- **Storage**: Unmapped CRAMs are smaller than BAMs but larger than compressed FASTQs
-- **Parallelization**: Tasks run in parallel across samples and FASTQ groups
+- **Storage**: Unmapped CRAMs are smaller than unmapped BAMs. Plan storage accordingly, especially for large sequencing batches.
+- **Parallelization**: Tasks run in parallel across samples and FASTQ groups, providing good scalability for multi-sample batches
 
 ## Technical Details
 
@@ -154,11 +156,12 @@ This ensures unique read group identifiers even when the same sample is sequence
 - Platform: illumina (default, can be customized)
 - Read group attributes: RG, SM, LB, CN populated from input metadata
 
-### Samtools Merge Parameters
+### Samtools Merge and Collate Parameters
 
-- Output format: CRAM
-- Index: Automatically generated (.crai)
-- Threading: Uses `cpu_cores - 1` threads for merging
+- Merging: Uses `samtools merge` with `cpu_cores - 1` threads
+- Collation: Uses `samtools collate` to sort by query name (read name)
+- Output format: Queryname-sorted CRAM (no index generated)
+- Threading: Uses `cpu_cores - 1` threads for both merging and collation
 
 ## Example: Multiple Samples with Multiple FASTQ Groups
 

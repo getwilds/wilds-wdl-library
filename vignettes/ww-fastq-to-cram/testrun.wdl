@@ -51,7 +51,6 @@ workflow fastq_to_cram_example {
 
   output {
     Array[File] unmapped_crams = fastq_to_cram.unmapped_crams
-    Array[File] unmapped_cram_indexes = fastq_to_cram.unmapped_cram_indexes
     Array[File] validation_reports = fastq_to_cram.validation_reports
   }
 }
