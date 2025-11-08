@@ -19,20 +19,20 @@ struct RefGenome {
 
 workflow star_deseq2_example {
   # Call ww_testdata tasks to get test reference data
-  # Using first 100Mb of chr1 for reduced disk space usage while ensuring enough genes for DESeq2 vst()
+  # Testing with 50Mbp region of chr1 to keep STAR index size manageable
   call ww_testdata.download_ref_data {
     input:
-      region = "1-100000000",
-      output_name = "chr1_100M"
+      region = "1-50000000",
+      output_name = "chr1_50M"
   }
 
   # Download RNA-seq data from SRA (DESeq2 vignette dataset - airway study)
   # Using 2 treated + 2 untreated samples (DESeq2 requires >=2 replicates per condition)
-  # Using 2M reads per sample to ensure sufficient gene coverage for DESeq2 vst() (requires >1000 genes with counts)
-  call ww_sra.fastqdump as untreated1 { input: sra_id = "SRR1039509", ncpu = 2, max_reads = 2000000 }
-  call ww_sra.fastqdump as untreated2 { input: sra_id = "SRR1039513", ncpu = 2, max_reads = 2000000 }
-  call ww_sra.fastqdump as treated1 { input: sra_id = "SRR1039508", ncpu = 2, max_reads = 2000000 }
-  call ww_sra.fastqdump as treated2 { input: sra_id = "SRR1039512", ncpu = 2, max_reads = 2000000 }
+  # Using 250K reads per sample to keep runtime and resource usage low for testing
+  call ww_sra.fastqdump as untreated1 { input: sra_id = "SRR1039509", ncpu = 2, max_reads = 250000 }
+  call ww_sra.fastqdump as untreated2 { input: sra_id = "SRR1039513", ncpu = 2, max_reads = 250000 }
+  call ww_sra.fastqdump as treated1 { input: sra_id = "SRR1039508", ncpu = 2, max_reads = 250000 }
+  call ww_sra.fastqdump as treated2 { input: sra_id = "SRR1039512", ncpu = 2, max_reads = 250000 }
 
   # Construct SampleInfo structs from SRA downloads
   SampleInfo sample1 = {
@@ -65,7 +65,7 @@ workflow star_deseq2_example {
 
   # Construct RefGenome struct
   RefGenome reference = {
-    "name": "chr1_100M",
+    "name": "chr1_50M",
     "fasta": download_ref_data.fasta,
     "gtf": download_ref_data.gtf
   }
