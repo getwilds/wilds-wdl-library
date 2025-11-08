@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl" as gatk_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl" as samtools_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-fastq-to-cram/modules/ww-gatk/ww-gatk.wdl" as gatk_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-fastq-to-cram/modules/ww-samtools/ww-samtools.wdl" as samtools_tasks
 
 # Convert a group of paired fastq.gz files into an unmapped cram
 # Uses the convention: READ_GROUP_NAME=~{sample_name}_~{group_name}
