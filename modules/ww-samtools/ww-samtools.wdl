@@ -81,12 +81,18 @@ task merge_bams_to_cram {
   command <<<
     set -eo pipefail
 
+    # Merge BAMs, collate by query name to ensure proper ordering for unmapped reads,
+    # then convert to CRAM with index
     samtools merge \
       -@ ~{cpu_cores - 1} \
-      --write-index \
+      -u - \
+      ~{sep=" " bams_to_merge} | \
+    samtools collate \
+      -@ ~{cpu_cores - 1} \
       --output-fmt CRAM \
-      "~{base_file_name}.merged.cram" \
-      ~{sep=" " bams_to_merge}
+      --write-index \
+      -o "~{base_file_name}.merged.cram" \
+      -
   >>>
 
   output {
