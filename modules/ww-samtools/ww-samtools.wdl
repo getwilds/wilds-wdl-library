@@ -52,3 +52,51 @@ task crams_to_fastq {
     docker: "getwilds/samtools:1.19"
   }
 }
+
+task merge_bams_to_cram {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Merge multiple BAM files into a single CRAM file using samtools merge"
+    outputs: {
+        cram: "Merged CRAM file containing all reads from input BAMs",
+        cram_index: "Index file for the merged CRAM"
+    }
+  }
+
+  parameter_meta {
+    bams_to_merge: "Array of BAM files to merge into a single CRAM file"
+    base_file_name: "Base name for output CRAM file"
+    cpu_cores: "Number of CPU cores to use (threads = cpu_cores - 1)"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    Array[File] bams_to_merge
+    String base_file_name
+    Int cpu_cores = 6
+    Int memory_gb = 12
+  }
+
+  command <<<
+    set -eo pipefail
+
+    samtools merge \
+      -@ ~{cpu_cores - 1} \
+      --write-index \
+      --output-fmt CRAM \
+      "~{base_file_name}.merged.cram" \
+      ~{sep=" " bams_to_merge}
+  >>>
+
+  output {
+    File cram = "~{base_file_name}.merged.cram"
+    File cram_index = "~{base_file_name}.merged.cram.crai"
+  }
+
+  runtime {
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+    docker: "getwilds/samtools:1.19"
+  }
+}

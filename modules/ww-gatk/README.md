@@ -23,7 +23,7 @@ The module implements GATK best practices for variant calling, including proper 
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`
+- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `fastq_to_sam`, `validate_sam_file`
 - **Test workflow**: `testrun.wdl` (demonstration workflow using test data with parallelization)
 - **Container**: `getwilds/gatk:4.6.1.0`
 
@@ -236,6 +236,43 @@ Merges Mutect2 statistics files from parallel processing.
 
 **Outputs:**
 - `merged_stats` (File): Merged Mutect2 statistics file
+
+### Utility Tasks
+
+### `fastq_to_sam`
+Converts paired FASTQ files to unmapped BAM/SAM format using GATK FastqToSam.
+
+**Inputs:**
+- `r1_fastq` (Array[File]): Array of R1 FASTQ files for the library
+- `r2_fastq` (Array[File]): Array of R2 FASTQ files for the library
+- `base_file_name` (String): Base name for output file
+- `sample_name` (String): Sample name to insert into the read group header
+- `library_name` (String?): Library name to place into the LB attribute in the read group header (defaults to sample_name if not provided)
+- `platform` (String): Sequencing platform (default: illumina)
+- `sequencing_center` (String?): Location where the sample was sequenced (defaults to '.' if not provided)
+- `read_group_name` (String?): Read group name (if not provided, defaults to sample_name)
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 4)
+
+**Outputs:**
+- `unmapped_bam` (File): Unmapped BAM file containing reads from input FASTQ files
+
+**Note:** While `library_name` and `sequencing_center` have defaults for convenience, it's recommended to provide actual values when available for proper read group metadata tracking.
+
+### `validate_sam_file`
+Validates BAM/CRAM/SAM files for formatting issues using GATK ValidateSamFile.
+
+**Inputs:**
+- `input_file` (File): BAM/CRAM/SAM file to validate
+- `base_file_name` (String): Base name for output validation file
+- `mode` (String): Validation mode: VERBOSE (detailed), SUMMARY (summary only) (default: SUMMARY)
+- `ignore_warnings` (Boolean): Whether to ignore warnings (default: false)
+- `reference_fasta` (File?): Reference genome FASTA (required for CRAM files)
+- `memory_gb` (Int): Memory allocation in GB (default: 4)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+
+**Outputs:**
+- `validation_report` (File): Text file containing validation statistics and any errors/warnings
 
 ### Supporting Tasks
 
