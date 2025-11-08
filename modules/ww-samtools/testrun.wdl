@@ -40,6 +40,5 @@ workflow samtools_example {
     File r1_fastqs = crams_to_fastq.r1_fastq
     File r2_fastqs = crams_to_fastq.r2_fastq
     File merged_cram = merge_bams_to_cram.cram
-    File merged_cram_index = merge_bams_to_cram.cram_index
   }
 }

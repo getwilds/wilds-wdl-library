@@ -59,8 +59,7 @@ task merge_bams_to_cram {
     email: "tfirman@fredhutch.org"
     description: "Merge multiple BAM files into a single CRAM file using samtools merge"
     outputs: {
-        cram: "Merged CRAM file containing all reads from input BAMs",
-        cram_index: "Index file for the merged CRAM"
+        cram: "Merged CRAM file containing all reads from input BAMs"
     }
   }
 
@@ -81,8 +80,8 @@ task merge_bams_to_cram {
   command <<<
     set -eo pipefail
 
-    # Merge BAMs, collate by query name to ensure proper ordering for unmapped reads,
-    # then convert to CRAM and create index
+    # Merge BAMs and collate by query name to ensure proper ordering for unmapped reads
+    # Note: Query-name sorted CRAMs do not require/support indexing
     samtools merge \
       -@ ~{cpu_cores - 1} \
       -u - \
@@ -92,14 +91,10 @@ task merge_bams_to_cram {
       --output-fmt CRAM \
       -o "~{base_file_name}.merged.cram" \
       -
-
-    # Create index for the CRAM file
-    samtools index -@ ~{cpu_cores - 1} "~{base_file_name}.merged.cram"
   >>>
 
   output {
     File cram = "~{base_file_name}.merged.cram"
-    File cram_index = "~{base_file_name}.merged.cram.crai"
   }
 
   runtime {
