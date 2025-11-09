@@ -30,7 +30,8 @@ workflow fastq_to_cram {
     description: "Convert paired FASTQ files to unmapped CRAM format using WILDS WDL modules"
     url: "https://github.com/getwilds/wilds-wdl-library/vignettes/ww-fastq-to-cram"
     outputs: {
-        unmapped_crams: "Array of queryname-sorted unmapped CRAM files for each sample",
+        unmapped_crams: "Array of unmapped CRAM files for each sample",
+        unmapped_cram_indexes: "Array of index files for each unmapped CRAM file",
         validation_reports: "Array of validation reports for each CRAM file"
     }
   }
@@ -85,6 +86,7 @@ workflow fastq_to_cram {
   # Outputs that will be retained when execution is complete
   output {
     Array[File] unmapped_crams = merge_bams_to_cram.cram
+    Array[File] unmapped_cram_indexes = merge_bams_to_cram.crai
     Array[File] validation_reports = validate_sam_file.validation_report
   }
 }

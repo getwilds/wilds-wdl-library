@@ -19,27 +19,23 @@ struct SampleData {
 
 workflow fastq_to_cram_example {
   # Download test FASTQ data
-  call ww_testdata.download_fastq_data as download_fastq_1 { }
-  call ww_testdata.download_fastq_data as download_fastq_2 { }
+  call ww_testdata.download_fastq_data { }
 
-  # Create test batch with two FASTQ groups to test merging functionality
+  # Create test batch with one FASTQ group
+  # Note: We use a single group here because the test data doesn't have multiple
+  # distinct FASTQ files to merge. In real usage, multiple groups would represent
+  # different flowcells, lanes, or sequencing runs for the same sample.
   FastqGroup group1 = object {
     group_name: "test_group_1",
-    fastq_r1_locations: [download_fastq_1.r1_fastq],
-    fastq_r2_locations: [download_fastq_1.r2_fastq]
-  }
-
-  FastqGroup group2 = object {
-    group_name: "test_group_2",
-    fastq_r1_locations: [download_fastq_2.r1_fastq],
-    fastq_r2_locations: [download_fastq_2.r2_fastq]
+    fastq_r1_locations: [download_fastq_data.r1_fastq],
+    fastq_r2_locations: [download_fastq_data.r2_fastq]
   }
 
   SampleData sample = object {
     sample_name: "NA12878_test",
     library_name: "test_library",
     sequencing_center: "test_center",
-    fastq_groups: [group1, group2]
+    fastq_groups: [group1]
   }
 
   # Run the fastq-to-cram workflow

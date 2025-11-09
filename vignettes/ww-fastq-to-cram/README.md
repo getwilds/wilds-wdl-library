@@ -115,10 +115,9 @@ sprocket run ww-fastq-to-cram.wdl -i inputs.json
 
 ## Outputs
 
-- `unmapped_crams` (Array[File]): Queryname-sorted unmapped CRAM files (one per sample)
+- `unmapped_crams` (Array[File]): Unmapped CRAM files (one per sample)
+- `unmapped_cram_indexes` (Array[File]): Index files for each unmapped CRAM
 - `validation_reports` (Array[File]): Validation reports for each CRAM
-
-**Note:** The output CRAMs are sorted by query name (read name) and do not have index files. CRAM indexes are only applicable to coordinate-sorted files.
 
 ## Use Cases
 
@@ -156,12 +155,11 @@ This ensures unique read group identifiers even when the same sample is sequence
 - Platform: illumina (default, can be customized)
 - Read group attributes: RG, SM, LB, CN populated from input metadata
 
-### Samtools Merge and Collate Parameters
+### Samtools Merge Parameters
 
 - Merging: Uses `samtools merge` with `cpu_cores - 1` threads
-- Collation: Uses `samtools collate` to sort by query name (read name)
-- Output format: Queryname-sorted CRAM (no index generated)
-- Threading: Uses `cpu_cores - 1` threads for both merging and collation
+- Output format: CRAM with index file
+- Threading: Uses `cpu_cores - 1` threads
 
 ## Example: Multiple Samples with Multiple FASTQ Groups
 
