@@ -123,11 +123,12 @@ sprocket run ww-fastq-to-cram.wdl -i inputs.json
 
 This vignette is ideal for:
 
-1. **Multi-source sequencing**: When the same library was sequenced across multiple flowcells, lanes, or runs and needs to be consolidated with proper read group tracking
-2. **Metadata consolidation**: Preserving sample, library, and sequencing center information in standardized SAM/BAM/CRAM format headers
-3. **Pre-alignment processing**: Creating unmapped CRAMs with proper read group metadata before alignment (required input format for many GATK workflows)
-4. **Quality control**: Validating file formats before proceeding with downstream analysis
-5. **Pipeline compatibility**: Converting FASTQs to the SAM/BAM/CRAM format expected by alignment and variant calling pipelines
+1. **Storage optimization**: Reducing storage costs by converting FASTQs to more efficiently compressed unmapped CRAMs while retaining all sequencing information
+2. **Multi-source sequencing**: When the same library was sequenced across multiple flowcells, lanes, or runs and needs to be consolidated with proper read group tracking
+3. **Metadata consolidation**: Preserving sample, library, and sequencing center information in standardized SAM/BAM/CRAM format headers
+4. **Pre-alignment processing**: Creating unmapped CRAMs with proper read group metadata before alignment (required input format for many GATK workflows)
+5. **Quality control**: Validating file formats before proceeding with downstream analysis
+6. **Pipeline compatibility**: Converting FASTQs to the SAM/BAM/CRAM format expected by alignment and variant calling pipelines
 
 ## Read Group Convention
 
@@ -144,7 +145,7 @@ This ensures unique read group identifiers even when the same sample is sequence
 
 - **CPU allocation**: The workflow benefits from multiple cores for merging operations (recommend 4-8 cores)
 - **Memory usage**: GATK FastqToSam typically requires 8GB RAM per task
-- **Storage**: Unmapped CRAMs are smaller than unmapped BAMs. Plan storage accordingly, especially for large sequencing batches.
+- **Storage efficiency**: Unmapped CRAMs provide significant storage savings compared to FASTQs due to efficient compression algorithms, while also being smaller than unmapped BAMs. This can result in substantial cost savings for long-term storage of sequencing data, especially for large-scale projects with many samples.
 - **Parallelization**: Tasks run in parallel across samples and FASTQ groups, providing good scalability for multi-sample batches
 
 ## Technical Details
