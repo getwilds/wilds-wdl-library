@@ -1084,7 +1084,7 @@ task fastq_to_bam {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Convert paired FASTQ files to unmapped BAM/SAM using GATK FastqToSam"
+    description: "Convert paired FASTQ files to unmapped BAM using GATK FastqToSam"
     outputs: {
         unmapped_bam: "Unmapped BAM file containing reads from input FASTQ files"
     }

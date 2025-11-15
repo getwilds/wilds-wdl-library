@@ -125,10 +125,10 @@ This vignette is ideal for:
 
 1. **Storage optimization**: Reducing storage costs by converting FASTQs to more efficiently compressed unmapped CRAMs while retaining all sequencing information
 2. **Multi-source sequencing**: When the same library was sequenced across multiple flowcells, lanes, or runs and needs to be consolidated with proper read group tracking
-3. **Metadata consolidation**: Preserving sample, library, and sequencing center information in standardized SAM/BAM/CRAM format headers
+3. **Metadata consolidation**: Preserving sample, library, and sequencing center information in standardized CRAM format headers
 4. **Pre-alignment processing**: Creating unmapped CRAMs with proper read group metadata before alignment (required input format for many GATK workflows)
 5. **Quality control**: Validating file formats before proceeding with downstream analysis
-6. **Pipeline compatibility**: Converting FASTQs to the SAM/BAM/CRAM format expected by alignment and variant calling pipelines
+6. **Pipeline compatibility**: Converting FASTQs to the CRAM format expected by alignment and variant calling pipelines
 
 ## Read Group Convention
 
