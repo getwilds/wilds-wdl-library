@@ -1080,7 +1080,7 @@ task mutect2_parallel {
   }
 }
 
-task fastq_to_sam {
+task fastq_to_bam {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"

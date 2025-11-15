@@ -23,7 +23,7 @@ The module implements GATK best practices for variant calling, including proper 
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `fastq_to_sam`, `validate_sam_file`
+- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `fastq_to_bam`, `validate_sam_file`
 - **Test workflow**: `testrun.wdl` (demonstration workflow using test data with parallelization)
 - **Container**: `getwilds/gatk:4.6.1.0`
 
@@ -239,7 +239,7 @@ Merges Mutect2 statistics files from parallel processing.
 
 ### Utility Tasks
 
-### `fastq_to_sam`
+### `fastq_to_bam`
 Converts paired FASTQ files to unmapped BAM/SAM format using GATK FastqToSam.
 
 **Inputs:**

@@ -52,7 +52,7 @@ workflow fastq_to_cram {
     String base_file_name = sample.sample_name
 
     scatter (group in sample.fastq_groups) { # and for every group of FASTQs for that sample,
-      call gatk_tasks.fastq_to_sam { # take all the fastqs in that group and make an unmapped bam
+      call gatk_tasks.fastq_to_bam { # take all the fastqs in that group and make an unmapped bam
         input:
           r1_fastq = group.fastq_r1_locations,
           r2_fastq = group.fastq_r2_locations,
@@ -68,7 +68,7 @@ workflow fastq_to_cram {
 
     call samtools_tasks.merge_bams_to_cram { # then for each sample, merge all unmapped bams into one unmapped cram
       input:
-        bams_to_merge = fastq_to_sam.unmapped_bam,
+        bams_to_merge = fastq_to_bam.unmapped_bam,
         base_file_name = base_file_name,
         cpu_cores = cpu_cores,
         memory_gb = memory_gb

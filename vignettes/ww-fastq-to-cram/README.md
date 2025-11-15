@@ -16,7 +16,7 @@ The workflow handles:
 ## Workflow Structure
 
 This vignette imports tasks from WILDS WDL modules:
-- **ww-gatk**: `fastq_to_sam`, `validate_sam_file`
+- **ww-gatk**: `fastq_to_bam`, `validate_sam_file`
 - **ww-samtools**: `merge_bams_to_cram`
 
 ### Input Structure
@@ -206,7 +206,7 @@ This example will produce:
 
 ## Related WILDS Components
 
-- **ww-gatk module**: Provides `fastq_to_sam` and `validate_sam_file` tasks
+- **ww-gatk module**: Provides `fastq_to_bam` and `validate_sam_file` tasks
 - **ww-samtools module**: Provides `merge_bams_to_cram` task
 - **ww-bwa-gatk vignette**: Demonstrates alignment workflow that could follow this preprocessing
 

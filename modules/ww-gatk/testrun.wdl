@@ -47,18 +47,18 @@ workflow gatk_example {
     }
   ]
 
-  # Test fastq_to_sam utility task
-  call ww_gatk.fastq_to_sam { input:
+  # Test fastq_to_bam utility task
+  call ww_gatk.fastq_to_bam { input:
       r1_fastq = [download_fastq_data.r1_fastq],
       r2_fastq = [download_fastq_data.r2_fastq],
-      base_file_name = "test_fastq_to_sam",
+      base_file_name = "test_fastq_to_bam",
       sample_name = "NA12878_test"
   }
 
   # Test validate_sam_file utility task on the unmapped BAM
   call ww_gatk.validate_sam_file as validate_unmapped_bam { input:
-      input_file = fastq_to_sam.unmapped_bam,
-      base_file_name = "test_fastq_to_sam_validation"
+      input_file = fastq_to_bam.unmapped_bam,
+      base_file_name = "test_fastq_to_bam_validation"
   }
 
   # Splitting intervals for parallel processing
@@ -216,7 +216,7 @@ workflow gatk_example {
       parallel_haplotype_vcfs = haplotype_caller_parallel.vcf,
       parallel_mutect2_vcfs = mutect2_parallel.vcf,
       wgs_metrics = collect_wgs_metrics.metrics_file,
-      unmapped_bam = fastq_to_sam.unmapped_bam,
+      unmapped_bam = fastq_to_bam.unmapped_bam,
       unmapped_bam_validation = validate_unmapped_bam.validation_report,
       recalibrated_bam_validations = validate_recalibrated_bam.validation_report
   }
@@ -253,7 +253,7 @@ task validate_outputs {
     parallel_haplotype_vcfs: "Array of HaplotypeCaller VCF files called via internal parallelization"
     parallel_mutect2_vcfs: "Array of Mutect2 VCF files called via internal parallelization"
     wgs_metrics: "Array of WGS metrics files"
-    unmapped_bam: "Unmapped BAM file created from FASTQ using fastq_to_sam"
+    unmapped_bam: "Unmapped BAM file created from FASTQ using fastq_to_bam"
     unmapped_bam_validation: "Validation report for the unmapped BAM"
     recalibrated_bam_validations: "Array of validation reports for recalibrated BAMs"
   }
@@ -399,7 +399,7 @@ task validate_outputs {
       fi
     done
 
-    # Check unmapped BAM from fastq_to_sam
+    # Check unmapped BAM from fastq_to_bam
     if [[ -f "~{unmapped_bam}" ]]; then
       size=$(stat -f%z "~{unmapped_bam}" 2>/dev/null || stat -c%s "~{unmapped_bam}" 2>/dev/null || echo "unknown")
       echo "Unmapped BAM from FASTQ: $(basename ~{unmapped_bam}) (${size} bytes)" >> validation_report.txt
