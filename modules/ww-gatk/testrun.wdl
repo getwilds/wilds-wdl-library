@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl" as ww_gatk
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-fastq-to-cram/modules/ww-gatk/ww-gatk.wdl" as ww_gatk
 
 struct GatkSample {
     String name
@@ -13,6 +13,7 @@ workflow gatk_example {
   # Download test data
   call ww_testdata.download_ref_data { }
   call ww_testdata.download_bam_data { }
+  call ww_testdata.download_fastq_data { }
 
   # Create reference dictionary
   call ww_gatk.create_sequence_dictionary { input:
@@ -45,6 +46,20 @@ workflow gatk_example {
       "bai": download_bam_data.bai
     }
   ]
+
+  # Test fastq_to_bam utility task
+  call ww_gatk.fastq_to_bam { input:
+      r1_fastq = [download_fastq_data.r1_fastq],
+      r2_fastq = [download_fastq_data.r2_fastq],
+      base_file_name = "test_fastq_to_bam",
+      sample_name = "NA12878_test"
+  }
+
+  # Test validate_sam_file utility task on the unmapped BAM
+  call ww_gatk.validate_sam_file as validate_unmapped_bam { input:
+      input_file = fastq_to_bam.unmapped_bam,
+      base_file_name = "test_fastq_to_bam_validation"
+  }
 
   # Splitting intervals for parallel processing
   call ww_gatk.split_intervals { input:
@@ -180,6 +195,12 @@ workflow gatk_example {
         gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
         base_file_name = sample.name
     }
+
+    # Test validate_sam_file on recalibrated BAM
+    call ww_gatk.validate_sam_file as validate_recalibrated_bam { input:
+        input_file = base_recalibrator.recalibrated_bam,
+        base_file_name = sample.name + ".recal_validation"
+    }
   }
 
   # Validate outputs to ensure all tasks completed successfully
@@ -194,7 +215,10 @@ workflow gatk_example {
       mutect2_vcfs = merge_mutect2_vcfs.merged_vcf,
       parallel_haplotype_vcfs = haplotype_caller_parallel.vcf,
       parallel_mutect2_vcfs = mutect2_parallel.vcf,
-      wgs_metrics = collect_wgs_metrics.metrics_file
+      wgs_metrics = collect_wgs_metrics.metrics_file,
+      unmapped_bam = fastq_to_bam.unmapped_bam,
+      unmapped_bam_validation = validate_unmapped_bam.validation_report,
+      recalibrated_bam_validations = validate_recalibrated_bam.validation_report
   }
 
   output {
@@ -229,6 +253,9 @@ task validate_outputs {
     parallel_haplotype_vcfs: "Array of HaplotypeCaller VCF files called via internal parallelization"
     parallel_mutect2_vcfs: "Array of Mutect2 VCF files called via internal parallelization"
     wgs_metrics: "Array of WGS metrics files"
+    unmapped_bam: "Unmapped BAM file created from FASTQ using fastq_to_bam"
+    unmapped_bam_validation: "Validation report for the unmapped BAM"
+    recalibrated_bam_validations: "Array of validation reports for recalibrated BAMs"
   }
 
   input {
@@ -243,6 +270,9 @@ task validate_outputs {
     Array[File] parallel_haplotype_vcfs
     Array[File] parallel_mutect2_vcfs
     Array[File] wgs_metrics
+    File unmapped_bam
+    File unmapped_bam_validation
+    Array[File] recalibrated_bam_validations
   }
 
   command <<<
@@ -368,7 +398,33 @@ task validate_outputs {
         echo "Missing WGS Metrics: $metrics" >> validation_report.txt
       fi
     done
-    
+
+    # Check unmapped BAM from fastq_to_bam
+    if [[ -f "~{unmapped_bam}" ]]; then
+      size=$(stat -f%z "~{unmapped_bam}" 2>/dev/null || stat -c%s "~{unmapped_bam}" 2>/dev/null || echo "unknown")
+      echo "Unmapped BAM from FASTQ: $(basename ~{unmapped_bam}) (${size} bytes)" >> validation_report.txt
+    else
+      echo "Missing Unmapped BAM from FASTQ: ~{unmapped_bam}" >> validation_report.txt
+    fi
+
+    # Check unmapped BAM validation report
+    if [[ -f "~{unmapped_bam_validation}" ]]; then
+      echo "Unmapped BAM Validation Report: $(basename ~{unmapped_bam_validation})" >> validation_report.txt
+      echo "  Contents:" >> validation_report.txt
+      cat "~{unmapped_bam_validation}" | head -10 | sed 's/^/    /' >> validation_report.txt
+    else
+      echo "Missing Unmapped BAM Validation Report: ~{unmapped_bam_validation}" >> validation_report.txt
+    fi
+
+    # Check recalibrated BAM validation reports
+    for validation in ~{sep=" " recalibrated_bam_validations}; do
+      if [[ -f "$validation" ]]; then
+        echo "Recalibrated BAM Validation: $(basename $validation)" >> validation_report.txt
+      else
+        echo "Missing Recalibrated BAM Validation: $validation" >> validation_report.txt
+      fi
+    done
+
     echo "" >> validation_report.txt
     echo "Validation completed successfully." >> validation_report.txt
   >>>

@@ -1079,3 +1079,121 @@ task mutect2_parallel {
     cpu: cpu_cores
   }
 }
+
+task fastq_to_bam {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Convert paired FASTQ files to unmapped BAM using GATK FastqToSam"
+    outputs: {
+        unmapped_bam: "Unmapped BAM file containing reads from input FASTQ files"
+    }
+  }
+
+  parameter_meta {
+    r1_fastq: "Array of R1 FASTQ files for the library"
+    r2_fastq: "Array of R2 FASTQ files for the library"
+    base_file_name: "Base name for output file"
+    sample_name: "Sample name to insert into the read group header"
+    library_name: "Library name to place into the LB attribute in the read group header (defaults to sample_name if not provided)"
+    platform: "Sequencing platform (default: illumina)"
+    sequencing_center: "Location where the sample was sequenced (defaults to '.' if not provided)"
+    read_group_name: "Read group name (if not provided, defaults to sample_name)"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
+  }
+
+  input {
+    Array[File] r1_fastq
+    Array[File] r2_fastq
+    String base_file_name
+    String sample_name
+    String? library_name
+    String platform = "illumina"
+    String? sequencing_center
+    String? read_group_name
+    Int memory_gb = 8
+    Int cpu_cores = 4
+  }
+
+  String rg_name = select_first([read_group_name, sample_name])
+  String lib_name = select_first([library_name, sample_name])
+  String seq_center = select_first([sequencing_center, "."])
+
+  command <<<
+    set -eo pipefail
+
+    gatk --java-options "-Dsamjdk.compression_level=5 -Xms~{memory_gb - 2}g" \
+      FastqToSam \
+      --FASTQ ~{sep=" " r1_fastq} \
+      --FASTQ2 ~{sep=" " r2_fastq} \
+      --OUTPUT "~{base_file_name}.unmapped.bam" \
+      --READ_GROUP_NAME "~{rg_name}" \
+      --SAMPLE_NAME "~{sample_name}" \
+      --LIBRARY_NAME "~{lib_name}" \
+      --PLATFORM "~{platform}" \
+      --SEQUENCING_CENTER "~{seq_center}"
+  >>>
+
+  output {
+    File unmapped_bam = "~{base_file_name}.unmapped.bam"
+  }
+
+  runtime {
+    docker: "getwilds/gatk:4.6.1.0"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
+task validate_sam_file {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Validate BAM/CRAM/SAM files for formatting issues using GATK ValidateSamFile"
+    outputs: {
+        validation_report: "Text file containing validation statistics and any errors/warnings"
+    }
+  }
+
+  parameter_meta {
+    input_file: "BAM/CRAM/SAM file to validate"
+    base_file_name: "Base name for output validation file"
+    mode: "Validation mode: VERBOSE (detailed), SUMMARY (summary only)"
+    ignore_warnings: "Whether to ignore warnings (default: false)"
+    reference_fasta: "Reference genome FASTA (required for CRAM files)"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
+  }
+
+  input {
+    File input_file
+    String base_file_name
+    String mode = "SUMMARY"
+    Boolean ignore_warnings = false
+    File? reference_fasta
+    Int memory_gb = 4
+    Int cpu_cores = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    gatk --java-options "-Dsamjdk.compression_level=5 -Xms~{memory_gb - 2}g" \
+      ValidateSamFile \
+      --INPUT "~{input_file}" \
+      ~{if defined(reference_fasta) then "--REFERENCE_SEQUENCE " + reference_fasta else ""} \
+      --MODE ~{mode} \
+      --IGNORE_WARNINGS ~{ignore_warnings} > "~{base_file_name}.validation.txt"
+  >>>
+
+  output {
+    File validation_report = "~{base_file_name}.validation.txt"
+  }
+
+  runtime {
+    docker: "getwilds/gatk:4.6.1.0"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}

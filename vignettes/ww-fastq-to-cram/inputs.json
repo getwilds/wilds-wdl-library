@@ -1,0 +1,23 @@
+{
+  "fastq_to_cram.batch_info": [
+    {
+      "sample_name": "Sample_A",
+      "library_name": "Lib_A",
+      "sequencing_center": "SeqCenter",
+      "fastq_groups": [
+        {
+          "group_name": "FC001",
+          "fastq_r1_locations": ["/path/to/data/sample_A_FC001_R1.fastq.gz"],
+          "fastq_r2_locations": ["/path/to/data/sample_A_FC001_R2.fastq.gz"]
+        },
+        {
+          "group_name": "FC002",
+          "fastq_r1_locations": ["/path/to/data/sample_A_FC002_R1.fastq.gz"],
+          "fastq_r2_locations": ["/path/to/data/sample_A_FC002_R2.fastq.gz"]
+        }
+      ]
+    }
+  ],
+  "fastq_to_cram.cpu_cores": 6,
+  "fastq_to_cram.memory_gb": 12
+}
