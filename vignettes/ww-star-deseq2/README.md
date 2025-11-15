@@ -6,7 +6,7 @@ A WILDS WDL vignette demonstrating a complete RNA-seq analysis pipeline from ali
 
 ## Overview
 
-This vignette showcases how to combine WILDS WDL modules to create a comprehensive RNA-seq analysis workflow. It integrates the `ww-star`, `ww-rseqc`, `ww-bedops`, and `ww-deseq2` modules to perform alignment, quality control, and differential expression analysis.
+This vignette showcases how to combine WILDS WDL modules to create a comprehensive RNA-seq analysis workflow. It integrates the `ww-star`, `ww-rseqc`, `ww-bedparse`, and `ww-deseq2` modules to perform alignment, quality control, and differential expression analysis.
 
 This vignette serves as both a functional workflow and a demonstration of modular WDL design patterns within the WILDS ecosystem.
 
@@ -110,7 +110,7 @@ sprocket run ww-star-deseq2.wdl inputs.json
 
 Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/) to submit this workflow directly to the on-premise HPC cluster:
 
-1. Ensure your FASTQ files are accessible by the cluster
+1. Ensure your input files are accessible by the cluster
 2. Update the inputs JSON with sample information and conditions
 3. Submit through the PROOF interface
 
@@ -247,19 +247,10 @@ This vignette can be extended by:
 
 - **ww-star module**: STAR alignment functionality
 - **ww-rseqc module**: RNA-seq quality control
-- **ww-bedops module**: Genomic file format conversion
+- **ww-bedparse module**: Genomic file format conversion
 - **ww-deseq2 module**: Differential expression analysis
 - **ww-sra-star vignette**: SRA download to alignment pipeline
 - **Other vignettes**: Additional integration examples
-
-## Experimental Design Considerations
-
-For optimal DESeq2 results:
-- Include at least 3 biological replicates per condition
-- Sequence to adequate depth (20-30M reads per sample for human)
-- Use consistent library preparation methods
-- Balance sample processing across conditions to minimize batch effects
-- Define clear contrasts and reference levels in your experimental design
 
 ## Support
 
