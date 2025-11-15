@@ -1,7 +1,6 @@
 ## WILDS WDL for RNA-seq quality control analysis using RSeQC.
 ## Designed to be a modular component within the WILDS ecosystem that can be used
 ## independently or integrated with other WILDS workflows.
-## Note: For GTF to BED conversion, use the ww-bedops module.
 
 version 1.0
 

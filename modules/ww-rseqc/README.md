@@ -46,7 +46,7 @@ Run comprehensive RSeQC quality control metrics on aligned RNA-seq data.
 
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rseqc/ww-rseqc.wdl" as rseqc_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedops/ww-bedops.wdl" as bedops_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedparse/ww-bedparse.wdl" as bedparse_tasks
 
 workflow my_rnaseq_pipeline {
   input {
@@ -57,7 +57,7 @@ workflow my_rnaseq_pipeline {
   }
 
   # Convert GTF to BED format for RSeQC
-  call bedops_tasks.gtf_to_bed {
+  call bedparse_tasks.gtf2bed {
     input:
       gtf_file = gtf_file
   }
@@ -67,12 +67,12 @@ workflow my_rnaseq_pipeline {
     input:
       bam_file = bam_file,
       bam_index = bam_index,
-      ref_bed = gtf_to_bed.bed_file,
+      ref_bed = gtf2bed.bed_file,
       sample_name = sample_id
   }
 
   output {
-    File bed_annotation = gtf_to_bed.bed_file
+    File bed_annotation = gtf2bed.bed_file
     File read_dist = run_rseqc.read_distribution
     File coverage = run_rseqc.gene_body_coverage
     File strand_info = run_rseqc.infer_experiment
@@ -116,20 +116,20 @@ This module integrates seamlessly with other WILDS components:
 - **ww-testdata**: Automatic provisioning of test data for demonstrations
 - **RNA-seq workflows**: Integrate QC into comprehensive RNA-seq analysis pipelines
 
-#### GTF to BED Conversion with ww-bedops
+#### GTF to BED Conversion with ww-bedparse
 
-RSeQC requires BED12 format annotation files. For GTF to BED conversion, use the **[ww-bedops](../ww-bedops/)** module:
+RSeQC requires BED12 format annotation files. For GTF to BED conversion, use the **[ww-bedparse](../ww-bedparse/)** module:
 
 ```wdl
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedops/ww-bedops.wdl" as bedops_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedparse/ww-bedparse.wdl" as bedparse_tasks
 
-call bedops_tasks.gtf_to_bed {
+call bedparse_tasks.gtf2bed {
   input:
     gtf_file = reference_gtf
 }
 ```
 
-See the [ww-bedops documentation](../ww-bedops/) for more details. The "Usage as a Module" section above demonstrates how to integrate this conversion step into your workflow.
+See the [ww-bedparse documentation](../ww-bedparse/) for more details. The "Usage as a Module" section above demonstrates how to integrate this conversion step into your workflow.
 
 ## Testing the Module
 
@@ -222,7 +222,7 @@ For larger datasets, consider increasing resources:
 ### Input Requirements
 - **BAM file**: Must be coordinate-sorted and indexed
 - **BED file**: Must be in 12-column BED format
-  - Can be generated from GTF using the **[ww-bedops](../ww-bedops/)** module
+  - Can be generated from GTF using the **[ww-bedparse](../ww-bedparse/)** module
   - Must match the reference genome used for alignment
 
 ## Contributing
