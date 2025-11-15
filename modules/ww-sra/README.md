@@ -26,6 +26,7 @@ Downloads FASTQ files from SRA accessions with automatic paired-end detection.
 **Inputs:**
 - `sra_id` (String): SRA accession ID
 - `ncpu` (Int): Number of CPUs for parallel download (default: 8)
+- `max_reads` (Int, optional): Maximum number of reads to download for testing/downsampling
 
 **Outputs:**
 - `r1_end` (File): R1 FASTQ file
@@ -43,20 +44,33 @@ workflow my_workflow {
   input {
     Array[String] sra_accessions = ["SRR12345678"]
   }
-  
+
   scatter (id in sra_accessions) {
     call sra_tasks.fastqdump {
-      input: 
+      input:
         sra_id = id,
         ncpu = 4
     }
   }
-  
+
   output {
     Array[File] r1_fastqs = fastqdump.r1_end
     Array[File] r2_fastqs = fastqdump.r2_end
     Array[Boolean] is_paired_end = fastqdump.is_paired_end
   }
+}
+```
+
+### Example with Downsampling
+
+For testing or memory-constrained environments, limit the number of reads downloaded:
+
+```wdl
+call sra_tasks.fastqdump {
+  input:
+    sra_id = "SRR1039508",
+    ncpu = 2,
+    max_reads = 1000000  # Download only first 1M reads
 }
 ```
 
@@ -116,12 +130,14 @@ The module supports flexible resource configuration:
 - **Parallel downloading**: Multi-threaded downloads for improved performance
 - **Standardized output**: Consistent naming for downstream processing
 - **Cross-platform**: Works with SRA accessions from NCBI, ENA, and DDBJ
+- **Optional downsampling**: Limit read count for testing and development via `max_reads` parameter
 
 ## Performance Considerations
 
 - **Download speed**: Performance scales with CPU count and network bandwidth
 - **Storage requirements**: FASTQ files can be large; ensure adequate disk space
 - **Memory usage**: Scales automatically with CPU allocation
+- **Downsampling**: Use `max_reads` parameter to limit data download for testing or when working with constrained resources (e.g., CI runners, local development)
 
 ## Output Description
 

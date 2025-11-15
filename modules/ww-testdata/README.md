@@ -37,7 +37,8 @@ workflow my_analysis {
   call testdata.download_ref_data {
     input:
       chromo = "chr22",
-      version = "hg38"
+      version = "hg38",
+      region = "1-20000000"  # Optional: limit to first 20Mb for faster downloads
   }
 
   call my_analysis_task {
@@ -78,11 +79,13 @@ java -jar cromwell.jar run testrun.wdl
 call testdata.download_ref_data {
   input:
     chromo = "chr22",
-    version = "hg38"
+    version = "hg38",
+    region = "1-30000000"  # Optional: subset for faster testing
 }
 call star_tasks.build_star_index {
   input:
-    reference_fasta = download_ref_data.fasta
+    reference_fasta = download_ref_data.fasta,
+    reference_gtf = download_ref_data.gtf
 }
 ```
 
@@ -170,18 +173,21 @@ call my_bam_analysis {
 ### download_ref_data
 
 **Inputs**:
-- `chromo` (String): Chromosome to download
-- `version` (String): Genome version
+- `chromo` (String): Chromosome to download (default: "chr1")
+- `version` (String): Genome version (default: "hg38")
+- `region` (String, optional): Region coordinates to extract from chromosome in format '1-30000000'. If not specified, uses entire chromosome
+- `output_name` (String, optional): Name for output files (default: uses chromo name)
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
 
-**Note**: In the test workflow, `chromo` is hardcoded to "chr1" and `version` to "hg38".
+**Note**: In the test workflow, `chromo` is hardcoded to "chr1", `version` to "hg38", and `region` to "1-10000000" for faster testing.
 
 **Outputs**:
-- `fasta` (File): Reference chromosome FASTA file (decompressed)
+- `fasta` (File): Reference chromosome FASTA file (decompressed, filtered to region if specified)
 - `fasta_index` (File): Samtools FASTA index (.fai)
-- `gtf` (File): Chromosome-specific gene annotations
-- `bed` (File): BED file covering entire chromosome
+- `dict` (File): Samtools FASTA dictionary file (.dict) for GATK compatibility
+- `gtf` (File): Chromosome-specific gene annotations (filtered to region if specified)
+- `bed` (File): BED file covering the entire chromosome or specified region
 
 ### download_fastq_data
 

@@ -20,11 +20,13 @@ task fastqdump {
   parameter_meta {
     sra_id: "SRA ID of the sample to be downloaded via parallel-fastq-dump"
     ncpu: "number of cpus to use during download"
+    max_reads: "Optional maximum number of reads to download (for testing/downsampling). If not specified, downloads all reads."
   }
 
   input {
     String sra_id
     Int ncpu = 8
+    Int? max_reads
   }
 
   command <<<
@@ -38,14 +40,16 @@ task fastqdump {
         --threads ~{ncpu} \
         --outdir ./ \
         --split-files \
-        --gzip
+        --gzip \
+        ~{if defined(max_reads) then "--maxSpotId " + max_reads else ""}
     else
       echo false > paired_file
       parallel-fastq-dump \
         --sra-id "~{sra_id}" \
         --threads ~{ncpu} \
         --outdir ./ \
-        --gzip
+        --gzip \
+        ~{if defined(max_reads) then "--maxSpotId " + max_reads else ""}
       # Rename the file to match the expected output format
       mv "~{sra_id}.fastq.gz" "~{sra_id}_1.fastq.gz"
       # Create an empty placeholder for R2
