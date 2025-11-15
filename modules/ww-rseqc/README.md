@@ -40,21 +40,6 @@ Run comprehensive RSeQC quality control metrics on aligned RNA-seq data.
 - `junction_log` (File): Junction annotation log
 - `rseqc_summary` (File): Summary report of all RSeQC metrics
 
-## GTF to BED Conversion
-
-RSeQC requires BED12 format annotation files. For GTF to BED conversion, use the **[ww-bedops](../ww-bedops/)** module:
-
-```wdl
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedops/ww-bedops.wdl" as bedops_tasks
-
-call bedops_tasks.gtf_to_bed {
-  input:
-    gtf_file = reference_gtf
-}
-```
-
-See the [ww-bedops documentation](../ww-bedops/) for more details.
-
 ## Usage as a Module
 
 ### Importing into Your Workflow
@@ -131,6 +116,21 @@ This module integrates seamlessly with other WILDS components:
 - **ww-testdata**: Automatic provisioning of test data for demonstrations
 - **RNA-seq workflows**: Integrate QC into comprehensive RNA-seq analysis pipelines
 
+#### GTF to BED Conversion with ww-bedops
+
+RSeQC requires BED12 format annotation files. For GTF to BED conversion, use the **[ww-bedops](../ww-bedops/)** module:
+
+```wdl
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedops/ww-bedops.wdl" as bedops_tasks
+
+call bedops_tasks.gtf_to_bed {
+  input:
+    gtf_file = reference_gtf
+}
+```
+
+See the [ww-bedops documentation](../ww-bedops/) for more details. The "Usage as a Module" section above demonstrates how to integrate this conversion step into your workflow.
+
 ## Testing the Module
 
 The module includes a test workflow (`testrun.wdl`) that can be run independently:
@@ -162,8 +162,6 @@ This module uses the **`getwilds/rseqc:5.0.4`** container image from the [WILDS 
 - Python 3.9 environment
 - All necessary dependencies
 - Optimized for reproducible RNA-seq QC analysis
-
-For GTF to BED conversion, the **[ww-bedops](../ww-bedops/)** module uses the **`getwilds/bedops:2.4.42`** container image.
 
 ## Citation
 

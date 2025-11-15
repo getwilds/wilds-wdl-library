@@ -12,7 +12,6 @@ This module provides a simple interface for converting GTF (Gene Transfer Format
 ## Key Features
 
 - **Simple GTF to BED12 conversion**: One-command conversion that properly handles exon structures and CDS boundaries
-- **Ensembl GTF support**: Works with standard Ensembl GTF format
 - **Flexible filtering**: Optional filtering by GTF attributes
 - **Extra fields**: Can include additional GTF fields in output
 
@@ -143,6 +142,13 @@ This module is commonly used with:
 - Exon grouping by transcript
 - CDS boundary annotation
 - Coordinate system conversion (GTF 1-based to BED 0-based)
+
+If you use this module in your research, please cite bedparse:
+
+> **bedparse: feature extraction from BED files**
+> Tommaso Leonardi
+> Journal of Open Source Software, 2019, 4(34), 1228
+> DOI: [10.21105/joss.01228](https://doi.org/10.21105/joss.01228)
 
 ## Support
 
