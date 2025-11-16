@@ -1,8 +1,8 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-star-deseq/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-star-deseq/modules/ww-sra/ww-sra.wdl" as ww_sra
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-star-deseq/vignettes/ww-star-deseq2/ww-star-deseq2.wdl" as star_deseq2_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/vignettes/ww-star-deseq2/ww-star-deseq2.wdl" as star_deseq2_workflow
 
 struct SampleInfo {
     String name
