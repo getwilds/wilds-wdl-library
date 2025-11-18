@@ -14,7 +14,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 - **Tasks**: `build_index`, `quantify`, `merge_results`
 - **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
-- **Container**: `combinelab/salmon:latest`
+- **Container**: `getwilds/salmon:1.10.3` (WILDS Docker image with Salmon installed)
 
 ## Tasks
 
