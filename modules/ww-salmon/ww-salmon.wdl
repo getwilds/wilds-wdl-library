@@ -39,7 +39,7 @@ task build_index {
         --gencode
 
     # Wait a moment to ensure all files are fully written
-    sleep 2
+    sleep 5
 
     # Create tar archive of the index
     tar -czf salmon_index.tar.gz salmon_index
