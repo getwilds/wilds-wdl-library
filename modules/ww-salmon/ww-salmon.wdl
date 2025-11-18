@@ -50,7 +50,7 @@ task build_index {
   }
 
   runtime {
-    docker: "combinelab/salmon:latest"
+    docker: "getwilds/salmon:1.10.3"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -114,7 +114,7 @@ task quantify {
   }
 
   runtime {
-    docker: "combinelab/salmon:latest"
+    docker: "getwilds/salmon:1.10.3"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -186,7 +186,7 @@ task merge_results {
   }
 
   runtime {
-    docker: "combinelab/salmon:latest"
+    docker: "getwilds/salmon:1.10.3"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
