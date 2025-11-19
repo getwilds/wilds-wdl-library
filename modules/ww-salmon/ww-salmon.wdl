@@ -38,8 +38,9 @@ task build_index {
         -p ~{cpu_cores} \
         --gencode
 
-    # Wait a moment to ensure all files are fully written
-    sleep 5
+    # Force all filesystem writes to complete before archiving
+    sync
+    sleep 2
 
     # Create tar archive of the index
     tar -czf salmon_index.tar.gz salmon_index
