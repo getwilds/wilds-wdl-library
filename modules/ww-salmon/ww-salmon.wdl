@@ -31,23 +31,20 @@ task build_index {
     set -eo pipefail
 
     # Build Salmon index with default parameters and decoys
+    # Wait for salmon to fully complete before proceeding
     salmon index \
         -t ~{transcriptome_fasta} \
         --tmpdir=./tmp \
         -i salmon_index \
         -p ~{cpu_cores} \
-        --gencode
+        --gencode && echo "Salmon index build completed"
 
-    # Wait for the critical mphf.bin file to exist and be stable
-    # This file is typically the last to be written during index creation
-    echo "Waiting for index files to stabilize..."
-    while [ ! -f salmon_index/mphf.bin ] || [ ! -s salmon_index/mphf.bin ]; do
-        sleep 1
-    done
-
-    # Give filesystem a moment to ensure all writes are complete
+    # Ensure all filesystem operations are complete
+    # Give extra time for any background writes to finish
+    echo "Waiting for filesystem to stabilize..."
     sync
-    sleep 3
+    sleep 5
+    sync
 
     # Create tar archive of the index
     tar -czf salmon_index.tar.gz salmon_index
