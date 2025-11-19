@@ -1,0 +1,7 @@
+{
+  "sra_salmon.sra_id_list": ["SRR3589956", "SRR3589957"],
+  "sra_salmon.transcriptome_fasta": "/path/to/reference/transcriptome.fa",
+  "sra_salmon.ncpu": 8,
+  "sra_salmon.memory_gb": 16,
+  "sra_salmon.max_reads": 100000
+}
