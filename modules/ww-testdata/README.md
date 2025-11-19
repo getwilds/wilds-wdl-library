@@ -57,7 +57,7 @@ The `testrun.wdl` workflow requires no input parameters and automatically downlo
 
 - **Chromosome**: chr1 only (for efficient testing)
 - **Reference version**: hg38 (latest standard)
-- **All test data types**: Reference, FASTQ, CRAM, BAM, ichorCNA, VCF files, and Pasilla counts
+- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), and Pasilla counts
 
 ### Running the Test Workflow
 
