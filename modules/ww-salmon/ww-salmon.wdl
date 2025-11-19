@@ -38,9 +38,16 @@ task build_index {
         -p ~{cpu_cores} \
         --gencode
 
-    # Force all filesystem writes to complete before archiving
+    # Wait for the critical mphf.bin file to exist and be stable
+    # This file is typically the last to be written during index creation
+    echo "Waiting for index files to stabilize..."
+    while [ ! -f salmon_index/mphf.bin ] || [ ! -s salmon_index/mphf.bin ]; do
+        sleep 1
+    done
+
+    # Give filesystem a moment to ensure all writes are complete
     sync
-    sleep 2
+    sleep 3
 
     # Create tar archive of the index
     tar -czf salmon_index.tar.gz salmon_index
