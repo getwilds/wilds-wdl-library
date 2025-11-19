@@ -1,10 +1,11 @@
 {
-  "sra_star.sra_id_list": ["SRR000001", "SRR000002"],
+  "sra_star.sra_id_list": ["SRR3589956", "SRR3589957"],
   "sra_star.ref_genome": {
     "name": "GRCh38",
     "fasta": "/path/to/reference/genome.fa",
     "gtf": "/path/to/reference/genes.gtf"
   },
   "sra_star.ncpu": 8,
-  "sra_star.memory_gb": 32
+  "sra_star.memory_gb": 32,
+  "sra_star.max_reads": 100000
 }

@@ -33,6 +33,7 @@ workflow sra_star {
     genome_sa_index_nbases: "Length (bases) of the SA pre-indexing string, typically between 10-15 (scales with genome size)"
     ncpu: "number of CPUs to use for SRA download and STAR alignment"
     memory_gb: "memory allocation in GB for STAR tasks"
+    max_reads: "Optional maximum number of reads to download from SRA (for testing/downsampling). If not specified, downloads all reads."
   }
 
   input {
@@ -42,6 +43,7 @@ workflow sra_star {
     Int genome_sa_index_nbases = 14
     Int ncpu = 12
     Int memory_gb = 64
+    Int? max_reads
   }
 
   call star_tasks.build_index { input:
@@ -56,7 +58,8 @@ workflow sra_star {
   scatter ( id in sra_id_list ){
     call sra_tasks.fastqdump { input:
         sra_id = id,
-        ncpu = ncpu
+        ncpu = ncpu,
+        max_reads = max_reads
     }
 
     call star_tasks.align_two_pass { input:
