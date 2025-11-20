@@ -22,7 +22,7 @@ This vignette is part of the [WILDS WDL Library](https://github.com/getwilds/wil
 
 1. **SRA Download** (using `ww-sra` module):
    - Downloads FASTQ files from SRA accessions
-   - Automatically detects paired-end vs single-end reads
+   - Optimizes download for paired-end data by fetching it in parallel
    - Validates successful downloads
 
 2. **Salmon Index Building** (using `ww-salmon` module):
@@ -52,6 +52,7 @@ This vignette imports and uses:
 - Docker/Apptainer support
 - Internet access for SRA downloads
 - Sufficient compute resources for Salmon quantification
+- **Paired-end RNA-seq data**: This workflow is designed for paired-end sequencing data. Ensure your SRA accessions contain paired-end reads (R1 and R2 FASTQ files)
 
 ### Input Configuration
 

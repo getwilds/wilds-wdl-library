@@ -26,6 +26,8 @@ Builds Salmon index from a reference transcriptome FASTA file.
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
 
+**Important**: Salmon requires a **transcriptome FASTA** file (mature mRNA sequences), not a genome FASTA. The transcriptome contains only the exonic sequences for each transcript, which Salmon uses for quasi-mapping. See [Salmon documentation](https://salmon.readthedocs.io/) for details on obtaining or building transcriptome references.
+
 **Outputs:**
 - `salmon_index` (File): Compressed tarball containing the Salmon index for quantification
 
