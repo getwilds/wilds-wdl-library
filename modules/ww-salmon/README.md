@@ -199,14 +199,22 @@ The module supports flexible resource configuration:
 
 ## Output Description
 
-- **Salmon index**: Compressed index files for rapid quantification
-- **Quantification directories**: Per-sample abundance estimates including:
-  - `quant.sf`: Transcript-level abundance, TPM, and counts
-  - `quant.genes.sf`: Gene-level abundance estimates (if gene mapping provided)
-  - Auxiliary files and metadata
-- **TPM matrix**: Sample-by-transcript matrix of TPM values
-- **Counts matrix**: Sample-by-transcript matrix of estimated counts
-- **Sample list**: Text file documenting which samples were included
+### Salmon Index
+- **salmon_index.tar.gz**: Compressed tarball containing the Salmon index for transcript quantification
+
+### Quantification Directory Contents
+
+Each Salmon quantification directory (compressed as tar.gz) contains:
+- **quant.sf**: Transcript-level abundance estimates with TPM, NumReads, and effective length
+- **cmd_info.json**: Command and parameter information used for quantification
+- **lib_format_counts.json**: Library format detection results
+- **aux_info/**: Auxiliary quantification information including bootstrap samples (if enabled)
+- **logs/**: Salmon log files with detailed runtime information
+
+### Merged Results
+- **TPM matrix**: Tab-separated sample-by-transcript matrix of TPM (Transcripts Per Million) values
+- **Counts matrix**: Tab-separated sample-by-transcript matrix of estimated read counts
+- **Sample list**: Text file documenting which samples were included in the matrices
 
 ## Module Development
 

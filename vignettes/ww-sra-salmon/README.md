@@ -142,7 +142,6 @@ Each Salmon quantification directory contains:
 
 ### Optimization Tips
 - Use call caching to avoid re-downloading SRA data
-- Salmon is faster than genome alignment methods (STAR, HISAT2)
 - Index building is a one-time cost - reuse indices when possible
 - Consider pre-built indices for common organisms
 
@@ -169,31 +168,6 @@ This vignette can be extended by:
 - Adding transcript-to-gene summarization (tximport)
 - Including multiple quantification tools for comparison
 - Adding downstream pathway analysis
-
-## Salmon vs STAR
-
-This vignette uses **Salmon** for transcript quantification, while the companion `ww-sra-star` vignette uses **STAR** for genome alignment. Key differences:
-
-| Feature | Salmon (ww-sra-salmon) | STAR (ww-sra-star) |
-|---------|------------------------|---------------------|
-| **Approach** | Quasi-mapping to transcriptome | Full alignment to genome |
-| **Speed** | Very fast (~5-10 min/sample) | Slower (~30-60 min/sample) |
-| **Output** | Transcript abundances (TPM/counts) | BAM files + gene counts |
-| **Memory** | Lower (~16GB) | Higher (~32-64GB) |
-| **Use Case** | Differential expression, isoform analysis | Alignment-based analyses, variant calling |
-| **Reference** | Transcriptome FASTA | Genome FASTA + GTF |
-
-Choose **Salmon** for:
-- Fast transcript-level quantification
-- Differential expression analysis
-- Isoform-level analysis
-- Limited computational resources
-
-Choose **STAR** for:
-- Alignment-based downstream analysis
-- Variant calling from RNA-seq
-- Novel splice junction discovery
-- Allele-specific expression analysis
 
 ## Related WILDS Components
 
