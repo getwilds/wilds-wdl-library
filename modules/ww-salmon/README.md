@@ -121,19 +121,6 @@ call salmon_tasks.build_index {
 }
 ```
 
-**Processing with optimized parameters:**
-```wdl
-call salmon_tasks.quantify {
-  input:
-    salmon_index_dir = index,
-    sample_name = "sample_01",
-    fastq_r1 = r1_file,
-    fastq_r2 = r2_file,
-    cpu_cores = 8,
-    memory_gb = 16
-}
-```
-
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
@@ -193,17 +180,17 @@ The module supports flexible resource configuration:
 
 ## Features
 
-- **Fast quantification**: Uses quasi-mapping for rapid transcript abundance estimation
-- **Bias correction**: Includes GC and sequence bias correction
-- **Multi-sample support**: Process multiple samples in parallel
-- **Result aggregation**: Merge results across samples into expression matrices
-- **Module integration**: Seamlessly combines with ww-sra, ww-testdata, and ww-deseq2
-- **Scalable**: Configurable resource allocation
-- **Compatible**: Works with multiple WDL executors
+- **Multi-sample support**: Process multiple samples in parallel using scatter-gather patterns
+- **Result aggregation**: Automatically merge quantification results across samples into TPM and count matrices
+- **Module integration**: Seamlessly combines with ww-sra, ww-testdata, and ww-deseq2 modules
+- **Best practices**: Implements recommended Salmon parameters (--validateMappings, --gcBias, --seqBias)
+- **Scalable**: Configurable resource allocation for varying dataset sizes
+- **Comprehensive metadata**: Extensive WDL annotations for workflow documentation and validation
+- **Cross-platform compatible**: Works with multiple WDL executors (Cromwell, miniWDL, Sprocket)
 
 ## Performance Considerations
 
-- **Speed**: Salmon is significantly faster than traditional alignment-based quantification
+- **Speed**: Salmon provides fast transcript-level quantification through quasi-mapping, making it suitable for large-scale RNA-seq studies
 - **Memory usage**: Index building and quantification require moderate RAM (8-32GB typically)
 - **CPU scaling**: Both index building and quantification benefit from multiple cores
 - **Storage requirements**: Moderate disk space needed for index files and quantification results
