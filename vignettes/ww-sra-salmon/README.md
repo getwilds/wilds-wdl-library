@@ -163,11 +163,9 @@ This vignette demonstrates several key WDL patterns:
 ## Extending the Vignette
 
 This vignette can be extended by:
-- Adding quality control modules (e.g., FastQC, MultiQC)
+- Adding quality control (e.g., FastQC, MultiQC)
 - Integrating differential expression analysis (e.g., DESeq2, edgeR)
-- Adding transcript-to-gene summarization (tximport)
 - Including multiple quantification tools for comparison
-- Adding downstream pathway analysis
 
 ## Related WILDS Components
 
