@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -57,7 +57,7 @@ The `testrun.wdl` workflow requires no input parameters and automatically downlo
 
 - **Chromosome**: chr1 only (for efficient testing)
 - **Reference version**: hg38 (latest standard)
-- **All test data types**: Reference, FASTQ, CRAM, BAM, ichorCNA, VCF files, and Pasilla counts
+- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), and Pasilla counts
 
 ### Running the Test Workflow
 
@@ -74,7 +74,7 @@ java -jar cromwell.jar run testrun.wdl
 
 ### Common Integration Patterns
 
-**RNA-seq analysis**:
+**RNA-seq alignment analysis**:
 ```wdl
 call testdata.download_ref_data {
   input:
@@ -86,6 +86,22 @@ call star_tasks.build_star_index {
   input:
     reference_fasta = download_ref_data.fasta,
     reference_gtf = download_ref_data.gtf
+}
+```
+
+**RNA-seq quantification analysis**:
+```wdl
+call testdata.download_test_transcriptome { }
+call testdata.download_fastq_data { }
+call salmon_tasks.build_index {
+  input:
+    transcriptome_fasta = download_test_transcriptome.transcriptome_fasta
+}
+call salmon_tasks.quantify {
+  input:
+    salmon_index_dir = build_index.salmon_index,
+    fastq_r1 = download_fastq_data.r1_fastq,
+    fastq_r2 = download_fastq_data.r2_fastq
 }
 ```
 
@@ -199,6 +215,19 @@ call my_bam_analysis {
 - `r1_fastq` (File): R1 FASTQ file for paired-end sequencing
 - `r2_fastq` (File): R2 FASTQ file for paired-end sequencing
 
+### download_test_transcriptome
+
+Downloads protein-coding transcriptome from GENCODE for RNA-seq quantification testing (e.g., Salmon, Kallisto).
+
+**Important Note**: This task uses GENCODE (Ensembl) annotations, while other ww-testdata tasks (`download_ref_data`) use NCBI RefSeq annotations. These annotation sources have different gene/transcript IDs and may differ in transcript models. For testing purposes, this provides functional validation of quantification tools. For production pipelines, ensure you maintain annotation consistency throughout your workflow (i.e., use the same annotation source for alignment, quantification, and downstream analysis).
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+
+**Outputs**:
+- `transcriptome_fasta` (File): Protein-coding transcriptome FASTA file (~150MB uncompressed, ~20,000 transcripts from GENCODE release 47)
+
 ### interleave_fastq
 
 **Inputs**:
@@ -307,6 +336,7 @@ call my_bam_analysis {
 All reference data is downloaded from authoritative public repositories:
 
 - **UCSC Genome Browser**: Reference genomes and annotations
+- **GENCODE**: Human transcriptome annotations and sequences
 - **GATK Test Data**: Example FASTQ, CRAM, and BAM files
 - **ichorCNA Repository**: Copy number analysis references
 - **AnnotSV Repository**: Structural variant test data
@@ -320,7 +350,7 @@ Data integrity is maintained through the use of stable URLs and version-pinned r
 
 ### Runtime Dependencies
 - **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`, `getwilds/bcftools:1.19`, `getwilds/deseq2:1.40.2`
-- **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), wget, aws CLI, R with DESeq2 and pasilla packages
+- **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), curl, aws CLI, R with DESeq2 and pasilla packages
 - **Network**: Internet access required for data downloads
 
 ### Resource Requirements
@@ -333,6 +363,7 @@ Data integrity is maintained through the use of stable URLs and version-pinned r
 This module is specifically designed to support other WILDS modules:
 
 - **ww-star**: RNA-seq alignment (requires reference FASTA + GTF)
+- **ww-salmon**: RNA-seq quantification (requires transcriptome FASTA)
 - **ww-bwa**: DNA alignment (requires reference FASTA)
 - **ww-deseq2**: Differential expression analysis (uses individual count files from `generate_pasilla_counts`)
 - **ww-ichorcna**: Copy number analysis (requires ichorCNA reference files)

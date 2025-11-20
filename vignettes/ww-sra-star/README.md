@@ -54,16 +54,19 @@ Create an inputs JSON file with your SRA accessions and reference genome:
 
 ```json
 {
-  "sra_star.sra_id_list": ["SRR13008264"],
+  "sra_star.sra_id_list": ["SRR3589956"],
   "sra_star.ref_genome": {
     "name": "hg38",
     "fasta": "/path/to/genome.fasta",
     "gtf": "/path/to/annotation.gtf"
   },
   "sra_star.ncpu": 8,
-  "sra_star.memory_gb": 64
+  "sra_star.memory_gb": 64,
+  "sra_star.max_reads": 100000
 }
 ```
+
+**Note**: The `max_reads` parameter is optional and useful for testing with a subset of reads. Omit this parameter or set it to a higher value for production runs.
 
 ### Running the Vignette
 
@@ -96,6 +99,7 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 | `genome_sa_index_nbases` | STAR index parameter | Int | No | 14 |
 | `ncpu` | Number of CPU cores | Int | No | 12 |
 | `memory_gb` | Memory allocation in GB | Int | No | 64 |
+| `max_reads` | Maximum reads to download per sample (for testing) | Int | No | all reads |
 
 ### RefGenome Structure
 

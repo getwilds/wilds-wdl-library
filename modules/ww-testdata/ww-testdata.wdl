@@ -618,3 +618,46 @@ task generate_pasilla_counts {
     cpu: cpu_cores
   }
 }
+
+task download_test_transcriptome {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Download a small test transcriptome for RNA-seq quantification testing. NOTE: This uses GENCODE (Ensembl) annotations, while other ww-testdata tasks use NCBI RefSeq. For production use, ensure annotation consistency across your pipeline."
+    outputs: {
+        transcriptome_fasta: "Small test transcriptome FASTA file containing protein-coding transcripts"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download protein-coding transcriptome from GENCODE for testing
+    # This is a relatively small file (~46MB compressed) containing all human protein-coding transcripts
+    curl -L -o test_transcriptome.fa.gz \
+      "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_47/gencode.v47.pc_transcripts.fa.gz"
+
+    # Decompress the file
+    gunzip test_transcriptome.fa.gz
+  >>>
+
+  output {
+    File transcriptome_fasta = "test_transcriptome.fa"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}

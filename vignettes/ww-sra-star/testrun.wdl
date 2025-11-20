@@ -1,22 +1,25 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/vignettes/ww-sra-star/ww-sra-star.wdl" as sra_star_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-salmon/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-salmon/vignettes/ww-sra-star/ww-sra-star.wdl" as sra_star_workflow
 
 workflow sra_star_example {
   # Call testdata workflow to get test data
   call ww_testdata.download_ref_data { }
 
   # Call the actual sra_star workflow with test data outputs
+  # Using SRR3589956: Human (HEK293) RNA-seq for compatibility with reference genome
+  # Limiting to 100k reads for fast testing
   call sra_star_workflow.sra_star { input:
-    sra_id_list = ["SRR13008264"],
+    sra_id_list = ["SRR3589956"],
     ref_genome = {
       "name": "chr1",
       "fasta": download_ref_data.fasta,
       "gtf": download_ref_data.gtf
     },
     ncpu = 2,
-    memory_gb = 8
+    memory_gb = 8,
+    max_reads = 100000
   }
 
   output {

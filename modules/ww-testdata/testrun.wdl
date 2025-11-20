@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-salmon/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow testdata_example {
   # Pull down reference genome and index files for chr1
@@ -44,6 +44,8 @@ workflow testdata_example {
 
   call ww_testdata.generate_pasilla_counts { }
 
+  call ww_testdata.download_test_transcriptome { }
+
   call validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
@@ -69,7 +71,8 @@ workflow testdata_example {
     gnomad_vcf_index = download_gnomad_vcf.gnomad_vcf_index,
     annotsv_test_vcf = download_annotsv_vcf.test_vcf,
     pasilla_counts = generate_pasilla_counts.individual_count_files,
-    pasilla_gene_info = generate_pasilla_counts.gene_info
+    pasilla_gene_info = generate_pasilla_counts.gene_info,
+    transcriptome_fasta = download_test_transcriptome.transcriptome_fasta
   }
 
   output {
@@ -104,6 +107,8 @@ workflow testdata_example {
     Array[String] pasilla_sample_names = generate_pasilla_counts.sample_names
     Array[String] pasilla_sample_conditions = generate_pasilla_counts.sample_conditions
     File pasilla_gene_info = generate_pasilla_counts.gene_info
+    # Output from test transcriptome download
+    File transcriptome_fasta = download_test_transcriptome.transcriptome_fasta
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
   }
@@ -143,6 +148,7 @@ task validate_outputs {
     annotsv_test_vcf: "AnnotSV test VCF file to validate"
     pasilla_counts: "Array of individual count files for each sample from Pasilla dataset to validate"
     pasilla_gene_info: "Pasilla gene annotation information to validate"
+    transcriptome_fasta: "Test transcriptome FASTA file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -173,6 +179,7 @@ task validate_outputs {
     File annotsv_test_vcf
     Array[File] pasilla_counts
     File pasilla_gene_info
+    File transcriptome_fasta
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -231,11 +238,12 @@ task validate_outputs {
     done
 
     validate_file "~{pasilla_gene_info}" "Pasilla gene info" || validation_passed=false
+    validate_file "~{transcriptome_fasta}" "Test transcriptome FASTA" || validation_passed=false
 
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 24"
+      echo "Total files validated: 25"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

@@ -13,6 +13,9 @@ output
 # docs directory is generated locally and in CI, don't commit it
 docs/
 
+# personal notes/documentation
+notes/
+
 # cromwell/womtool files
 cromwell*.jar
 womtool*.jar
