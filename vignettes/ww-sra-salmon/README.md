@@ -171,8 +171,9 @@ This vignette can be extended by:
 
 - **ww-sra module**: SRA download functionality
 - **ww-salmon module**: Salmon quantification functionality
+- **ww-fastqc module**: FASTQ quality control
+- **ww-deseq2 module**: Differential gene expression analysis
 - **ww-sra-star vignette**: Alternative pipeline using STAR alignment
-- **Other vignettes**: Additional integration examples
 
 ## Testing the Vignette
 
