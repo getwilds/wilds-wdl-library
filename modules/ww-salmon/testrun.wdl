@@ -1,8 +1,8 @@
 version 1.0
 
 # Import module in question as well as the testdata module for automatic demo functionality
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-salmon/modules/ww-salmon/ww-salmon.wdl" as ww_salmon
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-salmon/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl" as ww_salmon
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 # Define data structure for sample inputs
 struct SalmonSample {
