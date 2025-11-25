@@ -1197,3 +1197,74 @@ task validate_sam_file {
     cpu: cpu_cores
   }
 }
+
+task analyze_saturation_mutagenesis {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Analyze saturation mutagenesis data using GATK AnalyzeSaturationMutagenesis"
+    outputs: {
+        aa_counts: "Amino acid count table",
+        aa_fractions: "Amino acid fraction table",
+        codon_counts: "Codon count table",
+        codon_fractions: "Codon fraction table",
+        cov_length_counts: "Coverage length count table",
+        read_counts: "Read count table",
+        ref_coverage: "Reference coverage table",
+        variant_counts: "Variant count table"
+    }
+  }
+
+  parameter_meta {
+    bam: "Input aligned BAM file"
+    bam_index: "Index file for the input BAM"
+    reference_fasta: "Reference genome FASTA file"
+    reference_fasta_index: "Index file for the reference FASTA"
+    reference_dict: "Reference genome sequence dictionary"
+    orf_range: "Open reading frame range to analyze (e.g., '1-100')"
+    base_file_name: "Base name for output files"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
+  }
+
+  input {
+    File bam
+    File bam_index
+    File reference_fasta
+    File reference_fasta_index
+    File reference_dict
+    String orf_range
+    String base_file_name
+    Int memory_gb = 16
+    Int cpu_cores = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
+      AnalyzeSaturationMutagenesis \
+      -R "~{reference_fasta}" \
+      -I "~{bam}" \
+      --orf ~{orf_range} \
+      -O "~{base_file_name}" \
+      --verbosity WARNING
+  >>>
+
+  output {
+    File aa_counts = "~{base_file_name}.aaCounts"
+    File aa_fractions = "~{base_file_name}.aaFractions"
+    File codon_counts = "~{base_file_name}.codonCounts"
+    File codon_fractions = "~{base_file_name}.codonFractions"
+    File cov_length_counts = "~{base_file_name}.coverageLengthCounts"
+    File read_counts = "~{base_file_name}.readCounts"
+    File ref_coverage = "~{base_file_name}.refCoverage"
+    File variant_counts = "~{base_file_name}.variantCounts"
+  }
+
+  runtime {
+    docker: "getwilds/gatk:4.6.1.0"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
