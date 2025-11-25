@@ -14,6 +14,16 @@ workflow saturation_mutagenesis_example {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Example workflow demonstrating saturation mutagenesis analysis using test data"
+    outputs: {
+        variant_counts: "Array of variant count tables for each sample",
+        aa_counts: "Array of amino acid count tables for each sample",
+        aa_fractions: "Array of amino acid fraction tables for each sample",
+        codon_counts: "Array of codon count tables for each sample",
+        codon_fractions: "Array of codon fraction tables for each sample",
+        cov_length_counts: "Array of coverage length count tables for each sample",
+        read_counts: "Array of read count tables for each sample",
+        ref_coverage: "Array of reference coverage tables for each sample"
+    }
   }
 
   parameter_meta {
@@ -25,7 +35,7 @@ workflow saturation_mutagenesis_example {
   input {
     String orf_range = "1-1000"
     Int cpu_cores = 4
-    Int memory_gb = 16
+    Int memory_gb = 8
   }
 
   # Download test reference data (using a small region of chr1 for faster testing)
