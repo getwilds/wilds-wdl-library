@@ -2,6 +2,7 @@ version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as bwa_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-saturation/modules/ww-gatk/ww-gatk.wdl" as gatk_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-saturation/modules/ww-samtools/ww-samtools.wdl" as samtools_tasks
 
 struct SaturationSample {
     String name
@@ -70,11 +71,20 @@ workflow saturation_mutagenesis {
                 memory_gb = memory_gb
         }
 
-        # Step 2: Analyze Saturation Mutagenesis
+        # Step 2: Sort BAM by queryname (required for AnalyzeSaturationMutagenesis)
+        call samtools_tasks.sort_bam {
+            input:
+                input_bam = bwa_mem.sorted_bam,
+                base_file_name = sample.name,
+                cpu_cores = cpu_cores,
+                memory_gb = memory_gb
+        }
+
+        # Step 3: Analyze Saturation Mutagenesis
         call gatk_tasks.analyze_saturation_mutagenesis {
             input:
-                bam = bwa_mem.sorted_bam,
-                bam_index = bwa_mem.sorted_bai,
+                bam = sort_bam.sorted_bam,
+                bam_index = sort_bam.sorted_bai,
                 reference_fasta = reference_fasta,
                 reference_fasta_index = reference_fasta_index,
                 reference_dict = reference_dict,

@@ -97,3 +97,50 @@ task merge_bams_to_cram {
     docker: "getwilds/samtools:1.19"
   }
 }
+
+task sort_bam {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Sort BAM file by queryname (read name) so that read pairs are adjacent"
+    outputs: {
+        sorted_bam: "BAM file sorted by queryname with read pairs adjacent",
+        sorted_bai: "Index file for the sorted BAM"
+    }
+  }
+
+  parameter_meta {
+    input_bam: "Input BAM file to be sorted by queryname"
+    base_file_name: "Base name for output files"
+    cpu_cores: "Number of CPU cores to use (threads = cpu_cores - 1)"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    File input_bam
+    String base_file_name
+    Int cpu_cores = 4
+    Int memory_gb = 8
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Sort BAM by queryname (pairs adjacent) using -n flag
+    samtools sort -n -@ ~{cpu_cores - 1} -o "~{base_file_name}.queryname_sorted.bam" ~{input_bam}
+
+    # Index the sorted BAM
+    samtools index "~{base_file_name}.queryname_sorted.bam"
+  >>>
+
+  output {
+    File sorted_bam = "~{base_file_name}.queryname_sorted.bam"
+    File sorted_bai = "~{base_file_name}.queryname_sorted.bam.bai"
+  }
+
+  runtime {
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+    docker: "getwilds/samtools:1.19"
+  }
+}
