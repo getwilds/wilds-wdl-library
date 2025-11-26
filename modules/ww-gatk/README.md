@@ -23,7 +23,7 @@ The module implements GATK best practices for variant calling, including proper 
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `fastq_to_bam`, `validate_sam_file`
+- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `fastq_to_bam`, `validate_sam_file`, `analyze_saturation_mutagenesis`
 - **Test workflow**: `testrun.wdl` (demonstration workflow using test data with parallelization)
 - **Container**: `getwilds/gatk:4.6.1.0`
 
@@ -305,6 +305,35 @@ Collects whole genome sequencing metrics using GATK CollectWgsMetrics.
 
 **Outputs:**
 - `metrics_file` (File): Comprehensive WGS metrics file with coverage and quality statistics
+
+### `analyze_saturation_mutagenesis`
+Analyzes saturation mutagenesis data using GATK AnalyzeSaturationMutagenesis to quantify amino acid and codon frequencies.
+
+**Important Requirements:**
+- Input BAM will be automatically sorted by queryname (paired reads must be adjacent)
+- Reference FASTA must contain **only A, C, G, T bases** (no N's or other IUPAC codes)
+- Use `ww-testdata.create_clean_amplicon_reference` to prepare a clean reference if needed
+
+**Inputs:**
+- `bam` (File): Input aligned BAM file (will be automatically sorted by queryname)
+- `bam_index` (File): Index file for the input BAM
+- `reference_fasta` (File): Reference genome FASTA file (must contain only A, C, G, T bases)
+- `reference_fasta_index` (File): Index file for the reference FASTA
+- `reference_dict` (File): Reference genome sequence dictionary
+- `orf_range` (String): Open reading frame range to analyze (e.g., '1-100')
+- `base_file_name` (String): Base name for output files
+- `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+
+**Outputs:**
+- `aa_counts` (File): Amino acid count table
+- `aa_fractions` (File): Amino acid fraction table
+- `codon_counts` (File): Codon count table
+- `codon_fractions` (File): Codon fraction table
+- `cov_length_counts` (File): Coverage length count table
+- `read_counts` (File): Read count table
+- `ref_coverage` (File): Reference coverage table
+- `variant_counts` (File): Variant count table
 
 ## Workflow Parallelization Configuration
 

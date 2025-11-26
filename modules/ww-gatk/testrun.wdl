@@ -1,7 +1,9 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl" as ww_gatk
+# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl" as ww_gatk
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "ww-gatk.wdl" as ww_gatk
 
 struct GatkSample {
     String name
@@ -67,6 +69,27 @@ workflow gatk_example {
       reference_fasta_index = download_ref_data.fasta_index,
       reference_dict = create_sequence_dictionary.sequence_dict,
       scatter_count = 2
+  }
+
+  # Create clean amplicon reference for saturation mutagenesis (removes N bases)
+  call ww_testdata.create_clean_amplicon_reference { input:
+      input_fasta = download_ref_data.fasta,
+      region = "chr1:1000-5000",
+      output_name = "chr1_amplicon",
+      replace_n_with = "A"
+  }
+
+  # Test analyze_saturation_mutagenesis task with cleaned reference
+  call ww_gatk.analyze_saturation_mutagenesis { input:
+      bam = download_bam_data.bam,
+      bam_index = download_bam_data.bai,
+      reference_fasta = create_clean_amplicon_reference.clean_fasta,
+      reference_fasta_index = create_clean_amplicon_reference.clean_fasta_index,
+      reference_dict = create_clean_amplicon_reference.clean_dict,
+      orf_range = "1-100",
+      base_file_name = "saturation_test",
+      memory_gb = 8,
+      cpu_cores = 2
   }
 
   # Scattering across the samples provided
@@ -218,7 +241,9 @@ workflow gatk_example {
       wgs_metrics = collect_wgs_metrics.metrics_file,
       unmapped_bam = fastq_to_bam.unmapped_bam,
       unmapped_bam_validation = validate_unmapped_bam.validation_report,
-      recalibrated_bam_validations = validate_recalibrated_bam.validation_report
+      recalibrated_bam_validations = validate_recalibrated_bam.validation_report,
+      saturation_variant_counts = analyze_saturation_mutagenesis.variant_counts,
+      saturation_aa_counts = analyze_saturation_mutagenesis.aa_counts
   }
 
   output {
@@ -227,6 +252,8 @@ workflow gatk_example {
     Array[File] haplotype_vcfs = merge_haplotype_vcfs.merged_vcf
     Array[File] mutect2_vcfs = merge_mutect2_vcfs.merged_vcf
     Array[File] wgs_metrics = collect_wgs_metrics.metrics_file
+    File saturation_variant_counts = analyze_saturation_mutagenesis.variant_counts
+    File saturation_aa_counts = analyze_saturation_mutagenesis.aa_counts
     File validation_report = validate_outputs.report
   }
 }
@@ -256,6 +283,8 @@ task validate_outputs {
     unmapped_bam: "Unmapped BAM file created from FASTQ using fastq_to_bam"
     unmapped_bam_validation: "Validation report for the unmapped BAM"
     recalibrated_bam_validations: "Array of validation reports for recalibrated BAMs"
+    saturation_variant_counts: "Variant count table from saturation mutagenesis analysis"
+    saturation_aa_counts: "Amino acid count table from saturation mutagenesis analysis"
   }
 
   input {
@@ -273,6 +302,8 @@ task validate_outputs {
     File unmapped_bam
     File unmapped_bam_validation
     Array[File] recalibrated_bam_validations
+    File saturation_variant_counts
+    File saturation_aa_counts
   }
 
   command <<<
@@ -424,6 +455,24 @@ task validate_outputs {
         echo "Missing Recalibrated BAM Validation: $validation" >> validation_report.txt
       fi
     done
+
+    # Check saturation mutagenesis variant counts
+    if [[ -f "~{saturation_variant_counts}" ]]; then
+      size=$(stat -f%z "~{saturation_variant_counts}" 2>/dev/null || stat -c%s "~{saturation_variant_counts}" 2>/dev/null || echo "unknown")
+      lines=$(wc -l < "~{saturation_variant_counts}" 2>/dev/null || echo "unknown")
+      echo "Saturation Variant Counts: $(basename ~{saturation_variant_counts}) (${size} bytes, ${lines} lines)" >> validation_report.txt
+    else
+      echo "Missing Saturation Variant Counts: ~{saturation_variant_counts}" >> validation_report.txt
+    fi
+
+    # Check saturation mutagenesis amino acid counts
+    if [[ -f "~{saturation_aa_counts}" ]]; then
+      size=$(stat -f%z "~{saturation_aa_counts}" 2>/dev/null || stat -c%s "~{saturation_aa_counts}" 2>/dev/null || echo "unknown")
+      lines=$(wc -l < "~{saturation_aa_counts}" 2>/dev/null || echo "unknown")
+      echo "Saturation AA Counts: $(basename ~{saturation_aa_counts}) (${size} bytes, ${lines} lines)" >> validation_report.txt
+    else
+      echo "Missing Saturation AA Counts: ~{saturation_aa_counts}" >> validation_report.txt
+    fi
 
     echo "" >> validation_report.txt
     echo "Validation completed successfully." >> validation_report.txt

@@ -1202,7 +1202,7 @@ task analyze_saturation_mutagenesis {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Analyze saturation mutagenesis data using GATK AnalyzeSaturationMutagenesis"
+    description: "Analyze saturation mutagenesis data using GATK AnalyzeSaturationMutagenesis. NOTE: This tool requires queryname-sorted BAMs and reference sequences with only A, C, G, T bases (no N's). Use ww-testdata.create_clean_amplicon_reference to prepare a clean reference if needed."
     outputs: {
         aa_counts: "Amino acid count table",
         aa_fractions: "Amino acid fraction table",
@@ -1216,9 +1216,9 @@ task analyze_saturation_mutagenesis {
   }
 
   parameter_meta {
-    bam: "Input aligned BAM file"
+    bam: "Input aligned BAM file (will be automatically sorted by queryname)"
     bam_index: "Index file for the input BAM"
-    reference_fasta: "Reference genome FASTA file"
+    reference_fasta: "Reference genome FASTA file (must contain only A, C, G, T bases - no N's or other IUPAC codes)"
     reference_fasta_index: "Index file for the reference FASTA"
     reference_dict: "Reference genome sequence dictionary"
     orf_range: "Open reading frame range to analyze (e.g., '1-100')"
@@ -1242,10 +1242,19 @@ task analyze_saturation_mutagenesis {
   command <<<
     set -eo pipefail
 
+    # Add local symbolic link for reference fasta and dict
+    # If soft links aren't allowed on your HPC system, copy them locally instead
+    ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
+    ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
+    ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+
+    # Sort BAM by queryname so mates are adjacent (required by AnalyzeSaturationMutagenesis)
+    samtools sort -n -@ ~{cpu_cores} -o "~{base_file_name}.sorted.bam" "~{bam}"
+
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       AnalyzeSaturationMutagenesis \
-      -R "~{reference_fasta}" \
-      -I "~{bam}" \
+      -R "~{basename(reference_fasta)}" \
+      -I "~{base_file_name}.sorted.bam" \
       --orf ~{orf_range} \
       -O "~{base_file_name}" \
       --verbosity WARNING
