@@ -35,17 +35,26 @@ workflow saturation_mutagenesis_example {
   }
 
   input {
-    String orf_range = "1-1000"
+    String orf_range = "1-100"
     Int cpu_cores = 4
     Int memory_gb = 8
   }
 
-  # Download test reference data (using a small region of chr1 for faster testing)
+  # Download test reference data (using a small, clean region of chr1 for faster testing)
+  # Using a gene-rich region that's less likely to have N's
   call ww_testdata.download_ref_data {
     input:
       chromo = "chr1",
       version = "hg38",
-      region = "1-30000000"
+      region = "11000000-11100000"
+  }
+
+  # Clean the reference to remove any N bases (required by GATK AnalyzeSaturationMutagenesis)
+  call ww_testdata.create_clean_amplicon_reference {
+    input:
+      input_fasta = download_ref_data.fasta,
+      output_name = "chr1_saturation_amplicon",
+      replace_n_with = "A"
   }
 
   # Download test FASTQ data
@@ -58,13 +67,13 @@ workflow saturation_mutagenesis_example {
     "mates": download_fastq_data.r2_fastq
   }
 
-  # Run saturation mutagenesis workflow
+  # Run saturation mutagenesis workflow with cleaned reference
   call saturation_workflow.saturation_mutagenesis {
     input:
       samples = [test_sample],
-      reference_fasta = download_ref_data.fasta,
-      reference_fasta_index = download_ref_data.fasta_index,
-      reference_dict = download_ref_data.dict,
+      reference_fasta = create_clean_amplicon_reference.clean_fasta,
+      reference_fasta_index = create_clean_amplicon_reference.clean_fasta_index,
+      reference_dict = create_clean_amplicon_reference.clean_dict,
       orf_range = orf_range,
       cpu_cores = cpu_cores,
       memory_gb = memory_gb
