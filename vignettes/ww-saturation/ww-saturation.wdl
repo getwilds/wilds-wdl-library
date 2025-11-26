@@ -84,7 +84,6 @@ workflow saturation_mutagenesis {
         call gatk_tasks.analyze_saturation_mutagenesis {
             input:
                 bam = sort_bam.sorted_bam,
-                bam_index = sort_bam.sorted_bai,
                 reference_fasta = reference_fasta,
                 reference_fasta_index = reference_fasta_index,
                 reference_dict = reference_dict,
