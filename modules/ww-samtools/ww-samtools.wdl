@@ -104,8 +104,7 @@ task sort_bam {
     email: "tfirman@fredhutch.org"
     description: "Sort BAM file by queryname (read name) so that read pairs are adjacent"
     outputs: {
-        sorted_bam: "BAM file sorted by queryname with read pairs adjacent",
-        sorted_bai: "Index file for the sorted BAM"
+        sorted_bam: "BAM file sorted by queryname with read pairs adjacent"
     }
   }
 
@@ -127,15 +126,12 @@ task sort_bam {
     set -eo pipefail
 
     # Sort BAM by queryname (pairs adjacent) using -n flag
+    # Note: queryname-sorted BAMs cannot be indexed
     samtools sort -n -@ ~{cpu_cores - 1} -o "~{base_file_name}.queryname_sorted.bam" ~{input_bam}
-
-    # Index the sorted BAM
-    samtools index "~{base_file_name}.queryname_sorted.bam"
   >>>
 
   output {
     File sorted_bam = "~{base_file_name}.queryname_sorted.bam"
-    File sorted_bai = "~{base_file_name}.queryname_sorted.bam.bai"
   }
 
   runtime {
