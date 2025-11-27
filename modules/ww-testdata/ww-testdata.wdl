@@ -698,7 +698,11 @@ task create_clean_amplicon_reference {
     # Extract region if specified, otherwise use entire sequence
     if [ -n "~{region}" ]; then
       samtools faidx "~{input_fasta}"
-      samtools faidx "~{input_fasta}" "~{region}" > temp.fa
+      samtools faidx "~{input_fasta}" "~{region}" > temp_extract.fa
+
+      # Replace the header with just the chromosome name
+      sed "s/^>.*/>~{output_name}/" temp_extract.fa > temp.fa
+      rm temp_extract.fa
     else
       cp "~{input_fasta}" temp.fa
     fi
