@@ -370,7 +370,8 @@ The test workflow automatically:
 2. Downloads variant databases (dbSNP, known indels, gnomAD)
 3. Downloads test BAM file for demonstration
 4. Performs complete GATK variant calling pipeline with parallelization
-5. Validates all outputs and generates comprehensive reports
+5. Tests saturation mutagenesis analysis with a small clean reference region
+6. Validates all outputs and generates comprehensive reports
 
 No input files or parameters are required - the workflow uses pre-configured test data and parameters optimized for demonstration purposes.
 

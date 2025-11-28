@@ -2,8 +2,10 @@ version 1.0
 
 # import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 # import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl" as ww_gatk
+# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
 import "../ww-testdata/ww-testdata.wdl" as ww_testdata
 import "ww-gatk.wdl" as ww_gatk
+import "../ww-bwa/ww-bwa.wdl" as ww_bwa
 
 struct GatkSample {
     String name
@@ -69,30 +71,6 @@ workflow gatk_example {
       reference_fasta_index = download_ref_data.fasta_index,
       reference_dict = create_sequence_dictionary.sequence_dict,
       scatter_count = 2
-  }
-
-  # Create clean amplicon reference for saturation mutagenesis (removes N bases)
-  # Use a small region to keep memory usage reasonable for testing
-  call ww_testdata.create_clean_amplicon_reference { input:
-      input_fasta = download_ref_data.fasta,
-      region = "chr1:100000-105000",
-      output_name = "chr1",
-      replace_n_with = "A"
-  }
-
-  # Note: analyze_saturation_mutagenesis is tested but will likely produce empty results
-  # since the test BAM (from chr1:1-10000000) may not have reads in the small amplicon region
-  # This is acceptable for CI/CD validation - the task will run successfully even with no data
-  call ww_gatk.analyze_saturation_mutagenesis { input:
-      bam = download_bam_data.bam,
-      bam_index = download_bam_data.bai,
-      reference_fasta = create_clean_amplicon_reference.clean_fasta,
-      reference_fasta_index = create_clean_amplicon_reference.clean_fasta_index,
-      reference_dict = create_clean_amplicon_reference.clean_dict,
-      orf_range = "1-100",
-      base_file_name = "saturation_test",
-      memory_gb = 8,
-      cpu_cores = 2
   }
 
   # Scattering across the samples provided
@@ -229,6 +207,57 @@ workflow gatk_example {
     }
   }
 
+  # Test saturation mutagenesis analysis
+  # Download a small region of chr1 (5KB to fit in CI/CD memory limits)
+  call ww_testdata.download_ref_data as download_saturation_ref {
+    input:
+      chromo = "chr1",
+      version = "hg38",
+      region = "1000000-1005000"
+  }
+
+  # Create clean amplicon reference (removes N bases required by GATK AnalyzeSaturationMutagenesis)
+  call ww_testdata.create_clean_amplicon_reference {
+    input:
+      input_fasta = download_saturation_ref.fasta,
+      output_name = "chr1_saturation_amplicon",
+      replace_n_with = "A"
+  }
+
+  # Build BWA index for the clean amplicon reference
+  call ww_bwa.bwa_index as bwa_index_saturation {
+    input:
+      reference_fasta = create_clean_amplicon_reference.clean_fasta,
+      cpu_cores = 2,
+      memory_gb = 8
+  }
+
+  # Align test FASTQ to the clean amplicon reference to create a BAM with matching headers
+  call ww_bwa.bwa_mem as bwa_mem_saturation {
+    input:
+      bwa_genome_tar = bwa_index_saturation.bwa_index_tar,
+      reference_fasta = create_clean_amplicon_reference.clean_fasta,
+      reads = download_fastq_data.r1_fastq,
+      mates = download_fastq_data.r2_fastq,
+      name = "saturation_test_sample",
+      cpu_cores = 2,
+      memory_gb = 8
+  }
+
+  # Analyze saturation mutagenesis with properly aligned BAM
+  call ww_gatk.analyze_saturation_mutagenesis {
+    input:
+      bam = bwa_mem_saturation.sorted_bam,
+      bam_index = bwa_mem_saturation.sorted_bai,
+      reference_fasta = create_clean_amplicon_reference.clean_fasta,
+      reference_fasta_index = create_clean_amplicon_reference.clean_fasta_index,
+      reference_dict = create_clean_amplicon_reference.clean_dict,
+      orf_range = "1-99",
+      base_file_name = "saturation_test",
+      memory_gb = 8,
+      cpu_cores = 2
+  }
+
   # Validate outputs to ensure all tasks completed successfully
   call validate_outputs { input:
       markdup_bams = mark_duplicates.markdup_bam,
@@ -239,6 +268,7 @@ workflow gatk_example {
       sequential_bais = markdup_recal_metrics.recalibrated_bai,
       haplotype_vcfs = merge_haplotype_vcfs.merged_vcf,
       mutect2_vcfs = merge_mutect2_vcfs.merged_vcf,
+      mutect2_stats = merge_mutect_stats.merged_stats,
       parallel_haplotype_vcfs = haplotype_caller_parallel.vcf,
       parallel_mutect2_vcfs = mutect2_parallel.vcf,
       wgs_metrics = collect_wgs_metrics.metrics_file,
@@ -254,6 +284,7 @@ workflow gatk_example {
     Array[File] recalibrated_bais = base_recalibrator.recalibrated_bai
     Array[File] haplotype_vcfs = merge_haplotype_vcfs.merged_vcf
     Array[File] mutect2_vcfs = merge_mutect2_vcfs.merged_vcf
+    Array[File] mutect2_stats = merge_mutect_stats.merged_stats
     Array[File] wgs_metrics = collect_wgs_metrics.metrics_file
     File saturation_variant_counts = analyze_saturation_mutagenesis.variant_counts
     File saturation_aa_counts = analyze_saturation_mutagenesis.aa_counts
@@ -280,6 +311,7 @@ task validate_outputs {
     sequential_bais: "Array of sequential Markdup-Recal-Metrics BAM index files"
     haplotype_vcfs: "Array of HaplotypeCaller VCF files called via scatter-gather parallelization"
     mutect2_vcfs: "Array of Mutect2 VCF files called via scatter-gather parallelization"
+    mutect2_stats: "Array of merged Mutect2 statistics files"
     parallel_haplotype_vcfs: "Array of HaplotypeCaller VCF files called via internal parallelization"
     parallel_mutect2_vcfs: "Array of Mutect2 VCF files called via internal parallelization"
     wgs_metrics: "Array of WGS metrics files"
@@ -299,6 +331,7 @@ task validate_outputs {
     Array[File] sequential_bais
     Array[File] haplotype_vcfs
     Array[File] mutect2_vcfs
+    Array[File] mutect2_stats
     Array[File] parallel_haplotype_vcfs
     Array[File] parallel_mutect2_vcfs
     Array[File] wgs_metrics
@@ -423,7 +456,17 @@ task validate_outputs {
         echo "Missing Parallel Mutect2 VCF: $vcf" >> validation_report.txt
       fi
     done
-    
+
+    # Check Mutect2 stats files
+    for stats in ~{sep=" " mutect2_stats}; do
+      if [[ -f "$stats" ]]; then
+        size=$(stat -f%z "$stats" 2>/dev/null || stat -c%s "$stats" 2>/dev/null || echo "unknown")
+        echo "Mutect2 Merged Stats: $(basename $stats) (${size} bytes)" >> validation_report.txt
+      else
+        echo "Missing Mutect2 Merged Stats: $stats" >> validation_report.txt
+      fi
+    done
+
     # Check metrics files
     for metrics in ~{sep=" " wgs_metrics}; do
       if [[ -f "$metrics" ]]; then
