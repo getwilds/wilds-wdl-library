@@ -267,7 +267,7 @@ task validate_outputs {
     # Additional check: Verify no N bases in clean amplicon
     echo "" >> validation_report.txt
     echo "=== Clean Amplicon Verification ===" >> validation_report.txt
-    n_count=$(grep -v "^>" "~{clean_amplicon_fasta}" | grep -o "N" | wc -l || echo "0")
+    n_count=$(grep -v "^>" "~{clean_amplicon_fasta}" | grep -o "N" | wc -l | tr -d '[:space:]' || echo "0")
     if [ "$n_count" -eq 0 ]; then
       echo "N base check: PASSED (0 N bases found)" >> validation_report.txt
     else
