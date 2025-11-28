@@ -35,18 +35,19 @@ workflow saturation_mutagenesis_example {
   }
 
   input {
-    String orf_range = "1-100"
+    String orf_range = "1-99"
     Int cpu_cores = 4
     Int memory_gb = 8
   }
 
-  # Download test reference data (using a small, clean region of chr1 for faster testing)
-  # Using a gene-rich region that's less likely to have N's
+  # Download test reference data (using a small region of chr1 for CI/CD memory constraints)
+  # Using a 5KB region to keep memory usage under GitHub runner limits
+  # Region 1000000-1005000 chosen to avoid stop codons in the test ORF
   call ww_testdata.download_ref_data {
     input:
       chromo = "chr1",
       version = "hg38",
-      region = "11000000-11100000"
+      region = "1000000-1005000"
   }
 
   # Clean the reference to remove any N bases (required by GATK AnalyzeSaturationMutagenesis)

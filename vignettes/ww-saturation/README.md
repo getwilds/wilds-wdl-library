@@ -55,9 +55,28 @@ This vignette imports and uses:
 - Internet access for module imports
 - Sufficient compute resources for BWA-MEM alignment and GATK analysis
 
+### Important Reference Requirements
+
+**This workflow is designed for analyzing targeted regions** (individual genes, amplicons, or small genomic regions), not whole genomes. The GATK AnalyzeSaturationMutagenesis tool allocates memory based on the reference size, so using large references will cause memory issues.
+
+**The reference FASTA must contain only A, C, G, T bases** (no N's or other IUPAC ambiguity codes). GATK AnalyzeSaturationMutagenesis will fail if the reference contains ambiguous bases.
+
+If you have a whole genome reference, use the `ww-testdata.create_clean_amplicon_reference` task to extract and clean your target region:
+
+```wdl
+call ww_testdata.create_clean_amplicon_reference {
+  input:
+    input_fasta = original_reference.fasta,
+    output_name = "clean_reference",
+    replace_n_with = "A"
+}
+```
+
+See the [ww-testdata README](../../modules/ww-testdata/README.md#create_clean_amplicon_reference) for more details.
+
 ### Input Configuration
 
-Create an inputs JSON file with your sample(s) and reference genome. Modify the CPU and memory requirements as needed.
+An example inputs file is provided in `example_inputs.json`. Create your own inputs JSON file with your sample(s) and reference genome. Modify the CPU and memory requirements as needed.
 
 ```json
 {
@@ -179,7 +198,10 @@ The `orf_range` parameter defines the open reading frame region to analyze. This
 
 **Format**: `"start-end"` (e.g., `"1-300"` for nucleotide positions 1 through 300)
 
-**Important**: Ensure the ORF range matches your experimental design and reference sequence coordinates.
+**Important Requirements**:
+- The ORF range **must be divisible by 3** (to ensure complete codons). For example, use `"1-99"` (33 codons) or `"1-300"` (100 codons), not `"1-100"`.
+- Ensure the ORF range matches your experimental design and reference sequence coordinates.
+- The tool will fail with an error if it encounters stop codons within the specified ORF range.
 
 ## Vignette Testing
 

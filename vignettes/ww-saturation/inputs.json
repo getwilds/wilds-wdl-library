@@ -1,0 +1,20 @@
+{
+  "saturation_mutagenesis.samples": [
+    {
+      "name": "sample1",
+      "reads": "/path/to/sample1_R1.fastq.gz",
+      "mates": "/path/to/sample1_R2.fastq.gz"
+    },
+    {
+      "name": "sample2",
+      "reads": "/path/to/sample2_R1.fastq.gz",
+      "mates": "/path/to/sample2_R2.fastq.gz"
+    }
+  ],
+  "saturation_mutagenesis.reference_fasta": "/path/to/clean_reference.fasta",
+  "saturation_mutagenesis.reference_fasta_index": "/path/to/clean_reference.fasta.fai",
+  "saturation_mutagenesis.reference_dict": "/path/to/clean_reference.dict",
+  "saturation_mutagenesis.orf_range": "1-300",
+  "saturation_mutagenesis.cpu_cores": 8,
+  "saturation_mutagenesis.memory_gb": 16
+}
