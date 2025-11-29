@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -330,6 +330,44 @@ Downloads protein-coding transcriptome from GENCODE for RNA-seq quantification t
 - `sample_names` (Array[String]): Array of sample names corresponding to the count files
 - `sample_conditions` (Array[String]): Array of experimental conditions for each sample
 - `gene_info` (File): Gene annotation information including gene IDs
+
+### create_clean_amplicon_reference
+
+Extracts and cleans a reference sequence region for saturation mutagenesis analysis. This task is designed to prepare reference sequences for tools that require only standard nucleotides (A, C, G, T), such as GATK AnalyzeSaturationMutagenesis.
+
+**Use Case**: When performing saturation mutagenesis or deep mutational scanning experiments on specific genomic regions (amplicons), tools like GATK's AnalyzeSaturationMutagenesis require reference sequences without ambiguous bases (N's or other IUPAC codes). This task extracts your target region and ensures it contains only A, C, G, T bases.
+
+**Inputs**:
+- `input_fasta` (File): Input reference FASTA file
+- `region` (String?): Region to extract in format 'chr:start-end' (e.g., 'chr1:1000-2000'). If not specified, uses entire sequence.
+- `output_name` (String): Name for the output reference (default: "amplicon")
+- `replace_n_with` (String): Base to replace N's with (default: "A"). Use empty string to fail if N's are found.
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+
+**Outputs**:
+- `clean_fasta` (File): Cleaned reference FASTA file with no ambiguous bases
+- `clean_fasta_index` (File): Samtools index for the cleaned reference
+- `clean_dict` (File): Samtools dictionary for the cleaned reference
+
+**Example Usage**:
+```wdl
+# For saturation mutagenesis on a specific amplicon
+call testdata.create_clean_amplicon_reference {
+  input:
+    input_fasta = "hg38_chr1.fa",
+    region = "chr1:12345-67890",  # Your amplicon coordinates
+    output_name = "my_amplicon",
+    replace_n_with = "A"  # Replace any N's with A
+}
+
+call gatk.analyze_saturation_mutagenesis {
+  input:
+    reference_fasta = create_clean_amplicon_reference.clean_fasta,
+    reference_fasta_index = create_clean_amplicon_reference.clean_fasta_index,
+    reference_dict = create_clean_amplicon_reference.clean_dict
+}
+```
 
 ## Data Sources
 
