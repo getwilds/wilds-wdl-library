@@ -109,6 +109,10 @@ task align_two_pass {
     echo "Extracting STAR reference..."
     tar -xvf "~{star_genome_tar}"
 
+    # Calculate 90% of memory_gb for BAM sorting (in bytes)
+    # memory_gb * 0.9 * 1024^3 = memory_gb * 966367641.6
+    BAM_SORT_RAM=$(echo "~{memory_gb} * 966367641.6 / 1" | bc)
+
     echo "Starting STAR alignment..."
     STAR \
       --genomeDir star_index \
@@ -121,7 +125,8 @@ task align_two_pass {
       --outTmpDir _STARtmp \
       --outFileNamePrefix "./" \
       --quantMode GeneCounts \
-      --quantTranscriptomeBAMcompression 5 
+      --quantTranscriptomeBAMcompression 5 \
+      --limitBAMsortRAM ${BAM_SORT_RAM} 
 
     # Clean up temporary directories
     rm -rf star_index _STARpass1 _STARgenome 2>/dev/null || true
