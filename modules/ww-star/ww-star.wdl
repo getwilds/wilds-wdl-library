@@ -110,8 +110,9 @@ task align_two_pass {
     tar -xvf "~{star_genome_tar}"
 
     # Calculate 90% of memory_gb for BAM sorting (in bytes)
-    # memory_gb * 0.9 * 1024^3 = memory_gb * 966367641.6
-    BAM_SORT_RAM=$(echo "~{memory_gb} * 966367641.6 / 1" | bc)
+    # memory_gb * 0.9 * 1024^3 bytes
+    # Using integer arithmetic: (memory_gb * 9 * 1073741824) / 10
+    BAM_SORT_RAM=$(( ~{memory_gb} * 9 * 1073741824 / 10 ))
 
     echo "Starting STAR alignment..."
     STAR \
