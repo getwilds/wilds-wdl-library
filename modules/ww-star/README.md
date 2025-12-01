@@ -186,6 +186,7 @@ The module supports flexible resource configuration:
 ## Performance Considerations
 
 - **Memory usage**: Index building requires significant RAM (32-64GB for human genome)
+- **BAM sorting memory**: The `align_two_pass` task automatically allocates 90% of `memory_gb` to STAR's BAM sorting operation (`--limitBAMsortRAM`). For large datasets or complex samples, ensure sufficient memory is allocated (64GB+ recommended for human genome alignment)
 - **CPU scaling**: Both index building and alignment benefit from multiple cores
 - **Storage requirements**: Ensure sufficient space for index files and BAM outputs
 - **Two-pass optimization**: Second pass uses splice junctions from first pass for improved accuracy
