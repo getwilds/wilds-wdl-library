@@ -59,7 +59,7 @@ def find_valid_items(item_type):
     return sorted(items)
 
 def filter_items_by_changes(items, changed_files, item_type):
-    """Filter items to only those with changes"""
+    """Filter items to only those with WDL file changes"""
     if changed_files is None:
         print("No file filtering applied (potential git error), skipping...")
         return []
@@ -76,12 +76,14 @@ def filter_items_by_changes(items, changed_files, item_type):
 
     filtered = []
     for item in items:
-        item_files = [f for f in changed_files if f.startswith(f'{item_type}/{item}/')]
-        if item_files:
+        # Only consider .wdl file changes
+        item_wdl_files = [f for f in changed_files
+                          if f.startswith(f'{item_type}/{item}/') and f.endswith('.wdl')]
+        if item_wdl_files:
             filtered.append(item)
-            print(f"Including {item} ({len(item_files)} changed files)")
+            print(f"Including {item} ({len(item_wdl_files)} changed .wdl files)")
         else:
-            print(f"Skipping {item} (no changes)")
+            print(f"Skipping {item} (no .wdl file changes)")
 
     return filtered
 
