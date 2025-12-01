@@ -5,7 +5,6 @@
     "fasta": "/path/to/reference/genome.fa",
     "gtf": "/path/to/reference/genes.gtf"
   },
-  "sra_star.ncpu": 8,
-  "sra_star.memory_gb": 32,
-  "sra_star.max_reads": 100000
+  "sra_star.ncpu": 12,
+  "sra_star.memory_gb": 64
 }

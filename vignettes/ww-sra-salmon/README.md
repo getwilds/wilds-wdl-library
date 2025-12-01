@@ -63,12 +63,9 @@ Create an inputs JSON file with your SRA accessions and reference transcriptome:
   "sra_salmon.sra_id_list": ["SRR3589956"],
   "sra_salmon.transcriptome_fasta": "/path/to/transcriptome.fa",
   "sra_salmon.ncpu": 8,
-  "sra_salmon.memory_gb": 16,
-  "sra_salmon.max_reads": 100000
+  "sra_salmon.memory_gb": 16
 }
 ```
-
-**Note**: The `max_reads` parameter is optional and useful for testing with a subset of reads. Omit this parameter or set it to a higher value for production runs.
 
 **Important**: Salmon requires a **transcriptome FASTA** file (mature mRNA sequences), not a genome FASTA. The transcriptome contains only the exonic sequences for each transcript, which Salmon uses for quasi-mapping. See [Salmon documentation](https://salmon.readthedocs.io/) for details on obtaining or building transcriptome references.
 
