@@ -99,6 +99,8 @@ All components are tested with multiple WDL executors:
 
 Fred Hutch researchers can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/) to submit workflows directly to the on-premise HPC cluster. This provides a user-friendly interface for researchers unfamiliar with command-line tools while leveraging the power of the institutional computing resources.
 
+**Cromwell Configuration**: PROOF users can customize workflow execution using Cromwell options. See [cromwell-options.json](cromwell-options.json) for example configurations including call caching, output directories, and more. For detailed information, refer to the [Cromwell workflow options documentation](https://cromwell.readthedocs.io/en/stable/wf_options/Overview/).
+
 ## Quality Assurance
 
 ### Automated Testing
