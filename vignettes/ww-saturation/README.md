@@ -14,7 +14,7 @@ This vignette serves as both a functional workflow and a demonstration of modula
 
 ## Acknowledgments
 
-This vignette was inspired by the original shell script implementation developed by [Siobhan O'Brien](https://github.com/sobrien29). Special thanks to Siobhan for pioneering this analysis approach and providing the foundation for this WDL implementation.
+This vignette was inspired by an implementation developed by [Siobhan O'Brien](https://github.com/sobrien29) in a [separate WDL repo](https://github.com/getwilds/ww-saturation). Special thanks to Siobhan for developing this analysis pipeline with us and providing the foundation for this WDL implementation.
 
 ## Vignette Structure
 
