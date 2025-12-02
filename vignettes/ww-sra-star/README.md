@@ -60,13 +60,10 @@ Create an inputs JSON file with your SRA accessions and reference genome:
     "fasta": "/path/to/genome.fasta",
     "gtf": "/path/to/annotation.gtf"
   },
-  "sra_star.ncpu": 8,
-  "sra_star.memory_gb": 64,
-  "sra_star.max_reads": 100000
+  "sra_star.ncpu": 12,
+  "sra_star.memory_gb": 64
 }
 ```
-
-**Note**: The `max_reads` parameter is optional and useful for testing with a subset of reads. Omit this parameter or set it to a higher value for production runs.
 
 ### Running the Vignette
 
