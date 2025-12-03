@@ -1,0 +1,65 @@
+{
+  "form": {
+    "type": "object",
+    "properties": {
+      "reference_genome": {
+        "title": "Reference Genome",
+        "description": "Precompiled genome reference used to align reads",
+        "type": "string",
+        "default": "Homo sapiens (GRCh38)",
+        "enum": [
+          "Homo sapiens (GRCh38)",
+          "Homo sapiens (GRCh37)",
+          "Mus musculus (GRCm38)",
+          "Mus musculus (mm10)"
+        ]
+      },
+      "contrast_cname": {
+        "title": "Metadata Contrast Column Name",
+        "description": "Column from metadata to be used for contrasting samples",
+        "type": "string"
+      },
+      "contrast_reference_level": {
+        "title": "Metadata Contrast Reference Level",
+        "description": "Group name used for reference",
+        "type": "string"
+      },
+      "contrast_comparison_level": {
+        "title": "Metadata Contrast Comparison Level",
+        "description": "Group name used for comparison",
+        "type": "string"
+      },
+      "star_cpu": {
+        "title": "STAR - CPUs",
+        "description": "Number of CPUs to use for each STAR task",
+        "type": "integer",
+        "default": 8
+      },
+      "star_memory_gb": {
+        "title": "STAR - Memory (GBs)",
+        "description": "Amount of RAM to use for each STAR task",
+        "type": "integer",
+        "default": 64
+      },
+      "workflow_failure_mode": {
+        "title": "Workflow Failure Mode",
+        "description": "Behavior when individual tasks encounter failures",
+        "type": "string",
+        "default": "ContinueWhilePossible",
+        "enum": [
+          "ContinueWhilePossible",
+          "NoNewCalls"
+        ]
+      }
+    },
+    "required": [
+      "reference_genome",
+      "contrast_cname",
+      "contrast_reference_level",
+      "workflow_failure_mode",
+      "star_cpu",
+      "star_memory_gb"
+    ]
+  },
+  "ui": {}
+}
