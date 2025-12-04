@@ -661,3 +661,39 @@ task download_test_transcriptome {
     cpu: cpu_cores
   }
 }
+
+task create_gdc_manifest {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Create a test GDC manifest file with small open-access files for testing gdc-client downloads"
+    outputs: {
+        manifest: "GDC manifest file containing test file UUIDs"
+    }
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Create a test manifest file with small open-access TCGA files
+    # Format: id, filename, md5, size, state (tab-separated)
+    cat > gdc_test_manifest.txt <<'EOF'
+id	filename	md5	size	state
+6e811713-17b0-4413-a756-af178269824f	TARGET_AML_SampleMatrix_Validation_20180914.xlsx	c2070b78d418c134f48d9b8098c9f7ac	172979	released
+4e89ba70-022e-48a3-a8f8-04f5720fb2d0	5df0dac1-d9d2-4e2d-b3dc-63279926a402.targeted_sequencing.aliquot_ensemble_raw.maf.gz	aa97da746509a18676adda0f086dedaa	9429	released
+52fd584b-9ca3-4f7e-bdd5-fd9dce3d630b	TARGET_AML_CDE_20230524.xlsx	fc5b42f89b1ac84699b8b10dafed02dc	27667	released
+EOF
+
+    echo "Created test GDC manifest with 3 small open-access files"
+  >>>
+
+  output {
+    File manifest = "gdc_test_manifest.txt"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    memory: "2 GB"
+    cpu: 1
+  }
+}

@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-gdc/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow testdata_example {
   # Pull down reference genome and index files for chr1
@@ -46,6 +46,8 @@ workflow testdata_example {
 
   call ww_testdata.download_test_transcriptome { }
 
+  call ww_testdata.create_gdc_manifest { }
+
   call validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
@@ -72,7 +74,8 @@ workflow testdata_example {
     annotsv_test_vcf = download_annotsv_vcf.test_vcf,
     pasilla_counts = generate_pasilla_counts.individual_count_files,
     pasilla_gene_info = generate_pasilla_counts.gene_info,
-    transcriptome_fasta = download_test_transcriptome.transcriptome_fasta
+    transcriptome_fasta = download_test_transcriptome.transcriptome_fasta,
+    gdc_manifest = create_gdc_manifest.manifest
   }
 
   output {
@@ -109,6 +112,8 @@ workflow testdata_example {
     File pasilla_gene_info = generate_pasilla_counts.gene_info
     # Output from test transcriptome download
     File transcriptome_fasta = download_test_transcriptome.transcriptome_fasta
+    # Output from GDC manifest creation
+    File gdc_manifest = create_gdc_manifest.manifest
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
   }
@@ -149,6 +154,7 @@ task validate_outputs {
     pasilla_counts: "Array of individual count files for each sample from Pasilla dataset to validate"
     pasilla_gene_info: "Pasilla gene annotation information to validate"
     transcriptome_fasta: "Test transcriptome FASTA file to validate"
+    gdc_manifest: "GDC manifest file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -180,6 +186,7 @@ task validate_outputs {
     Array[File] pasilla_counts
     File pasilla_gene_info
     File transcriptome_fasta
+    File gdc_manifest
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -239,11 +246,12 @@ task validate_outputs {
 
     validate_file "~{pasilla_gene_info}" "Pasilla gene info" || validation_passed=false
     validate_file "~{transcriptome_fasta}" "Test transcriptome FASTA" || validation_passed=false
+    validate_file "~{gdc_manifest}" "GDC manifest" || validation_passed=false
 
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 25"
+      echo "Total files validated: 26"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then
