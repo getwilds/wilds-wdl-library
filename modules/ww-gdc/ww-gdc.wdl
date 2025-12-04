@@ -22,7 +22,6 @@ task download_by_manifest {
     n_processes: "Number of parallel download processes (default: 8)"
     retry_amount: "Number of times to retry failed downloads (default: 5)"
     wait_time: "Seconds to wait between retries (default: 5)"
-    output_dir_name: "Name for the output directory where files will be downloaded"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
@@ -33,7 +32,6 @@ task download_by_manifest {
     Int n_processes = 8
     Int retry_amount = 5
     Int wait_time = 5
-    String output_dir_name = "gdc_download"
     Int cpu_cores = 4
     Int memory_gb = 8
   }
@@ -41,40 +39,78 @@ task download_by_manifest {
   command <<<
     set -eo pipefail
 
-    # Create output directory
-    mkdir -p ~{output_dir_name}
+    # Work in /tmp to avoid Cromwell's deep directory structures that cause
+    # "AF_UNIX path too long" errors with gdc-client's multiprocessing sockets
+    WORK_DIR="/tmp/gdc_$$"
+    mkdir -p "$WORK_DIR"
+    cd "$WORK_DIR"
+
+    # Set TMPDIR to short path so Python multiprocessing creates sockets here
+    export TMPDIR="$WORK_DIR"
+    export TEMP="$WORK_DIR"
+    export TMP="$WORK_DIR"
+
+    # Symlink required files to short path
+    ln -s ~{manifest_file} manifest.txt
 
     # Build gdc-client download command
     CMD="gdc-client download \
-      --manifest ~{manifest_file} \
-      --dir ~{output_dir_name} \
+      --manifest manifest.txt \
       --n-processes ~{n_processes} \
       --retry-amount ~{retry_amount} \
       --wait-time ~{wait_time} \
-      --log-file ~{output_dir_name}/download.log"
+      --log-file download.log"
 
     # Add token if provided (for controlled-access data)
     if [ -f "~{token_file}" ]; then
-      CMD="$CMD --token-file ~{token_file}"
-      echo "Using authentication token for controlled-access data" | tee -a ~{output_dir_name}/download.log
+      ln -s ~{token_file} token.txt
+      CMD="$CMD --token-file token.txt"
+      echo "Using authentication token for controlled-access data" | tee -a download.log
     else
-      echo "No token provided - downloading open-access data only" | tee -a ~{output_dir_name}/download.log
+      echo "No token provided - downloading open-access data only" | tee -a download.log
     fi
 
     # Execute download
-    echo "Starting GDC download at $(date)" | tee -a ~{output_dir_name}/download.log
-    echo "Command: $CMD" | tee -a ~{output_dir_name}/download.log
+    echo "Starting GDC download at $(date)" | tee -a download.log
+    echo "Working directory: $WORK_DIR" | tee -a download.log
+    echo "TMPDIR: $TMPDIR" | tee -a download.log
+    echo "Command: $CMD" | tee -a download.log
     eval $CMD
-    echo "Download completed at $(date)" | tee -a ~{output_dir_name}/download.log
+    echo "Download completed at $(date)" | tee -a download.log
 
     # Create a file listing all downloaded files
-    find ~{output_dir_name} -type f ! -name "download.log" ! -name "manifest_summary.txt" > ~{output_dir_name}/manifest_summary.txt
-    echo "Downloaded $(wc -l < ~{output_dir_name}/manifest_summary.txt) files" | tee -a ~{output_dir_name}/download.log
+    find . -type f ! -name "download.log" ! -name "manifest_summary.txt" ! -name "manifest.txt" ! -name "token.txt" > manifest_summary.txt
+    echo "Downloaded $(wc -l < manifest_summary.txt) files" | tee -a download.log
+
+    # Move results back to original Cromwell execution directory
+    EXEC_DIR="$PWD"
+    cd -  # Return to previous directory (Cromwell execution dir)
+
+    mv "$EXEC_DIR/download.log" manifest.download.log
+    mv "$EXEC_DIR/manifest_summary.txt" manifest.manifest_summary.txt
+
+    # Move downloaded files back, preserving directory structure
+    while IFS= read -r file; do
+      filepath="$EXEC_DIR/$file"
+      if [ -e "$filepath" ]; then
+        # Create target directory structure with manifest prefix
+        target="manifest/$file"
+        target_dir="$(dirname "$target")"
+        mkdir -p "$target_dir"
+        mv "$filepath" "$target"
+      fi
+    done < manifest.manifest_summary.txt
+
+    # Update manifest_summary with new paths
+    sed -i.bak "s|^|manifest/|" manifest.manifest_summary.txt
+
+    # Clean up
+    rm -rf "$EXEC_DIR"
   >>>
 
   output {
-    Array[File] downloaded_files = read_lines("~{output_dir_name}/manifest_summary.txt")
-    File download_log = "~{output_dir_name}/download.log"
+    Array[File] downloaded_files = read_lines("manifest.manifest_summary.txt")
+    File download_log = "manifest.download.log"
   }
 
   runtime {
@@ -101,7 +137,6 @@ task download_by_uuids {
     n_processes: "Number of parallel download processes (default: 8)"
     retry_amount: "Number of times to retry failed downloads (default: 5)"
     wait_time: "Seconds to wait between retries (default: 5)"
-    output_dir_name: "Name for the output directory where files will be downloaded"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
@@ -112,7 +147,6 @@ task download_by_uuids {
     Int n_processes = 8
     Int retry_amount = 5
     Int wait_time = 5
-    String output_dir_name = "gdc_download"
     Int cpu_cores = 4
     Int memory_gb = 8
   }
@@ -120,8 +154,16 @@ task download_by_uuids {
   command <<<
     set -eo pipefail
 
-    # Create output directory
-    mkdir -p ~{output_dir_name}
+    # Work in /tmp to avoid Cromwell's deep directory structures that cause
+    # "AF_UNIX path too long" errors with gdc-client's multiprocessing sockets
+    WORK_DIR="/tmp/gdc_$$"
+    mkdir -p "$WORK_DIR"
+    cd "$WORK_DIR"
+
+    # Set TMPDIR to short path so Python multiprocessing creates sockets here
+    export TMPDIR="$WORK_DIR"
+    export TEMP="$WORK_DIR"
+    export TMP="$WORK_DIR"
 
     # Write UUIDs to a file for passing to gdc-client
     cat > uuids.txt <<EOL
@@ -131,35 +173,62 @@ EOL
     # Build gdc-client download command
     CMD="gdc-client download \
       $(cat uuids.txt | tr '\n' ' ') \
-      --dir ~{output_dir_name} \
       --n-processes ~{n_processes} \
       --retry-amount ~{retry_amount} \
       --wait-time ~{wait_time} \
-      --log-file ~{output_dir_name}/download.log"
+      --log-file download.log"
 
     # Add token if provided (for controlled-access data)
     if [ -f "~{token_file}" ]; then
-      CMD="$CMD --token-file ~{token_file}"
-      echo "Using authentication token for controlled-access data" | tee -a ~{output_dir_name}/download.log
+      ln -s ~{token_file} token.txt
+      CMD="$CMD --token-file token.txt"
+      echo "Using authentication token for controlled-access data" | tee -a download.log
     else
-      echo "No token provided - downloading open-access data only" | tee -a ~{output_dir_name}/download.log
+      echo "No token provided - downloading open-access data only" | tee -a download.log
     fi
 
     # Execute download
-    echo "Starting GDC download at $(date)" | tee -a ~{output_dir_name}/download.log
-    echo "Downloading $(wc -l < uuids.txt) files by UUID" | tee -a ~{output_dir_name}/download.log
-    echo "Command: $CMD" | tee -a ~{output_dir_name}/download.log
+    echo "Starting GDC download at $(date)" | tee -a download.log
+    echo "Working directory: $WORK_DIR" | tee -a download.log
+    echo "TMPDIR: $TMPDIR" | tee -a download.log
+    echo "Downloading $(wc -l < uuids.txt) files by UUID" | tee -a download.log
+    echo "Command: $CMD" | tee -a download.log
     eval $CMD
-    echo "Download completed at $(date)" | tee -a ~{output_dir_name}/download.log
+    echo "Download completed at $(date)" | tee -a download.log
 
     # Create a file listing all downloaded files
-    find ~{output_dir_name} -type f ! -name "download.log" ! -name "manifest_summary.txt" > ~{output_dir_name}/manifest_summary.txt
-    echo "Downloaded $(wc -l < ~{output_dir_name}/manifest_summary.txt) files" | tee -a ~{output_dir_name}/download.log
+    find . -type f ! -name "download.log" ! -name "manifest_summary.txt" ! -name "uuids.txt" ! -name "token.txt" > manifest_summary.txt
+    echo "Downloaded $(wc -l < manifest_summary.txt) files" | tee -a download.log
+
+    # Move results back to original Cromwell execution directory
+    EXEC_DIR="$PWD"
+    cd -  # Return to previous directory (Cromwell execution dir)
+
+    mv "$EXEC_DIR/download.log" uuids.download.log
+    mv "$EXEC_DIR/manifest_summary.txt" uuids.manifest_summary.txt
+
+    # Move downloaded files back, preserving directory structure
+    while IFS= read -r file; do
+      filepath="$EXEC_DIR/$file"
+      if [ -e "$filepath" ]; then
+        # Create target directory structure with uuids prefix
+        target="uuids/$file"
+        target_dir="$(dirname "$target")"
+        mkdir -p "$target_dir"
+        mv "$filepath" "$target"
+      fi
+    done < uuids.manifest_summary.txt
+
+    # Update manifest_summary with new paths
+    sed -i.bak "s|^|uuids/|" uuids.manifest_summary.txt
+
+    # Clean up
+    rm -rf "$EXEC_DIR"
   >>>
 
   output {
-    Array[File] downloaded_files = read_lines("~{output_dir_name}/manifest_summary.txt")
-    File download_log = "~{output_dir_name}/download.log"
+    Array[File] downloaded_files = read_lines("uuids.manifest_summary.txt")
+    File download_log = "uuids.download.log"
   }
 
   runtime {

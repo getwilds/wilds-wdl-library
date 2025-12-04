@@ -36,7 +36,6 @@ Download files from GDC using a manifest file. This is the recommended approach 
 - `n_processes` (Int, default=8): Number of parallel download processes
 - `retry_amount` (Int, default=5): Number of times to retry failed downloads
 - `wait_time` (Int, default=5): Seconds to wait between retries
-- `output_dir_name` (String, default="gdc_download"): Name for the output directory where files will be downloaded
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
@@ -54,7 +53,6 @@ Download files from GDC using file UUIDs. Useful when you have specific file IDs
 - `n_processes` (Int, default=8): Number of parallel download processes
 - `retry_amount` (Int, default=5): Number of times to retry failed downloads
 - `wait_time` (Int, default=5): Seconds to wait between retries
-- `output_dir_name` (String, default="gdc_download"): Name for the output directory where files will be downloaded
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
@@ -153,15 +151,23 @@ call gdc.download_by_manifest {
 }
 ```
 
-**Custom output directory naming:**
-```wdl
-call gdc.download_by_manifest {
-  input:
-    manifest_file = tcga_brca_manifest,
-    token_file = gdc_token,
-    output_dir_name = "TCGA_BRCA_downloads"
-}
-```
+## Implementation Details
+
+### Cromwell Path Length Workaround
+
+This module includes a workaround for a Cromwell-specific limitation where deeply nested execution directories can exceed the Unix socket path length limit (~108 characters). The gdc-client tool uses Python multiprocessing which creates Unix domain sockets, and Cromwell's deep directory structures can cause "AF_UNIX path too long" errors.
+
+**How the workaround works:**
+
+1. Downloads execute in a short temporary path (`/tmp/gdc_$$`) instead of the Cromwell execution directory
+2. Environment variables (`TMPDIR`, `TEMP`, `TMP`) are set to ensure Python multiprocessing creates sockets in the short path
+3. Downloaded files are moved back to the Cromwell execution directory after download completes
+4. Files are organized under `manifest/` or `uuids/` subdirectories to preserve the UUID-based directory structure
+
+**Impact on users:**
+- No changes to task inputs or outputs required
+- Works seamlessly across miniWDL, Cromwell, and Sprocket
+- Downloaded files maintain the same directory structure as native gdc-client
 
 ## Testing the Module
 
@@ -235,6 +241,10 @@ For slow or unstable network connections:
 - Verify your manifest file is properly formatted
 - Check that the file UUIDs in your manifest are valid
 - Ensure the files haven't been removed from GDC
+
+**"AF_UNIX path too long" errors (legacy issue):**
+- This issue has been resolved in the current version through the Cromwell path workaround
+- See the "Implementation Details" section above for technical details
 
 ## Citation
 

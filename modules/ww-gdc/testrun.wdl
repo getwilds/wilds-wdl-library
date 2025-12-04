@@ -1,7 +1,9 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-gdc/modules/ww-gdc/ww-gdc.wdl" as ww_gdc
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-gdc/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-gdc/modules/ww-gdc/ww-gdc.wdl" as ww_gdc
+# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-gdc/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "ww-gdc.wdl" as ww_gdc
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow gdc_client_example {
   meta {
@@ -29,7 +31,6 @@ workflow gdc_client_example {
   call ww_gdc.download_by_uuids as download_by_uuid {
     input:
       file_uuids = test_file_uuids,
-      output_dir_name = "gdc_uuid_download",
       n_processes = 2,
       cpu_cores = 2,
       memory_gb = 4
@@ -39,7 +40,6 @@ workflow gdc_client_example {
   call ww_gdc.download_by_manifest as download_by_manifest {
     input:
       manifest_file = create_gdc_manifest.manifest,
-      output_dir_name = "gdc_manifest_download",
       n_processes = 4,
       cpu_cores = 2,
       memory_gb = 4
