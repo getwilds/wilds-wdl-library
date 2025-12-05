@@ -7,7 +7,7 @@
         "description": "Nucleotide sequence of the reference genome used for alignment",
         "type": "string",
         "multiple": false,
-        "pathType": "reference",
+        "pathType": "references",
         "file": "**/genome_fasta/**/genome.fasta"
       },
       "gtf": {
@@ -15,7 +15,7 @@
         "description": "Gene annotations for the reference genome in GTF format",
         "type": "string",
         "multiple": false,
-        "pathType": "reference",
+        "pathType": "references",
         "file": "**/genome_gtf/**/genome.gtf"
       },
       "contrast_cname": {
