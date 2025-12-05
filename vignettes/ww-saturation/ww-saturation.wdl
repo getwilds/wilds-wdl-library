@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as bwa_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-saturation/modules/ww-gatk/ww-gatk.wdl" as gatk_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl" as gatk_tasks
 
 struct SaturationSample {
     String name
