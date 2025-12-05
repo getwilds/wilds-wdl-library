@@ -128,29 +128,10 @@ def format_inputs_reference_genome(ds: PreprocessDataset):
     Using the selection of the user, fill in the reference genome information
     """
     return {
-          "Homo sapiens (GRCh38)": {
-            "name": "Homo sapiens (GRCh38)",
-            "fasta": "s3://pubweb-references/igenomes/Homo_sapiens/NCBI/GRCh38/Sequence/WholeGenomeFasta/genome.fa",
-            "gtf": "s3://pubweb-references/igenomes/Homo_sapiens/NCBI/GRCh38/Annotation/Genes/genes.gtf"
-          },
-          "Homo sapiens (GRCh37)": {
-            "name": "Homo sapiens (GRCh37)",
-            "fasta": "s3://pubweb-references/igenomes/Homo_sapiens/Ensembl/GRCh37/Sequence/WholeGenomeFasta/genome.fa",
-            "gtf": "s3://pubweb-references/igenomes/Homo_sapiens/Ensembl/GRCh37/Annotation/Genes/genes.gtf"
-          },
-          "Mus musculus (GRCm38)": {
-            "name": "Mus musculus (GRCm38)",
-            "fasta": "s3://pubweb-references/igenomes/Mus_musculus/Ensembl/GRCm38/Sequence/WholeGenomeFasta/genome.fa",
-            "gtf": "s3://pubweb-references/igenomes/Mus_musculus/Ensembl/GRCm38/Annotation/Genes/genes.gtf"
-          },
-          "Mus musculus (mm10)": {
-            "name": "Mus musculus (mm10)",
-            "fasta": "s3://pubweb-references/igenomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa",
-            "gtf": "s3://pubweb-references/igenomes/Mus_musculus/UCSC/mm10/Annotation/Genes/genes.gtf"
-          }
-    }[
-        ds.params["reference_genome"]
-    ]
+        "name": "Reference Genome",
+        "fasta": ds.params["fasta"],
+        "gtf": ds.params["gtf"]
+    }
 
 
 def setup_options(ds: PreprocessDataset):

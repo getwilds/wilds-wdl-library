@@ -2,17 +2,21 @@
   "form": {
     "type": "object",
     "properties": {
-      "reference_genome": {
-        "title": "Reference Genome",
-        "description": "Precompiled genome reference used to align reads",
+      "fasta": {
+        "title": "Reference Genome (FASTA)",
+        "description": "Nucleotide sequence of the reference genome used for alignment",
         "type": "string",
-        "default": "Homo sapiens (GRCh38)",
-        "enum": [
-          "Homo sapiens (GRCh38)",
-          "Homo sapiens (GRCh37)",
-          "Mus musculus (GRCm38)",
-          "Mus musculus (mm10)"
-        ]
+        "multiple": false,
+        "pathType": "reference",
+        "file": "**/genome_fasta/**/genome.fasta"
+      },
+      "gtf": {
+        "title": "Reference Genome (GTF)",
+        "description": "Gene annotations for the reference genome in GTF format",
+        "type": "string",
+        "multiple": false,
+        "pathType": "reference",
+        "file": "**/genome_gtf/**/genome.gtf"
       },
       "contrast_cname": {
         "title": "Metadata Contrast Column Name",
@@ -53,7 +57,8 @@
       }
     },
     "required": [
-      "reference_genome",
+      "fasta",
+      "gtf",
       "contrast_cname",
       "contrast_reference_level",
       "workflow_failure_mode",

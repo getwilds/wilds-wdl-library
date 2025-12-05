@@ -1,5 +1,6 @@
 {
-  "reference_genome": "$.dataset.params.reference_genome",
+  "fasta": "$.dataset.params.fasta",
+  "gtf": "$.dataset.params.gtf",
   "contrast_cname": "$.dataset.params.contrast_cname",
   "contrast_reference_level": "$.dataset.params.contrast_reference_level",
   "contrast_comparison_level": "$.dataset.params.contrast_comparison_level",
