@@ -128,7 +128,7 @@ def format_inputs_reference_genome(ds: PreprocessDataset):
     Using the selection of the user, fill in the reference genome information
     """
     return {
-        "name": "Reference Genome",
+        "name": "ref_genome",
         "fasta": ds.params["fasta"],
         "gtf": ds.params["gtf"]
     }
