@@ -1202,7 +1202,7 @@ task analyze_saturation_mutagenesis {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Analyze saturation mutagenesis data using GATK AnalyzeSaturationMutagenesis. NOTE: This tool requires queryname-sorted BAMs and reference sequences with only A, C, G, T bases (no N's). Use ww-testdata.create_clean_amplicon_reference to prepare a clean reference if needed."
+    description: "Analyze saturation mutagenesis data using GATK AnalyzeSaturationMutagenesis"
     outputs: {
         aa_counts: "Amino acid count table",
         aa_fractions: "Amino acid fraction table",

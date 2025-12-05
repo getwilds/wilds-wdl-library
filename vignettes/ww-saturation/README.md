@@ -28,7 +28,7 @@ This vignette is part of the [WILDS WDL Library](https://github.com/getwilds/wil
    - Performed once and reused across all samples
 
 2. **Alignment** (using `ww-bwa` module):
-   - Performs BWA-MEM alignment for each sample using paired-end Nextera sequencing reads
+   - Performs BWA-MEM alignment for each sample (assumes paired-end Nextera sequencing reads)
    - Generates sorted, indexed BAM files
 
 3. **Saturation Mutagenesis Analysis** (using `ww-gatk` module):

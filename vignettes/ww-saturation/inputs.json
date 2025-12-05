@@ -15,6 +15,6 @@
   "saturation_mutagenesis.reference_fasta_index": "/path/to/clean_reference.fasta.fai",
   "saturation_mutagenesis.reference_dict": "/path/to/clean_reference.dict",
   "saturation_mutagenesis.orf_range": "1-300",
-  "saturation_mutagenesis.cpu_cores": 8,
+  "saturation_mutagenesis.cpu_cores": 4,
   "saturation_mutagenesis.memory_gb": 16
 }

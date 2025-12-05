@@ -666,7 +666,7 @@ task create_clean_amplicon_reference {
   meta {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
-    description: "Extract and clean a reference sequence region for saturation mutagenesis analysis. Removes ambiguous bases (N's) that cause issues with GATK AnalyzeSaturationMutagenesis."
+    description: "Extract and clean a reference sequence region for saturation mutagenesis analysis"
     outputs: {
         clean_fasta: "Cleaned reference FASTA file with no ambiguous bases",
         clean_fasta_index: "Index file for the cleaned reference FASTA",
@@ -719,6 +719,7 @@ task create_clean_amplicon_reference {
       else
         echo "Replacing N bases with '~{replace_n_with}'"
         # Replace N's (both upper and lowercase) in the sequence lines only
+        # Removes ambiguous bases (N's) that cause issues with GATK AnalyzeSaturationMutagenesis
         awk '/^>/ {print; next} {gsub(/[Nn]/, "~{replace_n_with}"); print}' temp.fa > "~{output_name}.fa"
       fi
     else
