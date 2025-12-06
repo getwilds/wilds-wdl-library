@@ -662,6 +662,98 @@ task download_test_transcriptome {
   }
 }
 
+task create_clean_amplicon_reference {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Extract and clean a reference sequence region for saturation mutagenesis analysis"
+    outputs: {
+        clean_fasta: "Cleaned reference FASTA file with no ambiguous bases",
+        clean_fasta_index: "Index file for the cleaned reference FASTA",
+        clean_dict: "Dictionary file for the cleaned reference FASTA"
+    }
+  }
+
+  parameter_meta {
+    input_fasta: "Input reference FASTA file"
+    region: "Region to extract in format 'chr:start-end' (e.g., 'chr1:1000-2000'). If not specified, uses entire sequence."
+    output_name: "Name for the output reference (default: 'amplicon')"
+    replace_n_with: "Base to replace N's with (default: 'A'). Use empty string to fail if N's are found."
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    File input_fasta
+    String? region
+    String output_name = "amplicon"
+    String replace_n_with = "A"
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Extract region if specified, otherwise use entire sequence
+    if [ -n "~{region}" ]; then
+      samtools faidx "~{input_fasta}"
+      samtools faidx "~{input_fasta}" "~{region}" > temp_extract.fa
+
+      # Replace the header with just the chromosome name
+      sed "s/^>.*/>~{output_name}/" temp_extract.fa > temp.fa
+      rm temp_extract.fa
+    else
+      cp "~{input_fasta}" temp.fa
+    fi
+
+    # Check for N bases and handle according to replace_n_with parameter
+    n_count=$(grep -v "^>" temp.fa | grep -o "N" | wc -l || true)
+
+    if [ "$n_count" -gt 0 ]; then
+      echo "Found $n_count N bases in the reference sequence"
+
+      if [ -z "~{replace_n_with}" ]; then
+        echo "ERROR: N bases found and replace_n_with is empty. Cannot proceed."
+        exit 1
+      else
+        echo "Replacing N bases with '~{replace_n_with}'"
+        # Replace N's (both upper and lowercase) in the sequence lines only
+        # Removes ambiguous bases (N's) that cause issues with GATK AnalyzeSaturationMutagenesis
+        awk '/^>/ {print; next} {gsub(/[Nn]/, "~{replace_n_with}"); print}' temp.fa > "~{output_name}.fa"
+      fi
+    else
+      echo "No N bases found in the reference sequence"
+      mv temp.fa "~{output_name}.fa"
+    fi
+
+    # Verify no ambiguous bases remain
+    remaining_n=$(grep -v "^>" "~{output_name}.fa" | grep -o "[^ACGTacgt]" | wc -l || true)
+    if [ "$remaining_n" -gt 0 ]; then
+      echo "ERROR: Non-ACGT bases still present after cleaning"
+      exit 1
+    fi
+
+    echo "Reference cleaned successfully: $(basename '~{output_name}.fa')"
+
+    # Create index and dictionary
+    samtools faidx "~{output_name}.fa"
+    samtools dict "~{output_name}.fa" > "~{output_name}.dict"
+  >>>
+
+  output {
+    File clean_fasta = "~{output_name}.fa"
+    File clean_fasta_index = "~{output_name}.fa.fai"
+    File clean_dict = "~{output_name}.dict"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
 task create_gdc_manifest {
   meta {
     author: "WILDS Team"
