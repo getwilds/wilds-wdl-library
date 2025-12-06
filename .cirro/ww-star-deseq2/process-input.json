@@ -1,0 +1,11 @@
+{
+  "fasta": "$.dataset.params.fasta",
+  "gtf": "$.dataset.params.gtf",
+  "contrast_cname": "$.dataset.params.contrast_cname",
+  "contrast_reference_level": "$.dataset.params.contrast_reference_level",
+  "contrast_comparison_level": "$.dataset.params.contrast_comparison_level",
+  "star_cpu": "$.dataset.params.star_cpu",
+  "star_memory_gb": "$.dataset.params.star_memory_gb",
+  "final_workflow_outputs_dir": "$.dataset.dataPath",
+  "workflow_failure_mode": "$.dataset.params.workflow_failure_mode"
+}
