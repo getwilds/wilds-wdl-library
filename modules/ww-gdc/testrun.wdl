@@ -1,9 +1,7 @@
 version 1.0
 
-# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-gdc/modules/ww-gdc/ww-gdc.wdl" as ww_gdc
-# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-gdc/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "ww-gdc.wdl" as ww_gdc
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gdc/ww-gdc.wdl" as ww_gdc
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow gdc_client_example {
   meta {
