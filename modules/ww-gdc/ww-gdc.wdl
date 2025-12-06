@@ -22,8 +22,8 @@ task download_by_manifest {
     n_processes: "Number of parallel download processes (default: 8)"
     retry_amount: "Number of times to retry failed downloads (default: 5)"
     wait_time: "Seconds to wait between retries (default: 5)"
-    cpu_cores: "Number of CPU cores allocated for the task"
-    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
+    memory_gb: "Memory allocated for the task in GB (default: 8)"
   }
 
   input {
@@ -137,8 +137,8 @@ task download_by_uuids {
     n_processes: "Number of parallel download processes (default: 8)"
     retry_amount: "Number of times to retry failed downloads (default: 5)"
     wait_time: "Seconds to wait between retries (default: 5)"
-    cpu_cores: "Number of CPU cores allocated for the task"
-    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
+    memory_gb: "Memory allocated for the task in GB (default: 8)"
   }
 
   input {

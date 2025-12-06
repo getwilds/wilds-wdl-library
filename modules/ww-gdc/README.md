@@ -7,14 +7,7 @@ A WILDS WDL module for downloading genomic data from the NCI Genomic Data Common
 
 ## Overview
 
-The GDC Data Transfer Tool provides efficient, resumable downloads of large genomic datasets from the NCI GDC. This module wraps the `gdc-client` command-line tool to enable seamless integration with WDL workflows, including support for:
-
-- Manifest-based batch downloads
-- UUID-based individual file downloads
-- Controlled-access data (with authentication token)
-- Open-access data (no token required)
-- Parallel downloads with retry logic
-- Comprehensive download logging
+The GDC Data Transfer Tool provides efficient, resumable downloads of large genomic datasets from the NCI GDC. This module wraps the `gdc-client` command-line tool to enable seamless integration with WDL workflows.
 
 ## Module Structure
 
