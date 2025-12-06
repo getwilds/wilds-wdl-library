@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-gdc/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow testdata_example {
   # Pull down reference genome and index files for chr1
@@ -53,6 +53,8 @@ workflow testdata_example {
     replace_n_with = "A"
   }
 
+  call ww_testdata.create_gdc_manifest { }
+
   call validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
@@ -82,7 +84,8 @@ workflow testdata_example {
     transcriptome_fasta = download_test_transcriptome.transcriptome_fasta,
     clean_amplicon_fasta = create_clean_amplicon_reference.clean_fasta,
     clean_amplicon_fasta_index = create_clean_amplicon_reference.clean_fasta_index,
-    clean_amplicon_dict = create_clean_amplicon_reference.clean_dict
+    clean_amplicon_dict = create_clean_amplicon_reference.clean_dict,
+    gdc_manifest = create_gdc_manifest.manifest
   }
 
   output {
@@ -123,6 +126,8 @@ workflow testdata_example {
     File clean_amplicon_fasta = create_clean_amplicon_reference.clean_fasta
     File clean_amplicon_fasta_index = create_clean_amplicon_reference.clean_fasta_index
     File clean_amplicon_dict = create_clean_amplicon_reference.clean_dict
+    # Output from GDC manifest creation
+    File gdc_manifest = create_gdc_manifest.manifest
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
   }
@@ -166,6 +171,7 @@ task validate_outputs {
     clean_amplicon_fasta: "Clean amplicon reference FASTA file to validate"
     clean_amplicon_fasta_index: "Clean amplicon reference FASTA index file to validate"
     clean_amplicon_dict: "Clean amplicon reference dictionary file to validate"
+    gdc_manifest: "GDC manifest file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -200,6 +206,7 @@ task validate_outputs {
     File clean_amplicon_fasta
     File clean_amplicon_fasta_index
     File clean_amplicon_dict
+    File gdc_manifest
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -259,6 +266,7 @@ task validate_outputs {
 
     validate_file "~{pasilla_gene_info}" "Pasilla gene info" || validation_passed=false
     validate_file "~{transcriptome_fasta}" "Test transcriptome FASTA" || validation_passed=false
+    validate_file "~{gdc_manifest}" "GDC manifest" || validation_passed=false
     validate_file "~{clean_amplicon_fasta}" "Clean amplicon FASTA" || validation_passed=false
     validate_file "~{clean_amplicon_fasta_index}" "Clean amplicon FASTA index" || validation_passed=false
     validate_file "~{clean_amplicon_dict}" "Clean amplicon FASTA dict" || validation_passed=false
@@ -277,7 +285,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 28"
+      echo "Total files validated: 29"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

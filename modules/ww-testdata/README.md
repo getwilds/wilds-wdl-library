@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -227,6 +227,15 @@ Downloads protein-coding transcriptome from GENCODE for RNA-seq quantification t
 
 **Outputs**:
 - `transcriptome_fasta` (File): Protein-coding transcriptome FASTA file (~150MB uncompressed, ~20,000 transcripts from GENCODE release 47)
+
+### create_gdc_manifest
+
+Creates a test GDC manifest file containing small open-access files for testing the ww-gdc module. This task generates a properly formatted tab-separated manifest file with file UUIDs, filenames, MD5 checksums, file sizes, and release status.
+
+**Inputs**: None
+
+**Outputs**:
+- `manifest` (File): GDC manifest file containing 3 small open-access TCGA files (total ~210KB)
 
 ### interleave_fastq
 
