@@ -84,7 +84,7 @@ workflow testdata_example {
     transcriptome_fasta = download_test_transcriptome.transcriptome_fasta,
     clean_amplicon_fasta = create_clean_amplicon_reference.clean_fasta,
     clean_amplicon_fasta_index = create_clean_amplicon_reference.clean_fasta_index,
-    clean_amplicon_dict = create_clean_amplicon_reference.clean_dict
+    clean_amplicon_dict = create_clean_amplicon_reference.clean_dict,
     gdc_manifest = create_gdc_manifest.manifest
   }
 
