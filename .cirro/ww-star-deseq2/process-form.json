@@ -1,0 +1,68 @@
+{
+  "form": {
+    "type": "object",
+    "properties": {
+      "fasta": {
+        "title": "Reference Genome (FASTA)",
+        "description": "Nucleotide sequence of the reference genome used for alignment",
+        "type": "string",
+        "pathType": "references",
+        "file": "**/genome_fasta/**/genome.fasta"
+      },
+      "gtf": {
+        "title": "Reference Genome (GTF)",
+        "description": "Gene annotations for the reference genome in GTF format",
+        "type": "string",
+        "pathType": "references",
+        "file": "**/genome_gtf/**/genome.gtf"
+      },
+      "contrast_cname": {
+        "title": "Metadata Contrast Column Name",
+        "description": "Column from metadata to be used for contrasting samples",
+        "type": "string"
+      },
+      "contrast_reference_level": {
+        "title": "Metadata Contrast Reference Level",
+        "description": "Group name used for reference",
+        "type": "string"
+      },
+      "contrast_comparison_level": {
+        "title": "Metadata Contrast Comparison Level",
+        "description": "Group name used for comparison",
+        "type": "string"
+      },
+      "star_cpu": {
+        "title": "STAR - CPUs",
+        "description": "Number of CPUs to use for each STAR task",
+        "type": "integer",
+        "default": 8
+      },
+      "star_memory_gb": {
+        "title": "STAR - Memory (GBs)",
+        "description": "Amount of RAM to use for each STAR task",
+        "type": "integer",
+        "default": 64
+      },
+      "workflow_failure_mode": {
+        "title": "Workflow Failure Mode",
+        "description": "Behavior when individual tasks encounter failures",
+        "type": "string",
+        "default": "ContinueWhilePossible",
+        "enum": [
+          "ContinueWhilePossible",
+          "NoNewCalls"
+        ]
+      }
+    },
+    "required": [
+      "fasta",
+      "gtf",
+      "contrast_cname",
+      "contrast_reference_level",
+      "workflow_failure_mode",
+      "star_cpu",
+      "star_memory_gb"
+    ]
+  },
+  "ui": {}
+}
