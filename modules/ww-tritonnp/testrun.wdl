@@ -3,6 +3,13 @@ version 1.0
 import "https://raw.githubusercontent.com/caalo/wilds-wdl-library/refs/heads/ww-TritonNP/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/caalo/wilds-wdl-library/refs/heads/ww-TritonNP/modules/ww-tritonnp/ww-tritonnp.wdl" as ww_tritonnp
 
+struct TritonSample {
+    String name
+    File bam
+    File bam_index
+    File bias
+}
+
 workflow tritonnp_example {
   meta {
     author: "Chris Lo"
@@ -22,26 +29,30 @@ workflow tritonnp_example {
   # Auto-download test data for testing purposes
   call ww_testdata.download_tritonnp_data as download_demo_data { }
 
-  # Sample configuration
-  Array[String] sample_names = ["NA12878"]
-  Array[File] bam_paths = [download_demo_data.bam]
-  Array[File] bam_index_paths = [download_demo_data.bam_index]
-  Array[File] bias_paths = [download_demo_data.bias]
+  # Create sample configuration array
+  Array[TritonSample] samples = [
+    object {
+      name: "NA12878",
+      bam: download_demo_data.bam,
+      bam_index: download_demo_data.bam_index,
+      bias: download_demo_data.bias
+    }
+  ]
 
   # Process each sample
-  scatter (i in range(length(sample_names))) {
+  scatter (sample in samples) {
     call ww_tritonnp.triton_main {
       input:
-        sample_name = sample_names[i],
-        bam_path = bam_paths[i],
-        bam_index_path = bam_index_paths[i],
-        bias_path = bias_paths[i],
+        sample_name = sample.name,
+        bam_path = sample.bam,
+        bam_index_path = sample.bam_index,
+        bias_path = sample.bias,
         annotation = download_demo_data.annotation,
         reference_genome = download_demo_data.reference,
         reference_genome_index = download_demo_data.reference_index,
         results_dir = "results",
         plot_list = download_demo_data.plot_list,
-        cpus = ncpus
+        ncpus = ncpus
     }
   }
 
