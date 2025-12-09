@@ -15,7 +15,6 @@ workflow tritonnp_example {
     author: "Chris Lo"
     email: "clo2@fredhutch.org"
     description: "TritonNP module test workflow"
-    url: "https://github.com/caalo/TritonNP"
     outputs: {
         final_composite: "Aggregrated outputs from all files",
         fm_files: "Array of outputs from individal samples"
