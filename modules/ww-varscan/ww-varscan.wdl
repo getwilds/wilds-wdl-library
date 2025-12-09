@@ -5,7 +5,7 @@
 
 version 1.0
 
-task varscan_somatic {
+task somatic {
   meta {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"

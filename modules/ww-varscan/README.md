@@ -12,12 +12,12 @@ This module provides a reusable WDL task for somatic variant detection in tumor-
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `varscan_somatic`
+- **Tasks**: `somatic`
 - **Container**: `getwilds/varscan:2.4.6` (WILDS Docker image with VarScan2 installed)
 
 ## Tasks
 
-### `varscan_somatic`
+### `somatic`
 Performs somatic variant calling on tumor-normal pairs using pre-generated mpileup files. Uses default parameters except for producing output in VCF format, instead of the VarScan custom format.
 
 **Inputs:**
@@ -47,7 +47,7 @@ workflow my_somatic_analysis {
     File tumor_pileup
   }
 
-  call varscan_tasks.varscan_somatic {
+  call varscan_tasks.somatic {
     input:
       sample_name = sample_name,
       normal_pileup = normal_pileup,
@@ -55,8 +55,8 @@ workflow my_somatic_analysis {
   }
 
   output {
-    File snvs = varscan_somatic.somatic_snvs_vcf
-    File indels = varscan_somatic.somatic_indels_vcf
+    File snvs = somatic.somatic_snvs_vcf
+    File indels = somatic.somatic_indels_vcf
   }
 }
 ```
@@ -65,7 +65,7 @@ workflow my_somatic_analysis {
 
 **Custom resource allocation:**
 ```wdl
-call varscan_tasks.varscan_somatic {
+call varscan_tasks.somatic {
   input:
     sample_name = "my_sample",
     normal_pileup = normal_pileup,
