@@ -87,7 +87,6 @@ task combine_fms {
     author: "Chris Lo"
     email: "clo2@fredhutch.org"
     description: "Task for combine all sample outputs from TritonNP together"
-    url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-tritonnp"
     outputs: {
         final: "Aggregrated output file from TritonNP."
     }
