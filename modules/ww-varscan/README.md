@@ -78,16 +78,100 @@ call varscan_tasks.somatic {
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
+- **ww-testdata**: Download test BAM files to generate mpileup files
 - **ww-samtools**: Generate mpileup files from BAM alignments before variant calling
 
 **Complete pipeline with mpileup generation:**
 ```wdl
-TBD
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl" as samtools_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-varscan/ww-varscan.wdl" as varscan_tasks
+
+workflow somatic_variant_calling_pipeline {
+  input {
+    String sample_name
+    File normal_bam
+    File tumor_bam
+    File ref_fasta
+  }
+
+  # Generate mpileup for normal sample
+  call samtools_tasks.mpileup as normal_mpileup {
+    input:
+      bamfile = normal_bam,
+      ref_fasta = ref_fasta,
+      sample_name = sample_name + "_normal"
+  }
+
+  # Generate mpileup for tumor sample
+  call samtools_tasks.mpileup as tumor_mpileup {
+    input:
+      bamfile = tumor_bam,
+      ref_fasta = ref_fasta,
+      sample_name = sample_name + "_tumor"
+  }
+
+  # Call somatic variants
+  call varscan_tasks.somatic {
+    input:
+      sample_name = sample_name,
+      normal_pileup = normal_mpileup.pileup,
+      tumor_pileup = tumor_mpileup.pileup
+  }
+
+  output {
+    File somatic_snvs = somatic.somatic_snvs_vcf
+    File somatic_indels = somatic.somatic_indels_vcf
+  }
+}
 ```
 
 **Multi-sample batch processing:**
 ```wdl
-TBD
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl" as samtools_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-varscan/ww-varscan.wdl" as varscan_tasks
+
+struct TumorNormalPair {
+  String sample_name
+  File normal_bam
+  File tumor_bam
+}
+
+workflow batch_somatic_variant_calling {
+  input {
+    Array[TumorNormalPair] samples
+    File ref_fasta
+  }
+
+  scatter (sample in samples) {
+    # Generate mpileups
+    call samtools_tasks.mpileup as normal_mpileup {
+      input:
+        bamfile = sample.normal_bam,
+        ref_fasta = ref_fasta,
+        sample_name = sample.sample_name + "_normal"
+    }
+
+    call samtools_tasks.mpileup as tumor_mpileup {
+      input:
+        bamfile = sample.tumor_bam,
+        ref_fasta = ref_fasta,
+        sample_name = sample.sample_name + "_tumor"
+    }
+
+    # Call variants
+    call varscan_tasks.somatic {
+      input:
+        sample_name = sample.sample_name,
+        normal_pileup = normal_mpileup.pileup,
+        tumor_pileup = tumor_mpileup.pileup
+    }
+  }
+
+  output {
+    Array[File] all_snvs = somatic.somatic_snvs_vcf
+    Array[File] all_indels = somatic.somatic_indels_vcf
+  }
+}
 ```
 
 ## Resource Allocation
