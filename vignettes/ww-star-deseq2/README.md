@@ -114,6 +114,20 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 2. Update the inputs JSON with sample information and conditions
 3. Submit through the PROOF interface
 
+### Running on Cirro
+
+This vignette includes [Cirro](https://cirro.bio/) platform configuration files in the [.cirro/](.cirro/) directory for cloud execution. To run this workflow on Cirro:
+
+1. Ensure you have access to a Cirro instance
+2. Follow the [Cirro pipeline documentation](https://docs.cirro.bio/pipelines/adding-pipelines/) to add this workflow to your Cirro instance
+3. The configuration files in `.cirro/` define:
+   - Input form fields for the Cirro web interface
+   - Compute resource requirements
+   - Output file handling and organization
+   - Data preprocessing steps
+
+For detailed information on configuring and using Cirro pipelines, see the [official Cirro documentation](https://docs.cirro.bio/).
+
 ## Input Parameters
 
 | Parameter | Description | Type | Required? | Default |

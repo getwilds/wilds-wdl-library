@@ -157,6 +157,21 @@ In order to pass the automated GitHub Action (GHA) tests, your `inputs.json` mus
     - See the `download-test-data` job within `./github/workflows/vignettes-testrun.yml`
     - Modify `vignettes-testrun.yml` as needed
 
+**Platform-Specific Configurations (Optional)**
+
+Vignettes may include optional platform-specific configuration directories for execution on cloud platforms or workflow management systems:
+
+- **Location**: Place platform configs in a subdirectory within the vignette (e.g., `vignettes/ww-example/.cirro/`)
+- **Naming convention**: Use dotfile directory names (`.cirro/`, `.terra/`, etc.) to indicate platform
+- **Standalone principle**: Keep all vignette-related files (WDL, inputs, platform configs) in the vignette directory
+- **Documentation**: Document platform configurations in the vignette's README with links to platform documentation
+- **Examples**:
+  - `.cirro/` for [Cirro](https://cirro.bio/) platform ([config documentation](https://docs.cirro.bio/pipelines/adding-pipelines/))
+  - `.terra/` for [Terra](https://terra.bio/) workspace configurations
+  - Other platform-specific directories as needed
+
+Platform configurations are entirely optional and should not be required to run the vignette with standard WDL executors (Cromwell, miniWDL, Sprocket).
+
 ## Workflow Development Guidelines
 
 **Workflows represent the highest tier and must meet production standards:**
