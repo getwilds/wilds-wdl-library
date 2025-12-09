@@ -42,8 +42,98 @@ workflow varscan_example {
       memory_gb = 8
   }
 
+  # Validate outputs
+  call validate_outputs {
+    input:
+      somatic_snvs_vcf = somatic.somatic_snvs_vcf,
+      somatic_indels_vcf = somatic.somatic_indels_vcf
+  }
+
   output {
     File somatic_snvs = somatic.somatic_snvs_vcf
     File somatic_indels = somatic.somatic_indels_vcf
+    File validation_report = validate_outputs.report
+  }
+}
+
+task validate_outputs {
+  meta {
+    description: "Validate all VarScan output files"
+    outputs: {
+        report: "Validation report summarizing file checks and variant statistics"
+    }
+  }
+
+  parameter_meta {
+    somatic_snvs_vcf: "Somatic SNVs VCF file to validate"
+    somatic_indels_vcf: "Somatic indels VCF file to validate"
+  }
+
+  input {
+    File somatic_snvs_vcf
+    File somatic_indels_vcf
+  }
+
+  command <<<
+    set -eo pipefail
+
+    echo "=== VarScan Somatic Validation Report ===" > validation_report.txt
+    echo "" >> validation_report.txt
+
+    validation_passed=true
+
+    # Check somatic SNVs VCF file
+    echo "--- Somatic SNVs VCF File ---" >> validation_report.txt
+    if [[ -f "~{somatic_snvs_vcf}" && -s "~{somatic_snvs_vcf}" ]]; then
+      snvs_size=$(wc -c < "~{somatic_snvs_vcf}")
+      echo "Somatic SNVs VCF: ~{somatic_snvs_vcf} (${snvs_size} bytes)" >> validation_report.txt
+
+      # Count variants (non-header lines)
+      snv_count=$(grep -cv '^#' "~{somatic_snvs_vcf}" || echo "0")
+      echo "SNV variants called: ${snv_count}" >> validation_report.txt
+    else
+      echo "Somatic SNVs VCF: ~{somatic_snvs_vcf} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+    echo "" >> validation_report.txt
+
+    # Check somatic indels VCF file
+    echo "--- Somatic Indels VCF File ---" >> validation_report.txt
+    if [[ -f "~{somatic_indels_vcf}" && -s "~{somatic_indels_vcf}" ]]; then
+      indels_size=$(wc -c < "~{somatic_indels_vcf}")
+      echo "Somatic Indels VCF: ~{somatic_indels_vcf} (${indels_size} bytes)" >> validation_report.txt
+
+      # Count variants (non-header lines)
+      indel_count=$(grep -cv '^#' "~{somatic_indels_vcf}" || echo "0")
+      echo "Indel variants called: ${indel_count}" >> validation_report.txt
+    else
+      echo "Somatic Indels VCF: ~{somatic_indels_vcf} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+    echo "" >> validation_report.txt
+
+    # Overall summary
+    echo "=== Validation Summary ===" >> validation_report.txt
+    if [[ "$validation_passed" == "true" ]]; then
+      echo "Overall Status: PASSED" >> validation_report.txt
+      echo "All VarScan outputs were generated successfully." >> validation_report.txt
+    else
+      echo "Overall Status: FAILED" >> validation_report.txt
+      echo "One or more output files are missing or empty." >> validation_report.txt
+      exit 1
+    fi
+
+    # Also output to stdout for immediate feedback
+    cat validation_report.txt
+  >>>
+
+  output {
+    File report = "validation_report.txt"
+  }
+
+  runtime {
+    docker: "getwilds/varscan:2.4.6"
+    memory: "2 GB"
+    cpu: 1
   }
 }
