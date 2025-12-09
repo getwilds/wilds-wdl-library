@@ -8,7 +8,6 @@ task triton_main {
     author: "Chris Lo"
     email: "clo2@fredhutch.org"
     description: "Task for running TritonNP"
-    url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-tritonnp"
     outputs: {
         fm_file: "Array of outputs from TritonNP"
     }
