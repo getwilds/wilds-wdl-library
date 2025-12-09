@@ -5,6 +5,6 @@
     "default_runtime_attributes": {
         "maxRetries": 1
     },
-    "final_workflow_outputs_dir": "test-output/",
+    "final_workflow_outputs_dir": "/path/to/final_output/",
     "use_relative_output_paths": true
 }

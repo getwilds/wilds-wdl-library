@@ -10,8 +10,6 @@ Annovar is a widely-used tool for functionally annotating genetic variants detec
 
 - **Flexible annotation protocols**: Support for RefGene, dbSNP, ClinVar, gnomAD, COSMIC, and many other databases
 - **Multiple genome builds**: Compatible with both hg19 and hg38 reference genomes
-- **Automatic test data**: Downloads gnomAD test data when no input VCFs provided
-- **Output validation**: Built-in validation of annotated files with summary statistics
 - **Parallel processing**: Scatter execution across multiple VCF files
 
 ## Task Reference
@@ -31,17 +29,6 @@ Annotates variants using Annovar with customizable protocols and operations.
 **Outputs**:
 - `annotated_vcf` (File): VCF file with Annovar annotations added
 - `annotated_table` (File): Tab-delimited table with variant annotations
-
-### validate_outputs
-
-Validates Annovar outputs and generates summary statistics.
-
-**Inputs**:
-- `annotated_vcf_files` (Array[File]): Array of annotated VCF files to validate
-- `annotated_table_files` (Array[File]): Array of annotated table files to validate
-
-**Outputs**:
-- `report` (File): Validation summary with annotation statistics
 
 ## Usage as a Module
 
@@ -66,16 +53,9 @@ workflow my_variant_pipeline {
     }
   }
   
-  call annovar_tasks.validate_outputs {
-    input:
-      annotated_vcf_files = annovar_annotate.annotated_vcf,
-      annotated_table_files = annovar_annotate.annotated_table
-  }
-  
   output {
     Array[File] annotated_variants = annovar_annotate.annotated_vcf
     Array[File] annotation_tables = annovar_annotate.annotated_table
-    File validation_report = validate_outputs.report
   }
 }
 ```
@@ -89,17 +69,17 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that automatically downloads test data and runs without requiring input files:
+The module includes a test workflow that automatically downloads test data and runs without requiring input files:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-annovar.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-annovar.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-annovar.wdl
+sprocket run testrun.wdl --entrypoint annovar_example
 ```
 
 ## Annotation Configuration
@@ -162,7 +142,6 @@ sprocket run ww-annovar.wdl
 
 - **Annotated VCF files**: Original VCF with added INFO field annotations
 - **Annotation tables**: Tab-delimited files with detailed variant information and annotations
-- **Validation report**: Summary of processing success and annotation statistics
 
 ## Module Development
 

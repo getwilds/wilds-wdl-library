@@ -6,3 +6,22 @@
 # sprocket run outputs (runs, output - old sprocket versions)
 runs
 output
+
+# .sprocketignore is generated in CI for docs, don't commit it
+.sprocketignore
+
+# docs directory is generated locally and in CI, don't commit it
+docs/
+
+# personal notes/documentation
+notes/
+
+# cromwell/womtool files
+cromwell*.jar
+womtool*.jar
+cromwell-executions/
+cromwell-workflow-logs/
+
+# miniwdl test run outputs
+_LAST
+[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9]_*/

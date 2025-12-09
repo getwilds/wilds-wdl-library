@@ -21,83 +21,8 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `validate_outputs`
-- **Workflow**: `testdata_example` (demonstration workflow that executes all tasks)
-
-## Tasks
-
-### `download_ref_data`
-Downloads chromosome-specific reference genome data including:
-- Reference FASTA file (compressed and decompressed)
-- FASTA index (.fai) file created with samtools
-- Gene annotations (GTF format, chromosome-specific)
-- Chromosome coverage BED file
-
-**Supported genomes**: hg38, hg19
-**Configurable**: Any chromosome (chr1, chr2, chrX, etc.)
-
-### `download_fastq_data`
-Downloads small example paired-end FASTQ files for testing sequencing analysis workflows from GATK test data.
-
-### `interleave_fastq`
-Interleaves a set of R1 and R2 FASTQ files to produce an interleaved FASTQ.
-
-### `download_cram_data`
-Downloads example CRAM files for testing CRAM-based workflows from GATK test data.
-
-### `download_bam_data`
-Downloads and processes example BAM files for testing alignment-based workflows. This task:
-- Downloads BAM data from GATK test repository
-- Filters to chromosome 1 only
-- Removes supplementary alignments and keeps only primary alignments
-- Subsamples to 10% of reads for smaller test files
-- Creates a clean, indexed BAM file suitable for testing
-
-### `download_ichor_data`
-Downloads specialized reference files for ichorCNA copy number analysis:
-- GC content WIG file (500kb bins)
-- Mappability WIG file (500kb bins)
-- Centromere location annotations
-- Panel of normals RDS file
-
-### `download_dbsnp_vcf`
-Downloads dbSNP VCF files for GATK workflows with optional region filtering:
-- Downloads from NCBI's latest dbSNP release
-- Converts chromosome names from NCBI format (NC_*) to UCSC format (chr*)
-- Supports region-specific filtering to reduce file size
-- Outputs compressed VCF files ready for variant calling workflows
-
-### `download_known_indels_vcf`
-Downloads known indel VCF files for GATK Base Quality Score Recalibration (BQSR):
-- Downloads Mills and 1000 Genomes gold standard indels for hg38
-- Supports region-specific filtering
-- Essential for GATK best practices variant calling workflows
-
-### `download_gnomad_vcf`
-Downloads gnomAD (Genome Aggregation Database) VCF files for population frequency annotation:
-- Downloads allele frequency-only gnomAD data for hg38
-- Used for filtering common variants in variant calling workflows
-- Supports region-specific filtering for targeted analysis
-
-### `download_annotsv_vcf`
-Downloads test VCF files for structural variant annotation workflows from the AnnotSV repository.
-
-### `generate_pasilla_counts`
-Generates individual STAR-format count files using the pasilla Bioconductor dataset. This task:
-- Creates realistic `ReadsPerGene.out.tab` files that mimic STAR output
-- Includes proper STAR format with 4-line header containing mapping statistics
-- Generates strand-specific count columns (unstranded, forward, reverse)
-- Produces individual count files for each sample with balanced conditions
-- Outputs sample name and condition arrays for downstream processing
-- Enables testing of count matrix combination workflows
-
-This is particularly useful for testing RNA-seq workflows that start from individual STAR output files and need to combine them into a matrix for differential expression analysis.
-
-### `validate_outputs`
-Validates all downloaded test data files to ensure they exist and are non-empty.
-
-**Inputs**: All output files from the download tasks plus pasilla count files array
-**Outputs**: `report` (File): Validation summary confirming file presence and basic integrity
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`
+- **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
 
@@ -112,7 +37,8 @@ workflow my_analysis {
   call testdata.download_ref_data {
     input:
       chromo = "chr22",
-      version = "hg38"
+      version = "hg38",
+      region = "1-20000000"  # Optional: limit to first 20Mb for faster downloads
   }
 
   call my_analysis_task {
@@ -127,35 +53,55 @@ workflow my_analysis {
 
 ### No Input Required
 
-The `testdata_example` test workflow requires no input parameters and automatically downloads a complete test dataset with hardcoded settings:
+The `testrun.wdl` workflow requires no input parameters and automatically downloads a complete test dataset with hardcoded settings:
 
 - **Chromosome**: chr1 only (for efficient testing)
 - **Reference version**: hg38 (latest standard)
-- **All test data types**: Reference, FASTQ, CRAM, BAM, ichorCNA, VCF files, and Pasilla counts
+- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), and Pasilla counts
 
 ### Running the Test Workflow
 
 ```bash
-# No input file needed for test workflow
-miniwdl run ww-testdata.wdl
+# Using miniWDL
+miniwdl run testrun.wdl
 
-# Or with other executors
-java -jar cromwell.jar run ww-testdata.wdl
-sprocket run ww-testdata.wdl
+# Using Sprocket
+sprocket run testrun.wdl
+
+# Using Cromwell
+java -jar cromwell.jar run testrun.wdl
 ```
 
 ### Common Integration Patterns
 
-**RNA-seq analysis**:
+**RNA-seq alignment analysis**:
 ```wdl
 call testdata.download_ref_data {
   input:
     chromo = "chr22",
-    version = "hg38"
+    version = "hg38",
+    region = "1-30000000"  # Optional: subset for faster testing
 }
 call star_tasks.build_star_index {
   input:
-    reference_fasta = download_ref_data.fasta
+    reference_fasta = download_ref_data.fasta,
+    reference_gtf = download_ref_data.gtf
+}
+```
+
+**RNA-seq quantification analysis**:
+```wdl
+call testdata.download_test_transcriptome { }
+call testdata.download_fastq_data { }
+call salmon_tasks.build_index {
+  input:
+    transcriptome_fasta = download_test_transcriptome.transcriptome_fasta
+}
+call salmon_tasks.quantify {
+  input:
+    salmon_index_dir = build_index.salmon_index,
+    fastq_r1 = download_fastq_data.r1_fastq,
+    fastq_r2 = download_fastq_data.r2_fastq
 }
 ```
 
@@ -243,18 +189,21 @@ call my_bam_analysis {
 ### download_ref_data
 
 **Inputs**:
-- `chromo` (String): Chromosome to download
-- `version` (String): Genome version
+- `chromo` (String): Chromosome to download (default: "chr1")
+- `version` (String): Genome version (default: "hg38")
+- `region` (String, optional): Region coordinates to extract from chromosome in format '1-30000000'. If not specified, uses entire chromosome
+- `output_name` (String, optional): Name for output files (default: uses chromo name)
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
 
-**Note**: In the test workflow, `chromo` is hardcoded to "chr1" and `version` to "hg38".
+**Note**: In the test workflow, `chromo` is hardcoded to "chr1", `version` to "hg38", and `region` to "1-10000000" for faster testing.
 
 **Outputs**:
-- `fasta` (File): Reference chromosome FASTA file (decompressed)
+- `fasta` (File): Reference chromosome FASTA file (decompressed, filtered to region if specified)
 - `fasta_index` (File): Samtools FASTA index (.fai)
-- `gtf` (File): Chromosome-specific gene annotations
-- `bed` (File): BED file covering entire chromosome
+- `dict` (File): Samtools FASTA dictionary file (.dict) for GATK compatibility
+- `gtf` (File): Chromosome-specific gene annotations (filtered to region if specified)
+- `bed` (File): BED file covering the entire chromosome or specified region
 
 ### download_fastq_data
 
@@ -265,6 +214,28 @@ call my_bam_analysis {
 **Outputs**:
 - `r1_fastq` (File): R1 FASTQ file for paired-end sequencing
 - `r2_fastq` (File): R2 FASTQ file for paired-end sequencing
+
+### download_test_transcriptome
+
+Downloads protein-coding transcriptome from GENCODE for RNA-seq quantification testing (e.g., Salmon, Kallisto).
+
+**Important Note**: This task uses GENCODE (Ensembl) annotations, while other ww-testdata tasks (`download_ref_data`) use NCBI RefSeq annotations. These annotation sources have different gene/transcript IDs and may differ in transcript models. For testing purposes, this provides functional validation of quantification tools. For production pipelines, ensure you maintain annotation consistency throughout your workflow (i.e., use the same annotation source for alignment, quantification, and downstream analysis).
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+
+**Outputs**:
+- `transcriptome_fasta` (File): Protein-coding transcriptome FASTA file (~150MB uncompressed, ~20,000 transcripts from GENCODE release 47)
+
+### create_gdc_manifest
+
+Creates a test GDC manifest file containing small open-access files for testing the ww-gdc module. This task generates a properly formatted tab-separated manifest file with file UUIDs, filenames, MD5 checksums, file sizes, and release status.
+
+**Inputs**: None
+
+**Outputs**:
+- `manifest` (File): GDC manifest file containing 3 small open-access TCGA files (total ~210KB)
 
 ### interleave_fastq
 
@@ -369,41 +340,50 @@ call my_bam_analysis {
 - `sample_conditions` (Array[String]): Array of experimental conditions for each sample
 - `gene_info` (File): Gene annotation information including gene IDs
 
-### validate_outputs
+### create_clean_amplicon_reference
+
+Extracts and cleans a reference sequence region for saturation mutagenesis analysis. This task is designed to prepare reference sequences for tools that require only standard nucleotides (A, C, G, T), such as GATK AnalyzeSaturationMutagenesis.
+
+**Use Case**: When performing saturation mutagenesis or deep mutational scanning experiments on specific genomic regions (amplicons), tools like GATK's AnalyzeSaturationMutagenesis require reference sequences without ambiguous bases (N's or other IUPAC codes). This task extracts your target region and ensures it contains only A, C, G, T bases.
 
 **Inputs**:
-- `ref_fasta` (File): Reference FASTA file to validate
-- `ref_fasta_index` (File): Reference FASTA index file to validate
-- `ref_gtf` (File): GTF annotation file to validate
-- `ref_bed` (File): BED file to validate
-- `r1_fastq` (File): R1 FASTQ file to validate
-- `r2_fastq` (File): R2 FASTQ file to validate
-- `inter_fastq` (File): Interleaved FASTQ to validate
-- `cram` (File): CRAM file to validate
-- `crai` (File): CRAM index file to validate
-- `bam` (File): BAM file to validate
-- `bai` (File): BAM index file to validate
-- `ichor_gc_wig` (File): ichorCNA GC content file to validate
-- `ichor_map_wig` (File): ichorCNA mapping quality file to validate
-- `ichor_centromeres` (File): ichorCNA centromere locations file to validate
-- `ichor_panel_of_norm_rds` (File): ichorCNA panel of normals file to validate
-- `dbsnp_vcf` (File): dbSNP VCF to validate
-- `known_indels_vcf` (File): Known indels VCF to validate
-- `gnomad_vcf` (File): gnomAD VCF to validate
-- `annotsv_test_vcf` (File): AnnotSV test VCF file to validate
-- `pasilla_counts` (Array[File]): Array of individual pasilla count files to validate
-- `pasilla_gene_info` (File): Pasilla gene annotation file to validate
+- `input_fasta` (File): Input reference FASTA file
+- `region` (String?): Region to extract in format 'chr:start-end' (e.g., 'chr1:1000-2000'). If not specified, uses entire sequence.
+- `output_name` (String): Name for the output reference (default: "amplicon")
+- `replace_n_with` (String): Base to replace N's with (default: "A"). Use empty string to fail if N's are found.
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
 
 **Outputs**:
-- `report` (File): Validation summary reporting file checks and status
+- `clean_fasta` (File): Cleaned reference FASTA file with no ambiguous bases
+- `clean_fasta_index` (File): Samtools index for the cleaned reference
+- `clean_dict` (File): Samtools dictionary for the cleaned reference
+
+**Example Usage**:
+```wdl
+# For saturation mutagenesis on a specific amplicon
+call testdata.create_clean_amplicon_reference {
+  input:
+    input_fasta = "hg38_chr1.fa",
+    region = "chr1:12345-67890",  # Your amplicon coordinates
+    output_name = "my_amplicon",
+    replace_n_with = "A"  # Replace any N's with A
+}
+
+call gatk.analyze_saturation_mutagenesis {
+  input:
+    reference_fasta = create_clean_amplicon_reference.clean_fasta,
+    reference_fasta_index = create_clean_amplicon_reference.clean_fasta_index,
+    reference_dict = create_clean_amplicon_reference.clean_dict
+}
+```
 
 ## Data Sources
 
 All reference data is downloaded from authoritative public repositories:
 
 - **UCSC Genome Browser**: Reference genomes and annotations
+- **GENCODE**: Human transcriptome annotations and sequences
 - **GATK Test Data**: Example FASTQ, CRAM, and BAM files
 - **ichorCNA Repository**: Copy number analysis references
 - **AnnotSV Repository**: Structural variant test data
@@ -417,7 +397,7 @@ Data integrity is maintained through the use of stable URLs and version-pinned r
 
 ### Runtime Dependencies
 - **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`, `getwilds/bcftools:1.19`, `getwilds/deseq2:1.40.2`
-- **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), wget, aws CLI, R with DESeq2 and pasilla packages
+- **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), curl, aws CLI, R with DESeq2 and pasilla packages
 - **Network**: Internet access required for data downloads
 
 ### Resource Requirements
@@ -430,6 +410,7 @@ Data integrity is maintained through the use of stable URLs and version-pinned r
 This module is specifically designed to support other WILDS modules:
 
 - **ww-star**: RNA-seq alignment (requires reference FASTA + GTF)
+- **ww-salmon**: RNA-seq quantification (requires transcriptome FASTA)
 - **ww-bwa**: DNA alignment (requires reference FASTA)
 - **ww-deseq2**: Differential expression analysis (uses individual count files from `generate_pasilla_counts`)
 - **ww-ichorcna**: Copy number analysis (requires ichorCNA reference files)

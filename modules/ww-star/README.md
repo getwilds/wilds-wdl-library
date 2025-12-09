@@ -8,17 +8,13 @@ A WILDS WDL module for RNA-seq alignment using STAR's two-pass methodology.
 
 This module provides reusable WDL tasks for high-quality RNA-seq alignment using STAR (Spliced Transcripts Alignment to a Reference). It implements STAR's two-pass methodology for optimal splice junction detection and includes comprehensive validation of outputs. The module supports both single-sample analysis and batch processing.
 
-The module can run completely standalone with automatic test data download, or integrate with existing FASTQ files for production analyses.
-
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `build_index`, `align_two_pass`, `validate_outputs`
-- **Workflow**: `star_example` (demonstration workflow with automatic test data support)
+- **Tasks**: `build_index`, `align_two_pass`
+- **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
 - **Container**: `getwilds/star:2.7.6a`
-- **Dependencies**: Integrates with `ww-testdata` module for complete workflows
-- **Test Data**: Automatically downloads reference genome, GTF annotation, and FASTQ data when not provided
 
 ## Tasks
 
@@ -55,17 +51,6 @@ Performs RNA-seq alignment using STAR's two-pass methodology.
 - `gene_counts` (File): Gene-level read counts
 - `log_final`, `log_progress`, `log` (Files): STAR log files
 - `sj_out` (File): Splice junction file
-
-### `validate_outputs`
-Validates alignment outputs and generates a comprehensive report.
-
-**Inputs:**
-- `bam_files` (Array[File]): Array of BAM files to validate
-- `bai_files` (Array[File]): Array of BAM index files to validate
-- `gene_count_files` (Array[File]): Array of gene count files to validate
-
-**Outputs:**
-- `report` (File): Validation summary with alignment statistics
 
 ## Usage as a Module
 
@@ -141,22 +126,20 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that can be tested independently:
-
-The demonstration workflow automatically downloads test data and runs without requiring input files:
+The module includes a demonstration workflow that can be tested independently. The workflow in `testrun.wdl` automatically downloads test data and runs without requiring input files:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-star.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-star.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-star.wdl
+sprocket run testrun.wdl
 ```
 
-The demonstration workflow (`star_example`) automatically:
+The test workflow (`star_example`) automatically:
 1. Downloads reference genome data using `ww-testdata`
 2. Downloads demonstration FASTQ data using `ww-testdata`
 3. Builds STAR genome index
@@ -193,12 +176,9 @@ The module supports flexible resource configuration:
 
 ## Features
 
-- **Standalone execution**: Complete workflow with automatic test data download
-- **Automatic test data**: Uses test data from `ww-testdata` module for demonstration
 - **Two-pass methodology**: Optimal splice junction detection using STAR's two-pass approach
 - **Comprehensive outputs**: BAM files, gene counts, splice junctions, and detailed logs
 - **Multi-sample support**: Process multiple samples in parallel
-- **Validation**: Built-in output validation and reporting
 - **Module integration**: Seamlessly combines with ww-sra and ww-testdata
 - **Scalable**: Configurable resource allocation
 - **Compatible**: Works with multiple WDL executors
@@ -206,6 +186,7 @@ The module supports flexible resource configuration:
 ## Performance Considerations
 
 - **Memory usage**: Index building requires significant RAM (32-64GB for human genome)
+- **BAM sorting memory**: The `align_two_pass` task automatically allocates 90% of `memory_gb` to STAR's BAM sorting operation (`--limitBAMsortRAM`). For large datasets or complex samples, ensure sufficient memory is allocated (64GB+ recommended for human genome alignment)
 - **CPU scaling**: Both index building and alignment benefit from multiple cores
 - **Storage requirements**: Ensure sufficient space for index files and BAM outputs
 - **Two-pass optimization**: Second pass uses splice junctions from first pass for improved accuracy
@@ -217,7 +198,6 @@ The module supports flexible resource configuration:
 - **Gene count files**: Tab-delimited files with read counts per gene
 - **Log files**: Detailed alignment statistics and runtime information
 - **Splice junction files**: Coordinates and support for detected splice junctions
-- **Validation report**: Comprehensive validation with alignment statistics and file integrity checks
 
 ## Module Development
 

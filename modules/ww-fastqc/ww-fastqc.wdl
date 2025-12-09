@@ -5,51 +5,10 @@
 
 version 1.0
 
-# Import testdata module for automatic demo functionality
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-
-#### WORKFLOW DEFINITION ####
-
-workflow fastqc_example {
-  meta {
-    author: "WILDS Development Team"
-    email: "wilds@fredhutch.org"
-    description: "FastQC quality control analysis for high-throughput sequencing data"
-    url: "https://github.com/getwilds/wilds-wdl-library"
-    outputs: {
-        fastqc_html_reports: "Array of FastQC HTML quality control reports",
-        fastqc_zip_reports: "Array of FastQC ZIP archives containing all report data"
-    }
-  }
-
-  # Auto-download test data for testing purposes
-  call ww_testdata.download_fastq_data as download_demo_data { }
-
-  # Process paired-end sample
-  call run_fastqc as run_fastqc_paired { input:
-      r1_fastq = download_demo_data.r1_fastq,
-      r2_fastq = download_demo_data.r2_fastq,
-      cpu_cores = 2,
-      memory_gb = 4
-  }
-
-  # Process single-end sample (R1 only)
-  call run_fastqc as run_fastqc_single { input:
-      r1_fastq = download_demo_data.r1_fastq,
-      cpu_cores = 2,
-      memory_gb = 4
-  }
-
-  output {
-    Array[File] fastqc_html_reports = flatten([run_fastqc_paired.html_reports, run_fastqc_single.html_reports])
-    Array[File] fastqc_zip_reports = flatten([run_fastqc_paired.zip_reports, run_fastqc_single.zip_reports])
-  }
-}
-
-#### TASK DEFINITIONS ####
-
 task run_fastqc {
   meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Run FastQC quality control analysis on FASTQ files"
     outputs: {
         html_reports: "FastQC HTML quality control reports",

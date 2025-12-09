@@ -15,7 +15,8 @@ This module provides a complete template for creating new WILDS WDL modules. It 
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
 
-- **Main WDL file**: `ww-template.wdl` - Contains all tasks and demonstration workflow
+- **Main WDL file**: `ww-template.wdl` - Contains task definitions for the module
+- **Test workflow**: `testrun.wdl` - Demonstration workflow for testing and examples
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
@@ -86,24 +87,25 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that can be tested independently:
+The module includes a test workflow (`testrun.wdl`) that can be run independently:
 
 ```bash
-# Using Cromwell
-java -jar cromwell.jar run ww-template.wdl
-
 # Using miniWDL
-miniwdl run ww-template.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-template.wdl
+sprocket run testrun.wdl --entrypoint template_example
+
+# Using Cromwell
+java -jar cromwell.jar run testrun.wdl
 ```
 
 ### Automatic Demo Mode
 
-The workflow automatically:
+The test workflow automatically:
 1. Downloads test FASTQ data using `ww-testdata`
 2. Processes the test data with the simple hello world functionality
+3. Demonstrates the module's tasks in a realistic workflow context
 
 ## Docker Container
 
@@ -111,6 +113,20 @@ This module uses the `getwilds/bwa:0.7.17` container image, which includes:
 - BWA aligner (not used in template, just demonstrates container usage)
 - Basic Unix text processing tools
 - All necessary system dependencies for demonstration purposes
+
+## Citation
+
+If your module wraps a published tool or uses published reference data, include citation information here to ensure proper attribution.
+
+**Example format:**
+
+> Tool Name: [Paper Title]
+> Authors et al. (Year)
+> Journal Name, Volume(Issue), pages
+> DOI: [doi link]
+
+**Template Citation:**
+This template itself doesn't require citation, but the specific tools you wrap should be properly cited according to their authors' preferences.
 
 ## Template Information
 
@@ -141,30 +157,30 @@ To use this template for a new tool:
    cp -r modules/ww-template modules/ww-yourtool
    ```
 
-2. **Update filenames**:
+2. **Update the main WDL file (`ww-yourtool.wdl`)**:
    - Rename `ww-template.wdl` to `ww-yourtool.wdl`
-   - Update the workflow name from `template_example` to `yourtool_example`
-
-3. **Replace the simple commands**:
-   - Update Docker image to your tool's container
+   - Update task definitions with your tool's specific functionality
    - Replace the `echo` commands with your tool's actual commands
-   - Modify struct definitions for your tool's specific inputs if needed
+   - Update Docker image to your tool's container
    - Add any additional output files your tool generates
 
-4. **Add output validation (optional but encouraged)**:
-   - Consider adding a tool-specific validation task to check output quality
-   - Validate expected file formats, content structure, or tool-specific metrics
-   - This template omits validation for simplicity, but production modules benefit from it
+3. **Update the test workflow (`testrun.wdl`)**:
+   - Update imports to reference your new module (`ww-yourtool.wdl`)
+   - Rename the workflow from `template_example` to `yourtool_example`
+   - Modify struct definitions for your tool's specific inputs if needed
+   - Update the test workflow to call all your module's tasks
+   - Consider adding a validation task to verify output correctness
 
-5. **Update documentation**:
+4. **Update documentation**:
    - Customize README.md with your tool's information
-   - Update meta descriptions and parameter documentation
+   - Update meta descriptions and parameter documentation in the WDL files
    - Add tool-specific usage examples
    - Add citation information if applicable
 
-6. **Test thoroughly**:
-   - Run the demo workflow to ensure functionality
+5. **Test thoroughly**:
+   - Run the test workflow (`testrun.wdl`) to ensure functionality
    - Test with real data for your use case
+   - Verify both linting and execution tests pass
 
 ## Contributing
 

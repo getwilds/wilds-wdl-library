@@ -4,160 +4,15 @@
 
 version 1.0
 
-workflow testdata_example {
-  meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
-    description: "WDL workflow for downloading reference data for WILDS WDL tests"
-    url: "https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-testdata"
-    outputs: {
-        ref_fasta: "Reference genome FASTA file",
-        ref_fasta_index: "Index file for the reference FASTA",
-        ref_gtf: "GTF file containing gene annotations for the specified chromosome",
-        ref_bed: "BED file covering the entire chromosome",
-        r1_fastq: "R1 fastq file downloaded for the sample in question",
-        r2_fastq: "R2 fastq file downloaded for the sample in question",
-        cram: "CRAM file downloaded for the sample in question",
-        crai: "Index file for the CRAM file",
-        bam: "BAM file downloaded for the sample in question",
-        bai: "Index file for the BAM file",
-        ichor_gc_wig: "GC content WIG file for hg38",
-        ichor_map_wig: "Mapping quality WIG file for hg38",
-        ichor_centromeres: "Centromere locations for hg38",
-        ichor_panel_of_norm_rds: "Panel of normals RDS file for hg38",
-        tritonnp_annotation: "BED Annotation of genomic ranges for TritonNP",
-        tritonnp_plot_list = "Example gene plot list for TritonNP",
-        tritonnp_bam = "BAM file downloaded for example low coverage WGS",
-        tritonnp_bam_index = "BAM index file downloaded for example low coverage WGS",
-        tritonnp_bias = "GC correction file for example low coverage WGS",
-        tritonnp_reference = "hg19 reference genome",
-        tritonnp_reference_index = "hg19 reference genome index",
-        dbsnp_vcf: "dbSNP VCF for hg38",
-        known_indels_vcf: "Known indels VCF for hg38",
-        gnomad_vcf: "Gnomad VCF for hg38",
-        annotsv_test_vcf: "Test VCF file for AnnotSV",
-        pasilla_counts: "Array of individual count files for each sample from Pasilla dataset",
-        pasilla_sample_names: "Array of sample names corresponding to the count files",
-        pasilla_sample_conditions: "Array of sample conditions corresponding to the count files",
-        pasilla_gene_info: "Gene annotation information including gene symbols and descriptions",
-        validation_report: "Validation report summarizing all outputs"
-    }
-  }
-
-
-  # Pull down reference genome and index files for chr1
-  call download_ref_data { input:
-      chromo = "chr1",
-      version = "hg38"
-  }
-
-  call download_fastq_data { }
-
-  call interleave_fastq { input:
-    r1_fq = download_fastq_data.r1_fastq,
-    r2_fq = download_fastq_data.r2_fastq
-  }
-
-  call download_cram_data { input:
-    ref_fasta = download_ref_data.fasta
-  }
-
-  call download_bam_data { }
-
-  call download_ichor_data { }
-
-  call download_tritonnp_data { }
-
-  call download_dbsnp_vcf { input:
-    region = "NC_000001.11:1-10000000",
-    filter_name = "chr1"
-  }
-
-  call download_known_indels_vcf { input:
-    region = "chr1:1-10000000",
-    filter_name = "chr1"
-  }
-
-  call download_gnomad_vcf { input:
-    region = "chr1:1-10000000",
-    filter_name = "chr1"
-  }
-
-  call download_annotsv_vcf { }
-
-  call generate_pasilla_counts { }
-
-  call validate_outputs { input:
-    ref_fasta = download_ref_data.fasta,
-    ref_fasta_index = download_ref_data.fasta_index,
-    ref_gtf = download_ref_data.gtf,
-    ref_bed = download_ref_data.bed,
-    r1_fastq = download_fastq_data.r1_fastq,
-    r2_fastq = download_fastq_data.r2_fastq,
-    inter_fastq = interleave_fastq.inter_fastq,
-    cram = download_cram_data.cram,
-    crai = download_cram_data.crai,
-    bam = download_bam_data.bam,
-    bai = download_bam_data.bai,
-    ichor_gc_wig = download_ichor_data.wig_gc,
-    ichor_map_wig = download_ichor_data.wig_map,
-    ichor_centromeres = download_ichor_data.centromeres,
-    ichor_panel_of_norm_rds = download_ichor_data.panel_of_norm_rds,
-    dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf,
-    known_indels_vcf = download_known_indels_vcf.known_indels_vcf,
-    gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
-    annotsv_test_vcf = download_annotsv_vcf.test_vcf,
-    pasilla_counts = generate_pasilla_counts.individual_count_files,
-    pasilla_gene_info = generate_pasilla_counts.gene_info
-  }
-
-  output {
-    # Outputs from the reference data download
-    File ref_fasta = download_ref_data.fasta
-    File ref_fasta_index = download_ref_data.fasta_index
-    File ref_gtf = download_ref_data.gtf
-    File ref_bed = download_ref_data.bed
-    # Outputs from the fastq, cram, and bam data downloads
-    File r1_fastq = download_fastq_data.r1_fastq
-    File r2_fastq = download_fastq_data.r2_fastq
-    File cram = download_cram_data.cram
-    File crai = download_cram_data.crai
-    File bam = download_bam_data.bam
-    File bai = download_bam_data.bai
-    # Outputs from the ichorCNA data download
-    File ichor_gc_wig = download_ichor_data.wig_gc
-    File ichor_map_wig = download_ichor_data.wig_map
-    File ichor_centromeres = download_ichor_data.centromeres
-    File ichor_panel_of_norm_rds = download_ichor_data.panel_of_norm_rds
-    # Outputs from the TritonNP data download
-    File tritonnp_annotation = download_tritonnp_data.annotation
-    File tritonnp_plot_list = download_tritonnp_data.plot_list 
-    File tritonnp_bam = download_tritonnp_data.bam 
-    File tritonnp_bam_index = download_tritonnp_data.bam_index 
-    File tritonnp_bias = download_tritonnp_data.bias 
-    File tritonnp_reference = download_tritonnp_data.reference
-    File tritonnp_reference_index = download_tritonnp_data.reference_index
-    # Outputs from VCF downloads
-    File dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf
-    File known_indels_vcf = download_known_indels_vcf.known_indels_vcf
-    File gnomad_vcf = download_gnomad_vcf.gnomad_vcf
-    File annotsv_test_vcf = download_annotsv_vcf.test_vcf
-    # Outputs from Pasilla DESeq2 count generation
-    Array[File] pasilla_counts = generate_pasilla_counts.individual_count_files
-    Array[String] pasilla_sample_names = generate_pasilla_counts.sample_names
-    Array[String] pasilla_sample_conditions = generate_pasilla_counts.sample_conditions
-    File pasilla_gene_info = generate_pasilla_counts.gene_info
-    # Validation report summarizing all outputs
-    File validation_report = validate_outputs.report
-  }
-}
-
 task download_ref_data {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads reference genome and index files for WILDS WDL test runs"
     outputs: {
         fasta: "Reference genome FASTA file",
         fasta_index: "Index file for the reference FASTA",
+        dict: "Dictionary file for the reference FASTA",
         gtf: "GTF file containing gene annotations for the specified chromosome",
         bed: "BED file covering the entire chromosome"
     }
@@ -166,6 +21,8 @@ task download_ref_data {
   parameter_meta {
     chromo: "Chromosome to download (e.g., chr1, chr2, etc.)"
     version: "Reference genome version (e.g., hg38, hg19)"
+    region: "Optional region coordinates to extract from chromosome in format '1-30000000'. If not specified, uses entire chromosome."
+    output_name: "Optional name for output files (default: uses chromo name)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -173,9 +30,13 @@ task download_ref_data {
   input {
     String chromo = "chr1"
     String version = "hg38"
+    String? region
+    String? output_name
     Int cpu_cores = 1
     Int memory_gb = 4
   }
+
+  String final_output_name = select_first([output_name, chromo])
 
   command <<<
     set -euo pipefail
@@ -183,28 +44,55 @@ task download_ref_data {
     # Download chromosome fasta
     wget -q -O "~{chromo}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"
     gunzip "~{chromo}.fa.gz"
+    mv "~{chromo}.fa" temp.fa
+
+    # Subset to specified region if provided
+    REGION="~{if defined(region) then region else ""}"
+    if [ -n "$REGION" ]; then
+      samtools faidx temp.fa
+      samtools faidx temp.fa "~{chromo}:$REGION" | sed "s/>~{chromo}:$REGION/>~{chromo}/" > "~{final_output_name}.fa"
+      rm temp.fa temp.fa.fai
+    else
+      mv temp.fa "~{final_output_name}.fa"
+    fi
 
     # Create FASTA index file (.fai) for bcftools and other tools
-    samtools faidx "~{chromo}.fa"
+    samtools faidx "~{final_output_name}.fa"
 
-    # Download chromosome 1 GTF file
+    # Create FASTA dictionary file (.dict) for GATK and other tools
+    samtools dict "~{final_output_name}.fa" > "~{final_output_name}.dict"
+
+    # Download GTF file
     wget -q -O "~{version}.ncbiRefSeq.gtf.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/bigZips/genes/~{version}.ncbiRefSeq.gtf.gz"
     gunzip "~{version}.ncbiRefSeq.gtf.gz"
     # Extract only chromosome annotations
-    grep "^~{chromo}[[:space:]]" "~{version}.ncbiRefSeq.gtf" > "~{chromo}.gtf"
+    grep "^~{chromo}[[:space:]]" "~{version}.ncbiRefSeq.gtf" > temp.gtf
     rm "~{version}.ncbiRefSeq.gtf"
 
-    # Create a BED file covering the entire chromosome
-    # Get chromosome length from the FASTA file
-    CHR_LENGTH=$(($(grep -v "^>" "~{chromo}.fa" | tr -d '\n' | wc -c)))
-    echo -e "~{chromo}\t0\t${CHR_LENGTH}" > "~{chromo}.bed"
+    # If region is specified, filter GTF to only include genes in that region
+    if [ -n "$REGION" ]; then
+      # Extract start and end positions from region (format: 1-30000000)
+      REGION_START=$(echo "$REGION" | cut -d'-' -f1)
+      REGION_END=$(echo "$REGION" | cut -d'-' -f2)
+      # Filter GTF to only include features within the region
+      awk -v start="$REGION_START" -v end="$REGION_END" '$4 <= end && $5 >= start' temp.gtf > "~{final_output_name}.gtf"
+      rm temp.gtf
+    else
+      mv temp.gtf "~{final_output_name}.gtf"
+    fi
+
+    # Create a BED file covering the entire chromosome/region
+    # Get length from the FASTA file
+    CHR_LENGTH=$(($(grep -v "^>" "~{final_output_name}.fa" | tr -d '\n' | wc -c)))
+    echo -e "~{chromo}\t0\t${CHR_LENGTH}" > "~{final_output_name}.bed"
   >>>
 
   output {
-    File fasta = "~{chromo}.fa"
-    File fasta_index = "~{chromo}.fa.fai"
-    File gtf = "~{chromo}.gtf"
-    File bed = "~{chromo}.bed"
+    File fasta = "~{final_output_name}.fa"
+    File fasta_index = "~{final_output_name}.fa.fai"
+    File dict = "~{final_output_name}.dict"
+    File gtf = "~{final_output_name}.gtf"
+    File bed = "~{final_output_name}.bed"
   }
 
   runtime {
@@ -216,6 +104,8 @@ task download_ref_data {
 
 task download_fastq_data {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads small example FASTQ files for WILDS WDL test runs"
     outputs: {
         r1_fastq: "R1 fastq file downloaded for the sample in question",
@@ -252,6 +142,8 @@ task download_fastq_data {
 
 task interleave_fastq {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Interleaves a set of R1 and R2 FASTQ files"
     outputs: {
         inter_fastq: "Interleaved FASTQ"
@@ -293,6 +185,8 @@ task interleave_fastq {
 
 task download_cram_data {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads small example CRAM files for WILDS WDL test runs"
     outputs: {
         cram: "CRAM file downloaded for the sample in question",
@@ -317,7 +211,7 @@ task download_cram_data {
 
     # Pull down BAM files from GATK test data bucket
     samtools view -@ ~{cpu_cores} -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1 | \
-    samtools view -@ ~{cpu_cores} -s 0.1 -b - > NA12878.bam
+    samtools view -@ ~{cpu_cores} -s 0.05 -b - > NA12878.bam
     samtools index -@ ~{cpu_cores} NA12878.bam
 
     # Only keep primary alignments from chr1 (no supplementary alignments)
@@ -334,6 +228,9 @@ task download_cram_data {
     # Convert BAM to CRAM using the provided reference FASTA
     samtools view -@ ~{cpu_cores} -C -T "~{ref_fasta}" -o NA12878_chr1.cram NA12878_chr1.bam
     samtools index -@ ~{cpu_cores} NA12878_chr1.cram
+
+    # Clean up intermediate files
+    rm NA12878.bam NA12878.bam.bai NA12878_chr1.bam NA12878_chr1.bam.bai NA12878_24RG_small.hg38.bai
   >>>
 
   output {
@@ -350,6 +247,8 @@ task download_cram_data {
 
 task download_bam_data {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads small example BAM files for WILDS WDL test runs"
     outputs: {
         bam: "BAM file downloaded for the sample in question",
@@ -406,6 +305,8 @@ task download_bam_data {
 
 task download_ichor_data {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads reference data for ichorCNA analysis on hg38"
     outputs: {
         wig_gc: "GC content WIG file for hg38",
@@ -510,9 +411,12 @@ task download_tritonnp_data {
 
 task download_dbsnp_vcf {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads dbSNP VCF files for GATK workflows"
     outputs: {
-        dbsnp_vcf: "dbSNP VCF file (filtered down if region specified)"
+        dbsnp_vcf: "dbSNP VCF file (filtered down if region specified)",
+        dbsnp_vcf_index: "Index file for the dbSNP VCF"
     }
   }
 
@@ -567,10 +471,14 @@ task download_dbsnp_vcf {
       https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz | \
     bcftools annotate --rename-chrs chr_mapping.txt \
       -O z -o "dbsnp.~{filter_name}.vcf.gz"
+    
+    # Index the filtered VCF
+    bcftools index --tbi "dbsnp.~{filter_name}.vcf.gz"
   >>>
 
   output {
     File dbsnp_vcf = "dbsnp.~{filter_name}.vcf.gz"
+    File dbsnp_vcf_index = "dbsnp.~{filter_name}.vcf.gz.tbi"
   }
 
   runtime {
@@ -582,9 +490,12 @@ task download_dbsnp_vcf {
 
 task download_known_indels_vcf {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads known indel VCF files for GATK workflows"
     outputs: {
-        known_indels_vcf: "Known indels VCF file (filtered down if region specified)"
+        known_indels_vcf: "Known indels VCF file (filtered down if region specified)",
+        known_indels_vcf_index: "Index file for the known indels VCF"
     }
   }
 
@@ -607,10 +518,14 @@ task download_known_indels_vcf {
     bcftools view ~{if defined(region) then "-r " + region else ""} \
     https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz \
     -O z -o "mills_1000g_known_indels.~{filter_name}.vcf.gz"
+
+    # Index the filtered VCF
+    bcftools index --tbi "mills_1000g_known_indels.~{filter_name}.vcf.gz"
   >>>
 
   output {
     File known_indels_vcf = "mills_1000g_known_indels.~{filter_name}.vcf.gz"
+    File known_indels_vcf_index = "mills_1000g_known_indels.~{filter_name}.vcf.gz.tbi"
   }
 
   runtime {
@@ -622,9 +537,12 @@ task download_known_indels_vcf {
 
 task download_gnomad_vcf {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads gnomad VCF files for GATK workflows"
     outputs: {
-        gnomad_vcf: "Gnomad VCF file (filtered down if region specified)"
+        gnomad_vcf: "Gnomad VCF file (filtered down if region specified)",
+        gnomad_vcf_index: "Index file for the gnomad VCF"
     }
   }
 
@@ -647,10 +565,14 @@ task download_gnomad_vcf {
     bcftools view ~{if defined(region) then "-r " + region else ""} \
     https://storage.googleapis.com/gatk-best-practices/somatic-hg38/af-only-gnomad.hg38.vcf.gz \
     -O z -o "gnomad_af_only.~{filter_name}.vcf.gz"
+
+    # Index the filtered VCF
+    bcftools index --tbi "gnomad_af_only.~{filter_name}.vcf.gz"
   >>>
 
   output {
     File gnomad_vcf = "gnomad_af_only.~{filter_name}.vcf.gz"
+    File gnomad_vcf_index = "gnomad_af_only.~{filter_name}.vcf.gz.tbi"
   }
 
   runtime {
@@ -662,6 +584,8 @@ task download_gnomad_vcf {
 
 task download_annotsv_vcf {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads test VCF files for structural variant annotation workflows"
     outputs: {
         test_vcf: "Test VCF file for AnnotSV"
@@ -698,6 +622,8 @@ task download_annotsv_vcf {
 
 task generate_pasilla_counts {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Generate DESeq2 test count matrices and metadata using the pasilla Bioconductor dataset raw files"
     outputs: {
         individual_count_files: "Array of individual count files for each sample from Pasilla dataset",
@@ -751,252 +677,173 @@ task generate_pasilla_counts {
   }
 }
 
-task validate_outputs {
+task download_test_transcriptome {
   meta {
-    description: "Validates downloaded test data files to ensure they exist and are non-empty"
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Download a small test transcriptome for RNA-seq quantification testing. NOTE: This uses GENCODE (Ensembl) annotations, while other ww-testdata tasks use NCBI RefSeq. For production use, ensure annotation consistency across your pipeline."
     outputs: {
-        report: "Validation summary reporting file checks and basic statistics"
+        transcriptome_fasta: "Small test transcriptome FASTA file containing protein-coding transcripts"
     }
   }
 
   parameter_meta {
-    ref_fasta: "Reference genome FASTA file to validate"
-    ref_fasta_index: "Reference FASTA index file to validate"
-    ref_gtf: "GTF annotation file to validate"
-    ref_bed: "BED file to validate"
-    r1_fastq: "R1 FASTQ file to validate"
-    r2_fastq: "R2 FASTQ file to validate"
-    inter_fastq: "Interleaved FASTQ to validate"
-    cram: "CRAM file to validate"
-    crai: "CRAM index file to validate"
-    bam: "BAM file to validate"
-    bai: "BAM index file to validate"
-    ichor_gc_wig: "ichorCNA GC content file to validate"
-    ichor_map_wig: "ichorCNA mapping quality file to validate"
-    ichor_centromeres: "ichorCNA centromere locations file to validate"
-    ichor_panel_of_norm_rds: "ichorCNA panel of normals file to validate"
-    dbsnp_vcf: "dbSNP VCF to validate"
-    known_indels_vcf: "Known indels VCF to validate"
-    gnomad_vcf: "gnomad VCF to validate"
-    annotsv_test_vcf: "AnnotSV test VCF file to validate"
-    pasilla_counts: "Array of individual count files for each sample from Pasilla dataset to validate"
-    pasilla_gene_info: "Pasilla gene annotation information to validate"
-    cpu_cores: "Number of CPU cores to use for validation"
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
 
   input {
-    File ref_fasta
-    File ref_fasta_index
-    File ref_gtf
-    File ref_bed
-    File r1_fastq
-    File r2_fastq
-    File inter_fastq
-    File cram
-    File crai
-    File bam
-    File bai
-    File ichor_gc_wig
-    File ichor_map_wig
-    File ichor_centromeres
-    File ichor_panel_of_norm_rds
-    File dbsnp_vcf
-    File known_indels_vcf
-    File gnomad_vcf
-    File annotsv_test_vcf
-    Array[File] pasilla_counts
-    File pasilla_gene_info
     Int cpu_cores = 1
     Int memory_gb = 2
   }
 
   command <<<
-    set -euo pipefail
+    set -eo pipefail
 
-    echo "=== WILDS Test Data Validation Report ===" > validation_report.txt
-    echo "Generated on: $(date)" >> validation_report.txt
-    echo "" >> validation_report.txt
+    # Download protein-coding transcriptome from GENCODE for testing
+    # This is a relatively small file (~46MB compressed) containing all human protein-coding transcripts
+    curl -L -o test_transcriptome.fa.gz \
+      "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_47/gencode.v47.pc_transcripts.fa.gz"
 
-    validation_passed=true
-
-    # Check each file exists and is not empty
-    if [[ -f "~{ref_fasta}" && -s "~{ref_fasta}" ]]; then
-      echo "Reference FASTA: ~{ref_fasta} - PASSED" >> validation_report.txt
-    else
-      echo "Reference FASTA: ~{ref_fasta} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{ref_fasta_index}" && -s "~{ref_fasta_index}" ]]; then
-      echo "Reference FASTA index: ~{ref_fasta_index} - PASSED" >> validation_report.txt
-    else
-      echo "Reference FASTA index: ~{ref_fasta_index} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{ref_gtf}" && -s "~{ref_gtf}" ]]; then
-      echo "GTF file: ~{ref_gtf} - PASSED" >> validation_report.txt
-    else
-      echo "GTF file: ~{ref_gtf} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{ref_bed}" && -s "~{ref_bed}" ]]; then
-      echo "BED file: ~{ref_bed} - PASSED" >> validation_report.txt
-    else
-      echo "BED file: ~{ref_bed} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{r1_fastq}" && -s "~{r1_fastq}" ]]; then
-      echo "R1 FASTQ: ~{r1_fastq} - PASSED" >> validation_report.txt
-    else
-      echo "R1 FASTQ: ~{r1_fastq} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{r2_fastq}" && -s "~{r2_fastq}" ]]; then
-      echo "R2 FASTQ: ~{r2_fastq} - PASSED" >> validation_report.txt
-    else
-      echo "R2 FASTQ: ~{r2_fastq} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{inter_fastq}" && -s "~{inter_fastq}" ]]; then
-      echo "Interleaved FASTQ: ~{inter_fastq} - PASSED" >> validation_report.txt
-    else
-      echo "Interleaved FASTQ: ~{inter_fastq} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{cram}" && -s "~{cram}" ]]; then
-      echo "CRAM file: ~{cram} - PASSED" >> validation_report.txt
-    else
-      echo "CRAM file: ~{cram} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{crai}" && -s "~{crai}" ]]; then
-      echo "CRAM index: ~{crai} - PASSED" >> validation_report.txt
-    else
-      echo "CRAM index: ~{crai} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{bam}" && -s "~{bam}" ]]; then
-      echo "BAM file: ~{bam} - PASSED" >> validation_report.txt
-    else
-      echo "BAM file: ~{bam} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{bai}" && -s "~{bai}" ]]; then
-      echo "BAM index: ~{bai} - PASSED" >> validation_report.txt
-    else
-      echo "BAM index: ~{bai} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{ichor_gc_wig}" && -s "~{ichor_gc_wig}" ]]; then
-      echo "ichorCNA GC WIG: ~{ichor_gc_wig} - PASSED" >> validation_report.txt
-    else
-      echo "ichorCNA GC WIG: ~{ichor_gc_wig} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{ichor_map_wig}" && -s "~{ichor_map_wig}" ]]; then
-      echo "ichorCNA MAP WIG: ~{ichor_map_wig} - PASSED" >> validation_report.txt
-    else
-      echo "ichorCNA MAP WIG: ~{ichor_map_wig} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{ichor_centromeres}" && -s "~{ichor_centromeres}" ]]; then
-      echo "ichorCNA centromeres: ~{ichor_centromeres} - PASSED" >> validation_report.txt
-    else
-      echo "ichorCNA centromeres: ~{ichor_centromeres} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{ichor_panel_of_norm_rds}" && -s "~{ichor_panel_of_norm_rds}" ]]; then
-      echo "ichorCNA panel of normals: ~{ichor_panel_of_norm_rds} - PASSED" >> validation_report.txt
-    else
-      echo "ichorCNA panel of normals: ~{ichor_panel_of_norm_rds} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{dbsnp_vcf}" && -s "~{dbsnp_vcf}" ]]; then
-      echo "dbSNP VCF: ~{dbsnp_vcf} - PASSED" >> validation_report.txt
-    else
-      echo "dbSNP VCF: ~{dbsnp_vcf} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{known_indels_vcf}" && -s "~{known_indels_vcf}" ]]; then
-      echo "Known Indels VCF: ~{known_indels_vcf} - PASSED" >> validation_report.txt
-    else
-      echo "Known Indels VCF: ~{known_indels_vcf} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{gnomad_vcf}" && -s "~{gnomad_vcf}" ]]; then
-      echo "Gnomad VCF: ~{gnomad_vcf} - PASSED" >> validation_report.txt
-    else
-      echo "Gnomad VCF: ~{gnomad_vcf} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    if [[ -f "~{annotsv_test_vcf}" && -s "~{annotsv_test_vcf}" ]]; then
-      echo "AnnotSV test VCF: ~{annotsv_test_vcf} - PASSED" >> validation_report.txt
-    else
-      echo "AnnotSV test VCF: ~{annotsv_test_vcf} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    # Check if all pasilla count files exist and are non-empty
-    pasilla_count_passed=true
-    for count_file in ~{sep=' ' pasilla_counts}; do
-      if [[ -f "$count_file" && -s "$count_file" ]]; then
-        echo "Pasilla count file: $count_file - PASSED" >> validation_report.txt
-      else
-        echo "Pasilla count file: $count_file - MISSING OR EMPTY" >> validation_report.txt
-        pasilla_count_passed=false
-      fi
-    done
-    if [[ "$pasilla_count_passed" == "false" ]]; then
-      validation_passed=false
-    fi
-
-    if [[ -f "~{pasilla_gene_info}" && -s "~{pasilla_gene_info}" ]]; then
-      echo "Pasilla gene info: ~{pasilla_gene_info} - PASSED" >> validation_report.txt
-    else
-      echo "Pasilla gene info: ~{pasilla_gene_info} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-
-    {
-      echo ""
-      echo "=== Validation Summary ==="
-      echo "Total files validated: 20"
-    } >> validation_report.txt
-    if [[ "$validation_passed" == "true" ]]; then
-      echo "Overall Status: PASSED" >> validation_report.txt
-    else
-      echo "Overall Status: FAILED" >> validation_report.txt
-      exit 1
-    fi
-
-    cat validation_report.txt
+    # Decompress the file
+    gunzip test_transcriptome.fa.gz
   >>>
 
   output {
-    File report = "validation_report.txt"
+    File transcriptome_fasta = "test_transcriptome.fa"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
+task create_clean_amplicon_reference {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Extract and clean a reference sequence region for saturation mutagenesis analysis"
+    outputs: {
+        clean_fasta: "Cleaned reference FASTA file with no ambiguous bases",
+        clean_fasta_index: "Index file for the cleaned reference FASTA",
+        clean_dict: "Dictionary file for the cleaned reference FASTA"
+    }
+  }
+
+  parameter_meta {
+    input_fasta: "Input reference FASTA file"
+    region: "Region to extract in format 'chr:start-end' (e.g., 'chr1:1000-2000'). If not specified, uses entire sequence."
+    output_name: "Name for the output reference (default: 'amplicon')"
+    replace_n_with: "Base to replace N's with (default: 'A'). Use empty string to fail if N's are found."
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    File input_fasta
+    String? region
+    String output_name = "amplicon"
+    String replace_n_with = "A"
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Extract region if specified, otherwise use entire sequence
+    if [ -n "~{region}" ]; then
+      samtools faidx "~{input_fasta}"
+      samtools faidx "~{input_fasta}" "~{region}" > temp_extract.fa
+
+      # Replace the header with just the chromosome name
+      sed "s/^>.*/>~{output_name}/" temp_extract.fa > temp.fa
+      rm temp_extract.fa
+    else
+      cp "~{input_fasta}" temp.fa
+    fi
+
+    # Check for N bases and handle according to replace_n_with parameter
+    n_count=$(grep -v "^>" temp.fa | grep -o "N" | wc -l || true)
+
+    if [ "$n_count" -gt 0 ]; then
+      echo "Found $n_count N bases in the reference sequence"
+
+      if [ -z "~{replace_n_with}" ]; then
+        echo "ERROR: N bases found and replace_n_with is empty. Cannot proceed."
+        exit 1
+      else
+        echo "Replacing N bases with '~{replace_n_with}'"
+        # Replace N's (both upper and lowercase) in the sequence lines only
+        # Removes ambiguous bases (N's) that cause issues with GATK AnalyzeSaturationMutagenesis
+        awk '/^>/ {print; next} {gsub(/[Nn]/, "~{replace_n_with}"); print}' temp.fa > "~{output_name}.fa"
+      fi
+    else
+      echo "No N bases found in the reference sequence"
+      mv temp.fa "~{output_name}.fa"
+    fi
+
+    # Verify no ambiguous bases remain
+    remaining_n=$(grep -v "^>" "~{output_name}.fa" | grep -o "[^ACGTacgt]" | wc -l || true)
+    if [ "$remaining_n" -gt 0 ]; then
+      echo "ERROR: Non-ACGT bases still present after cleaning"
+      exit 1
+    fi
+
+    echo "Reference cleaned successfully: $(basename '~{output_name}.fa')"
+
+    # Create index and dictionary
+    samtools faidx "~{output_name}.fa"
+    samtools dict "~{output_name}.fa" > "~{output_name}.dict"
+  >>>
+
+  output {
+    File clean_fasta = "~{output_name}.fa"
+    File clean_fasta_index = "~{output_name}.fa.fai"
+    File clean_dict = "~{output_name}.dict"
   }
 
   runtime {
     docker: "getwilds/samtools:1.11"
-    cpu: cpu_cores
     memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
+task create_gdc_manifest {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Create a test GDC manifest file with small open-access files for testing gdc-client downloads"
+    outputs: {
+        manifest: "GDC manifest file containing test file UUIDs"
+    }
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Create a test manifest file with small open-access TCGA files
+    # Format: id, filename, md5, size, state (tab-separated)
+    cat > gdc_test_manifest.txt <<'EOF'
+id	filename	md5	size	state
+6e811713-17b0-4413-a756-af178269824f	TARGET_AML_SampleMatrix_Validation_20180914.xlsx	c2070b78d418c134f48d9b8098c9f7ac	172979	released
+4e89ba70-022e-48a3-a8f8-04f5720fb2d0	5df0dac1-d9d2-4e2d-b3dc-63279926a402.targeted_sequencing.aliquot_ensemble_raw.maf.gz	aa97da746509a18676adda0f086dedaa	9429	released
+52fd584b-9ca3-4f7e-bdd5-fd9dce3d630b	TARGET_AML_CDE_20230524.xlsx	fc5b42f89b1ac84699b8b10dafed02dc	27667	released
+EOF
+
+    echo "Created test GDC manifest with 3 small open-access files"
+  >>>
+
+  output {
+    File manifest = "gdc_test_manifest.txt"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    memory: "2 GB"
+    cpu: 1
   }
 }

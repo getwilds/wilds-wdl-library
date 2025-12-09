@@ -8,17 +8,13 @@ A WILDS WDL module for structural variant calling using Manta.
 
 This module provides reusable WDL tasks for high-quality structural variant detection using Manta. It supports both DNA-seq and RNA-seq data and includes comprehensive validation of outputs. Manta is optimized for detecting large insertions, deletions, duplications, inversions, and translocations from sequencing data.
 
-The module uses Manta's algorithms for precise structural variant detection and can run completely standalone with automatic test data download, or integrate with existing BAM files.
-
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `manta_call`, `validate_outputs`
-- **Workflow**: `manta_example` (demonstration workflow with automatic test data support)
+- **Tasks**: `manta_call`
+- **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
 - **Container**: `getwilds/manta:1.6.0`
-- **Dependencies**: Integrates with `ww-testdata` module for complete workflows
-- **Test Data**: Automatically downloads reference genome and BAM data when not provided
 
 ## Tasks
 
@@ -40,16 +36,6 @@ Calls structural variants using Manta for a single sample.
 **Outputs:**
 - `vcf` (File): Compressed VCF file with structural variant calls
 - `vcf_index` (File): Index file for the VCF
-
-### `validate_outputs`
-Validates Manta outputs and generates a comprehensive report.
-
-**Inputs:**
-- `vcf_files` (Array[File]): Array of VCF files to validate
-- `vcf_index_files` (Array[File]): Array of VCF index files to validate
-
-**Outputs:**
-- `report` (File): Validation summary with structural variant statistics
 
 ## Usage as a Module
 
@@ -80,12 +66,6 @@ workflow my_sv_pipeline {
         reference_fasta = reference_fasta,
         reference_fasta_index = reference_fasta_index
     }
-  }
-  
-  call manta_tasks.validate_outputs {
-    input:
-      vcf_files = manta_call.vcf,
-      vcf_index_files = manta_call.vcf_index
   }
   
   output {
@@ -126,22 +106,22 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that can be tested independently:
+The module includes a test workflow that can be tested independently:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-manta.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-manta.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-manta.wdl
+sprocket run testrun.wdl --entrypoint manta_example
 ```
 
 ### Automatic Test Data
 
-The demonstration workflow automatically:
+The test workflow automatically:
 1. Downloads reference genome data using `ww-testdata`
 2. Downloads demonstration BAM data using `ww-testdata`
 3. Calls structural variants using Manta
@@ -180,12 +160,10 @@ The module supports flexible resource configuration:
 
 ## Features
 
-- **Standalone execution**: Complete workflow with automatic test data download
 - **Comprehensive SV detection**: Detects deletions, insertions, duplications, inversions, and translocations
 - **Multi-sample support**: Process multiple samples in parallel
 - **RNA-seq compatibility**: Specialized mode for RNA structural variant detection
-- **Validation**: Built-in output validation and reporting
-- **Module integration**: Seamlessly combines with ww-testdata
+- **Module integration**: Seamlessly combines with other WILDS WDL modules
 - **Scalable**: Configurable resource allocation
 - **Robust**: Extensive error handling and cleanup
 - **Compatible**: Works with multiple WDL executors
@@ -194,7 +172,6 @@ The module supports flexible resource configuration:
 
 - **VCF files**: Contain structural variant calls in compressed VCF format with proper INFO and FORMAT fields
 - **VCF indices**: Enable rapid random access to variant regions (.tbi format)
-- **Validation report**: Comprehensive validation with file integrity checks, format validation, and variant counts
 
 ## Module Development
 

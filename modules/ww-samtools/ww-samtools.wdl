@@ -3,44 +3,10 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-
-workflow samtools_example {
-  meta {
-    author: "Emma Bishop"
-    email: "wilds@fredhutch.org"
-    description: "WDL workflow for processing genomic files with Samtools"
-    url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-samtools"
-    outputs: {
-        r1_fastqs: "R1 FASTQ files generated from CRAM/BAM/SAM files",
-        r2_fastqs: "R2 FASTQ files generated from CRAM/BAM/SAM files"
-    }
-  }
-
-  # Download test data
-  call ww_testdata.download_ref_data { }
-
-  call ww_testdata.download_cram_data { input:
-      ref_fasta = download_ref_data.fasta
-  }
-
-  # Convert CRAM to FASTQ
-  call crams_to_fastq { input:
-      cram_files = [download_cram_data.cram],
-      ref = download_ref_data.fasta,
-      name = "test_sample",
-      cpu_cores = 2,
-      memory_gb = 8
-  }
-
-  output {
-    File r1_fastqs = crams_to_fastq.r1_fastq
-    File r2_fastqs = crams_to_fastq.r2_fastq
-  }
-}
-
 task crams_to_fastq {
   meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
     description: "Merge CRAM/BAM/SAM files and convert to FASTQ's using samtools."
     outputs: {
         r1_fastq: "R1 FASTQ file generated from merged CRAM/BAM/SAM file",
@@ -87,3 +53,47 @@ task crams_to_fastq {
   }
 }
 
+task merge_bams_to_cram {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Merge multiple BAM files into a single CRAM file using samtools merge"
+    outputs: {
+        cram: "Merged CRAM file containing all reads from input BAMs",
+        crai: "Index file for the merged CRAM"
+    }
+  }
+
+  parameter_meta {
+    bams_to_merge: "Array of BAM files to merge into a single CRAM file"
+    base_file_name: "Base name for output CRAM file"
+    cpu_cores: "Number of CPU cores to use (threads = cpu_cores - 1)"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    Array[File] bams_to_merge
+    String base_file_name
+    Int cpu_cores = 6
+    Int memory_gb = 12
+  }
+
+  command <<<
+    set -eo pipefail
+
+    samtools merge -@ ~{cpu_cores - 1} \
+      --write-index --output-fmt CRAM \
+      "~{base_file_name}.merged.cram" ~{sep=" " bams_to_merge}
+  >>>
+
+  output {
+    File cram = "~{base_file_name}.merged.cram"
+    File crai = "~{base_file_name}.merged.cram.crai"
+  }
+
+  runtime {
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+    docker: "getwilds/samtools:1.19"
+  }
+}

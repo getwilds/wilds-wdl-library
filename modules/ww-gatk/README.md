@@ -23,11 +23,9 @@ The module implements GATK best practices for variant calling, including proper 
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `validate_outputs`
-- **Workflow**: `gatk_example` (demonstration workflow using test data with parallelization)
+- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `fastq_to_bam`, `validate_sam_file`, `analyze_saturation_mutagenesis`
+- **Test workflow**: `testrun.wdl` (demonstration workflow using test data with parallelization)
 - **Container**: `getwilds/gatk:4.6.1.0`
-- **Dependencies**: Integrates with `ww-testdata` module for automatic reference genome and variant database downloads
-- **Test Data**: Uses reference genome, dbSNP, known indels, gnomAD, and aligned BAM data from test data module
 
 ## Tasks
 
@@ -239,6 +237,43 @@ Merges Mutect2 statistics files from parallel processing.
 **Outputs:**
 - `merged_stats` (File): Merged Mutect2 statistics file
 
+### Utility Tasks
+
+### `fastq_to_bam`
+Converts paired FASTQ files to unmapped BAM/SAM format using GATK FastqToSam.
+
+**Inputs:**
+- `r1_fastq` (Array[File]): Array of R1 FASTQ files for the library
+- `r2_fastq` (Array[File]): Array of R2 FASTQ files for the library
+- `base_file_name` (String): Base name for output file
+- `sample_name` (String): Sample name to insert into the read group header
+- `library_name` (String?): Library name to place into the LB attribute in the read group header (defaults to sample_name if not provided)
+- `platform` (String): Sequencing platform (default: illumina)
+- `sequencing_center` (String?): Location where the sample was sequenced (defaults to '.' if not provided)
+- `read_group_name` (String?): Read group name (if not provided, defaults to sample_name)
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 4)
+
+**Outputs:**
+- `unmapped_bam` (File): Unmapped BAM file containing reads from input FASTQ files
+
+**Note:** While `library_name` and `sequencing_center` have defaults for convenience, it's recommended to provide actual values when available for proper read group metadata tracking.
+
+### `validate_sam_file`
+Validates BAM/CRAM/SAM files for formatting issues using GATK ValidateSamFile.
+
+**Inputs:**
+- `input_file` (File): BAM/CRAM/SAM file to validate
+- `base_file_name` (String): Base name for output validation file
+- `mode` (String): Validation mode: VERBOSE (detailed), SUMMARY (summary only) (default: SUMMARY)
+- `ignore_warnings` (Boolean): Whether to ignore warnings (default: false)
+- `reference_fasta` (File?): Reference genome FASTA (required for CRAM files)
+- `memory_gb` (Int): Memory allocation in GB (default: 4)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+
+**Outputs:**
+- `validation_report` (File): Text file containing validation statistics and any errors/warnings
+
 ### Supporting Tasks
 
 ### `create_sequence_dictionary`
@@ -271,24 +306,34 @@ Collects whole genome sequencing metrics using GATK CollectWgsMetrics.
 **Outputs:**
 - `metrics_file` (File): Comprehensive WGS metrics file with coverage and quality statistics
 
-### `validate_outputs`
-Validates GATK outputs and generates comprehensive statistics report.
+### `analyze_saturation_mutagenesis`
+Analyzes saturation mutagenesis data using GATK AnalyzeSaturationMutagenesis to quantify amino acid and codon frequencies.
+
+**Important Requirements:**
+- Input BAM will be automatically sorted by queryname (paired reads must be adjacent)
+- Reference FASTA must contain **only A, C, G, T bases** (no N's or other IUPAC codes)
+- Use `ww-testdata.create_clean_amplicon_reference` to prepare a clean reference if needed
 
 **Inputs:**
-- `markdup_bams` (Array[File]): Array of MarkDuplicates BAM files
-- `markdup_bais` (Array[File]): Array of MarkDuplicates BAM index files
-- `recalibrated_bams` (Array[File]): Array of recalibrated BAM files
-- `recalibrated_bais` (Array[File]): Array of recalibrated BAM index files
-- `sequential_bams` (Array[File]): Array of sequential Markdup-Recal-Metrics BAM files
-- `sequential_bais` (Array[File]): Array of sequential Markdup-Recal-Metrics BAM index files
-- `haplotype_vcfs` (Array[File]): Array of HaplotypeCaller VCF files called via scatter-gather parallelization
-- `mutect2_vcfs` (Array[File]): Array of Mutect2 VCF files called via scatter-gather parallelization
-- `parallel_haplotype_vcfs` (Array[File]): Array of HaplotypeCaller VCF files called via internal parallelization
-- `parallel_mutect2_vcfs` (Array[File]): Array of Mutect2 VCF files called via internal parallelization
-- `wgs_metrics` (Array[File]): Array of WGS metrics files
+- `bam` (File): Input aligned BAM file (will be automatically sorted by queryname)
+- `bam_index` (File): Index file for the input BAM
+- `reference_fasta` (File): Reference genome FASTA file (must contain only A, C, G, T bases)
+- `reference_fasta_index` (File): Index file for the reference FASTA
+- `reference_dict` (File): Reference genome sequence dictionary
+- `orf_range` (String): Open reading frame range to analyze (e.g., '1-100')
+- `base_file_name` (String): Base name for output files
+- `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 
 **Outputs:**
-- `report` (File): Validation summary with file checks and basic statistics
+- `aa_counts` (File): Amino acid count table
+- `aa_fractions` (File): Amino acid fraction table
+- `codon_counts` (File): Codon count table
+- `codon_fractions` (File): Codon fraction table
+- `cov_length_counts` (File): Coverage length count table
+- `read_counts` (File): Read count table
+- `ref_coverage` (File): Reference coverage table
+- `variant_counts` (File): Variant count table
 
 ## Workflow Parallelization Configuration
 
@@ -305,27 +350,28 @@ Validates GATK outputs and generates comprehensive statistics report.
 
 ## Testing the Module
 
-The module includes a demonstration workflow that runs with test data and requires no inputs:
+The module includes a test workflow that runs with test data and requires no inputs:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-gatk.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-gatk.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-gatk.wdl
+sprocket run testrun.wdl --entrypoint gatk_example
 ```
 
 ### Test Data Workflow
 
-The `gatk_example` workflow automatically:
+The test workflow automatically:
 1. Downloads reference genome data using `ww-testdata`
 2. Downloads variant databases (dbSNP, known indels, gnomAD)
 3. Downloads test BAM file for demonstration
 4. Performs complete GATK variant calling pipeline with parallelization
-5. Validates all outputs and generates comprehensive reports
+5. Tests saturation mutagenesis analysis with a small clean reference region
+6. Validates all outputs and generates comprehensive reports
 
 No input files or parameters are required - the workflow uses pre-configured test data and parameters optimized for demonstration purposes.
 
@@ -344,10 +390,8 @@ No input files or parameters are required - the workflow uses pre-configured tes
 - **Intelligent interval splitting**: Uses GATK SplitIntervals for optimal load balancing
 - **Seamless result merging**: Transparent combination of parallel results
 - **Flexible processing modes**: Choose between individual tasks, combined processing, or different parallelization approaches
-- **Test data integration**: Uses reference genome, variant databases, and test BAM from test data module
 - **Best practices implementation**: Follows GATK best practices for variant calling workflows
 - **Comprehensive validation**: Built-in output validation and quality reporting
-- **No-input execution**: Runs standalone with test data, individual tasks available for production workflows
 - **Resource optimization**: Configurable memory and CPU allocation for each task
 
 ## Performance Considerations
@@ -372,7 +416,6 @@ No input files or parameters are required - the workflow uses pre-configured tes
 - **Region targeting**: Using intervals files significantly reduces runtime and resource requirements
 
 ### Optimization Tips
-- **Test workflow uses**: Fixed scatter_count of 2 optimized for demonstration purposes
 - **Production workflows**: Import individual tasks and configure scatter_count of 24+ for production data
 - **Choose parallelization strategy**: Internal parallelization for single nodes, scatter-gather for distributed computing
 - **Ensure adequate CPU allocation**: More cores = better performance for variant calling
@@ -386,7 +429,6 @@ No input files or parameters are required - the workflow uses pre-configured tes
 - **Germline VCFs**: HaplotypeCaller variant calls suitable for population genetics and clinical analysis (automatically merged from parallel processing)
 - **Somatic VCFs**: Mutect2 tumor-only somatic variant calls with filtering applied (automatically merged from parallel processing)
 - **QC metrics**: Comprehensive sequencing quality metrics including coverage statistics and duplicate rates
-- **Validation report**: Summary of pipeline execution with file verification and basic statistics
 
 ## Module Development
 
@@ -401,7 +443,6 @@ This module is automatically tested as part of the WILDS WDL Library CI/CD pipel
 ## Integration Patterns
 
 This module demonstrates several key patterns:
-- **Test data integration**: Seamless use of test data module for demonstration workflows
 - **Resource management**: Coordinated memory allocation across compute-intensive tasks
 - **Best practices workflow**: Implementation of GATK recommended variant calling pipeline
 - **Comprehensive validation**: Quality assurance for complex multi-output workflows

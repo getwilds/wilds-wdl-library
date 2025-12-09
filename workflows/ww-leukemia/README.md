@@ -120,7 +120,13 @@ sprocket run ww-leukemia.wdl inputs.json
 | `ref_name` | Reference genome name (hg19/hg38) | String | Yes |
 | `annovar_protocols` | Annovar annotation protocols | String | Yes |
 | `annovar_operation` | Annovar operations | String | Yes |
+| `ichorcna_chromosomes` | Array of chromosomes for ichorCNA read counting | Array[String] | Yes |
+| `ichorcna_chrs_string` | R-style chromosome string for ichorCNA analysis | String | Yes |
 | `scatter_count` | Number of intervals for parallelization | Int | No (default: 32) |
+| `high_intensity_cpus` | CPU cores for high-intensity tasks | Int | No (default: 8) |
+| `high_intensity_memory_gb` | Memory (GB) for high-intensity tasks | Int | No (default: 16) |
+| `standard_cpus` | CPU cores for standard-intensity tasks | Int | No (default: 4) |
+| `standard_memory_gb` | Memory (GB) for standard-intensity tasks | Int | No (default: 8) |
 
 #### SampleDetails Structure
 
@@ -208,12 +214,128 @@ Common protocols for leukemia analysis:
 - `gnomad211_exome`: Population frequencies
 - `clinvar_20180603`: Clinical significance
 
+### ichorCNA Chromosome Configuration
+
+The workflow requires explicit chromosome specification for ichorCNA analysis to ensure compatibility with your sequencing data:
+
+**For whole-genome data** (all chromosomes):
+```json
+{
+  "ichorcna_chromosomes": ["chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY"],
+  "ichorcna_chrs_string": "c(1:22, 'X', 'Y')"
+}
+```
+
+**For targeted/subset data** (e.g., chr1 only for testing):
+```json
+{
+  "ichorcna_chromosomes": ["chr1"],
+  "ichorcna_chrs_string": "c('1')"
+}
+```
+
+**Notes**:
+- `ichorcna_chromosomes`: Array used by `readcounter_wig` for read counting
+- `ichorcna_chrs_string`: R-style string used by `ichorcna_call` for analysis
+- Both must match the chromosomes present in your BAM/CRAM files
+- For targeted sequencing, specify only the chromosomes covered by your panel
+
 ### Performance Optimization
 
 The workflow includes several optimization features:
 - **Scatter Count**: Adjust `scatter_count` parameter based on available resources (default: 32)
 - **Parallel Processing**: Internal parallelization within GATK tasks
 - **Memory Scaling**: Automatic memory allocation based on scatter count
+
+### Resource Configuration
+
+The workflow provides fine-grained control over computational resources through task-category-specific parameters. This allows you to optimize resource usage for different environments (production HPC vs. local testing).
+
+#### Resource Parameters
+
+**High-Intensity Tasks** (`high_intensity_cpus`, `high_intensity_memory_gb`):
+- **BWA alignment** (`bwa_mem`): Read alignment to reference genome
+- **GATK preprocessing** (`markdup_recal_metrics`): Duplicate marking and base recalibration
+- **Variant calling** (`mpileup_call`): bcftools variant calling
+- **Structural variant calling** (`manta_call`, `smoove_call`, `delly_call`): SV detection
+
+**Standard-Intensity Tasks** (`standard_cpus`, `standard_memory_gb`):
+- **Reference indexing** (`bwa_index`): One-time BWA index generation
+- **Data preparation** (`split_intervals`, `crams_to_fastq`): Preprocessing tasks
+- **Variant annotation** (`annovar_annotate`): Functional annotation (3 calls)
+- **SV annotation** (`annotsv_annotate`): Structural variant annotation (3 calls)
+- **Copy number analysis** (`readcounter_wig`, `ichorcna_call`): ichorCNA tasks
+
+#### Resource Configuration Examples
+
+**Production Environment** (default values):
+```json
+{
+  "scatter_count": 32,
+  "high_intensity_cpus": 8,
+  "high_intensity_memory_gb": 16,
+  "standard_cpus": 4,
+  "standard_memory_gb": 8
+}
+```
+
+**Testing Environment** (resource-constrained):
+```json
+{
+  "scatter_count": 2,
+  "high_intensity_cpus": 2,
+  "high_intensity_memory_gb": 4,
+  "standard_cpus": 2,
+  "standard_memory_gb": 4
+}
+```
+
+**Large-scale HPC** (maximum performance):
+```json
+{
+  "scatter_count": 64,
+  "high_intensity_cpus": 16,
+  "high_intensity_memory_gb": 32,
+  "standard_cpus": 8,
+  "standard_memory_gb": 16
+}
+```
+
+**Notes**:
+- Resource parameters are **optional** - the workflow uses production defaults if not specified
+- Adjust based on your compute environment's available resources
+- For testing on GitHub Actions or local machines, use the testing configuration
+- Higher scatter counts improve parallelization but require more concurrent resources
+
+## Testing the Workflow
+
+The workflow includes a test script with support for execution on multiple WDL backends that runs with minimal test data:
+
+```bash
+# Using Cromwell
+java -jar cromwell.jar run testrun.wdl
+
+# Using miniWDL
+miniwdl run testrun.wdl
+
+# Using Sprocket
+sprocket run testrun.wdl --entrypoint leukemia_example
+```
+
+The test workflow automatically:
+1. Downloads test CRAM files and reference data
+2. Runs the complete analysis pipeline with reduced resources
+3. Tests all major components (variant calling, SV detection, ichorCNA)
+4. Uses a subset of chromosomes for faster execution (chr1 only)
+5. Validates all outputs
+
+**Note**: The test run uses simplified inputs (single chromosome, reduced scatter count) optimized for CI/CD environments. For production analyses, use the full `ww-leukemia.wdl` workflow with comprehensive inputs.
+
+The workflow is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
+- Multiple WDL executors (Cromwell, miniWDL, Sprocket)
+- Test data subsets for efficiency
+- Comprehensive validation of all analysis components
+- Cross-platform compatibility testing
 
 ## Development Status
 
@@ -225,6 +347,7 @@ The workflow includes several optimization features:
 - **Tumor fraction analysis**: Complete ichorCNA integration for cfDNA analysis
 - **Advanced parallelization**: Scatter-gather optimization with interval-based processing
 - **CRAM support**: Direct processing of CRAM files with automatic conversion
+- **Flexible resource management**: Task-category-specific CPU and memory controls for optimization across different compute environments
 
 **Ongoing Enhancements**:
 - Enhanced validation and testing framework

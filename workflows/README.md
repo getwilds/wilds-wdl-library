@@ -36,17 +36,17 @@ Each workflow directory will contain the following standard components:
 ```
 workflows/workflow-name/
 ├── workflow-name.wdl       # Main workflow file
-├── inputs.json             # Example inputs for testing
-├── options.json            # Execution configuration
+├── testrun.wdl             # Zero-configuration test workflow
+├── inputs.json             # Example inputs for production use
 └── README.md               # Workflow-specific documentation
 ```
 
 ### **Planned Components**
 
 - **WDL File**: Complete analysis workflow importing modules and custom tasks
-- **Input Examples**: Realistic input configurations for different use cases
+- **Test Workflow**: `testrun.wdl` - Zero-configuration demonstration workflow with hardcoded test inputs
+- **Inputs JSON**: Example input configurations to use as a starting point for real data
 - **Documentation**: Comprehensive usage guides and parameter explanations
-- **Test Data**: Sample datasets for validation and demonstration
 
 ## Development Status
 

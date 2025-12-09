@@ -14,6 +14,7 @@ This module wraps the FastQC bioinformatics tool to generate quality control rep
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
 
 - **Main WDL file**: `ww-fastqc.wdl` - Contains all tasks and demonstration workflow
+- **Test workflow**: `testrun.wdl` - Demonstration workflow for testing and examples
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
@@ -98,28 +99,25 @@ call fastqc_tasks.run_fastqc {
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
-- **ww-testdata**: Automatic provisioning of test data for demonstrations
 - **Quality control pipelines**: Can be used as an initial QC step before alignment or assembly
 - **Other WILDS modules**: Commonly used before alignment (ww-bwa, ww-bowtie2) or trimming tools
 
 ## Testing the Module
 
-The module includes a demonstration workflow that can be tested independently:
+The module includes a test workflow with support for execution on multiple WDL backends that automatically downloads test data and runs without requiring input files:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-fastqc.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-fastqc.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-fastqc.wdl
+sprocket run testrun.wdl
 ```
 
-### Automatic Demo Mode
-
-The workflow automatically:
+The test workflow automatically:
 1. Downloads test FASTQ data using `ww-testdata`
 2. Runs FastQC analysis on both paired-end and single-end examples
 3. Generates HTML and ZIP reports for quality assessment
@@ -136,7 +134,6 @@ This module uses the `getwilds/fastqc:0.12.1` container image, which includes:
 - **Purpose**: Quality control analysis for high-throughput sequencing data
 - **Tool**: FastQC v0.12.1
 - **Output formats**: HTML reports (human-readable) and ZIP archives (machine-readable)
-- **Demo Data**: Uses test FASTQ files from ww-testdata module
 
 ## Parameters and Resource Requirements
 

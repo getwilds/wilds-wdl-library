@@ -3,70 +3,24 @@
 ## Contributors can copy this module and customize it for their specific tools.
 ## This template performs a simple "hello world" operation as a starting point.
 
+# Specify WDL version, only 1.0 is supported currently
 version 1.0
 
-# Import testdata module for automatic demo functionality
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-
-# Define data structures for sample inputs
-struct TemplateSample {
-    String name
-    File input_file
-}
-
-#### WORKFLOW DEFINITION ####
-
-workflow template_example {
-  meta {
-    author: "WILDS Development Team"
-    email: "wilds@fredhutch.org"
-    description: "WDL template module demonstrating WILDS best practices with simple hello world functionality"
-    url: "https://github.com/getwilds/wilds-wdl-library"
-    outputs: {
-        output_files: "Array of simple output files with hello world message"
-    }
-  }
-
-  # Auto-download test data for testing purposes
-  call ww_testdata.download_fastq_data as download_demo_data { }
-
-  # Create samples array using test data
-  Array[TemplateSample] final_samples = [
-    {
-      "name": "demo_sample_1",
-      "input_file": download_demo_data.r1_fastq
-    },
-    {
-      "name": "demo_sample_2",
-      "input_file": download_demo_data.r2_fastq
-    }
-  ]
-
-  # Process each sample
-  scatter (sample in final_samples) {
-    call process_sample { input:
-        sample_name = sample.name,
-        input_file = sample.input_file,
-        cpu_cores = 1,
-        memory_gb = 4
-    }
-  }
-
-  output {
-    Array[File] output_files = process_sample.output_file
-  }
-}
-
 #### TASK DEFINITIONS ####
+# Define tasks for each functionality of the tool represented by this module
 
 task process_sample {
+  # Provide metadata describing the purpose and authorship of the task
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Simple template processing task that creates a hello world output file"
     outputs: {
         output_file: "Simple text file with hello world message and sample information"
     }
   }
 
+  # Provide parameter metadata for clarity on each input
   parameter_meta {
     sample_name: "Name identifier for the sample"
     input_file: "Input file (any file type works for this template)"
@@ -74,6 +28,7 @@ task process_sample {
     memory_gb: "Memory allocated for the task in GB"
   }
 
+  # Specify inputs required for the task
   input {
     String sample_name
     File input_file
@@ -81,6 +36,7 @@ task process_sample {
     Int memory_gb = 4
   }
 
+  # Define the command section to execute the task's functionality
   command <<<
     set -eo pipefail
     
@@ -94,10 +50,12 @@ task process_sample {
     # your_tool --input ~{input_file} --output ~{sample_name}.output.txt --threads ~{cpu_cores}
   >>>
 
+  # Define outputs produced by the task
   output {
     File output_file = "~{sample_name}.output.txt"
   }
 
+  # Specify runtime requirements for the task
   runtime {
     # Replace with your tool's Docker image
     docker: "getwilds/bwa:0.7.17"
@@ -105,4 +63,3 @@ task process_sample {
     memory: "~{memory_gb} GB"
   }
 }
-

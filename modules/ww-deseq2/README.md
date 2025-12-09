@@ -14,8 +14,8 @@ The module can run completely standalone with automatic test data generation. In
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `combine_count_matrices`, `run_deseq2`, `validate_outputs`
-- **Workflow**: `deseq2_example` (demonstration workflow using test data)
+- **Tasks**: `combine_count_matrices`, `run_deseq2`
+- **Test workflow**: `testrun.wdl` (demonstration workflow using test data)
 - **Containers**: `getwilds/combine-counts:0.1.0`, `getwilds/deseq2:1.40.2`
 - **Dependencies**: Integrates with `ww-testdata` module for test data generation
 - **Test Data**: Uses Pasilla test dataset with 7 samples and 10,000 genes
@@ -43,6 +43,12 @@ Combines STAR gene count files from multiple samples into a single count matrix 
 ### `run_deseq2`
 Performs differential expression analysis using DESeq2 with comprehensive statistical analysis and visualization via a prewritten R script: [deseq2_analysis.R](https://github.com/getwilds/wilds-docker-library/blob/main/deseq2/deseq2_analysis.R)
 
+The task automatically selects the appropriate variance-stabilizing transformation method based on dataset size:
+- **≥1000 genes with counts**: Uses `vst()` for fast, efficient transformation
+- **<1000 genes with counts**: Uses `rlog()` for more robust transformation on smaller datasets
+
+This ensures the analysis works reliably across diverse dataset sizes, from small pilot studies to large-scale experiments.
+
 **Inputs:**
 - `counts_matrix` (File): Combined matrix of gene-level counts
 - `sample_metadata` (File): Sample metadata with experimental conditions
@@ -59,19 +65,6 @@ Performs differential expression analysis using DESeq2 with comprehensive statis
 - `deseq2_pca_plot` (File): Principal Component Analysis plot showing sample clustering
 - `deseq2_volcano_plot` (File): Volcano plot showing log fold change vs. statistical significance
 - `deseq2_heatmap` (File): Heatmap visualization of differentially expressed genes
-
-### `validate_outputs`
-Validates DESeq2 analysis outputs for correctness and completeness.
-
-**Inputs:**
-- `deseq2_results` (File): DESeq2 results file to validate
-- `deseq2_significant` (File): Significant results file to validate
-- `normalized_counts` (File): Normalized counts file to validate
-- `expected_samples` (Int): Expected number of samples in the analysis
-- `expected_genes_min` (Int): Minimum expected number of genes in results (default: 1000)
-
-**Outputs:**
-- `validation_report` (File): Report summarizing validation results and any issues found
 
 ## Usage as a Module
 
@@ -103,14 +96,6 @@ workflow my_rna_seq_analysis {
       condition_column = "condition",
       reference_level = control_condition,
       contrast = "condition,${treatment_condition},${control_condition}"
-  }
-  
-  call deseq2_tasks.validate_outputs {
-    input:
-      deseq2_results = run_deseq2.deseq2_results,
-      deseq2_significant = run_deseq2.deseq2_significant,
-      normalized_counts = run_deseq2.deseq2_normalized_counts,
-      expected_samples = length(sample_names)
   }
   
   output {
@@ -164,22 +149,22 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that runs with test data and requires no inputs:
+The module includes a test workflow that runs with test data and requires no inputs:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-deseq2.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-deseq2.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-deseq2.wdl
+sprocket run testrun.wdl --entrypoint deseq2_example
 ```
 
 ### Test Data Workflow
 
-The `deseq2_example` workflow automatically:
+The test workflow automatically:
 1. Generates Pasilla test dataset using `ww-testdata`
 2. Combines individual count files into a count matrix
 3. Performs differential expression analysis with DESeq2

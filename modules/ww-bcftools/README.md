@@ -14,10 +14,9 @@ The module is designed to be a foundational component within the WILDS ecosystem
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `mpileup_call`, `validate_outputs`  
-- **Workflow**: `bcftools_example` (demonstration workflow that executes core tasks)
+- **Tasks**: `mpileup_call`
+- **Test workflow**: `testrun.wdl` (demonstration workflow that executes core tasks)
 - **Container**: `getwilds/bcftools:1.19`
-- **Test Data**: Automatically downloads test data when no samples provided using `ww-testdata` module
 
 ## Tasks
 
@@ -41,15 +40,6 @@ Calls variants using bcftools mpileup and call pipeline with comprehensive param
 **Outputs:**
 - `mpileup_vcf` (File): Compressed VCF file with called variants
 - `mpileup_vcf_index` (File): Index for the VCF file (.csi)
-
-### `validate_outputs`
-Validates variant calling outputs and generates comprehensive statistics including variant counts and SNP/indel breakdowns.
-
-**Inputs:**
-- `vcf_files` (Array[File]): Array of VCF files to validate
-
-**Outputs:**
-- `report` (File): Validation summary with detailed variant statistics
 
 ## Usage as a Module
 
@@ -85,15 +75,9 @@ workflow my_variant_calling_pipeline {
     }
   }
   
-  call bcftools_tasks.validate_outputs {
-    input:
-      vcf_files = mpileup_call.mpileup_vcf
-  }
-  
   output {
     Array[File] variant_vcfs = mpileup_call.mpileup_vcf
     Array[File] vcf_indices = mpileup_call.mpileup_vcf_index
-    File validation_report = validate_outputs.report
   }
 }
 ```
@@ -109,22 +93,20 @@ This module integrates well with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow with comprehensive testing:
-
-The demonstration workflow automatically downloads test data and runs without requiring input files:
+The module includes a test workflow with comprehensive testing that automatically downloads test data and runs without requiring input files:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-bcftools.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-bcftools.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-bcftools.wdl
+sprocket run testrun.wdl --entrypoint bcftools_example
 ```
 
-The demonstration workflow (`bcftools_example`) automatically downloads test data using the `ww-testdata` module and runs variant calling without requiring any input parameters.
+The test workflow automatically downloads test data using the `ww-testdata` module and runs variant calling without requiring any input parameters.
 
 ## Configuration Guidelines
 
@@ -188,7 +170,6 @@ The module generates standard VCF files with the following characteristics:
 
 - **Flexible variant calling**: Configurable mpileup/call parameters
 - **Targeted regions**: Support for BED file region specification  
-- **Automatic test data**: Downloads test data when no inputs provided
 - **Comprehensive validation**: Built-in output validation with variant statistics
 - **Scalable**: Configurable resource allocation per sample
 - **Compatible**: Works with multiple WDL executors

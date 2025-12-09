@@ -6,16 +6,14 @@ A WILDS WDL module for processing genomic files with [Samtools](http://www.htsli
 
 ## Overview
 
-This module provides reusable WDL tasks for merging and converting genomic data (CRAM/BAM/SAM) to FASTQ format using **Samtools**. It includes built-in validation to ensure that the resulting FASTQ files are successfully generated.
-
-Designed to be a modular component in the WILDS ecosystem, this workflow is suitable for both standalone execution and integration into larger bioinformatics pipelines.
+This module provides reusable WDL tasks for processing genomic data with **Samtools**, including converting CRAM/BAM/SAM files to FASTQ format and merging BAM files to CRAM format. Designed to be a modular component in the WILDS ecosystem, this module is suitable for integration into larger bioinformatics pipelines and is automatically validated with real sequencing data via its test workflow.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Task**: `crams_to_fastq`
-- **Workflow**: `samtools_example` (demonstration workflow executing all tasks)
+- **Tasks**: `crams_to_fastq`, `merge_bams_to_cram`
+- **Test workflow**: `testrun.wdl` (demonstration workflow executing all tasks)
 - **Container**: `getwilds/samtools:1.19`
 
 ## Tasks
@@ -33,6 +31,20 @@ Merges one or more CRAM/BAM/SAM files for a sample, sorts by read name, and conv
 **Outputs:**
 - `fastq_file` (File): FASTQ output file (`.fastq.gz`)
 - `sample_name` (String): Sample name that was processed
+
+### `merge_bams_to_cram`
+
+Merges multiple BAM files into a single CRAM file using samtools merge.
+
+**Inputs:**
+- `bams_to_merge` (Array[File]): Array of BAM files to merge into a single CRAM file
+- `base_file_name` (String): Base name for output CRAM file
+- `cpu_cores` (Int): Number of CPU cores to use (threads = cpu_cores - 1) (default: 6)
+- `memory_gb` (Int): Memory allocation in GB (default: 12)
+
+**Outputs:**
+- `cram` (File): Merged CRAM file containing all reads from input BAMs
+- `crai` (File): Index file for the merged CRAM
 
 ## Usage as a Module
 
@@ -74,17 +86,17 @@ This module pairs well with other WILDS modules:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that automatically downloads test data and runs without requiring input files:
+The module includes a test workflow that automatically downloads test data and runs without requiring input files:
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run ww-samtools.wdl
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run ww-samtools.wdl
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run ww-samtools.wdl
+sprocket run testrun.wdl --entrypoint samtools_example
 ```
 
 ## Requirements
@@ -96,9 +108,7 @@ sprocket run ww-samtools.wdl
 ## Features
 
 - **Parallel processing**: Multi-threaded execution for improved performance
-- **Quality validation**: Built-in output validation and statistics
 - **Standardized output**: Uncompressed FASTQ format compatible with downstream tools
-- **Detailed reporting**: Validation that output files exist and are non-empty
 
 ## Performance Considerations
 
@@ -109,7 +119,6 @@ sprocket run ww-samtools.wdl
 
 ## Output Description
 - **FASTQ files**: FASTQ output files for each sample
-- **Validation report**: Validation report confirming all expected outputs were generated
 
 ## Module Development
 
@@ -124,12 +133,9 @@ For questions specific to this module or to contribute improvements, please see 
 
 For questions, bugs, and/or feature requests, reach out to the Fred Hutch Data Science Lab (DaSL) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
 
-For questions specific to Delly usage or configuration, please refer to the documentation present in the [Delly GitHub repository](https://github.com/dellytools/delly). Please make sure to cite their work if you use Delly in your analyses:
+For questions specific to Samtools usage or configuration, please refer to the documentation present in the [Samtools website](http://www.htslib.org/). Please make sure to cite their work if you use Samtools in your analyses:
 
-Tobias Rausch, Thomas Zichner, Andreas Schlattl, Adrian M. Stuetz, Vladimir Benes, Jan O. Korbel.
-DELLY: structural variant discovery by integrated paired-end and split-read analysis.
-Bioinformatics. 2012 Sep 15;28(18):i333-i339.
-https://doi.org/10.1093/bioinformatics/bts378
+Li H, Handsaker B, Wysoker A, Fennell T, Ruan J, Homer N, Marth G, Abecasis G, Durbin R; 1000 Genome Project Data Processing Subgroup. The Sequence Alignment/Map format and SAMtools. Bioinformatics. 2009 Aug 15;25(16):2078-9. doi: 10.1093/bioinformatics/btp352. Epub 2009 Jun 8. PMID: 19505943; PMCID: PMC2723002.
 
 ## Contributing
 

@@ -12,6 +12,7 @@ Thank you for your interest in contributing to the WILDS WDL Library! This docum
 - [Workflow Development Guidelines](#workflow-development-guidelines)
 - [Testing Requirements](#testing-requirements)
 - [Documentation Standards](#documentation-standards)
+- [Documentation Website](#documentation-website)
 - [Pull Request Process](#pull-request-process)
 - [Code of Conduct](#code-of-conduct)
 
@@ -23,8 +24,8 @@ Before contributing code changes, please:
 
 2. **Set up your development environment** with the required tools:
    - For local testing:
+       - [sprocket](https://sprocket.bio/installation.html) (recommended)
        - [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl)
-       - [sprocket](https://sprocket.bio/installation.html)
        - [uv](https://docs.astral.sh/uv/getting-started/installation/) for automated local testing
    - [Docker Desktop](https://www.docker.com/get-started/) for container execution
 
@@ -100,17 +101,25 @@ wilds-wdl-library/
 
 **The module folder must contain:**
 
-1. **`ww-toolname.wdl`** - Main WDL workflow file named for the tool it uses
-2. **`README.md`** - Comprehensive documentation
+1. **`ww-toolname.wdl`** - Main WDL file containing task definitions for the tool
+2. **`testrun.wdl`** - Test workflow demonstrating module functionality (must be named `testrun.wdl`)
+3. **`README.md`** - Comprehensive documentation
 
 
-**Your WDL file must include:**
+**Your main WDL file (`ww-toolname.wdl`) must include:**
 
 - **Version declaration**: Use WDL version 1.0
-- **Example workflow**: A `toolname_example` workflow that uses all tasks for testing (must follow the naming convention `{module}_example` where `{module}` is the tool name, e.g., `star_example` for `ww-star`)
 - **Task definitions**: Individual tasks with proper resource requirements
-- **Proper imports**: Use GitHub URLs for dependencies on existing WILDS WDL modules (e.g. for downloading test data)
-- **Metadata documentation**: Describe properties of the workflow and tasks (e.g. inputs, outputs)
+- **Metadata documentation**: Describe properties of tasks (e.g. inputs, outputs) using `meta` and `parameter_meta` blocks
+
+**Your test workflow file (`testrun.wdl`) must include:**
+
+- **Version declaration**: Use WDL version 1.0
+- **Module imports**: Import the module being tested and the `ww-testdata` module using GitHub URLs
+- **Sample struct definition**: Define a struct for organizing sample inputs if needed
+- **Test workflow**: A `toolname_example` workflow that demonstrates all tasks (must follow the naming convention `{module}_example` where `{module}` is the tool name, e.g., `star_example` for `ww-star`)
+- **Auto-downloading of test data**: Use the `ww-testdata` module to automatically provision test data
+- **Validation task (optional)**: Consider including a validation task to verify output correctness
 
 **Parameter preferences:**
 
@@ -135,10 +144,18 @@ wilds-wdl-library/
 - Serve as educational templates
 - Use publicly available test data
 
-
 **No New Tasks Rule**
 
 - Vignettes should **only** combine existing modules - do not create new task definitions. If you need new functionality, contribute it as a module first.
+
+**Vignette inputs.json**
+
+In order to pass the automated GitHub Action (GHA) tests, your `inputs.json` must:
+
+- Use no more than 4 CPUs (for the sprocket executor)
+- Use input files that get downloaded as part of the GHA.
+    - See the `download-test-data` job within `./github/workflows/vignettes-testrun.yml`
+    - Modify `vignettes-testrun.yml` as needed
 
 ## Workflow Development Guidelines
 
@@ -154,8 +171,8 @@ wilds-wdl-library/
 
 Make sure you have these installed:
 
+- [sprocket](https://sprocket.bio/installation.html) (recommended)
 - [miniWDL](https://miniwdl.readthedocs.io/en/latest/getting_started.html#install-miniwdl)
-- [sprocket](https://sprocket.bio/installation.html)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) for automated testing with our Makefile
 - [Docker Desktop](https://www.docker.com/get-started/) for container execution
 
@@ -166,8 +183,9 @@ Test your WDL manually by navigating to the module directory:
 ```bash
 cd modules/ww-toolname
 
-# Linting with miniwdl
+# Linting with miniwdl (check both main module and test workflow)
 miniwdl check ww-toolname.wdl
+miniwdl check testrun.wdl
 
 # Linting with sprocket (ignoring things we don't care about)
 sprocket lint \
@@ -178,9 +196,17 @@ sprocket lint \
   -e UnusedInput \
   ww-toolname.wdl
 
-# Test running
-miniwdl run ww-toolname.wdl
-sprocket run ww-toolname.wdl --entrypoint toolname_example
+sprocket lint \
+  -e TodoComment \
+  -e ContainerUri \
+  -e TrailingComma \
+  -e CommentWhitespace \
+  -e UnusedInput \
+  testrun.wdl
+
+# Test running (use testrun.wdl for execution tests)
+sprocket run testrun.wdl --entrypoint toolname_example
+miniwdl run testrun.wdl
 ```
 
 #### Option 2: Automated Testing with Makefile (Recommended)
@@ -220,6 +246,85 @@ All contributions must pass our automated testing pipeline which executes on a P
 - **Container verification**: All Docker images must be accessible and functional
 - **Syntax validation**: WDL syntax and structure validation
 - **Integration testing**: Cross-module compatibility testing
+
+## Documentation Website
+
+The WILDS WDL Library includes an automatically-generated documentation website that provides comprehensive technical documentation for all modules, vignettes, and workflows. Understanding how this documentation works is important for contributors.
+
+### How Documentation is Generated
+
+The documentation website is built using [Sprocket](https://sprocket.bio/) and automatically deployed to GitHub Pages. The documentation is generated from:
+
+- **README files**: Each module, vignette, and workflow directory contains a README.md that becomes the documentation homepage for that component
+- **WDL files**: Task descriptions, inputs, outputs, and metadata are automatically extracted from WDL files
+- **Main README**: The repository's root README.md serves as the documentation site homepage
+
+### Automatic Deployment
+
+Documentation is automatically built and deployed when changes are merged to the `main` branch:
+
+1. The [build-docs.yml](.github/workflows/build-docs.yml) GitHub Actions workflow triggers on push to `main`
+2. The workflow runs the [make_preambles.py](.github/scripts/make_preambles.py) script to prepare WDL files
+3. Sprocket generates static HTML documentation
+4. The [postprocess_docs.py](.github/scripts/postprocess_docs.py) script applies final formatting
+5. Documentation is deployed to GitHub Pages at the repository's documentation URL
+
+**Important**: You don't need to build or commit documentation files - they are generated automatically in CI/CD.
+
+### Previewing Documentation Locally
+
+Before submitting a PR, you can preview how your changes will appear on the documentation website using the provided Makefile targets:
+
+#### Build and Preview Documentation
+
+```bash
+# Build documentation locally (mirrors the CI/CD process)
+make docs-preview
+
+# Serve the documentation on http://localhost:8000
+make docs-serve
+
+# Or do both in one command
+make docs
+```
+
+The `docs-preview` target will:
+- Check for uncommitted changes and warn you (docs are built from your last commit)
+- Safely stash any uncommitted work
+- Run the same build process as the GitHub Actions workflow
+- Generate documentation in the `docs/` directory
+- Restore your uncommitted changes when finished
+- Clean up all temporary build files
+
+**Note**: The `docs/` directory is gitignored and should never be committed to the repository.
+
+#### What Gets Built
+
+When you run `make docs-preview`, the build process:
+1. Prepends each module's README to its WDL file for better documentation context
+2. Converts GitHub import URLs to relative paths for local navigation
+3. Generates comprehensive HTML documentation for all tasks, workflows, and components
+4. Applies custom styling and post-processing
+
+### Documentation Best Practices
+
+When contributing, ensure your documentation is clear and complete:
+
+- **README files**: Write clear, user-focused descriptions of what your module/vignette/workflow does
+- **Task metadata**: Use `meta` blocks to document task purpose, authors, and other high-level information
+- **Parameter metadata**: Use `parameter_meta` blocks to describe all inputs and outputs
+- **Examples**: Include usage examples in README files
+- **Preview locally**: Always run `make docs-preview` before submitting a PR to verify how your documentation will appear
+
+### Troubleshooting Documentation Builds
+
+If you encounter issues with local documentation builds:
+
+- Ensure you have the required dependencies installed (`sprocket`, `uv`, `python 3.13`)
+- Check that you're running the command from the repository root
+- Review error messages - they often indicate issues with WDL syntax or README formatting
+
+For questions about documentation, please contact [wilds@fredhutch.org](mailto:wilds@fredhutch.org).
 
 ## Pull Request Process
 

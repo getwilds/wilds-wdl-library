@@ -12,7 +12,6 @@ Strelka is a small variant caller designed to detect single nucleotide variants 
 - **Zero-configuration testing**: Test workflow requires no input parameters
 - **Exome optimization**: Specialized settings for exome sequencing analysis
 - **Parallel processing**: Multi-sample support with configurable resource allocation
-- **Comprehensive validation**: Built-in output validation and quality reporting
 - **Flexible targeting**: Tasks support optional BED file targeting for custom workflows
 - **Module integration**: Seamlessly integrates with other WILDS modules
 
@@ -20,7 +19,7 @@ Strelka is a small variant caller designed to detect single nucleotide variants 
 
 ### No Input Required
 
-The `strelka_example` test workflow requires no input parameters and automatically:
+The `strelka_example` test workflow in `testrun.wdl` requires no input parameters and automatically:
 
 1. Downloads test reference genome data via `ww-testdata`
 2. Downloads test tumor BAM data via `ww-testdata`
@@ -56,7 +55,6 @@ struct StrelkaSample {
 | `somatic_indels_vcfs` | Array[File] | Somatic indel calls in compressed VCF format |
 | `somatic_snvs_vcf_indices` | Array[File] | Index files for somatic SNV VCFs |
 | `somatic_indels_vcf_indices` | Array[File] | Index files for somatic indel VCFs |
-| `validation_report` | File | Combined validation report with file checks and statistics |
 
 ## Usage Examples
 
@@ -120,12 +118,14 @@ workflow my_somatic_analysis {
 ### Running the Test Workflow
 
 ```bash
-# No input file needed for test workflow
-miniwdl run ww-strelka.wdl
+# Using miniWDL
+miniwdl run testrun.wdl
 
-# Or with other executors
-java -jar cromwell.jar run ww-strelka.wdl
-sprocket run ww-strelka.wdl
+# Using Sprocket
+sprocket run testrun.wdl
+
+# Using Cromwell
+java -jar cromwell.jar run testrun.wdl
 ```
 
 ## Workflow Tasks
@@ -163,7 +163,7 @@ Performs somatic variant calling on tumor/normal pairs.
 
 ### Validation Tasks
 
-The module includes comprehensive validation tasks that:
+The test run workflow includes comprehensive validation tasks that:
 - Verify all output files are present and non-empty
 - Validate VCF format compliance
 - Count variants and generate summary statistics
@@ -173,8 +173,8 @@ The module includes comprehensive validation tasks that:
 
 - **WDL executor**: Cromwell, miniWDL, Sprocket, or compatible executor
 - **Docker/Apptainer**: Container runtime for reproducible execution
-- **Input data**: Coordinate-sorted BAM files with indices (when providing your own data)
-- **Reference genome**: FASTA file with index (when providing your own data)
+- **Input data**: Coordinate-sorted BAM files with indices
+- **Reference genome**: FASTA file with index
 - **Resources**: Minimum 4 CPU cores and 8GB RAM (configurable)
 
 ## Performance Considerations
@@ -195,12 +195,6 @@ The module includes comprehensive validation tasks that:
 - **somatic.snvs.vcf.gz**: Somatic single nucleotide variants
 - **somatic.indels.vcf.gz**: Somatic insertions and deletions  
 - **\*.tbi files**: Tabix indices for all VCF outputs
-
-### Validation Reports
-- File integrity verification
-- Variant count summaries
-- Format validation results
-- Overall workflow status
 
 ## Algorithm Details
 
@@ -238,9 +232,6 @@ If you use this module in your research, please cite:
 
 **Strelka:**
 Kim, S., Scheffler, K., Halpern, A.L. et al. Strelka2: fast and accurate calling of germline and somatic variants. Nat Methods 15, 591–594 (2018). https://doi.org/10.1038/s41592-018-0051-x
-
-**WILDS:**
-Please also acknowledge the WILDS project in your publications.
 
 ## Contributing
 
