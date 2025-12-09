@@ -8,9 +8,10 @@ task triton_main {
     description: "Task for running TritonNP"
     url: "https://github.com/caalo/TritonNP"
     outputs: {
-        fm_files: "Array of outputs from TritonNP"
+        fm_file: "Array of outputs from TritonNP"
     }
   }
+
   parameter_meta {
     sample_name: "Sample name"
     bam_path: "BAM file"
@@ -25,6 +26,7 @@ task triton_main {
     cpus: "Number of CPUs to use"
     plot_list: "File containing names of genes to plot."
   }
+  
   input {
     String sample_name
     File bam_path
@@ -85,10 +87,12 @@ task combine_fms {
         final: "Aggregrated output file from TritonNP."
     }
   }
+
   parameter_meta {
     fm_files: "Array of output files from TritonNP"
     results_dir: "Output directory name"
   }
+
   input {
     Array[File] fm_files
     String results_dir
