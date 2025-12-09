@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl" as ww_samtools
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-varscan/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-varscan/modules/ww-samtools/ww-samtools.wdl" as ww_samtools
 
 workflow samtools_example {
   # Download test data
@@ -36,9 +36,19 @@ workflow samtools_example {
       memory_gb = 8
   }
 
+  # Test mpileup task with a BAM file
+  call ww_samtools.mpileup { input:
+      bamfile = download_bam_1.bam,
+      ref_fasta = download_ref_data.fasta,
+      sample_name = "test_sample",
+      cpu_cores = 2,
+      memory_gb = 8
+  }
+
   output {
     File r1_fastqs = crams_to_fastq.r1_fastq
     File r2_fastqs = crams_to_fastq.r2_fastq
     File merged_cram = merge_bams_to_cram.cram
+    File pileup_file = mpileup.pileup
   }
 }

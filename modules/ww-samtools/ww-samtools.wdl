@@ -97,3 +97,49 @@ task merge_bams_to_cram {
     docker: "getwilds/samtools:1.19"
   }
 }
+
+task mpileup {
+  meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
+    description: "Generate samtools mpileup from a BAM file"
+    outputs: {
+        pileup: "Pileup file"
+    }
+  }
+
+  parameter_meta {
+    bamfile: "Input BAM or CRAM file"
+    ref_fasta: "Reference genome FASTA file"
+    sample_name: "Name of the sample (used for output file naming)"
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    File bamfile
+    File ref_fasta
+    String sample_name
+    Int cpu_cores = 2
+    Int memory_gb = 8
+  }
+
+  command <<<
+    set -eo pipefail
+
+    samtools mpileup \
+      -f "~{ref_fasta}" \
+      "~{bamfile}" \
+      > "~{sample_name}.pileup"
+  >>>
+
+  output {
+    File pileup = "~{sample_name}.pileup"
+  }
+
+  runtime {
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+    docker: "getwilds/samtools:1.19"
+  }
+}

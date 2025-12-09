@@ -6,13 +6,13 @@ A WILDS WDL module for processing genomic files with [Samtools](http://www.htsli
 
 ## Overview
 
-This module provides reusable WDL tasks for processing genomic data with **Samtools**, including converting CRAM/BAM/SAM files to FASTQ format and merging BAM files to CRAM format. Designed to be a modular component in the WILDS ecosystem, this module is suitable for integration into larger bioinformatics pipelines and is automatically validated with real sequencing data via its test workflow.
+This module provides reusable WDL tasks for processing genomic data with **Samtools**, including converting CRAM/BAM/SAM files to FASTQ format, merging BAM files to CRAM format, and generating pileup files from BAM files. Designed to be a modular component in the WILDS ecosystem, this module is suitable for integration into larger bioinformatics pipelines and is automatically validated with real sequencing data via its test workflow.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `crams_to_fastq`, `merge_bams_to_cram`
+- **Tasks**: `crams_to_fastq`, `merge_bams_to_cram`, `mpileup`
 - **Test workflow**: `testrun.wdl` (demonstration workflow executing all tasks)
 - **Container**: `getwilds/samtools:1.19`
 
@@ -45,6 +45,20 @@ Merges multiple BAM files into a single CRAM file using samtools merge.
 **Outputs:**
 - `cram` (File): Merged CRAM file containing all reads from input BAMs
 - `crai` (File): Index file for the merged CRAM
+
+### `mpileup`
+
+Generates a pileup file from a BAM file using samtools mpileup. The pileup format summarizes the base calls of aligned reads to a reference sequence.
+
+**Inputs:**
+- `bamfile` (File): Input BAM file
+- `ref_fasta` (File): Reference genome FASTA file
+- `sample_name` (String): Name of the sample (used for output file naming)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+
+**Outputs:**
+- `pileup` (File): Pileup file
 
 ## Usage as a Module
 
