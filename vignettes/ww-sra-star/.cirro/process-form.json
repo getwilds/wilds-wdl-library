@@ -1,0 +1,76 @@
+{
+  "form": {
+    "type": "object",
+    "properties": {
+      "sra_ids": {
+        "title": "SRA Sample IDs",
+        "description": "Comma-separated list of SRA accession IDs (e.g., SRR1039508,SRR1039509,SRR1039512)",
+        "type": "string"
+      },
+      "fasta": {
+        "title": "Reference Genome (FASTA)",
+        "description": "Nucleotide sequence of the reference genome used for alignment",
+        "type": "string",
+        "pathType": "references",
+        "file": "**/genome_fasta/**/genome.fasta"
+      },
+      "gtf": {
+        "title": "Reference Genome (GTF)",
+        "description": "Gene annotations for the reference genome in GTF format",
+        "type": "string",
+        "pathType": "references",
+        "file": "**/genome_gtf/**/genome.gtf"
+      },
+      "sjdb_overhang": {
+        "title": "STAR - sjdbOverhang",
+        "description": "Length of genomic sequence around annotated junction for splice junction database (typically read_length - 1)",
+        "type": "integer",
+        "default": 100
+      },
+      "genome_sa_index_nbases": {
+        "title": "STAR - genomeSAindexNbases",
+        "description": "Length of SA pre-indexing string (typically 10-15, scales with genome size)",
+        "type": "integer",
+        "default": 14
+      },
+      "ncpu": {
+        "title": "Number of CPUs",
+        "description": "Number of CPUs to use for SRA download and STAR alignment tasks",
+        "type": "integer",
+        "default": 12
+      },
+      "memory_gb": {
+        "title": "Memory (GB)",
+        "description": "Amount of RAM to use for STAR alignment tasks",
+        "type": "integer",
+        "default": 64
+      },
+      "max_reads": {
+        "title": "Maximum Reads (Optional)",
+        "description": "Optional maximum number of reads to download from SRA (for testing/downsampling). Leave blank to download all reads.",
+        "type": "integer"
+      },
+      "workflow_failure_mode": {
+        "title": "Workflow Failure Mode",
+        "description": "Behavior when individual tasks encounter failures",
+        "type": "string",
+        "default": "ContinueWhilePossible",
+        "enum": [
+          "ContinueWhilePossible",
+          "NoNewCalls"
+        ]
+      }
+    },
+    "required": [
+      "sra_ids",
+      "fasta",
+      "gtf",
+      "sjdb_overhang",
+      "genome_sa_index_nbases",
+      "ncpu",
+      "memory_gb",
+      "workflow_failure_mode"
+    ]
+  },
+  "ui": {}
+}

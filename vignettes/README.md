@@ -50,6 +50,7 @@ vignettes/vignette-name/
 
 - **Options JSON**: Workflow execution configuration for different executors
 - **Additional Input Files**: Alternative configurations for different use cases
+- **Platform Configurations**: Platform-specific execution configs in subdirectories (e.g., `.cirro/` for Cirro platform integration)
 
 ## Available Vignettes
 

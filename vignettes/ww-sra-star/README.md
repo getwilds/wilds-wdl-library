@@ -86,6 +86,24 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 2. Ensure reference genome files are accessible to the cluster
 3. Submit through the PROOF interface
 
+### Running on Cirro
+
+This vignette includes [Cirro](https://cirro.bio/) platform configuration files in the [.cirro/](.cirro/) directory for cloud execution. To run this workflow on Cirro:
+
+1. Ensure you have access to a Cirro instance
+2. Follow the [Cirro pipeline documentation](https://docs.cirro.bio/pipelines/adding-pipelines/) to add this workflow to your Cirro instance
+3. When launching the workflow, provide:
+   - A comma-separated list of SRA accession IDs (e.g., `SRR1039508,SRR1039509,SRR1039512`)
+   - Reference genome files (FASTA and GTF) from your Cirro references library
+   - Optional parameters for compute resources and STAR settings
+4. The configuration files in `.cirro/` define:
+   - Input form fields for the Cirro web interface
+   - Compute resource requirements
+   - Output file handling and organization
+   - Data preprocessing steps
+
+For detailed information on configuring and using Cirro pipelines, see the [official Cirro documentation](https://docs.cirro.bio/).
+
 ## Input Parameters
 
 | Parameter | Description | Type | Required? | Default |
