@@ -8,7 +8,7 @@ task triton_main {
     author: "Chris Lo"
     email: "clo2@fredhutch.org"
     description: "Task for running TritonNP"
-    url: "https://github.com/caalo/TritonNP"
+    url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-tritonnp"
     outputs: {
         fm_file: "Array of outputs from TritonNP"
     }
@@ -23,10 +23,11 @@ task triton_main {
     reference_genome: "Reference genome file"
     reference_genome_index: "Reference genome file index"
     results_dir: "Output directory name"
+    plot_list: "File containing names of genes to plot."
     map_quality: "Mapping quality threshold as a positive integer"
     size_range: "Size range as a space-delimited string, such as '15 500'"
-    cpus: "Number of CPUs to use"
-    plot_list: "File containing names of genes to plot."
+    ncpus: "Number of CPUs to use"
+    memory_gb: "Memory allocated for the task in GB"
   }
   
   input {
@@ -38,10 +39,11 @@ task triton_main {
     File reference_genome
     File reference_genome_index
     String results_dir
-    Int map_quality
-    String size_range
-    Int cpus
     File plot_list
+    Int map_quality = 20
+    String size_range = "15 500"
+    Int ncpus = 4
+    Int memory_gb = 4
   }
 
   command <<<
@@ -66,7 +68,7 @@ task triton_main {
       --results_dir ~{results_dir} \
       --map_quality ~{map_quality} \
       --size_range ~{size_range} \
-      --cpus ~{cpus} \
+      --cpus ~{ncpus} \
       --plot_list ~{plot_list}
   >>>
 
@@ -75,9 +77,9 @@ task triton_main {
   }
 
   runtime {
-    cpu: cpus
-    memory: "4 GB" 
-    docker: "python:bullseye" 
+    cpu: ncpus
+    memory: "~{memory_gb} GB"
+    docker: "python:bullseye"
   }
 }
 
@@ -86,6 +88,7 @@ task combine_fms {
     author: "Chris Lo"
     email: "clo2@fredhutch.org"
     description: "Task for combine all sample outputs from TritonNP together"
+    url: "https://github.com/getwilds/wilds-wdl-library/modules/ww-tritonnp"
     outputs: {
         final: "Aggregrated output file from TritonNP."
     }
@@ -94,11 +97,13 @@ task combine_fms {
   parameter_meta {
     fm_files: "Array of output files from TritonNP"
     results_dir: "Output directory name"
+    memory_gb: "Memory allocated for the task in GB"
   }
 
   input {
     Array[File] fm_files
     String results_dir
+    Int memory_gb = 4
   }
 
   command <<<
@@ -124,7 +129,7 @@ task combine_fms {
 
   runtime {
     cpu: 1
-    memory: "4 GB" 
-    docker: "python:bullseye" 
+    memory: "~{memory_gb} GB"
+    docker: "python:bullseye"
   }
 }

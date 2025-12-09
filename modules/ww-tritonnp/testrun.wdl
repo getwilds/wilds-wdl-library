@@ -7,7 +7,7 @@ workflow tritonnp_example {
   meta {
     author: "Chris Lo"
     email: "clo2@fredhutch.org"
-    description: "TritonNP module."
+    description: "TritonNP module test workflow"
     url: "https://github.com/caalo/TritonNP"
     outputs: {
         final_composite: "Aggregrated outputs from all files",
@@ -27,7 +27,6 @@ workflow tritonnp_example {
   Array[File] bam_paths = [download_demo_data.bam]
   Array[File] bam_index_paths = [download_demo_data.bam_index]
   Array[File] bias_paths = [download_demo_data.bias]
-  
 
   # Process each sample
   scatter (i in range(length(sample_names))) {
@@ -41,10 +40,8 @@ workflow tritonnp_example {
         reference_genome = download_demo_data.reference,
         reference_genome_index = download_demo_data.reference_index,
         results_dir = "results",
-        map_quality = 20,
-        size_range = "15 500",
-        cpus = ncpus,
-        plot_list = download_demo_data.plot_list
+        plot_list = download_demo_data.plot_list,
+        cpus = ncpus
     }
   }
 
