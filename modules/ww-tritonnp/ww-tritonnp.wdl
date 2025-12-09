@@ -1,3 +1,5 @@
+## WILDS WDL for TritonNP - nucleosome positioning analysis from cfDNA
+## Generates phasing features using FFT-based fragment size analysis
 
 version 1.0
 
@@ -43,15 +45,16 @@ task triton_main {
   }
 
   command <<<
+    set -eo pipefail
+
     # Create results directory if it doesn't exist
     mkdir -p ~{results_dir}
     
-    #Needed Python packges for running Triton
+    # Needed Python packages for running Triton
     python3 -m pip install pysam numpy scipy pandas matplotlib seaborn
 
-    #download script
+    # Download script
     git clone https://github.com/caalo/TritonNP.git
-
 
     # Run Triton
     python TritonNP/GenerateFFTFeatures.py \
@@ -99,10 +102,12 @@ task combine_fms {
   }
 
   command <<<
+    set -eo pipefail
+
     # Create results directory if it doesn't exist
     mkdir -p ~{results_dir}
-        
-    #download script
+    
+    # Download script
     git clone https://github.com/caalo/TritonNP.git
 
     python3 -m pip install pandas
@@ -123,4 +128,3 @@ task combine_fms {
     docker: "python:bullseye" 
   }
 }
-
