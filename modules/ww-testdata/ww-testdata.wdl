@@ -351,6 +351,64 @@ task download_ichor_data {
   }
 }
 
+task download_tritonnp_data {
+  meta {
+    description: "Downloads test data for TritonNP analysis"
+    outputs: {
+        annotation: "BED annotation file",
+        plot_list: "Genes to plot",
+        bam: "WGS test file",
+        bam_index: "WGS test file index",
+        bias: "GC bias",
+        reference: "hg19 reference genome fasta",
+        reference_index: "Index for hg19 reference genome fasta"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -euo pipefail
+
+    # Download TritonNP reference data files
+    wget -q --no-check-certificate -O AR.bed https://github.com/caalo/TritonNP/raw/refs/heads/main/reference_data/AR.bed
+    wget -q --no-check-certificate -O plot_genes.txt https://github.com/caalo/TritonNP/raw/refs/heads/main/reference_data/plot_genes.txt
+    wget -q --no-check-certificate -O NA12878.bam https://github.com/caalo/TritonNP/raw/refs/heads/main/test_data/NA12878.bam
+    wget -q --no-check-certificate -O NA12878.bai https://github.com/caalo/TritonNP/raw/refs/heads/main/test_data/NA12878.bai
+    wget -q --no-check-certificate -O NA12878.GC_bias.txt https://github.com/caalo/TritonNP/raw/refs/heads/main/test_data/NA12878.GC_bias.txt
+    #Download the entire hg19 reference genome
+    wget hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz
+    tar -zxvf chromFa.tar.gz
+    cat chr*.fa > hg19.fa
+    samtools faidx hg19.fa
+
+  >>>
+
+  output {
+    File annotation = "AR.bed"
+    File plot_list = "plot_genes.txt"
+    File bam = "NA12878.bam"
+    File bam_index = "NA12878.bai"
+    File bias = "NA12878.GC_bias.txt"
+    File reference = "hg19.fa"
+    File reference_index = "hg19.fa.fai"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task download_dbsnp_vcf {
   meta {
     author: "WILDS Team"
