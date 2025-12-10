@@ -1,398 +1,155 @@
-## WILDS WDL Module: ww-sourmash
-## Purpose: Generate MinHash signatures, perform similarity searches, and metagenome analysis
-## Documentation: https://sourmash.readthedocs.io/
+# Modular WDL tasks for sourmash subcommands
+# This file contains individual tasks that can be imported and used in workflows
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+task sketch {
+  meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
+    description: "Generate a sourmash sketch from BAM or FASTA file"
+    outputs: {
+      sig: "Sourmash sketch (.sig) file"
+    }
+  }
 
-struct SourmashSample {
-    String name
-    File fastq_file
+  parameter_meta {
+    infile: "BAM (.bam) or FASTA (.fasta) file"
+    bam_as_input: "Whether the input file is a BAM"
+    k_value: "Value of k to use for sourmash sketch"
+    scaled: "Scaled value for sourmash sketch"
+    track_abundance: "Whether to track k-mer abundance"
+    cpu_cores: "Number of CPU cores to use (only used for BAM input)"
+    output_name: "Optional custom output name (defaults to input basename)"
+  }
+
+  input {
+    File infile
+    Boolean bam_as_input
+    Int k_value = 31
+    Int scaled = 1000
+    Boolean track_abundance = true
+    Int cpu_cores = 4
+    String? output_name
+  }
+
+  String base_name = select_first([output_name, if bam_as_input then basename(infile, ".bam") else basename(infile, ".fasta")])
+  String abund_param = if track_abundance then ",abund" else ""
+
+  command <<<
+    set -eo pipefail
+
+    if ~{bam_as_input}; then
+      echo "Running samtools fasta and sourmash sketch for: ~{base_name}.bam"
+      samtools fasta -@ ~{cpu_cores} -0 /dev/null -s /dev/null "~{infile}" | \
+      sourmash sketch dna -p k=~{k_value},scaled=~{scaled}~{abund_param} - -o "~{base_name}.sig"
+    else
+      echo "Running sourmash sketch for: ~{base_name}.fasta"
+      sourmash sketch dna -p k=~{k_value},scaled=~{scaled}~{abund_param} "~{infile}" -o "~{base_name}.sig"
+    fi
+  >>>
+
+  output {
+    File sig = "~{base_name}.sig"
+  }
+
+  runtime {
+    docker: "getwilds/sourmash:4.8.2"
+    memory: "15 GB"
+    disks: "local-disk 200 HDD"
+  }
 }
 
-workflow sourmash_example {
-    meta {
-        description: "Demonstration workflow for sourmash module functionality including sketch, search, and gather operations"
-        outputs: {
-            query_signatures: "MinHash signatures generated from query sequences",
-            database_signatures: "MinHash signatures generated from database sequences",
-            search_results: "Similarity search results between query and database signatures",
-            gather_results: "Metagenome gather analysis results identifying constituent genomes",
-            validation_report: "Comprehensive validation report for all outputs"
-        }
+task gather {
+  meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
+    description: "Run sourmash gather with specific reference signature(s) included"
+    outputs: {
+      result: "CSV file of sourmash gather results"
     }
+  }
 
-    parameter_meta {
-        samples: "Array of sample information with names and FASTQ files"
-        database_fastas: "Array of database FASTA files for signature generation"
-        ksize: "k-mer size for signature generation (recommended: 21, 31, 51)"
-        threshold: "Minimum threshold for reporting search matches (0.0-1.0)"
-        molecule_type: "Molecule type: dna, protein, dayhoff, hp"
-        scaled: "Use scaled MinHash (recommended: true for most use cases)"
-        scale_factor: "Scale factor for scaled MinHash (lower = more precise, higher = more memory efficient)"
-        gather_threshold: "Minimum threshold for gather analysis (0.0-1.0)"
-    }
+  parameter_meta {
+    query_sig: "Query sourmash sketch file"
+    reference_databases_sigs: "Array of reference database (.zip) and/or signature (.sig) files to search against"
+    output_name: "Optional custom output name (defaults to query basename)"
+  }
 
-    input {
-        Array[SourmashSample]? samples
-        Array[File]? database_fastas
-        String ksize = "31"
-        Float threshold = 0.08
-        String molecule_type = "dna"
-        Boolean scaled = true
-        Int scale_factor = 1000
-        Float gather_threshold = 0.05
-    }
+  input {
+    File query_sig
+    Array[File] reference_databases_sigs
+    String? output_name
+  }
 
-    # Download test data if no samples provided
-    if (!defined(samples)) {
-        call ww_testdata.download_fastq_data { }
-    }
+  String file_id = select_first([output_name, basename(query_sig, ".sig")])
 
-    # Create samples array - either from input or from ww-testdata
-    Array[SourmashSample] final_samples = if defined(samples) then select_first([samples]) else [
-      {
-        "name": "demo_sample1",
-        "fastq_file": select_first([download_fastq_data.r1_fastq])
-      },
-      {
-        "name": "demo_sample2",
-        "fastq_file": select_first([download_fastq_data.r2_fastq])
-      }
-    ]
+  command <<<
+    set -eo pipefail
 
-    # Download test database if no database files provided
-    if (!defined(database_fastas)) {
-        call ww_testdata.download_ref_data { }
-    }
+    echo "Running sourmash gather on query: ~{file_id}.sig"
+    sourmash gather "~{query_sig}" ~{sep=" " reference_databases_sigs} -o "~{file_id}.sourmash_gather.csv"
+  >>>
 
-    # Use provided fastas or test reference data
-    Array[File] final_fastas = select_first([database_fastas, [select_first([download_ref_data.fasta])]])
+  output {
+    File result = "~{file_id}.sourmash_gather.csv"
+  }
 
-    # Generate signatures for all sample files
-    scatter (sample_to_sketch in final_samples) {
-        call sourmash_sketch as sketch_samples { input:
-            input_file = sample_to_sketch.fastq_file,
-            output_name = sample_to_sketch.name + ".sig",
-            ksize = ksize,
-            molecule_type = molecule_type,
-            scaled = scaled,
-            scale_factor = scale_factor
-        }
-    }
-
-    # Generate signatures for all database files  
-    scatter (fasta in final_fastas) {
-        call sourmash_sketch as sketch_database { input:
-            input_file = fasta,
-            output_name = "database_" + basename(basename(fasta, ".fa"),".fasta") + ".sig",
-            ksize = ksize,
-            molecule_type = molecule_type,
-            scaled = scaled,
-            scale_factor = scale_factor
-        }
-    }
-
-    scatter (sample_to_search in sketch_samples.signature_file) {
-        scatter (database in sketch_database.signature_file) {
-            # Perform search for each sample against each database signature
-            call sourmash_search as search_samples { input:
-                query_sig = sample_to_search,
-                database_sig = database,
-                ksize = ksize,
-                threshold = threshold
-            }
-        }
-
-        # Perform gather analysis for each sample against the entire database
-        call sourmash_gather as gather_samples { input:
-            query_sig = sample_to_search,
-            database_sigs = sketch_database.signature_file,
-            ksize = ksize,
-            threshold = gather_threshold
-        }
-    }
-
-    # Validate all outputs
-    call validate_outputs { input:
-        query_signatures = sketch_samples.signature_file,
-        database_signatures = sketch_database.signature_file,
-        search_results = flatten(search_samples.results_file),
-        gather_results = gather_samples.results_file
-    }
-
-    output {
-        Array[File] query_signatures = sketch_samples.signature_file
-        Array[File] database_signatures = sketch_database.signature_file
-        Array[Array[File]] search_results = search_samples.results_file
-        Array[File] gather_results = gather_samples.results_file
-        File validation_report = validate_outputs.report
-    }
+  runtime {
+    docker: "getwilds/sourmash:4.8.2"
+    memory: "15 GB"
+    disks: "local-disk 200 HDD"
+  }
 }
 
-task sourmash_sketch {
-    meta {
-        description: "Generate MinHash signatures from FASTA/FASTQ files using sourmash"
-        outputs: {
-            signature_file: "MinHash signature file in JSON format"
-        }
+task compare {
+  meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
+    description: "Generate similarity matrix from signature files using sourmash compare"
+    outputs: {
+      npy: "Numpy binary matrix file of angular similarity matrix",
+      csv: "CSV file of angular similarity matrix"
     }
+  }
 
-    parameter_meta {
-        input_file: "Input sequence file (FASTA or FASTQ format, optionally compressed)"
-        output_name: "Name for the output signature file"
-        ksize: "k-mer size for signature generation"
-        molecule_type: "Molecule type: dna, protein, dayhoff, hp, or nucleotide"
-        scaled: "Use scaled MinHash (recommended for most applications)"
-        scale_factor: "Scale factor for scaled MinHash (lower = more precise, higher = faster)"
-        memory_gb: "Memory allocation in GB"
-        cpu_cores: "Number of CPU cores to use"
-    }
+  parameter_meta {
+    sig_inputs: "Array of input signature files"
+    save_name: "Name to use for output files"
+    k_value: "Value of k used for sourmash sketch"
+  }
 
-    input {
-        File input_file
-        String output_name
-        String ksize
-        String molecule_type
-        Boolean scaled
-        Int scale_factor
-        Int memory_gb = 4
-        Int cpu_cores = 2
-    }
+  input {
+    Array[File] sig_inputs
+    String save_name
+    Int k_value
+  }
 
-    command <<<
-        set -eo pipefail
-        
-        # Generate MinHash signature
-        sourmash sketch \
-            ~{molecule_type} \
-            ~{input_file} \
-            -p "k=~{ksize},~{if scaled then "scaled=" else "num="}~{scale_factor}" \
-            -o ~{output_name}
-    >>>
+  command <<<
+    set -eo pipefail
 
-    output {
-        File signature_file = output_name
-    }
+    # Create a directory and move all signature files into it
+    mkdir -p signatures
+    for sig_file in ~{sep=" " sig_inputs}; do
+      mv "$sig_file" signatures/
+    done
 
-    runtime {
-        docker: "getwilds/sourmash:4.8.2"
-        memory: "~{memory_gb}GB"
-        cpu: cpu_cores
-    }
-}
+    echo "Running sourmash compare"
+    sourmash compare \
+      --ksize ~{k_value} \
+      --output "~{save_name}.npy" \
+      --csv "~{save_name}.csv" \
+      signatures/*.sig
+  >>>
 
-task sourmash_search {
-    meta {
-        description: "Compare MinHash signatures to find sequence similarities using containment analysis"
-        outputs: {
-            results_file: "CSV file containing similarity search results"
-        }
-    }
+  output {
+    File npy = "~{save_name}.npy"
+    File csv = "~{save_name}.csv"
+  }
 
-    parameter_meta {
-        query_sig: "Query MinHash signature file"
-        database_sig: "Database MinHash signature file to search against"
-        ksize: "k-mer size to use for search (must match signature k-mer size)"
-        threshold: "Minimum similarity threshold for reporting matches (0.0-1.0)"
-        memory_gb: "Memory allocation in GB"
-        cpu_cores: "Number of CPU cores to use"
-    }
-
-    input {
-        File query_sig
-        File database_sig
-        String ksize
-        Float threshold
-        Int memory_gb = 4
-        Int cpu_cores = 1
-    }
-
-    String query_basename = basename(query_sig, ".sig")
-    String db_basename = basename(database_sig, ".sig")
-    String results_filename = query_basename + "_vs_" + db_basename + "_search_results.csv"
-
-    command <<<
-        set -eo pipefail
-
-        # Perform containment search between signatures
-        sourmash search \
-            -k ~{ksize} \
-            --threshold ~{threshold} \
-            --containment \
-            "~{query_sig}" \
-            "~{database_sig}" \
-            > "~{results_filename}"
-    >>>
-
-    output {
-        File results_file = "~{results_filename}"
-    }
-
-    runtime {
-        docker: "getwilds/sourmash:4.8.2"
-        memory: "~{memory_gb}GB"
-        cpu: cpu_cores
-    }
-}
-
-task sourmash_gather {
-    meta {
-        description: "Analyze metagenome samples by identifying constituent genomes using sourmash gather"
-        outputs: {
-            results_file: "CSV file containing gather analysis results with genome matches and abundances"
-        }
-    }
-
-    parameter_meta {
-        query_sig: "Query MinHash signature file (typically from a metagenome sample)"
-        database_sigs: "Array of database MinHash signature files representing reference genomes"
-        ksize: "k-mer size to use for gather analysis (must match signature k-mer size)"
-        threshold: "Minimum abundance threshold for reporting genome matches (0.0-1.0)"
-        memory_gb: "Memory allocation in GB"
-        cpu_cores: "Number of CPU cores to use"
-    }
-
-    input {
-        File query_sig
-        Array[File] database_sigs
-        String ksize
-        Float threshold
-        Int memory_gb = 8
-        Int cpu_cores = 2
-    }
-
-    String query_basename = basename(query_sig, ".sig")
-    String results_filename = query_basename + "_gather_results.csv"
-
-    command <<<
-        set -eo pipefail
-
-        # Perform gather analysis to identify constituent genomes
-        sourmash gather \
-            -k ~{ksize} \
-            --threshold ~{threshold} \
-            ~{query_sig} \
-            ~{sep=' ' database_sigs} \
-            -o "~{results_filename}"
-    >>>
-
-    output {
-        File results_file = "~{results_filename}"
-    }
-
-    runtime {
-        docker: "getwilds/sourmash:4.8.2"
-        memory: "~{memory_gb}GB"
-        cpu: cpu_cores
-    }
-}
-
-task validate_outputs {
-    meta {
-        description: "Validate sourmash outputs including signatures and analysis results"
-        outputs: {
-            report: "Validation report confirming output integrity and providing basic statistics"
-        }
-    }
-
-    parameter_meta {
-        query_signatures: "Query MinHash signature files to validate"
-        database_signatures: "Database MinHash signature files to validate"
-        search_results: "Search results CSV file to validate"
-        gather_results: "Gather results CSV file to validate"
-        cpu_cores: "Number of CPU cores to use for validation"
-        memory_gb: "Memory allocation in GB for the task"
-    }
-
-    input {
-        Array[File] query_signatures
-        Array[File] database_signatures
-        Array[File] search_results
-        Array[File] gather_results
-        Int cpu_cores = 1
-        Int memory_gb = 2
-    }
-
-    command <<<
-        set -euo pipefail
-
-        echo "=== WILDS Sourmash Module Validation Report ===" > validation_report.txt
-        echo "Generated on: $(date)" >> validation_report.txt
-        echo "" >> validation_report.txt
-
-        validation_passed=true
-
-        # Validate query signatures
-        echo "Query Signatures:" >> validation_report.txt
-        for sig_file in ~{sep=' ' query_signatures}; do
-            if [[ -f "$sig_file" && -s "$sig_file" ]]; then
-                # Count signatures in file
-                sig_count=$(sourmash sig info "$sig_file" 2>/dev/null | grep -c "signature" || echo "0")
-                echo "  $sig_file - PASSED ($sig_count signatures)" >> validation_report.txt
-            else
-                echo "  $sig_file - MISSING OR EMPTY" >> validation_report.txt
-                validation_passed=false
-            fi
-        done
-
-        # Validate database signatures
-        echo "" >> validation_report.txt
-        echo "Database Signatures:" >> validation_report.txt
-        for sig_file in ~{sep=' ' database_signatures}; do
-            if [[ -f "$sig_file" && -s "$sig_file" ]]; then
-                sig_count=$(sourmash sig info "$sig_file" 2>/dev/null | grep -c "signature" || echo "0")
-                echo "  $sig_file - PASSED ($sig_count signatures)" >> validation_report.txt
-            else
-                echo "  $sig_file - MISSING OR EMPTY" >> validation_report.txt
-                validation_passed=false
-            fi
-        done
-
-        # Validate search results
-        echo "" >> validation_report.txt
-        echo "Search Results:" >> validation_report.txt
-        for search_file in ~{sep=' ' search_results}; do
-            if [[ -f "$search_file" && -s "$search_file" ]]; then
-                result_count=$(tail -n +2 "$search_file" | wc -l)
-                echo "  $search_file - PASSED ($result_count matches found)" >> validation_report.txt
-            else
-                echo "  $search_file - MISSING OR EMPTY" >> validation_report.txt
-                validation_passed=false
-            fi
-        done
-
-        # Validate gather results
-        echo "" >> validation_report.txt
-        echo "Gather Results:" >> validation_report.txt
-        for gather_file in ~{sep=' ' gather_results}; do
-            if [[ -f "$gather_file" && -s "$gather_file" ]]; then
-                result_count=$(tail -n +2 "$gather_file" | wc -l)
-                echo "  $gather_file - PASSED ($result_count genome matches found)" >> validation_report.txt
-            else
-                echo "  $gather_file - MISSING OR EMPTY" >> validation_report.txt
-                validation_passed=false
-            fi
-        done
-
-        # Final validation status
-        echo "" >> validation_report.txt
-        if [[ "$validation_passed" == "true" ]]; then
-            echo "Overall Status: VALIDATION PASSED - All files present and valid" >> validation_report.txt
-        else
-            echo "Overall Status: VALIDATION FAILED - Some files missing or invalid" >> validation_report.txt
-            exit 1
-        fi
-    >>>
-
-    output {
-        File report = "validation_report.txt"
-    }
-
-    runtime {
-        docker: "getwilds/sourmash:4.8.2"
-        memory: "~{memory_gb}GB"
-        cpu: cpu_cores
-    }
+  runtime {
+    docker: "getwilds/sourmash:4.8.2"
+    memory: "15 GB"
+    disks: "local-disk 200 HDD"
+  }
 }
