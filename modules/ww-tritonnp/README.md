@@ -3,11 +3,11 @@
 [![Project Status: Prototype – Useable, some support, open to feedback, unstable API.](https://getwilds.org/badges/badges/prototype.svg)](https://getwilds.org/badges/#prototype)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL module for running [TritonNP](https://github.com/caalo/TritonNP) for nucleosome positioning analysis.
+A WILDS WDL module for running [TritonNP](https://github.com/caalo/TritonNP) for nucleosome positioning analysis for cell-free DNA samples.
 
 ## Overview
 
-This module provides reusable WDL tasks for running **TritonNP**, which generates phasing features using FFT-based fragment size analysis. This module is designed to be a modular component in the WILDS ecosystem, suitable for integration into larger bioinformatics pipelines.
+This module provides reusable WDL tasks for running **TritonNP**, which generates phasing features using FFT-based fragment size analysis, specifically for cell-free DNA samples. This tool was developed by the [Ha Lab](https://gavinhalab.org/) at Fred Hutch Cancer Center, and requires sample-level GC-correction analysis conducted by [Griffin](https://github.com/GavinHaLab/Griffin) before running TritonNP. This module is designed to be a modular component in the WILDS ecosystem, suitable for integration into larger bioinformatics pipelines.
 
 ## Module Structure
 
@@ -27,13 +27,13 @@ Runs TritonNP on a single sample to generate phasing feature matrices.
 - `sample_name` (String): Sample name
 - `bam_path` (File): BAM file
 - `bam_index_path` (File): BAM index file
-- `bias_path` (File): GC corrected file from Griffin
+- `bias_path` (File): GC corrected file from [Griffin](https://github.com/GavinHaLab/Griffin)
 - `annotation` (File): BED file of genomic region to process on
 - `reference_genome` (File): Reference genome file
 - `reference_genome_index` (File): Reference genome file index
 - `results_dir` (String): Output directory name
 - `map_quality` (Int): Mapping quality threshold as a positive integer
-- `size_range` (String): Size range as a space-delimited string, such as '15 500'
+- `size_range` (String): Size ranges for phasing as a space-delimited string, such as '15 500'
 - `cpus` (Int): Number of CPUs to use
 - `plot_list` (File): File containing names of genes to plot
 
@@ -128,6 +128,8 @@ This module pairs well with other WILDS modules:
 - **ww-bwa**: For aligning sequencing reads to generate input BAM files
 - **ww-samtools**: For BAM file processing and quality control
 
+Before running TritonNP, you will need to process the BAM file to extract GC correction values via (Griffin)[https://github.com/GavinHaLab/Griffin]
+
 ## Testing the Module
 
 The module includes a test workflow ([testrun.wdl](testrun.wdl)) that automatically downloads test data and runs without requiring input files:
@@ -166,8 +168,7 @@ The test workflow automatically:
 
 If you use this module in your research, please cite:
 
-> TritonNP
-> https://github.com/caalo/TritonNP
+Doebley, et al. A framework for clinical cancer subtyping from nucleosome profiling of cell-free DNA. (2022) Nature Communications. doi: [https://doi.org/10.1038/s41467-022-35076-w](https://doi.org/10.1038/s41467-022-35076-w).
 
 ## Additional Resources
 
