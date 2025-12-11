@@ -20,6 +20,7 @@ task sketch {
     scaled: "Scaled value for sourmash sketch"
     track_abundance: "Whether to track k-mer abundance"
     cpu_cores: "Number of CPU cores to use (only used for BAM input)"
+    memory_gb: "Memory allocated for the task in GB"
     output_name: "Optional custom output name (defaults to input basename)"
   }
 
@@ -30,6 +31,7 @@ task sketch {
     Int scaled = 1000
     Boolean track_abundance = true
     Int cpu_cores = 4
+    Int memory_gb = 8
     String? output_name
   }
 
@@ -55,7 +57,7 @@ task sketch {
 
   runtime {
     docker: "getwilds/sourmash:4.8.2"
-    memory: "15 GB"
+    memory: "~{memory_gb} GB"
     disks: "local-disk 200 HDD"
   }
 }
@@ -73,12 +75,14 @@ task gather {
   parameter_meta {
     query_sig: "Query sourmash sketch file"
     reference_databases_sigs: "Array of reference database (.zip) and/or signature (.sig) files to search against"
+    memory_gb: "Memory allocated for the task in GB"
     output_name: "Optional custom output name (defaults to query basename)"
   }
 
   input {
     File query_sig
     Array[File] reference_databases_sigs
+    Int memory_gb = 8
     String? output_name
   }
 
@@ -97,7 +101,7 @@ task gather {
 
   runtime {
     docker: "getwilds/sourmash:4.8.2"
-    memory: "15 GB"
+    memory: "~{memory_gb} GB"
     disks: "local-disk 200 HDD"
   }
 }
@@ -117,12 +121,14 @@ task compare {
     sig_inputs: "Array of input signature files"
     save_name: "Name to use for output files"
     k_value: "Value of k used for sourmash sketch"
+    memory_gb: "Memory allocated for the task in GB"
   }
 
   input {
     Array[File] sig_inputs
     String save_name
     Int k_value
+    Int memory_gb = 8
   }
 
   command <<<
@@ -149,7 +155,7 @@ task compare {
 
   runtime {
     docker: "getwilds/sourmash:4.8.2"
-    memory: "15 GB"
+    memory: "~{memory_gb} GB"
     disks: "local-disk 200 HDD"
   }
 }
