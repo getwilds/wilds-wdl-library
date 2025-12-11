@@ -75,6 +75,7 @@ task gather {
   parameter_meta {
     query_sig: "Query sourmash sketch file"
     reference_databases_sigs: "Array of reference database (.zip) and/or signature (.sig) files to search against"
+    threshold_bp: "Minimum number of base pairs to report a match (default: 50000)"
     memory_gb: "Memory allocated for the task in GB"
     output_name: "Optional custom output name (defaults to query basename)"
   }
@@ -82,6 +83,7 @@ task gather {
   input {
     File query_sig
     Array[File] reference_databases_sigs
+    Int threshold_bp = 50000
     Int memory_gb = 8
     String? output_name
   }
@@ -92,7 +94,11 @@ task gather {
     set -eo pipefail
 
     echo "Running sourmash gather on query: ~{file_id}.sig"
-    sourmash gather "~{query_sig}" ~{sep=" " reference_databases_sigs} -o "~{file_id}.sourmash_gather.csv"
+    sourmash gather "~{query_sig}" ~{sep=" " reference_databases_sigs} \
+      -o "~{file_id}.sourmash_gather.csv" \
+      --save-matches "~{output_name}.matches.zip" \
+      --threshold-bp "~{threshold_bp}" \
+      --fail-on-empty-database
   >>>
 
   output {
