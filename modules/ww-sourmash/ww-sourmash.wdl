@@ -137,7 +137,7 @@ task compare {
     # Create a directory and move all signature files into it
     mkdir -p signatures
     for sig_file in ~{sep=" " sig_inputs}; do
-      mv "$sig_file" signatures/
+      cp "$sig_file" signatures/
     done
 
     echo "Running sourmash compare"
@@ -146,6 +146,9 @@ task compare {
       --output "~{save_name}.npy" \
       --csv "~{save_name}.csv" \
       signatures/*.sig
+
+    # Clean up
+    rm -rf signatures
   >>>
 
   output {
