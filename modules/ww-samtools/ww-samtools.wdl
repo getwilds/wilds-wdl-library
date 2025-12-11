@@ -112,6 +112,8 @@ task mpileup {
     bamfile: "Input BAM or CRAM file"
     ref_fasta: "Reference genome FASTA file"
     sample_name: "Name of the sample (used for output file naming)"
+    min_mapq: "Minimum mapping quality for alignments to be included"
+    min_baseq: "Minimum base quality for bases to be included"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
   }
@@ -120,6 +122,8 @@ task mpileup {
     File bamfile
     File ref_fasta
     String sample_name
+    Int min_mapq = 0
+    Int min_baseq = 13
     Int cpu_cores = 2
     Int memory_gb = 8
   }
@@ -129,6 +133,8 @@ task mpileup {
 
     samtools mpileup \
       -f "~{ref_fasta}" \
+      -q "~{min_mapq}" \
+      -Q "~{min_baseq}" \
       "~{bamfile}" \
       > "~{sample_name}.pileup"
   >>>

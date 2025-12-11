@@ -54,6 +54,8 @@ Generates a pileup file from a BAM file using samtools mpileup. The pileup forma
 - `bamfile` (File): Input BAM file
 - `ref_fasta` (File): Reference genome FASTA file
 - `sample_name` (String): Name of the sample (used for output file naming)
+- `min_mapq` (Int?): Minimum mapping quality for alignments to be included (default: 0)
+- `min_baseq` (Int?): Minimum base quality for bases to be included (default: 13)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 
