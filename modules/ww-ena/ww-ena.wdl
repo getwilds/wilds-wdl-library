@@ -90,7 +90,7 @@ task download_files {
   }
 
   runtime {
-    docker: "ena-tools:test"
+    docker: "getwilds/ena-tools:2.1.1"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -175,7 +175,7 @@ task download_by_query {
   }
 
   runtime {
-    docker: "ena-tools:test"
+    docker: "getwilds/ena-tools:2.1.1"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
