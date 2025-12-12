@@ -65,6 +65,20 @@ Downloads sequencing data files from ENA using a search query. Allows filtering 
 - `download_log` (File): Log file containing download status and details
 - `download_summary` (File): Summary report of the download operation
 
+### `extract_fastq_pairs`
+
+Extracts R1 and R2 FASTQ files from downloaded ENA files for downstream paired-end processing. This task identifies paired-end FASTQ files by common naming patterns and creates standardized outputs.
+
+**Inputs:**
+- `downloaded_files` (Array[File]): Array of files downloaded from ENA (typically from `download_files` task)
+- `accession` (String): ENA accession number being processed (used for error reporting)
+
+**Outputs:**
+- `r1` (File): Read 1 FASTQ file
+- `r2` (File): Read 2 FASTQ file
+
+**Usage Note:** This task is designed for FASTQ workflows requiring separate R1/R2 files. It searches for common paired-end naming patterns including `_1.fastq.gz`/`_2.fastq.gz`, `_R1.fastq.gz`/`_R2.fastq.gz`, and their uncompressed equivalents. If you're downloading other file formats (BAM, analysis files), you don't need this task.
+
 ## Usage as a Module
 
 ### Basic Usage: Download by Accession Numbers
@@ -135,6 +149,39 @@ workflow download_by_study {
 
   output {
     Array[File] study_fastqs = download_by_query.downloaded_files
+  }
+}
+```
+
+### Extract FASTQ Pairs for Paired-End Analysis
+
+```wdl
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ena/ww-ena.wdl" as ena_tasks
+
+workflow ena_paired_end_workflow {
+  input {
+    Array[String] sample_accessions
+  }
+
+  scatter (accession in sample_accessions) {
+    # Download FASTQ files from ENA
+    call ena_tasks.download_files {
+      input:
+        accessions = accession,
+        file_format = "READS_FASTQ"
+    }
+
+    # Extract R1 and R2 for paired-end processing
+    call ena_tasks.extract_fastq_pairs {
+      input:
+        downloaded_files = download_files.downloaded_files,
+        accession = accession
+    }
+  }
+
+  output {
+    Array[File] all_r1 = extract_fastq_pairs.r1
+    Array[File] all_r2 = extract_fastq_pairs.r2
   }
 }
 ```

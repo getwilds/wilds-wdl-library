@@ -4,9 +4,11 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow ena_example {
   meta {
-    description: "Test workflow demonstrating the ENA downloader module. Downloads a small test dataset from ENA using accession numbers."
+    description: "Test workflow demonstrating the ENA downloader module. Downloads a small test dataset from ENA using accession numbers and extracts FASTQ pairs."
     outputs: {
         downloaded_files: "Array of files downloaded from ENA",
+        r1: "Read 1 FASTQ file",
+        r2: "Read 2 FASTQ file",
         download_log: "Log file from the ENA download process",
         download_summary: "Summary report of the ENA download process",
         validation_report: "Report validating the success of the ENA download"
@@ -24,16 +26,27 @@ workflow ena_example {
       memory_gb = 8
   }
 
+  # Test 2: Extract FASTQ pairs from downloaded files
+  call ww_ena.extract_fastq_pairs {
+    input:
+      downloaded_files = test_download_accession.downloaded_files,
+      accession = "ERR000001"
+  }
+
   # Validate the download
   call validate_download {
     input:
       downloaded_files = test_download_accession.downloaded_files,
       download_log = test_download_accession.download_log,
-      download_summary = test_download_accession.download_summary
+      download_summary = test_download_accession.download_summary,
+      r1 = extract_fastq_pairs.r1,
+      r2 = extract_fastq_pairs.r2
   }
 
   output {
     Array[File] downloaded_files = test_download_accession.downloaded_files
+    File r1 = extract_fastq_pairs.r1
+    File r2 = extract_fastq_pairs.r2
     File download_log = test_download_accession.download_log
     File download_summary = test_download_accession.download_summary
     File validation_report = validate_download.report
@@ -42,9 +55,9 @@ workflow ena_example {
 
 task validate_download {
   meta {
-    description: "Validate that ENA download completed successfully"
+    description: "Validate that ENA download and FASTQ extraction completed successfully"
     outputs: {
-        report: "Validation report confirming successful download of files from ENA"
+        report: "Validation report confirming successful download and extraction of FASTQ files from ENA"
     }
   }
 
@@ -52,6 +65,8 @@ task validate_download {
     Array[File] downloaded_files
     File download_log
     File download_summary
+    File r1
+    File r2
   }
 
   command <<<
@@ -69,6 +84,24 @@ task validate_download {
       echo "✓ SUCCESS: Files were downloaded" >> validation_report.txt
     else
       echo "✗ FAILED: No files were downloaded" >> validation_report.txt
+      exit 1
+    fi
+
+    # Validate R1 and R2 files exist and are non-empty
+    echo "" >> validation_report.txt
+    echo "=== FASTQ Pair Extraction ===" >> validation_report.txt
+
+    if [ -f "~{r1}" ] && [ -s "~{r1}" ]; then
+      echo "✓ SUCCESS: R1 file exists and is non-empty: ~{r1}" >> validation_report.txt
+    else
+      echo "✗ FAILED: R1 file missing or empty" >> validation_report.txt
+      exit 1
+    fi
+
+    if [ -f "~{r2}" ] && [ -s "~{r2}" ]; then
+      echo "✓ SUCCESS: R2 file exists and is non-empty: ~{r2}" >> validation_report.txt
+    else
+      echo "✗ FAILED: R2 file missing or empty" >> validation_report.txt
       exit 1
     fi
 
