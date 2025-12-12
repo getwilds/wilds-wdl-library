@@ -97,3 +97,58 @@ task merge_bams_to_cram {
     docker: "getwilds/samtools:1.19"
   }
 }
+
+task mpileup {
+  meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
+    description: "Generate samtools mpileup from a BAM file"
+    outputs: {
+        pileup: "Pileup file"
+    }
+  }
+
+  parameter_meta {
+    bamfile: "Input BAM or CRAM file"
+    ref_fasta: "Reference genome FASTA file"
+    sample_name: "Name of the sample (used for output file naming)"
+    disable_baq: "Whether to disable per-Base Alignment Quality"
+    min_mapq: "Minimum mapping quality for alignments to be included"
+    min_baseq: "Minimum base quality for bases to be included"
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    File bamfile
+    File ref_fasta
+    String sample_name
+    Boolean disable_baq = false
+    Int min_mapq = 0
+    Int min_baseq = 13
+    Int cpu_cores = 2
+    Int memory_gb = 8
+  }
+
+  command <<<
+    set -eo pipefail
+
+    samtools mpileup \
+      -f "~{ref_fasta}" \
+      -q "~{min_mapq}" \
+      -Q "~{min_baseq}" \
+      ~{if disable_baq then "--no-BAQ" else ""} \
+      "~{bamfile}" \
+      > "~{sample_name}.pileup"
+  >>>
+
+  output {
+    File pileup = "~{sample_name}.pileup"
+  }
+
+  runtime {
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+    docker: "getwilds/samtools:1.19"
+  }
+}
