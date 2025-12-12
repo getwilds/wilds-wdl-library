@@ -70,13 +70,12 @@ workflow ena_star {
     }
 
     call ena_tasks.extract_fastq_pairs { input:
-        downloaded_files = download_files.downloaded_files,
-        accession = accession
+        downloaded_files = download_files.downloaded_files
     }
 
     call star_tasks.align_two_pass { input:
         star_genome_tar = build_index.star_index_tar,
-        name = accession,
+        name = extract_fastq_pairs.accession,
         r1 = extract_fastq_pairs.r1,
         r2 = extract_fastq_pairs.r2,
         sjdb_overhang = sjdb_overhang,

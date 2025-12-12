@@ -185,28 +185,27 @@ task extract_fastq_pairs {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Extract R1 and R2 FASTQ files from ENA downloads for downstream processing. This task identifies paired-end FASTQ files from the downloaded files array."
+    description: "Extract R1 and R2 FASTQ files from ENA downloads for downstream processing. This task identifies paired-end FASTQ files from the downloaded files array and extracts the accession ID from the filename."
     outputs: {
         r1: "Read 1 FASTQ file",
-        r2: "Read 2 FASTQ file"
+        r2: "Read 2 FASTQ file",
+        accession: "ENA accession ID extracted from the filename"
     }
   }
 
   parameter_meta {
     downloaded_files: "Array of files downloaded from ENA"
-    accession: "ENA accession number being processed (used for error reporting)"
   }
 
   input {
     Array[File] downloaded_files
-    String accession
   }
 
   command <<<
     set -eo pipefail
 
     # List all downloaded files
-    echo "Downloaded files for accession ~{accession}:"
+    echo "Downloaded files:"
     cat ~{write_lines(downloaded_files)}
 
     # Find R1 and R2 files (ENA typically names them with _1 and _2 or _R1 and _R2)
@@ -215,7 +214,7 @@ task extract_fastq_pairs {
     R2_FILE=$(cat ~{write_lines(downloaded_files)} | grep -E "(_2\.fastq|_R2\.fastq|_2\.fq|_R2\.fq)" | head -1 || echo "")
 
     if [ -z "$R1_FILE" ] || [ -z "$R2_FILE" ]; then
-      echo "ERROR: Could not identify paired FASTQ files for accession ~{accession}"
+      echo "ERROR: Could not identify paired FASTQ files"
       echo "Looking for files matching pattern *_1.fastq.gz and *_2.fastq.gz"
       echo "Available files:"
       cat ~{write_lines(downloaded_files)}
@@ -225,6 +224,12 @@ task extract_fastq_pairs {
     echo "Identified R1: $R1_FILE"
     echo "Identified R2: $R2_FILE"
 
+    # Extract accession ID from filename (everything before _1 or _R1)
+    BASENAME=$(basename "$R1_FILE")
+    ACCESSION=$(echo "$BASENAME" | sed -E 's/(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq).*//')
+    echo "Extracted accession: $ACCESSION"
+    echo "$ACCESSION" > accession.txt
+
     # Create symlinks with standardized names
     ln -s "$R1_FILE" r1.fastq.gz
     ln -s "$R2_FILE" r2.fastq.gz
@@ -233,6 +238,7 @@ task extract_fastq_pairs {
   output {
     File r1 = "r1.fastq.gz"
     File r2 = "r2.fastq.gz"
+    String accession = read_string("accession.txt")
   }
 
   runtime {

@@ -67,17 +67,17 @@ Downloads sequencing data files from ENA using a search query. Allows filtering 
 
 ### `extract_fastq_pairs`
 
-Extracts R1 and R2 FASTQ files from downloaded ENA files for downstream paired-end processing. This task identifies paired-end FASTQ files by common naming patterns and creates standardized outputs.
+Extracts R1 and R2 FASTQ files from downloaded ENA files for downstream paired-end processing. This task identifies paired-end FASTQ files by common naming patterns, creates standardized outputs, and automatically extracts the accession ID from the filename.
 
 **Inputs:**
 - `downloaded_files` (Array[File]): Array of files downloaded from ENA (typically from `download_files` task)
-- `accession` (String): ENA accession number being processed (used for error reporting)
 
 **Outputs:**
 - `r1` (File): Read 1 FASTQ file
 - `r2` (File): Read 2 FASTQ file
+- `accession` (String): ENA accession ID automatically extracted from the filename
 
-**Usage Note:** This task is designed for FASTQ workflows requiring separate R1/R2 files. It searches for common paired-end naming patterns including `_1.fastq.gz`/`_2.fastq.gz`, `_R1.fastq.gz`/`_R2.fastq.gz`, and their uncompressed equivalents. If you're downloading other file formats (BAM, analysis files), you don't need this task.
+**Usage Note:** This task is designed for FASTQ workflows requiring separate R1/R2 files. It searches for common paired-end naming patterns including `_1.fastq.gz`/`_2.fastq.gz`, `_R1.fastq.gz`/`_R2.fastq.gz`, and their uncompressed equivalents. The accession ID is automatically extracted from the filename (e.g., `ERR000001_1.fastq.gz` → `ERR000001`). If you're downloading other file formats (BAM, analysis files), you don't need this task.
 
 ## Usage as a Module
 
@@ -172,16 +172,17 @@ workflow ena_paired_end_workflow {
     }
 
     # Extract R1 and R2 for paired-end processing
+    # Accession ID is automatically extracted from filenames
     call ena_tasks.extract_fastq_pairs {
       input:
-        downloaded_files = download_files.downloaded_files,
-        accession = accession
+        downloaded_files = download_files.downloaded_files
     }
   }
 
   output {
     Array[File] all_r1 = extract_fastq_pairs.r1
     Array[File] all_r2 = extract_fastq_pairs.r2
+    Array[String] all_accessions = extract_fastq_pairs.accession
   }
 }
 ```
