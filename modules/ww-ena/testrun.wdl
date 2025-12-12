@@ -90,7 +90,7 @@ task validate_download {
   }
 
   runtime {
-    docker: "ena-tools:test"
+    docker: "getwilds/ena-tools:2.1.1"
     memory: "2 GB"
     cpu: 1
   }
