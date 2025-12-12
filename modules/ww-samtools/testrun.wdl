@@ -41,6 +41,7 @@ workflow samtools_example {
       bamfile = download_bam_1.bam,
       ref_fasta = download_ref_data.fasta,
       sample_name = "test_sample",
+      disable_baq = true,
       cpu_cores = 2,
       memory_gb = 8
   }

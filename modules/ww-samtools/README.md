@@ -55,6 +55,7 @@ Generates a pileup file from a BAM file using samtools mpileup. The pileup forma
 - `ref_fasta` (File): Reference genome FASTA file
 - `sample_name` (String): Name of the sample (used for output file naming)
 - `min_mapq` (Int?): Minimum mapping quality for alignments to be included (default: 0)
+- `disable_baq` (Boolean?): Whether to disable per-Base Alignment Quality (default: false)
 - `min_baseq` (Int?): Minimum base quality for bases to be included (default: 13)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
@@ -98,7 +99,8 @@ workflow my_preprocessing_pipeline {
 
 This module pairs well with other WILDS modules:
 - **ww-sra**: For downloading genomic data
-- **ww-bwa**: For FASTQ sequence alignment.
+- **ww-bwa**: For FASTQ sequence alignment
+- **ww-varscan**: For variant calling
 
 ## Testing the Module
 
