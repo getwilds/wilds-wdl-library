@@ -5,6 +5,12 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 workflow ena_example {
   meta {
     description: "Test workflow demonstrating the ENA downloader module. Downloads a small test dataset from ENA using accession numbers."
+    outputs: {
+        downloaded_files: "Array of files downloaded from ENA",
+        download_log: "Log file from the ENA download process",
+        download_summary: "Summary report of the ENA download process",
+        validation_report: "Report validating the success of the ENA download"
+    }
   }
 
   # Test 1: Download a small FASTQ file using accession number
@@ -37,6 +43,9 @@ workflow ena_example {
 task validate_download {
   meta {
     description: "Validate that ENA download completed successfully"
+    outputs: {
+        report: "Validation report confirming successful download of files from ENA"
+    }
   }
 
   input {
