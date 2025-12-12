@@ -13,7 +13,7 @@ workflow ena_star_example {
   # Using ERR000001: Small test dataset from ENA
   # Note: This is a very small test file to ensure fast execution
   call ena_star_workflow.ena_star { input:
-    ena_accession_list = ["ERR2208926"],
+    ena_accession_list = ["ERR11200762"],
     ref_genome = {
       "name": "chr1",
       "fasta": download_ref_data.fasta,

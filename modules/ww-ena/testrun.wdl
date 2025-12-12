@@ -18,7 +18,7 @@ workflow ena_example {
   # Test 1: Download a small FASTQ file using accession number
   call ww_ena.download_files as test_download_accession {
     input:
-      accessions = "ERR2208926",
+      accessions = "ERR11200762",
       file_format = "READS_FASTQ",
       protocol = "FTP",
       output_dir_name = "test_ena_download",
