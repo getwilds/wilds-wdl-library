@@ -58,12 +58,12 @@ task download_files {
 
     # Execute download with ena-file-downloader
     java -jar /usr/local/bin/ena-file-downloader.jar \
-      ~{if defined(accessions) then "--accessions " + accessions else ""} \
-      ~{if defined(accessions_file) then "--accessions " + accessions_file else ""} \
-      --format ~{file_format} \
-      --protocol ~{protocol} \
-      ~{if defined(aspera_location) then "--asperaLocation " + aspera_location else ""} \
-      --location ~{output_dir_name}
+      ~{if defined(accessions) then "--accessions=" + accessions else ""} \
+      ~{if defined(accessions_file) then "--accessions=" + accessions_file else ""} \
+      --format=~{file_format} \
+      --protocol=~{protocol} \
+      ~{if defined(aspera_location) then "--asperaLocation=" + aspera_location else ""} \
+      --location=~{output_dir_name}
 
     # Find all downloaded files
     find ~{output_dir_name} -type f > downloaded_files.txt
@@ -145,11 +145,11 @@ task download_by_query {
 
     # Execute download with ena-file-downloader
     java -jar /usr/local/bin/ena-file-downloader.jar \
-      --query "~{query}" \
-      --format ~{file_format} \
-      --protocol ~{protocol} \
-      ~{if defined(aspera_location) then "--asperaLocation " + aspera_location else ""} \
-      --location ~{output_dir_name}
+      --query="~{query}" \
+      --format=~{file_format} \
+      --protocol=~{protocol} \
+      ~{if defined(aspera_location) then "--asperaLocation=" + aspera_location else ""} \
+      --location=~{output_dir_name}
 
     # Find all downloaded files
     find ~{output_dir_name} -type f > downloaded_files.txt
