@@ -56,36 +56,14 @@ task download_files {
     # Create logs directory
     mkdir -p logs
 
-    # Build the base command
-    cmd="java -jar /usr/local/bin/ena-file-downloader.jar"
-
-    # Add accessions or accessions file
-    if [ -n "~{accessions}" ]; then
-      cmd="$cmd --accessions ~{accessions}"
-    elif [ -n "~{accessions_file}" ]; then
-      cmd="$cmd --accessions ~{accessions_file}"
-    else
-      echo "ERROR: Either accessions or accessions_file must be provided"
-      exit 1
-    fi
-
-    # Add format
-    cmd="$cmd --format ~{file_format}"
-
-    # Add protocol
-    cmd="$cmd --protocol ~{protocol}"
-
-    # Add Aspera location if specified
-    if [ -n "~{aspera_location}" ]; then
-      cmd="$cmd --asperaLocation ~{aspera_location}"
-    fi
-
-    # Add output location
-    cmd="$cmd --location ~{output_dir_name}"
-
-    # Execute download
-    echo "Executing: $cmd"
-    eval $cmd
+    # Execute download with ena-file-downloader
+    java -jar /usr/local/bin/ena-file-downloader.jar \
+      ~{if defined(accessions) then "--accessions " + accessions else ""} \
+      ~{if defined(accessions_file) then "--accessions " + accessions_file else ""} \
+      --format ~{file_format} \
+      --protocol ~{protocol} \
+      ~{if defined(aspera_location) then "--asperaLocation " + aspera_location else ""} \
+      --location ~{output_dir_name}
 
     # Find all downloaded files
     find ~{output_dir_name} -type f > downloaded_files.txt
@@ -112,7 +90,7 @@ task download_files {
   }
 
   runtime {
-    docker: "getwilds/ena-tools:2.1.1"
+    docker: "ena-tools:test"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -165,29 +143,13 @@ task download_by_query {
     # Create logs directory
     mkdir -p logs
 
-    # Build the base command
-    cmd="java -jar /usr/local/bin/ena-file-downloader.jar"
-
-    # Add query (quote it to handle spaces)
-    cmd="$cmd --query \"~{query}\""
-
-    # Add format
-    cmd="$cmd --format ~{file_format}"
-
-    # Add protocol
-    cmd="$cmd --protocol ~{protocol}"
-
-    # Add Aspera location if specified
-    if [ -n "~{aspera_location}" ]; then
-      cmd="$cmd --asperaLocation ~{aspera_location}"
-    fi
-
-    # Add output location
-    cmd="$cmd --location ~{output_dir_name}"
-
-    # Execute download
-    echo "Executing: $cmd"
-    eval $cmd
+    # Execute download with ena-file-downloader
+    java -jar /usr/local/bin/ena-file-downloader.jar \
+      --query "~{query}" \
+      --format ~{file_format} \
+      --protocol ~{protocol} \
+      ~{if defined(aspera_location) then "--asperaLocation " + aspera_location else ""} \
+      --location ~{output_dir_name}
 
     # Find all downloaded files
     find ~{output_dir_name} -type f > downloaded_files.txt
@@ -213,7 +175,7 @@ task download_by_query {
   }
 
   runtime {
-    docker: "getwilds/ena-tools:2.1.1"
+    docker: "ena-tools:test"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
