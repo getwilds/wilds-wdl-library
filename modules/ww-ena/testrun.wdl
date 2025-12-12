@@ -63,16 +63,10 @@ task validate_download {
     # Check if files were downloaded
     num_files=~{length(downloaded_files)}
     echo "Number of files downloaded: $num_files" >> validation_report.txt
+    echo "" >> validation_report.txt
 
     if [ "$num_files" -gt 0 ]; then
       echo "✓ SUCCESS: Files were downloaded" >> validation_report.txt
-      echo "" >> validation_report.txt
-      echo "Downloaded files:" >> validation_report.txt
-      for file in ~{sep=" " downloaded_files}; do
-        filename=$(basename "$file")
-        filesize=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo "unknown")
-        echo "  - $filename (size: $filesize bytes)" >> validation_report.txt
-      done
     else
       echo "✗ FAILED: No files were downloaded" >> validation_report.txt
       exit 1
@@ -96,7 +90,7 @@ task validate_download {
   }
 
   runtime {
-    docker: "getwilds/ena-tools:2.1.1"
+    docker: "ena-tools:test"
     memory: "2 GB"
     cpu: 1
   }
