@@ -230,14 +230,14 @@ task extract_fastq_pairs {
     echo "Extracted accession: $ACCESSION"
     echo "$ACCESSION" > accession.txt
 
-    # Create symlinks with standardized names
-    ln -s "$R1_FILE" r1.fastq.gz
-    ln -s "$R2_FILE" r2.fastq.gz
+    # Write file paths for outputs
+    echo "$R1_FILE" > r1_path.txt
+    echo "$R2_FILE" > r2_path.txt
   >>>
 
   output {
-    File r1 = "r1.fastq.gz"
-    File r2 = "r2.fastq.gz"
+    File r1 = read_string("r1_path.txt")
+    File r2 = read_string("r2_path.txt")
     String accession = read_string("accession.txt")
   }
 
