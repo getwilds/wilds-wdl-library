@@ -204,20 +204,20 @@ task extract_fastq_pairs {
   command <<<
     set -eo pipefail
 
-    # List all downloaded files
+    # List all downloaded files (using actual localized paths)
     echo "Downloaded files:"
-    cat ~{write_lines(downloaded_files)}
+    ls -lh ~{sep=' ' downloaded_files}
 
     # Find R1 and R2 files (ENA typically names them with _1 and _2 or _R1 and _R2)
     # Look for patterns: *_1.fastq.gz, *_R1.fastq.gz, *_1.fq.gz, *_R1.fq.gz, etc.
-    R1_FILE=$(cat ~{write_lines(downloaded_files)} | grep -E "(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq)" | head -1 || echo "")
-    R2_FILE=$(cat ~{write_lines(downloaded_files)} | grep -E "(_2\.fastq|_R2\.fastq|_2\.fq|_R2\.fq)" | head -1 || echo "")
+    R1_FILE=$(ls ~{sep=' ' downloaded_files} | grep -E "(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq)" | head -1 || echo "")
+    R2_FILE=$(ls ~{sep=' ' downloaded_files} | grep -E "(_2\.fastq|_R2\.fastq|_2\.fq|_R2\.fq)" | head -1 || echo "")
 
     if [ -z "$R1_FILE" ] || [ -z "$R2_FILE" ]; then
       echo "ERROR: Could not identify paired FASTQ files"
       echo "Looking for files matching pattern *_1.fastq.gz and *_2.fastq.gz"
       echo "Available files:"
-      cat ~{write_lines(downloaded_files)}
+      ls -lh ~{sep=' ' downloaded_files}
       exit 1
     fi
 
