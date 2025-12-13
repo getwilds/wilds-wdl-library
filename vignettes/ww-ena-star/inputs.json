@@ -1,0 +1,10 @@
+{
+  "ena_star.ena_accession_list": ["ERR000001", "ERR000002"],
+  "ena_star.ref_genome": {
+    "name": "GRCh38",
+    "fasta": "/path/to/reference/genome.fa",
+    "gtf": "/path/to/reference/genes.gtf"
+  },
+  "ena_star.ncpu": 12,
+  "ena_star.memory_gb": 64
+}
