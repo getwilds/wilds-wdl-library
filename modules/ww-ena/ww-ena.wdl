@@ -230,9 +230,9 @@ task extract_fastq_pairs {
     echo "Extracted accession: $ACCESSION"
     echo "$ACCESSION" > accession.txt
 
-    # Move files to execution directory for proper output handling
-    mv "$R1_FILE" r1.fastq.gz
-    mv "$R2_FILE" r2.fastq.gz
+    # Copy files to execution directory with standardized names
+    cp "$R1_FILE" r1.fastq.gz
+    cp "$R2_FILE" r2.fastq.gz
   >>>
 
   output {
