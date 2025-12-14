@@ -10,7 +10,7 @@ workflow ena_star_example {
   call ww_testdata.download_ref_data { }
 
   # Call the actual ena_star workflow with test data outputs
-  # Using ERR000001: Small test dataset from ENA
+  # Using ERR10825982: Small test dataset from ENA
   # Note: This is a very small test file to ensure fast execution
   call ena_star_workflow.ena_star { input:
     ena_accession_list = ["ERR10825982"],
