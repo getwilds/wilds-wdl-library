@@ -1,7 +1,9 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-shapemapper/modules/ww-shapemapper/ww-shapemapper.wdl" as ww_shapemapper
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-shapemapper/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-shapemapper/modules/ww-shapemapper/ww-shapemapper.wdl" as ww_shapemapper
+# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-shapemapper/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "ww-shapemapper.wdl" as ww_shapemapper
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct ShapeMapperSample {
     String name

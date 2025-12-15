@@ -54,8 +54,8 @@ task run_shapemapper {
     cmd="shapemapper \
         --name ~{sample_name} \
         --target ~{target_fa} \
-        --modified --nmod ~{modified_r1} ~{modified_r2} \
-        --untreated --unmod ~{untreated_r1} ~{untreated_r2} \
+        --modified --R1 ~{modified_r1} --R2 ~{modified_r2} \
+        --untreated --R1 ~{untreated_r1} --R2 ~{untreated_r2} \
         --min-depth ~{min_depth} \
         --out ~{sample_name}_output"
 
