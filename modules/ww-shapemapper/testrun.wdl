@@ -2,7 +2,7 @@ version 1.0
 
 # Import module in question as well as the testdata module for automatic demo functionality
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-shapemapper/modules/ww-shapemapper/ww-shapemapper.wdl" as ww_shapemapper
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-shapemapper/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 # Define data structures for sample inputs if needed
 struct ShapeMapperSample {
