@@ -9,10 +9,13 @@ workflow varscan_example {
   call ww_testdata.download_ref_data { }
 
   # Download BAM files to simulate tumor and normal samples
-  call ww_testdata.download_bam_data as download_normal_bam { }
-  call ww_testdata.download_bam_data as download_tumor_bam { }
+  call ww_testdata.download_bam_data as download_sample_bam { }
 
-  # Generate mpileup for normal sample
+  call ww_testdata.download_bam_data as download_normal_bam { input:
+    filename = "NA12878_chr1_normal.bam"
+  }
+
+  # Make normal mpileup for VarScan somatic
   call ww_samtools.mpileup as normal_mpileup {
     input:
       bamfile = download_normal_bam.bam,
@@ -22,22 +25,42 @@ workflow varscan_example {
       memory_gb = 8
   }
 
-  # Generate mpileup for tumor sample
+  # Make normal mpileup for VarScan mpileup2cns
+  call ww_samtools.mpileup as normal_mpileup_cns {
+    input:
+      bamfile = download_normal_bam.bam,
+      ref_fasta = download_ref_data.fasta,
+      sample_name = "test_normal_nobaq",
+      disable_baq = true,
+      cpu_cores = 2,
+      memory_gb = 8
+  }
+
+  # Make 'tumor' mpileup
   call ww_samtools.mpileup as tumor_mpileup {
     input:
-      bamfile = download_tumor_bam.bam,
+      bamfile = download_sample_bam.bam,
       ref_fasta = download_ref_data.fasta,
       sample_name = "test_tumor",
       cpu_cores = 2,
       memory_gb = 8
   }
 
-  # Run VarScan somatic variant calling
+  # VarScan somatic
   call ww_varscan.somatic {
     input:
       sample_name = "test_sample",
       normal_pileup = normal_mpileup.pileup,
       tumor_pileup = tumor_mpileup.pileup,
+      cpu_cores = 2,
+      memory_gb = 8
+  }
+
+  # VarScan mpileup2cns
+  call ww_varscan.mpileup2cns {
+    input:
+      pileup_file = normal_mpileup_cns.pileup,
+      sample_name = "test_normal_nobaq",
       cpu_cores = 2,
       memory_gb = 8
   }
@@ -52,6 +75,7 @@ workflow varscan_example {
   output {
     File somatic_snvs = somatic.somatic_snvs_vcf
     File somatic_indels = somatic.somatic_indels_vcf
+    File germline_vcf = mpileup2cns.vcf
     File validation_report = validate_outputs.report
   }
 }
@@ -67,11 +91,13 @@ task validate_outputs {
   parameter_meta {
     somatic_snvs_vcf: "Somatic SNVs VCF file to validate"
     somatic_indels_vcf: "Somatic indels VCF file to validate"
+    germline_vcf : " Germline VCF file to validate"
   }
 
   input {
     File somatic_snvs_vcf
     File somatic_indels_vcf
+    File germline_vcf
   }
 
   command <<<
@@ -108,6 +134,21 @@ task validate_outputs {
       echo "Indel variants called: ${indel_count}" >> validation_report.txt
     else
       echo "Somatic Indels VCF: ~{somatic_indels_vcf} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+    echo "" >> validation_report.txt
+
+    # Check germline VCF file
+    echo "--- Germline VCF File ---" >> validation_report.txt
+    if [[ -f "~{germline_vcf}" && -s "~{germline_vcf}" ]]; then
+      germ_size=$(wc -c < "~{germline_vcf}")
+      echo "Germline variants VCF: ~{germline_vcf} (${germ_size} bytes)" >> validation_report.txt
+
+      # Count variants (non-header lines)
+      germ_count=$(grep -cv '^#' "~{germline_vcf}" || echo "0")
+      echo "Germline variants called: ${germ_count}" >> validation_report.txt
+    else
+      echo "Germline variants VCF: ~{germline_vcf} - MISSING OR EMPTY" >> validation_report.txt
       validation_passed=false
     fi
     echo "" >> validation_report.txt
