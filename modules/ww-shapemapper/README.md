@@ -39,7 +39,7 @@ Run ShapeMapper to analyze RNA structure probing data and generate reactivity pr
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
 **Outputs:**
-- `shape_file` (File): SHAPE reactivity profile with per-nucleotide reactivity scores
+- `output_tar` (File): Compressed tarball of the ShapeMapper output directory
 - `log_file` (File): ShapeMapper log file with processing details and quality metrics
 
 
@@ -77,7 +77,7 @@ workflow my_rna_structure_pipeline {
   }
 
   output {
-    Array[File] shape_profiles = run_shapemapper.shape_file
+    Array[File] output_tars = run_shapemapper.output_tar
     Array[File] analysis_logs = run_shapemapper.log_file
   }
 }
@@ -170,81 +170,6 @@ If you use this module in your research, please cite ShapeMapper:
 > Busan S, Weeks KM. (2018) Accurate detection of chemical modifications in RNA by mutational profiling (MaP) with ShapeMapper 2. RNA, 24(2):143-148.
 > DOI: [10.1261/rna.061945.117](https://doi.org/10.1261/rna.061945.117)
 
-## ShapeMapper Background
-
-ShapeMapper 2 is designed for:
-- **SHAPE-MaP**: Analysis of SHAPE (Selective 2'-Hydroxyl Acylation analyzed by Primer Extension) experiments using mutational profiling
-- **DMS-MaP**: Analysis of dimethyl sulfate probing data
-- **Other chemical probing methods**: Various RNA structure probing approaches
-
-The tool provides:
-- Per-nucleotide reactivity scores
-- Quality metrics and read depth information
-- Support for both amplicon and whole-transcript analyses
-- Automatic primer trimming and alignment
-
-## Parameters and Resource Requirements
-
-### Default Resources
-- **CPU**: 2 cores
-- **Memory**: 8 GB
-- **Runtime**: Varies based on dataset size (typically 30 minutes to several hours)
-
-### Resource Scaling
-Adjust resources based on your data:
-- `cpu_cores`: More cores speed up alignment and processing steps
-- `memory_gb`: Increase for very large target sequences or high-coverage datasets
-- `min_depth`: Higher values require more reads but provide more confident reactivity estimates
-
-### Recommended Settings
-
-**For amplicon data (single RNA target, high coverage):**
-```wdl
-cpu_cores = 2
-memory_gb = 8
-min_depth = 5000
-is_amplicon = true
-```
-
-**For whole transcriptome data or large datasets:**
-```wdl
-cpu_cores = 8
-memory_gb = 32
-min_depth = 1000
-is_amplicon = false
-```
-
-## Output Files
-
-### SHAPE File Format
-The `.shape` file contains per-nucleotide reactivity data with columns:
-- Nucleotide position
-- Sequence
-- Reactivity score
-- Standard error
-- Read depth
-
-### Log File
-The `.log` file contains:
-- Processing parameters
-- Quality metrics
-- Alignment statistics
-- Warnings and errors
-
-## Troubleshooting
-
-**Low read depth warnings:**
-- Increase sequencing depth for better coverage
-- Lower `min_depth` parameter if appropriate for your application
-
-**Primer trimming issues:**
-- Ensure `primers_fa` contains correct primer sequences
-- Verify primer sequences match your library preparation
-
-**Memory errors:**
-- Increase `memory_gb` parameter
-- Consider splitting very large target sequences
-
 ## Contributing
 
 To improve this module or report issues:
@@ -264,5 +189,3 @@ For questions about this module or to report issues:
 
 - **[ShapeMapper Documentation](https://github.com/Weeks-UNC/shapemapper2)**: Official ShapeMapper 2 documentation
 - **[WILDS Docker Library](https://github.com/getwilds/wilds-docker-library)**: Container images used by WDL workflows
-- **[WILDS Documentation](https://getwilds.org/)**: Comprehensive guides and best practices
-- **[WDL Specification](https://openwdl.org/)**: Official WDL language documentation

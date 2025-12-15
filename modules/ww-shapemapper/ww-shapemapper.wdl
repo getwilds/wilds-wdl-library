@@ -65,16 +65,18 @@ task run_shapemapper {
 
     # Run ShapeMapper
     eval "$cmd"
+
+    # Zip entire output directory for easier handling
+    tar -czf ~{sample_name}_output.tar.gz ~{sample_name}_output
   >>>
 
   output {
-    File shape_file = "~{sample_name}_output/~{sample_name}.shape"
-    File log_file = "~{sample_name}_output/~{sample_name}.log"
+    File output_tar = "~{sample_name}_output.tar.gz"
+    File log_file = "~{sample_name}_shapemapper_log.txt"
   }
 
   runtime {
-    # docker: "getwilds/shapemapper:2.3"
-    docker: "getwilds/shapemapper:local"
+    docker: "getwilds/shapemapper:2.3"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
