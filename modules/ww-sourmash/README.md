@@ -163,7 +163,7 @@ call sourmash_tasks.sketch  {
 
 This module pairs well with other WILDS modules:
 
-- **ww-testdata**: Download human reference genomes to check for matches to human conamination
+- **ww-testdata**: Download human reference genomes to check for matches to human contamination
 
 ## Resource allocation
 
