@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -184,6 +184,22 @@ call my_bam_analysis {
 }
 ```
 
+**RNA structure analysis with ShapeMapper**:
+```wdl
+call testdata.download_shapemapper_data { }
+call shapemapper_tasks.run_shapemapper {
+  input:
+    sample_name = "TPP_riboswitch",
+    target_fa = download_shapemapper_data.target_fa,
+    modified_r1 = download_shapemapper_data.modified_r1,
+    modified_r2 = download_shapemapper_data.modified_r2,
+    untreated_r1 = download_shapemapper_data.untreated_r1,
+    untreated_r2 = download_shapemapper_data.untreated_r2,
+    is_amplicon = true,
+    min_depth = 1000
+}
+```
+
 ## Task Reference
 
 ### download_ref_data
@@ -236,6 +252,43 @@ Creates a test GDC manifest file containing small open-access files for testing 
 
 **Outputs**:
 - `manifest` (File): GDC manifest file containing 3 small open-access TCGA files (total ~210KB)
+
+### download_shapemapper_data
+
+Downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-UNC/shapemapper2 repository. This dataset contains RNA structure probing data suitable for testing ShapeMapper analysis workflows.
+
+**Use Case**: When testing RNA structure analysis workflows with ShapeMapper, you need appropriate test data with actual chemical probing experiments. This task downloads the canonical TPP riboswitch example data that includes both modified (chemically treated) and untreated control samples.
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `target_fa` (File): Target RNA FASTA file (TPP riboswitch sequence, ~200 nucleotides)
+- `modified_r1` (File): R1 FASTQ file from modified/treated sample (TPPplus, concatenated from split files)
+- `modified_r2` (File): R2 FASTQ file from modified/treated sample (TPPplus, concatenated from split files)
+- `untreated_r1` (File): R1 FASTQ file from untreated control sample (TPPminus, concatenated from split files)
+- `untreated_r2` (File): R2 FASTQ file from untreated control sample (TPPminus, concatenated from split files)
+
+**Data Source**: https://github.com/Weeks-UNC/shapemapper2/tree/master/example_data
+
+**Example Usage**:
+```wdl
+# For ShapeMapper RNA structure analysis
+call testdata.download_shapemapper_data { }
+
+call shapemapper.run_shapemapper {
+  input:
+    sample_name = "TPP_riboswitch",
+    target_fa = download_shapemapper_data.target_fa,
+    modified_r1 = download_shapemapper_data.modified_r1,
+    modified_r2 = download_shapemapper_data.modified_r2,
+    untreated_r1 = download_shapemapper_data.untreated_r1,
+    untreated_r2 = download_shapemapper_data.untreated_r2,
+    is_amplicon = true,
+    min_depth = 1000
+}
+```
 
 ### interleave_fastq
 
@@ -390,6 +443,7 @@ All reference data is downloaded from authoritative public repositories:
 - **NCBI dbSNP**: Latest dbSNP variant database
 - **GATK Resource Bundle**: Known indels and gnomAD population frequencies
 - **Bioconductor pasilla package**: Example RNA-seq count data for DESeq2 testing
+- **ShapeMapper Repository**: TPP riboswitch RNA structure probing example data
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
 
@@ -415,6 +469,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-deseq2**: Differential expression analysis (uses individual count files from `generate_pasilla_counts`)
 - **ww-ichorcna**: Copy number analysis (requires ichorCNA reference files)
 - **ww-annotsv**: Structural variant annotation (requires test VCF)
+- **ww-shapemapper**: RNA structure analysis (uses TPP riboswitch example data from `download_shapemapper_data`)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:

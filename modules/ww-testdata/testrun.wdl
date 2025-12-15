@@ -55,6 +55,8 @@ workflow testdata_example {
 
   call ww_testdata.create_gdc_manifest { }
 
+  call ww_testdata.download_shapemapper_data { }
+
   call validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
@@ -85,7 +87,12 @@ workflow testdata_example {
     clean_amplicon_fasta = create_clean_amplicon_reference.clean_fasta,
     clean_amplicon_fasta_index = create_clean_amplicon_reference.clean_fasta_index,
     clean_amplicon_dict = create_clean_amplicon_reference.clean_dict,
-    gdc_manifest = create_gdc_manifest.manifest
+    gdc_manifest = create_gdc_manifest.manifest,
+    shapemapper_target_fa = download_shapemapper_data.target_fa,
+    shapemapper_modified_r1 = download_shapemapper_data.modified_r1,
+    shapemapper_modified_r2 = download_shapemapper_data.modified_r2,
+    shapemapper_untreated_r1 = download_shapemapper_data.untreated_r1,
+    shapemapper_untreated_r2 = download_shapemapper_data.untreated_r2
   }
 
   output {
@@ -128,6 +135,12 @@ workflow testdata_example {
     File clean_amplicon_dict = create_clean_amplicon_reference.clean_dict
     # Output from GDC manifest creation
     File gdc_manifest = create_gdc_manifest.manifest
+    # Outputs from ShapeMapper data download
+    File shapemapper_target_fa = download_shapemapper_data.target_fa
+    File shapemapper_modified_r1 = download_shapemapper_data.modified_r1
+    File shapemapper_modified_r2 = download_shapemapper_data.modified_r2
+    File shapemapper_untreated_r1 = download_shapemapper_data.untreated_r1
+    File shapemapper_untreated_r2 = download_shapemapper_data.untreated_r2
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
   }
@@ -172,6 +185,11 @@ task validate_outputs {
     clean_amplicon_fasta_index: "Clean amplicon reference FASTA index file to validate"
     clean_amplicon_dict: "Clean amplicon reference dictionary file to validate"
     gdc_manifest: "GDC manifest file to validate"
+    shapemapper_target_fa: "ShapeMapper target RNA FASTA file to validate"
+    shapemapper_modified_r1: "ShapeMapper modified R1 FASTQ file to validate"
+    shapemapper_modified_r2: "ShapeMapper modified R2 FASTQ file to validate"
+    shapemapper_untreated_r1: "ShapeMapper untreated R1 FASTQ file to validate"
+    shapemapper_untreated_r2: "ShapeMapper untreated R2 FASTQ file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -207,6 +225,11 @@ task validate_outputs {
     File clean_amplicon_fasta_index
     File clean_amplicon_dict
     File gdc_manifest
+    File shapemapper_target_fa
+    File shapemapper_modified_r1
+    File shapemapper_modified_r2
+    File shapemapper_untreated_r1
+    File shapemapper_untreated_r2
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -270,6 +293,11 @@ task validate_outputs {
     validate_file "~{clean_amplicon_fasta}" "Clean amplicon FASTA" || validation_passed=false
     validate_file "~{clean_amplicon_fasta_index}" "Clean amplicon FASTA index" || validation_passed=false
     validate_file "~{clean_amplicon_dict}" "Clean amplicon FASTA dict" || validation_passed=false
+    validate_file "~{shapemapper_target_fa}" "ShapeMapper target FASTA" || validation_passed=false
+    validate_file "~{shapemapper_modified_r1}" "ShapeMapper modified R1 FASTQ" || validation_passed=false
+    validate_file "~{shapemapper_modified_r2}" "ShapeMapper modified R2 FASTQ" || validation_passed=false
+    validate_file "~{shapemapper_untreated_r1}" "ShapeMapper untreated R1 FASTQ" || validation_passed=false
+    validate_file "~{shapemapper_untreated_r2}" "ShapeMapper untreated R2 FASTQ" || validation_passed=false
 
     # Additional check: Verify no N bases in clean amplicon
     echo "" >> validation_report.txt
@@ -285,7 +313,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 29"
+      echo "Total files validated: 34"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

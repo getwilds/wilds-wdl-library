@@ -18,23 +18,19 @@ struct ShapeMapperSample {
 # Define test workflow to demonstrate module functionality
 
 workflow shapemapper_example {
-  # Auto-download test data for testing purposes
-  call ww_testdata.download_fastq_data as download_demo_data { }
+  # Auto-download ShapeMapper example test data (TPP riboswitch)
+  call ww_testdata.download_shapemapper_data as download_shapemapper_data { }
 
-  # Create samples array using test data
-  # Note: For actual ShapeMapper analysis, you would need:
-  # - A target RNA FASTA file
-  # - Modified (chemically treated) sample FASTQ files (R1 and R2)
-  # - Untreated control sample FASTQ files (R1 and R2)
-  # This example uses demo FASTQ data as placeholders
+  # Create samples array using ShapeMapper example data
+  # This uses the official TPP riboswitch example data from the ShapeMapper repository
   Array[ShapeMapperSample] final_samples = [
     {
-      "name": "demo_sample_1",
-      "target_fa": download_demo_data.r1_fastq,  # Placeholder - use actual target FASTA
-      "modified_r1": download_demo_data.r1_fastq,
-      "modified_r2": download_demo_data.r2_fastq,
-      "untreated_r1": download_demo_data.r1_fastq,
-      "untreated_r2": download_demo_data.r2_fastq
+      "name": "TPP_riboswitch",
+      "target_fa": download_shapemapper_data.target_fa,
+      "modified_r1": download_shapemapper_data.modified_r1,
+      "modified_r2": download_shapemapper_data.modified_r2,
+      "untreated_r1": download_shapemapper_data.untreated_r1,
+      "untreated_r2": download_shapemapper_data.untreated_r2
     }
   ]
 
@@ -47,8 +43,8 @@ workflow shapemapper_example {
         modified_r2 = sample.modified_r2,
         untreated_r1 = sample.untreated_r1,
         untreated_r2 = sample.untreated_r2,
-        min_depth = 5000,
-        is_amplicon = false
+        min_depth = 1000,
+        is_amplicon = true
     }
   }
 

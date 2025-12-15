@@ -126,7 +126,7 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a test workflow (`testrun.wdl`) that can be run independently:
+The module includes a test workflow (`testrun.wdl`) that can be run independently. The test workflow automatically downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-UNC repository via the `ww-testdata` module.
 
 ```bash
 # Using miniWDL
@@ -139,9 +139,19 @@ sprocket run testrun.wdl --entrypoint shapemapper_example
 java -jar cromwell.jar run testrun.wdl
 ```
 
-### Demo Mode Notes
+### Test Data
 
-The test workflow uses placeholder data from `ww-testdata`. For actual ShapeMapper analysis, you need:
+The test workflow uses authentic RNA structure probing data:
+- **Sample**: TPP riboswitch (~200 nucleotide RNA sequence)
+- **Modified sample**: Chemically treated RNA-seq reads (TPPplus)
+- **Untreated sample**: Control RNA-seq reads (TPPminus)
+- **Data source**: Official ShapeMapper 2 example data from https://github.com/Weeks-UNC/shapemapper2
+
+This provides a realistic test of the module's functionality with actual SHAPE-MaP experimental data.
+
+### For Production Use
+
+For your own ShapeMapper analysis, you need:
 1. A target RNA FASTA file with your sequence(s) of interest
 2. Paired-end FASTQ files from chemically modified samples (e.g., SHAPE-treated)
 3. Paired-end FASTQ files from untreated control samples
