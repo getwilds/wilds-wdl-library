@@ -73,7 +73,8 @@ task run_shapemapper {
   }
 
   runtime {
-    docker: "getwilds/shapemapper:2.3"
+    # docker: "getwilds/shapemapper:2.3"
+    docker: "getwilds/shapemapper:local"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
