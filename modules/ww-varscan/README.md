@@ -2,17 +2,22 @@
 [![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL module for somatic variant calling using VarScan2.
+A WILDS WDL module for somatic and germline variant calling using VarScan2.
 
 ## Overview
 
-This module provides a reusable WDL task for somatic variant detection in tumor-normal sample pairs using VarScan2. VarScan2 is a platform-independent variant caller that compares normal and tumor samples at the pileup level to identify somatic mutations. The module uses pre-generated mpileup files from Samtools as input and produces VCF files containing somatic SNV and indel calls.
+This module provides reusable WDL tasks for variant calling using VarScan2. VarScan2 is a platform-independent variant caller that operates on mpileup files to identify mutations. The module includes:
+
+- **Somatic variant calling**: Compares tumor-normal sample pairs to identify somatic mutations
+- **Germline variant calling**: Calls variants from a single sample mpileup file
+
+Both tasks use pre-generated mpileup files from Samtools as input and produce VCF files containing variant calls.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `somatic`
+- **Tasks**: `somatic`, `mpileup2cns`
 - **Container**: `getwilds/varscan:2.4.6` (WILDS Docker image with VarScan2 installed)
 
 ## Tasks
@@ -33,10 +38,25 @@ Performs somatic variant calling on tumor-normal pairs using pre-generated mpile
 - `somatic_snvs_vcf` (File): VCF file containing somatic single nucleotide variant calls (`{sample_name}.snp.vcf`)
 - `somatic_indels_vcf` (File): VCF file containing somatic insertion/deletion calls (`{sample_name}.indel.vcf`)
 
+### `mpileup2cns`
+Performs germline variant calling on a single sample using a pre-generated mpileup file. This task uses VarScan's mpileup2cns command to call both SNVs and indels, outputting variants in VCF format.
+
+**Inputs:**
+- `sample_name` (String): Name of the sample (used in output file names)
+- `pileup` (File): Samtools mpileup file generated with `--no-BAQ` flag and reference FASTA
+- `cpu_cores` (Int): Number of CPU cores (default: 4)
+- `memory_gb` (Int): Memory allocation in GB (default: 16)
+
+**Important**: The mpileup file must be generated from a sorted BAM file using the `--no-BAQ` flag. See the [VarScan documentation](https://dkoboldt.github.io/varscan/germline-calling.html) for more information and the the `ww-samtools` [module](https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-samtools) for running `samtools mpileup` using a WILDS WDL.
+
+**Outputs:**
+- `vcf` (File): VCF file containing SNV and indel calls (`{sample_name}.vcf`)
+
 ## Usage as a Module
 
 ### Importing into Your Workflow
 
+**Somatic variant calling example:**
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-varscan/ww-varscan.wdl" as varscan_tasks
 
@@ -81,7 +101,7 @@ This module integrates seamlessly with other WILDS components:
 - **ww-testdata**: Download test BAM files to generate mpileup files
 - **ww-samtools**: Generate mpileup files from BAM alignments before variant calling
 
-**Complete pipeline with mpileup generation:**
+**Complete somatic pipeline with mpileup generation:**
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl" as samtools_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-varscan/ww-varscan.wdl" as varscan_tasks
@@ -121,6 +141,40 @@ workflow somatic_variant_calling_pipeline {
   output {
     File somatic_snvs = somatic.somatic_snvs_vcf
     File somatic_indels = somatic.somatic_indels_vcf
+  }
+}
+```
+
+**Complete germline pipeline with mpileup generation:**
+```wdl
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl" as samtools_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-varscan/ww-varscan.wdl" as varscan_tasks
+
+workflow germline_variant_calling_pipeline {
+  input {
+    String sample_name
+    File bam_file
+    File ref_fasta
+  }
+
+  # Generate mpileup with --no-BAQ flag
+  call samtools_tasks.mpileup {
+    input:
+      bamfile = bam_file,
+      ref_fasta = ref_fasta,
+      sample_name = sample_name,
+      disable_baq = true
+  }
+
+  # Call germline variants
+  call varscan_tasks.mpileup2cns {
+    input:
+      sample_name = sample_name,
+      pileup = mpileup.pileup
+  }
+
+  output {
+    File variants_vcf = mpileup2cns.vcf
   }
 }
 ```
