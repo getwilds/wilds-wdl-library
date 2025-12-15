@@ -11,7 +11,7 @@ task run_shapemapper {
     email: "wilds@fredhutch.org"
     description: "Run ShapeMapper to analyze RNA structure probing data and generate reactivity profiles"
     outputs: {
-        shape_file: "SHAPE reactivity profile with per-nucleotide reactivity scores",
+        output_tar: "Compressed tarball of the ShapeMapper output directory",
         log_file: "ShapeMapper log file with processing details and quality metrics"
     }
   }
