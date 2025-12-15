@@ -59,8 +59,8 @@ workflow varscan_example {
   # VarScan mpileup2cns
   call ww_varscan.mpileup2cns {
     input:
-      pileup_file = normal_mpileup_cns.pileup,
-      sample_name = "test_normal_nobaq",
+      pileup_file = tumor_mpileup.pileup,
+      sample_name = "test_tumor_nobaq",
       cpu_cores = 2,
       memory_gb = 8
   }
