@@ -58,7 +58,7 @@ task sketch {
   runtime {
     docker: "getwilds/sourmash:4.8.2"
     memory: "~{memory_gb} GB"
-    disks: "local-disk 200 HDD"
+    cpu: cpu_cores
   }
 }
 
@@ -77,6 +77,7 @@ task gather {
     reference_databases_sigs: "Array of reference database (.zip) and/or signature (.sig) files to search against"
     threshold_bp: "Minimum number of base pairs to report a match (default: 50000)"
     memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores to use"
     output_name: "Optional custom output name (defaults to query basename)"
   }
 
@@ -85,6 +86,7 @@ task gather {
     Array[File] reference_databases_sigs
     Int threshold_bp = 50000
     Int memory_gb = 8
+    Int cpu_cores = 4
     String? output_name
   }
 
@@ -108,7 +110,7 @@ task gather {
   runtime {
     docker: "getwilds/sourmash:4.8.2"
     memory: "~{memory_gb} GB"
-    disks: "local-disk 200 HDD"
+    cpu: cpu_cores
   }
 }
 
@@ -128,6 +130,7 @@ task compare {
     save_name: "Name to use for output files"
     k_value: "Value of k used for sourmash sketch"
     memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores to use"
   }
 
   input {
@@ -135,6 +138,7 @@ task compare {
     String save_name
     Int k_value
     Int memory_gb = 8
+    Int cpu_cores = 4
   }
 
   command <<<
@@ -165,6 +169,6 @@ task compare {
   runtime {
     docker: "getwilds/sourmash:4.8.2"
     memory: "~{memory_gb} GB"
-    disks: "local-disk 200 HDD"
+    cpu: cpu_cores
   }
 }
