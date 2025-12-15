@@ -929,7 +929,7 @@ task download_shapemapper_data {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: "getwilds/samtools:1.11"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
