@@ -48,9 +48,7 @@ workflow shapemapper_example {
         untreated_r1 = sample.untreated_r1,
         untreated_r2 = sample.untreated_r2,
         min_depth = 5000,
-        is_amplicon = false,
-        cpu_cores = 4,
-        memory_gb = 16
+        is_amplicon = false
     }
   }
 

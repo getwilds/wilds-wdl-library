@@ -35,8 +35,8 @@ Run ShapeMapper to analyze RNA structure probing data and generate reactivity pr
 - `primers_fa` (File, optional): FASTA file containing primer sequences for trimming
 - `min_depth` (Int, default=5000): Minimum read depth required for calculating reactivity
 - `is_amplicon` (Boolean, default=false): Set to true if data is from amplicon sequencing
-- `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
-- `memory_gb` (Int, default=16): Memory allocated for the task in GB
+- `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
+- `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
 **Outputs:**
 - `shape_file` (File): SHAPE reactivity profile with per-nucleotide reactivity scores
@@ -176,8 +176,8 @@ The tool provides:
 ## Parameters and Resource Requirements
 
 ### Default Resources
-- **CPU**: 4 cores
-- **Memory**: 16 GB
+- **CPU**: 2 cores
+- **Memory**: 8 GB
 - **Runtime**: Varies based on dataset size (typically 30 minutes to several hours)
 
 ### Resource Scaling
@@ -190,13 +190,13 @@ Adjust resources based on your data:
 
 **For amplicon data (single RNA target, high coverage):**
 ```wdl
-cpu_cores = 4
-memory_gb = 16
+cpu_cores = 2
+memory_gb = 8
 min_depth = 5000
 is_amplicon = true
 ```
 
-**For whole transcriptome data:**
+**For whole transcriptome data or large datasets:**
 ```wdl
 cpu_cores = 8
 memory_gb = 32

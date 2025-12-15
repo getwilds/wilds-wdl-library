@@ -40,8 +40,8 @@ task run_shapemapper {
     File? primers_fa
     Int min_depth = 5000
     Boolean is_amplicon = false
-    Int cpu_cores = 4
-    Int memory_gb = 16
+    Int cpu_cores = 2
+    Int memory_gb = 8
   }
 
   command <<<
