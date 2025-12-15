@@ -59,8 +59,8 @@ workflow varscan_example {
   # VarScan mpileup2cns
   call ww_varscan.mpileup2cns {
     input:
-      pileup_file = tumor_mpileup.pileup,
-      sample_name = "test_tumor_nobaq",
+      pileup = normal_mpileup_cns.pileup,
+      sample_name = "test_normal_nobaq",
       cpu_cores = 2,
       memory_gb = 8
   }
@@ -69,7 +69,8 @@ workflow varscan_example {
   call validate_outputs {
     input:
       somatic_snvs_vcf = somatic.somatic_snvs_vcf,
-      somatic_indels_vcf = somatic.somatic_indels_vcf
+      somatic_indels_vcf = somatic.somatic_indels_vcf,
+      germline_vcf = mpileup2cns.vcf
   }
 
   output {
@@ -91,7 +92,7 @@ task validate_outputs {
   parameter_meta {
     somatic_snvs_vcf: "Somatic SNVs VCF file to validate"
     somatic_indels_vcf: "Somatic indels VCF file to validate"
-    germline_vcf : " Germline VCF file to validate"
+    germline_vcf: "Germline VCF file to validate"
   }
 
   input {
