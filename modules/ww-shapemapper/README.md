@@ -47,6 +47,42 @@ Run ShapeMapper to analyze RNA structure probing data and generate reactivity pr
 
 ### Importing into Your Workflow
 
+**Single sample example:**
+
+```wdl
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-shapemapper/ww-shapemapper.wdl" as shapemapper_tasks
+
+workflow analyze_single_rna {
+  input {
+    String sample_name
+    File target_fa
+    File modified_r1
+    File modified_r2
+    File untreated_r1
+    File untreated_r2
+  }
+
+  call shapemapper_tasks.run_shapemapper {
+    input:
+      sample_name = sample_name,
+      target_fa = target_fa,
+      modified_r1 = modified_r1,
+      modified_r2 = modified_r2,
+      untreated_r1 = untreated_r1,
+      untreated_r2 = untreated_r2
+  }
+
+  output {
+    File output_tar = run_shapemapper.output_tar
+    File analysis_log = run_shapemapper.log_file
+  }
+}
+```
+
+**Multiple samples with batch processing:**
+
+This example uses WDL's `struct` and `scatter` pattern to process multiple samples in parallel. Note that this batch processing approach is not specific to ShapeMapper - it's a general WDL pattern for running the same task across multiple inputs.
+
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-shapemapper/ww-shapemapper.wdl" as shapemapper_tasks
 
@@ -181,7 +217,7 @@ To improve this module or report issues:
 For questions about this module or to report issues:
 - Open an issue in the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library/issues)
 - Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
-- See the [WILDS Contributor Guide](https://getwilds.org/guide/) for detailed guidelines
+- See the [WILDS WDL Contributing Guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for detailed guidelines
 
 ## Related Resources
 
