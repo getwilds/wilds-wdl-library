@@ -39,7 +39,7 @@ Run ShapeMapper to analyze RNA structure probing data and generate reactivity pr
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
 **Outputs:**
-- `output_tar` (File): Compressed tarball of the ShapeMapper output directory
+- `output_tar` (File): Compressed tarball of a folder containing ShapeMapper outputs
 - `log_file` (File): ShapeMapper log file with processing details and quality metrics
 
 
