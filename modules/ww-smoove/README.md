@@ -14,7 +14,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 - **Tasks**: `smoove_call`
 - **Workflow**: `smoove_example` (demonstration workflow with automatic test data support)
-- **Container**: `brentp/smoove:latest`
+- **Container**: `getwilds/smoove:0.2.8` (WILDS Docker image with Smoove and dependencies pre-installed)
 
 ## Tasks
 
