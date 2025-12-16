@@ -30,7 +30,7 @@ workflow shapemapper_example {
   }
 
   output {
-    Array[File] output_tar_files = run_shapemapper.output_tar
-    Array[File] log_files = run_shapemapper.log_file
+    File output_tar_files = run_shapemapper.output_tar
+    File log_files = run_shapemapper.log_file
   }
 }
