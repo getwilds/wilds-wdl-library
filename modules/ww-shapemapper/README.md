@@ -121,8 +121,6 @@ call shapemapper_tasks.run_shapemapper {
 
 This module integrates seamlessly with other WILDS components:
 - **ww-fastqc**: Quality control of input FASTQ files before ShapeMapper analysis
-- **ww-samtools**: Post-processing of alignment files if needed
-- **Other WILDS modules**: Can be combined with downstream RNA analysis tools
 
 ## Testing the Module
 
