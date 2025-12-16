@@ -272,24 +272,6 @@ Downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-
 
 **Data Source**: https://github.com/Weeks-UNC/shapemapper2/tree/master/example_data
 
-**Example Usage**:
-```wdl
-# For ShapeMapper RNA structure analysis
-call testdata.download_shapemapper_data { }
-
-call shapemapper.run_shapemapper {
-  input:
-    sample_name = "TPP_riboswitch",
-    target_fa = download_shapemapper_data.target_fa,
-    modified_r1 = download_shapemapper_data.modified_r1,
-    modified_r2 = download_shapemapper_data.modified_r2,
-    untreated_r1 = download_shapemapper_data.untreated_r1,
-    untreated_r2 = download_shapemapper_data.untreated_r2,
-    is_amplicon = true,
-    min_depth = 1000
-}
-```
-
 ### interleave_fastq
 
 **Inputs**:

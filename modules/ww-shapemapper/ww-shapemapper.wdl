@@ -7,8 +7,8 @@ version 1.0
 
 task run_shapemapper {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Run ShapeMapper to analyze RNA structure probing data and generate reactivity profiles"
     outputs: {
         output_tar: "Compressed tarball of the ShapeMapper output directory",
