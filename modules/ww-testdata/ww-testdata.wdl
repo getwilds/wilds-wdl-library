@@ -847,3 +847,90 @@ EOF
     cpu: 1
   }
 }
+
+task download_shapemapper_data {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Downloads ShapeMapper example data (TPP riboswitch) from the official repository for testing RNA structure analysis workflows"
+    outputs: {
+        target_fa: "Target RNA FASTA file (TPP riboswitch sequence)",
+        modified_r1: "R1 FASTQ file from modified/treated sample (TPPplus)",
+        modified_r2: "R2 FASTQ file from modified/treated sample (TPPplus)",
+        untreated_r1: "R1 FASTQ file from untreated control sample (TPPminus)",
+        untreated_r2: "R2 FASTQ file from untreated control sample (TPPminus)"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -eo pipefail
+
+    BASE_URL="https://raw.githubusercontent.com/Weeks-UNC/shapemapper2/master/example_data"
+
+    # Download target RNA FASTA file
+    echo "Downloading TPP.fa target sequence..."
+    wget -q --no-check-certificate -O TPP.fa "${BASE_URL}/TPP.fa"
+
+    # Download and concatenate TPPplus (modified/treated) R1 reads
+    echo "Downloading TPPplus (modified) R1 reads..."
+    for part in aa ab ac ad; do
+      wget -q --no-check-certificate -O "TPPplus_R1_${part}.fastq.gz" \
+        "${BASE_URL}/TPPplus/TPPplus_R1_${part}.fastq.gz"
+    done
+    cat TPPplus_R1_*.fastq.gz > TPPplus_R1.fastq.gz
+    rm TPPplus_R1_aa.fastq.gz TPPplus_R1_ab.fastq.gz TPPplus_R1_ac.fastq.gz TPPplus_R1_ad.fastq.gz
+
+    # Download and concatenate TPPplus (modified/treated) R2 reads
+    echo "Downloading TPPplus (modified) R2 reads..."
+    for part in aa ab ac ad; do
+      wget -q --no-check-certificate -O "TPPplus_R2_${part}.fastq.gz" \
+        "${BASE_URL}/TPPplus/TPPplus_R2_${part}.fastq.gz"
+    done
+    cat TPPplus_R2_*.fastq.gz > TPPplus_R2.fastq.gz
+    rm TPPplus_R2_aa.fastq.gz TPPplus_R2_ab.fastq.gz TPPplus_R2_ac.fastq.gz TPPplus_R2_ad.fastq.gz
+
+    # Download and concatenate TPPminus (untreated) R1 reads
+    echo "Downloading TPPminus (untreated) R1 reads..."
+    for part in aa ab ac ad; do
+      wget -q --no-check-certificate -O "TPPminus_R1_${part}.fastq.gz" \
+        "${BASE_URL}/TPPminus/TPPminus_R1_${part}.fastq.gz"
+    done
+    cat TPPminus_R1_*.fastq.gz > TPPminus_R1.fastq.gz
+    rm TPPminus_R1_aa.fastq.gz TPPminus_R1_ab.fastq.gz TPPminus_R1_ac.fastq.gz TPPminus_R1_ad.fastq.gz
+
+    # Download and concatenate TPPminus (untreated) R2 reads
+    echo "Downloading TPPminus (untreated) R2 reads..."
+    for part in aa ab ac ad; do
+      wget -q --no-check-certificate -O "TPPminus_R2_${part}.fastq.gz" \
+        "${BASE_URL}/TPPminus/TPPminus_R2_${part}.fastq.gz"
+    done
+    cat TPPminus_R2_*.fastq.gz > TPPminus_R2.fastq.gz
+    rm TPPminus_R2_aa.fastq.gz TPPminus_R2_ab.fastq.gz TPPminus_R2_ac.fastq.gz TPPminus_R2_ad.fastq.gz
+
+    echo "ShapeMapper example data download complete"
+  >>>
+
+  output {
+    File target_fa = "TPP.fa"
+    File modified_r1 = "TPPplus_R1.fastq.gz"
+    File modified_r2 = "TPPplus_R2.fastq.gz"
+    File untreated_r1 = "TPPminus_R1.fastq.gz"
+    File untreated_r2 = "TPPminus_R2.fastq.gz"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
