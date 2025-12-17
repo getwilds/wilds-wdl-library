@@ -26,7 +26,7 @@ Downloads sequencing data files from ENA using accession numbers. Supports singl
 **Inputs:**
 - `accessions` (String, optional): Comma-separated list of ENA accession numbers (e.g., "ERR2208926,ERR2208890") or a single accession.
 - `accessions_file` (File, optional): File containing accession numbers (one per line or tab-separated with accessions in first column)
-- `file_format` (String, default="READS_FASTQ"): Format of files to download
+- `file_format` (String, default="READS_FASTQ"): Format of files to download. Options are:
   - `READS_FASTQ`: FASTQ format reads
   - `READS_SUBMITTED`: Submitted read files
   - `READS_BAM`: BAM format alignments
