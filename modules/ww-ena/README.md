@@ -266,7 +266,7 @@ The module supports multiple data formats:
 
 ### Transfer Protocols
 
-- **FTP (default)**: Reliable, works everywhere, moderate speed
+- **FTP (default)**: Reliable, works almost everywhere, moderate speed
 - **ASPERA**: Much faster for large files, requires Aspera Connect/CLI installation
 
 ### Resource Requirements
