@@ -345,7 +345,7 @@ call ena_tasks.download_files {
 
 If downloads fail, check:
 1. Accession numbers are valid (verify on ENA website)
-2. Network connectivity to ENA servers
+2. Network connectivity
 3. Adequate disk space for downloads
 4. Review `download.log` for specific error messages
 
