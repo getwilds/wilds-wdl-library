@@ -34,6 +34,8 @@ Performs de novo metagenomic assembly using metaSPAdes in assembler-only mode (s
 
 **Outputs:**
 - `scaffolds` (File): Assembled scaffolds in compressed FASTA format (`.scaffolds.fasta.gz`)
+- `contigs` (File): Assembled contigs in compressed FASTA format (`.contigs.fasta.gz`)
+- `log` (File): SPAdes log file
 
 ## Usage as a Module
 
@@ -60,6 +62,8 @@ workflow my_assembly_pipeline {
 
   output {
     File assembled_scaffolds = metaspades.scaffolds_fasta
+    File assembled_contigs = metaspades.contigs_fasta
+    File spades_log = metaspades.log
   }
 }
 ```
@@ -104,7 +108,9 @@ sprocket run testrun.wdl --entrypoint spades_example
 
 ## Output Description
 
-- **Scaffolds**: Assembled contiguous sequences (scaffolds) in FASTA format, compressed with gzip.
+- **Scaffolds**: Assembled contiguous sequences (scaffolds) in FASTA format, compressed with gzip. Reecommend for use as resulting sequences.
+- **Contigs**: Assembled contiguous sequences (contigs) in FASTA format, compressed with gzip.
+- **Log file**: Detailed log of the SPAdes assembly process for troubleshooting and record-keeping.
 
 ## Module Development
 

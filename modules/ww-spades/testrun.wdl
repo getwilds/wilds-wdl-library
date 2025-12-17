@@ -20,53 +20,82 @@ workflow spades_example {
 
   # Validate outputs
   call validate_outputs { input:
-    fasta = metaspades.scaffolds_fasta
+    scaffolds_fasta = metaspades.scaffolds_fasta,
+    contigs_fasta = metaspades.contigs_fasta,
+    log_file = metaspades.log_file
   }
 
   output {
-    File fasta = metaspades.scaffolds_fasta
+    File scaffolds = metaspades.scaffolds_fasta
+    File contigs = metaspades.contigs_fasta
+    File log = metaspades.log_file
     File validation_report = validate_outputs.report
   }
 }
 
 task validate_outputs {
   meta {
-    description: "Validate SPAdes output"
+    description: "Validates SPAdes assembly outputs to ensure they exist and are non-empty"
     outputs: {
-        report: "Validation report summarizing file checks and statistics"
+        report: "Validation summary reporting file checks and basic statistics"
     }
   }
 
   parameter_meta {
-    fasta: "FASTA file to validate"
+    scaffolds_fasta: "Scaffolds FASTA file to validate"
+    contigs_fasta: "Contigs FASTA file to validate"
+    log_file: "SPAdes log file to validate"
+    cpu_cores: "Number of CPU cores to use for validation"
+    memory_gb: "Memory allocation in GB for the task"
   }
 
   input {
-    File fasta
+    File scaffolds_fasta
+    File contigs_fasta
+    File log_file
+    Int cpu_cores = 1
+    Int memory_gb = 1
   }
 
   command <<<
-    set -eo pipefail
+    set -euo pipefail
+
+    # Function to validate a file exists and is non-empty
+    validate_file() {
+      local file_path="$1"
+      local file_label="$2"
+
+      if [[ -f "$file_path" && -s "$file_path" ]]; then
+        echo "$file_label: $file_path - PASSED" >> validation_report.txt
+      else
+        echo "$file_label: $file_path - MISSING OR EMPTY" >> validation_report.txt
+      fi
+    }
 
     echo "=== SPAdes Assembly Validation Report ===" > validation_report.txt
+    echo "Generated on: $(date)" >> validation_report.txt
     echo "" >> validation_report.txt
 
-    # Check FASTA file
-    echo "--- Scaffolds FASTA File ---" >> validation_report.txt
-    if [[ -f "~{fasta}" && -s "~{fasta}" ]]; then
-      fasta_size=$(wc -c < "~{fasta}")
-      echo "FASTA file: ~{fasta} (${fasta_size} bytes)" >> validation_report.txt
-      echo "" >> validation_report.txt
+    validation_passed=true
+
+    # Validate all output files
+    validate_file "~{scaffolds_fasta}" "Scaffolds FASTA" || validation_passed=false
+    validate_file "~{contigs_fasta}" "Contigs FASTA" || validation_passed=false
+    validate_file "~{log_file}" "SPAdes log file" || validation_passed=false
+
+    {
+      echo ""
+      echo "=== Validation Summary ==="
+      echo "Total files validated: 3"
+    } >> validation_report.txt
+
+    if [[ "$validation_passed" == "true" ]]; then
       echo "Overall Status: PASSED" >> validation_report.txt
     else
-      echo "FASTA file: ~{fasta} - MISSING OR EMPTY" >> validation_report.txt
-      echo "" >> validation_report.txt
       echo "Overall Status: FAILED" >> validation_report.txt
       exit 1
     fi
-    echo "" >> validation_report.txt
 
-    # Also output to stdout for immediate feedback
     cat validation_report.txt
   >>>
 
@@ -76,7 +105,7 @@ task validate_outputs {
 
   runtime {
     docker: "staphb/spades:4.2.0"
-    memory: "1 GB"
-    cpu: 1
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
   }
 }

@@ -11,6 +11,8 @@ task metaspades {
     description: "De novo metagenomic assembly using metaSPAdes"
     outputs: {
         scaffolds_fasta: "Assembled scaffolds in compressed FASTA format"
+        contigs_fasta: "Assembled contigs in compressed FASTA format"
+        log_file: "SPAdes log file"
     }
   }
 
@@ -64,9 +66,12 @@ task metaspades {
     echo "Running: $spades_cmd"
     eval "$spades_cmd"
 
-    # Move and compress scaffolds
+    # Move and compress scaffolds and contigs
     mv spades_outdir/scaffolds.fasta "~{sample_name}.scaffolds.fasta"
     gzip "~{sample_name}.scaffolds.fasta"
+
+    mv spades_outdir/contigs.fasta "~{sample_name}.contigs.fasta"
+    gzip "~{sample_name}.contigs.fasta"
 
     # Clean up SPAdes output directory to save space
     rm -rf spades_outdir
@@ -74,6 +79,8 @@ task metaspades {
 
   output {
     File scaffolds_fasta = "~{sample_name}.scaffolds.fasta.gz"
+    File contigs_fasta = "~{sample_name}.contigs.fasta.gz"
+    File log_file = "spades_outdir/spades.log"
   }
 
   runtime {
