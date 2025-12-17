@@ -104,7 +104,7 @@ task validate_outputs {
   }
 
   runtime {
-    docker: "staphb/spades:4.2.0"
+    docker: "getwilds/spades:4.2.0"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
