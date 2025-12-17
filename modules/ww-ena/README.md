@@ -239,13 +239,6 @@ The test workflow includes a validation task that checks:
 - Output files are non-empty
 - Download logs and summaries are generated
 
-## Docker Container
-
-This module uses the `getwilds/ena-tools:2.1.1` container image from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library), which includes:
-- ena-file-downloader tool (version 2.1.1)
-- Java runtime environment
-- Bash shell
-- Standard Unix utilities
 
 ## ENA Data Access
 
