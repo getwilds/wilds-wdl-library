@@ -242,25 +242,7 @@ The test workflow includes a validation task that checks:
 
 ## ENA Data Access
 
-### Finding Accession Numbers
-
-ENA accession numbers can be found through:
-- **ENA Browser**: https://www.ebi.ac.uk/ena/browser/
-- **ENA Search**: https://www.ebi.ac.uk/ena/browser/advanced-search
-
-Common accession formats:
-- Study: `PRJEB*`, `PRJNA*`, `ERP*`, `SRP*`
-- Sample: `SAMEA*`, `SAMN*`, `ERS*`, `SRS*`
-- Run: `ERR*`, `SRR*`, `DRR*`
-
-### File Formats
-
-The module supports multiple data formats:
-- **READS_FASTQ**: Most common format for sequencing reads
-- **READS_SUBMITTED**: Original submitted format (may be FASTQ, FASTA, or other)
-- **READS_BAM**: Aligned reads in BAM format
-- **ANALYSIS_SUBMITTED**: Analysis files as submitted
-- **ANALYSIS_GENERATED**: ENA-generated analysis files
+For information on finding accession numbers, file formats, and querying ENA data, see the [ENA data retrieval documentation](https://ena-docs.readthedocs.io/en/latest/retrieval/general-guide.html).
 
 ## Performance Considerations
 
