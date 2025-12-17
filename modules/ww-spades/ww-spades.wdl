@@ -47,7 +47,7 @@ task metaspades {
     fi
 
     # Build SPAdes command
-    spades_cmd="bin/spades.py \
+    spades_cmd="spades.py \
       -o spades_outdir \
       --threads ~{cpu_cores} \
       --memory ~{memory_gb} \
