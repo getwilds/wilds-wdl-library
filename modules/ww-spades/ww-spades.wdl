@@ -10,8 +10,8 @@ task metaspades {
     email: "ebishop@fredhutch.org"
     description: "De novo metagenomic assembly using metaSPAdes"
     outputs: {
-        scaffolds_fasta: "Assembled scaffolds in compressed FASTA format"
-        contigs_fasta: "Assembled contigs in compressed FASTA format"
+        scaffolds_fasta: "Assembled scaffolds in compressed FASTA format",
+        contigs_fasta: "Assembled contigs in compressed FASTA format",
         log_file: "SPAdes log file"
     }
   }
