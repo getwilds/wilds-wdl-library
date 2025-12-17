@@ -9,8 +9,8 @@ workflow ena_example {
     outputs: {
         downloaded_files: "Array of files downloaded from ENA via accession",
         query_downloaded_files: "Array of files downloaded from ENA via query",
-        r1: "Read 1 FASTQ file",
-        r2: "Read 2 FASTQ file",
+        r1_files: "Array of Read 1 FASTQ files",
+        r2_files: "Array of Read 2 FASTQ files",
         download_log: "Log file from the ENA download process (accession method)",
         download_summary: "Summary report of the ENA download process (accession method)",
         query_download_log: "Log file from the ENA download process (query method)",
@@ -58,15 +58,15 @@ workflow ena_example {
       query_downloaded_files = test_download_query.downloaded_files,
       query_download_log = test_download_query.download_log,
       query_download_summary = test_download_query.download_summary,
-      r1 = extract_fastq_pairs.r1,
-      r2 = extract_fastq_pairs.r2
+      r1_files = extract_fastq_pairs.r1_files,
+      r2_files = extract_fastq_pairs.r2_files
   }
 
   output {
     Array[File] downloaded_files = test_download_accession.downloaded_files
     Array[File] query_downloaded_files = test_download_query.downloaded_files
-    File r1 = extract_fastq_pairs.r1
-    File r2 = extract_fastq_pairs.r2
+    Array[File] r1_files = extract_fastq_pairs.r1_files
+    Array[File] r2_files = extract_fastq_pairs.r2_files
     File download_log = test_download_accession.download_log
     File download_summary = test_download_accession.download_summary
     File query_download_log = test_download_query.download_log
@@ -90,8 +90,8 @@ task validate_download {
     Array[File] query_downloaded_files
     File query_download_log
     File query_download_summary
-    File r1
-    File r2
+    Array[File] r1_files
+    Array[File] r2_files
   }
 
   command <<<
@@ -129,19 +129,36 @@ task validate_download {
     echo "" >> validation_report.txt
     echo "=== FASTQ Pair Extraction ===" >> validation_report.txt
 
-    if [ -f "~{r1}" ] && [ -s "~{r1}" ]; then
-      echo "✓ SUCCESS: R1 file exists and is non-empty: ~{r1}" >> validation_report.txt
+    num_r1=~{length(r1_files)}
+    num_r2=~{length(r2_files)}
+    echo "Number of R1 files: $num_r1" >> validation_report.txt
+    echo "Number of R2 files: $num_r2" >> validation_report.txt
+
+    if [ "$num_r1" -gt 0 ] && [ "$num_r1" -eq "$num_r2" ]; then
+      echo "✓ SUCCESS: Found $num_r1 paired FASTQ files" >> validation_report.txt
     else
-      echo "✗ FAILED: R1 file missing or empty" >> validation_report.txt
+      echo "✗ FAILED: R1/R2 file count mismatch or no files found" >> validation_report.txt
       exit 1
     fi
 
-    if [ -f "~{r2}" ] && [ -s "~{r2}" ]; then
-      echo "✓ SUCCESS: R2 file exists and is non-empty: ~{r2}" >> validation_report.txt
-    else
-      echo "✗ FAILED: R2 file missing or empty" >> validation_report.txt
-      exit 1
-    fi
+    # Validate each file exists and is non-empty
+    for r1_file in ~{sep=' ' r1_files}; do
+      if [ -f "$r1_file" ] && [ -s "$r1_file" ]; then
+        echo "✓ R1 file OK: $r1_file" >> validation_report.txt
+      else
+        echo "✗ FAILED: R1 file missing or empty: $r1_file" >> validation_report.txt
+        exit 1
+      fi
+    done
+
+    for r2_file in ~{sep=' ' r2_files}; do
+      if [ -f "$r2_file" ] && [ -s "$r2_file" ]; then
+        echo "✓ R2 file OK: $r2_file" >> validation_report.txt
+      else
+        echo "✗ FAILED: R2 file missing or empty: $r2_file" >> validation_report.txt
+        exit 1
+      fi
+    done
 
     echo "" >> validation_report.txt
     echo "=== Accession Download Summary ===" >> validation_report.txt

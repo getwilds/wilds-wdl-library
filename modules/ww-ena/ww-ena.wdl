@@ -175,11 +175,11 @@ task extract_fastq_pairs {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Extract R1 and R2 FASTQ files from ENA downloads for downstream processing. This task identifies paired-end FASTQ files from the downloaded files array and extracts the accession ID from the filename."
+    description: "Extract R1 and R2 FASTQ file pairs from ENA downloads for downstream processing."
     outputs: {
-        r1: "Read 1 FASTQ file",
-        r2: "Read 2 FASTQ file",
-        accession: "ENA accession ID extracted from the filename"
+        r1_files: "Array of Read 1 FASTQ files, parallel with r2_files and accessions",
+        r2_files: "Array of Read 2 FASTQ files, parallel with r1_files and accessions",
+        accessions: "Array of ENA accession IDs extracted from filenames, parallel with r1_files and r2_files"
     }
   }
 
@@ -198,37 +198,62 @@ task extract_fastq_pairs {
     echo "Downloaded files:"
     ls -lh ~{sep=' ' downloaded_files}
 
-    # Find R1 and R2 files (ENA typically names them with _1 and _2 or _R1 and _R2)
-    # Look for patterns: *_1.fastq.gz, *_R1.fastq.gz, *_1.fq.gz, *_R1.fq.gz, etc.
-    R1_FILE=$(ls ~{sep=' ' downloaded_files} | grep -E "(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq)" | head -1 || echo "")
-    R2_FILE=$(ls ~{sep=' ' downloaded_files} | grep -E "(_2\.fastq|_R2\.fastq|_2\.fq|_R2\.fq)" | head -1 || echo "")
+    # Create output directory for organized pairs
+    mkdir -p fastq_pairs
 
-    if [ -z "$R1_FILE" ] || [ -z "$R2_FILE" ]; then
-      echo "ERROR: Could not identify paired FASTQ files"
-      echo "Looking for files matching pattern *_1.fastq.gz and *_2.fastq.gz"
+    # Find all R1 files (ENA typically names them with _1 and _2 or _R1 and _R2)
+    # Look for patterns: *_1.fastq.gz, *_R1.fastq.gz, *_1.fq.gz, *_R1.fq.gz, etc.
+    R1_FILES=$(ls ~{sep=' ' downloaded_files} | grep -E "(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq)" | sort || echo "")
+
+    if [ -z "$R1_FILES" ]; then
+      echo "ERROR: Could not identify any R1 FASTQ files"
+      echo "Looking for files matching pattern *_1.fastq.gz or *_R1.fastq.gz"
       echo "Available files:"
       ls -lh ~{sep=' ' downloaded_files}
       exit 1
     fi
 
-    echo "Identified R1: $R1_FILE"
-    echo "Identified R2: $R2_FILE"
+    # Initialize output files
+    > r1_files.txt
+    > r2_files.txt
+    > accessions.txt
 
-    # Extract accession ID from filename (everything before _1 or _R1)
-    BASENAME=$(basename "$R1_FILE")
-    ACCESSION=$(echo "$BASENAME" | sed -E 's/(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq).*//')
-    echo "Extracted accession: $ACCESSION"
-    echo "$ACCESSION" > accession.txt
+    # Process each R1 file and find its matching R2
+    echo "$R1_FILES" | while read R1_FILE; do
+      echo "Processing R1: $R1_FILE"
 
-    # Copy files to execution directory with standardized names
-    cp "$R1_FILE" r1.fastq.gz
-    cp "$R2_FILE" r2.fastq.gz
+      # Extract accession ID from filename (everything before _1 or _R1)
+      BASENAME=$(basename "$R1_FILE")
+      ACCESSION=$(echo "$BASENAME" | sed -E 's/(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq).*//')
+      echo "Extracted accession: $ACCESSION"
+
+      # Find matching R2 file
+      R2_FILE=$(ls ~{sep=' ' downloaded_files} | grep -E "^.*${ACCESSION}(_2\.fastq|_R2\.fastq|_2\.fq|_R2\.fq)" | head -1 || echo "")
+
+      if [ -z "$R2_FILE" ]; then
+        echo "ERROR: Could not find matching R2 file for accession: $ACCESSION"
+        exit 1
+      fi
+
+      echo "Matched R2: $R2_FILE"
+
+      # Copy files with accession-prefixed names to maintain uniqueness
+      cp "$R1_FILE" "fastq_pairs/${ACCESSION}_r1.fastq.gz"
+      cp "$R2_FILE" "fastq_pairs/${ACCESSION}_r2.fastq.gz"
+
+      # Append to output lists
+      echo "fastq_pairs/${ACCESSION}_r1.fastq.gz" >> r1_files.txt
+      echo "fastq_pairs/${ACCESSION}_r2.fastq.gz" >> r2_files.txt
+      echo "$ACCESSION" >> accessions.txt
+    done
+
+    echo "Successfully processed $(wc -l < accessions.txt) FASTQ pairs"
   >>>
 
   output {
-    File r1 = "r1.fastq.gz"
-    File r2 = "r2.fastq.gz"
-    String accession = read_string("accession.txt")
+    Array[File] r1_files = read_lines("r1_files.txt")
+    Array[File] r2_files = read_lines("r2_files.txt")
+    Array[String] accessions = read_lines("accessions.txt")
   }
 
   runtime {

@@ -66,17 +66,17 @@ Downloads sequencing data files from ENA using a search query. Allows filtering 
 
 ### `extract_fastq_pairs`
 
-Extracts R1 and R2 FASTQ files from downloaded ENA files for downstream paired-end processing. This task identifies paired-end FASTQ files by common naming patterns, creates standardized outputs, and automatically extracts the accession ID from the filename.
+Extracts R1 and R2 FASTQ files from downloaded ENA files for downstream paired-end processing. This task identifies all paired-end FASTQ files by common naming patterns, creates standardized outputs, and automatically extracts the accession ID from each filename. Supports multiple accessions in a single download.
 
 **Inputs:**
 - `downloaded_files` (Array[File]): Array of files downloaded from ENA (typically from `download_files` task)
 
 **Outputs:**
-- `r1` (File): Read 1 FASTQ file
-- `r2` (File): Read 2 FASTQ file
-- `accession` (String): ENA accession ID automatically extracted from the filename
+- `r1_files` (Array[File]): Array of Read 1 FASTQ files, parallel with `r2_files` and `accessions`
+- `r2_files` (Array[File]): Array of Read 2 FASTQ files, parallel with `r1_files` and `accessions`
+- `accessions` (Array[String]): Array of ENA accession IDs extracted from filenames, parallel with `r1_files` and `r2_files`
 
-**Usage Note:** This task is designed for FASTQ workflows requiring separate R1/R2 files. It searches for common paired-end naming patterns including `_1.fastq.gz`/`_2.fastq.gz`, `_R1.fastq.gz`/`_R2.fastq.gz`, and their uncompressed equivalents. The accession ID is automatically extracted from the filename (e.g., `ERR000001_1.fastq.gz` → `ERR000001`). If you're downloading other file formats (BAM, analysis files), you don't need this task.
+**Usage Note:** This task is designed for FASTQ workflows requiring separate R1/R2 files. It searches for common paired-end naming patterns including `_1.fastq.gz`/`_2.fastq.gz`, `_R1.fastq.gz`/`_R2.fastq.gz`, and their uncompressed equivalents. The accession ID is automatically extracted from each filename (e.g., `ERR000001_1.fastq.gz` → `ERR000001`). The output arrays are parallel, meaning `r1_files[i]`, `r2_files[i]`, and `accessions[i]` all correspond to the same sample. If you're downloading other file formats (BAM, analysis files), you don't need this task.
 
 ## Usage as a Module
 
@@ -171,7 +171,7 @@ workflow ena_paired_end_workflow {
     }
 
     # Extract R1 and R2 for paired-end processing
-    # Accession ID is automatically extracted from filenames
+    # Since we're scattering by single accession, each call returns arrays with one element
     call ena_tasks.extract_fastq_pairs {
       input:
         downloaded_files = download_files.downloaded_files
@@ -179,9 +179,10 @@ workflow ena_paired_end_workflow {
   }
 
   output {
-    Array[File] all_r1 = extract_fastq_pairs.r1
-    Array[File] all_r2 = extract_fastq_pairs.r2
-    Array[String] all_accessions = extract_fastq_pairs.accession
+    # Flatten the nested arrays from scatter + array outputs
+    Array[Array[File]] all_r1 = extract_fastq_pairs.r1_files
+    Array[Array[File]] all_r2 = extract_fastq_pairs.r2_files
+    Array[Array[String]] all_accessions = extract_fastq_pairs.accessions
   }
 }
 ```
