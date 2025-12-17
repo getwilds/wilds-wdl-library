@@ -15,7 +15,6 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 - **Main WDL file**: `ww-ena.wdl` - Contains task definitions for downloading files from ENA
 - **Test workflow**: `testrun.wdl` - Demonstration workflow with validation
-- **Documentation**: This README with usage examples and parameter descriptions
 - **Container**: `getwilds/ena-tools:2.1.1` from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library)
 
 ## Available Tasks
