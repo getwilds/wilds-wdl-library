@@ -73,11 +73,13 @@ workflow ena_star {
         downloaded_files = download_files.downloaded_files
     }
 
+    # Since we scatter by single accession, each extract_fastq_pairs call returns
+    # arrays with one element each - access the first element with [0]
     call star_tasks.align_two_pass { input:
         star_genome_tar = build_index.star_index_tar,
-        name = extract_fastq_pairs.accession,
-        r1 = extract_fastq_pairs.r1,
-        r2 = extract_fastq_pairs.r2,
+        name = extract_fastq_pairs.accessions[0],
+        r1 = extract_fastq_pairs.r1_files[0],
+        r2 = extract_fastq_pairs.r2_files[0],
         sjdb_overhang = sjdb_overhang,
         memory_gb = memory_gb,
         cpu_cores = ncpu,
