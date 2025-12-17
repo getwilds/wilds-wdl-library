@@ -51,16 +51,17 @@ task validate_outputs {
     echo "=== SPAdes Assembly Validation Report ===" > validation_report.txt
     echo "" >> validation_report.txt
 
-    validation_passed=true
-
     # Check FASTA file
     echo "--- Scaffolds FASTA File ---" >> validation_report.txt
     if [[ -f "~{fasta}" && -s "~{fasta}" ]]; then
       fasta_size=$(wc -c < "~{fasta}")
       echo "FASTA file: ~{fasta} (${fasta_size} bytes)" >> validation_report.txt
+      echo "" >> validation_report.txt
+      echo "Overall Status: PASSED" >> validation_report.txt
     else
       echo "FASTA file: ~{fasta} - MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
+      echo "" >> validation_report.txt
+      echo "Overall Status: FAILED" >> validation_report.txt
       exit 1
     fi
     echo "" >> validation_report.txt
