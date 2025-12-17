@@ -47,19 +47,15 @@ task download_files {
     Int memory_gb = 8
   }
 
+  # Resolve accessions input - prefer string accessions over file
+  String accessions_arg = select_first([accessions, accessions_file])
+
   command <<<
     set -eo pipefail
 
-    # Create output directory
-    mkdir -p ~{output_dir_name}
-
-    # Create logs directory
-    mkdir -p logs
-
     # Execute download with ena-file-downloader
     java -jar /usr/local/bin/ena-file-downloader.jar \
-      ~{if defined(accessions) then "--accessions=" + accessions else ""} \
-      ~{if defined(accessions_file) then "--accessions=" + accessions_file else ""} \
+      --accessions=~{accessions_arg} \
       --format=~{file_format} \
       --protocol=~{protocol} \
       ~{if defined(aspera_location) then "--asperaLocation=" + aspera_location else ""} \
@@ -136,12 +132,6 @@ task download_by_query {
 
   command <<<
     set -eo pipefail
-
-    # Create output directory
-    mkdir -p ~{output_dir_name}
-
-    # Create logs directory
-    mkdir -p logs
 
     # Execute download with ena-file-downloader
     java -jar /usr/local/bin/ena-file-downloader.jar \
