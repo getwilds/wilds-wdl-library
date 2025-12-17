@@ -24,7 +24,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 Downloads sequencing data files from ENA using accession numbers. Supports single or multiple accessions provided as a comma-separated string or via a file.
 
 **Inputs:**
-- `accessions` (String, optional): Comma-separated list of ENA accession numbers (e.g., 'ERR2208926,ERR2208890')
+- `accessions` (String, optional): Comma-separated list of ENA accession numbers (e.g., "ERR2208926,ERR2208890") or a single accession.
 - `accessions_file` (File, optional): File containing accession numbers (one per line or tab-separated with accessions in first column)
 - `file_format` (String, default="READS_FASTQ"): Format of files to download
   - `READS_FASTQ`: FASTQ format reads
