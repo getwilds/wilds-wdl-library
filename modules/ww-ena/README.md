@@ -272,15 +272,6 @@ Typical download speeds:
 
 ## Citation
 
-If you use this module in your research, please cite:
-
-**ENA Database:**
-> Leinonen R, Sugawara H, Shumway M; International Nucleotide Sequence Database Collaboration.
-> The sequence read archive. Nucleic Acids Res. 2011 Jan;39(Database issue):D19-21.
-> DOI: 10.1093/nar/gkq1019
-
-**ena-file-downloader tool:**
-> https://github.com/enasequence/ena-ftp-downloader
 
 ## Common Use Cases
 
