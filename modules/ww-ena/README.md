@@ -205,14 +205,14 @@ workflow ena_to_qc_pipeline {
 
   # Run quality control on downloaded files
   scatter (fastq_file in download_files.downloaded_files) {
-    call fastqc_tasks.fastqc {
+    call fastqc_tasks.run_fastqc {
       input:
         fastq = fastq_file
     }
   }
 
   output {
-    Array[File] qc_reports = fastqc.html_report
+    Array[Array[File]] qc_reports = run_fastqc.html_reports
   }
 }
 ```
