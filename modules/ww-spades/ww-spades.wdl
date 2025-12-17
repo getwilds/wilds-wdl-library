@@ -73,6 +73,9 @@ task metaspades {
     mv spades_outdir/contigs.fasta "~{sample_name}.contigs.fasta"
     gzip "~{sample_name}.contigs.fasta"
 
+    # Move log file
+    mv spades_outdir/spades.log "~{sample_name}.spades.log"
+
     # Clean up SPAdes output directory to save space
     rm -rf spades_outdir
   >>>
@@ -80,7 +83,7 @@ task metaspades {
   output {
     File scaffolds_fasta = "~{sample_name}.scaffolds.fasta.gz"
     File contigs_fasta = "~{sample_name}.contigs.fasta.gz"
-    File log_file = "spades_outdir/spades.log"
+    File log_file = "~{sample_name}.spades.log"
   }
 
   runtime {
