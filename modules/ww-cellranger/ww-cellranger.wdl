@@ -17,10 +17,7 @@ task run_count {
 
   parameter_meta {
     ref_gex: "GEX reference transcriptome tarball"
-    ref_adt: "ADT feature reference CSV file"
-    libraries_csv: "Libraries CSV file defining input data (must include paths to FASTQ files)"
     gex_fastqs: "Array of GEX FASTQ files"
-    adt_fastqs: "Optional: Array of ADT FASTQ files"
     sample_id: "Sample ID for output naming"
     force_cells: "Optional: Force number of cells to be called"
     create_bam: "Generate BAM file (default: true)"
@@ -31,10 +28,7 @@ task run_count {
 
   input {
     File ref_gex
-    File ref_adt
-    File libraries_csv
     Array[File] gex_fastqs
-    Array[File]? adt_fastqs
     String sample_id = "results"
     Int? force_cells
     Boolean create_bam = true
@@ -50,13 +44,9 @@ task run_count {
     mkdir -p gex_ref
     tar xf "~{ref_gex}" -C gex_ref --strip-components 1
 
-    # Create folders and copy FASTQ files for each library type if provided
+    # Create folder and copy FASTQ files
     mkdir -p gex_fastqs
     cp ~{sep=' ' gex_fastqs} gex_fastqs/
-
-    ~{if defined(adt_fastqs) then
-      "mkdir -p adt_fastqs\n    cp ~{sep=' ', select_first([adt_fastqs, []]))} adt_fastqs/"
-      else ""}
 
     # Run cellranger count
     cellranger count \
@@ -67,8 +57,6 @@ task run_count {
       ~{if include_introns then "--include-introns true" else ""} \
       --disable-ui \
       ~{if defined(force_cells) then "--force-cells=" + force_cells else ""} \
-      --libraries="~{libraries_csv}" \
-      --feature-ref="~{ref_adt}" \
       --localcores=~{cpu_cores} \
       --localmem=~{memory_gb}
 
