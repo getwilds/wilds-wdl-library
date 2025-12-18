@@ -1,7 +1,6 @@
 version 1.0
 
-# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-ena/modules/ww-ena/ww-ena.wdl" as ww_ena
-import "ww-ena.wdl" as ww_ena
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ena/ww-ena.wdl" as ww_ena
 
 workflow ena_example {
   meta {

@@ -1,9 +1,7 @@
 version 1.0
 
-# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-ena/modules/ww-ena/ww-ena.wdl" as ena_tasks
-# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-ena/modules/ww-star/ww-star.wdl" as star_tasks
-import "../../modules/ww-ena/ww-ena.wdl" as ena_tasks
-import "../../modules/ww-star/ww-star.wdl" as star_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ena/ww-ena.wdl" as ena_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as star_tasks
 
 struct RefGenome {
     String name

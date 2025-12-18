@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-spades/modules/ww-spades/ww-spades.wdl" as ww_spades
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-spades/ww-spades.wdl" as ww_spades
 
 workflow spades_example {
   # Download test data from SRA

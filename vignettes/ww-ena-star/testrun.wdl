@@ -1,9 +1,7 @@
 version 1.0
 
-# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-ena/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-ww-ena/vignettes/ww-ena-star/ww-ena-star.wdl" as ena_star_workflow
-import "../../modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "ww-ena-star.wdl" as ena_star_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/vignettes/ww-ena-star/ww-ena-star.wdl" as ena_star_workflow
 
 workflow ena_star_example {
   # Call testdata workflow to get test data
