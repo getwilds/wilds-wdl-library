@@ -89,7 +89,7 @@ task smoove_call {
   }
 
   runtime {
-    docker: "brentp/smoove:latest"
+    docker: "getwilds/smoove:0.2.8"
     cpu: cpu_cores
     memory: "${memory_gb}GB"
   }
