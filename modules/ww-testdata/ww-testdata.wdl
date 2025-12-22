@@ -937,8 +937,8 @@ task download_shapemapper_data {
 
 task download_test_cellranger_ref {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
     description: "Download a minimal Cell Ranger reference for testing"
     outputs: {
         ref_tar: "Cell Ranger reference transcriptome tarball"
