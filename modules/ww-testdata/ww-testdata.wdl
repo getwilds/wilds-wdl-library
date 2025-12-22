@@ -934,3 +934,48 @@ task download_shapemapper_data {
     memory: "~{memory_gb} GB"
   }
 }
+
+task download_test_cellranger_ref {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Download a minimal Cell Ranger reference for testing"
+    outputs: {
+        ref_tar: "Cell Ranger reference transcriptome tarball"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 2
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download a minimal human reference from Swiss Bioinformatics Institute
+    # Only chromosomes 21 and 22
+    # https://sib-swiss.github.io/single-cell-training-archived/2023.3/day1/introduction_cellranger/#__tabbed_1_1
+    # Emma manually extracted and inspected the files within for any obvious
+    # safety issues
+
+    echo "Downloading small test reference (728 MB)..."
+    wget https://single-cell-transcriptomics.s3.eu-central-1.amazonaws.com/cellranger_index.tar.gz
+    echo "Reference download complete"
+  >>>
+
+  output {
+    File ref_tar = "cellranger_index.tar.gz"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
