@@ -471,7 +471,7 @@ task download_dbsnp_vcf {
       https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz | \
     bcftools annotate --rename-chrs chr_mapping.txt \
       -O z -o "dbsnp.~{filter_name}.vcf.gz"
-    
+
     # Index the filtered VCF
     bcftools index --tbi "dbsnp.~{filter_name}.vcf.gz"
   >>>
@@ -666,7 +666,7 @@ task generate_pasilla_counts {
   output {
     Array[File] individual_count_files = glob("*.ReadsPerGene.out.tab")
     Array[String] sample_names = read_lines("~{output_prefix}_sample_names.txt")
-    Array[String] sample_conditions = read_lines("~{output_prefix}_sample_conditions.txt") 
+    Array[String] sample_conditions = read_lines("~{output_prefix}_sample_conditions.txt")
     File gene_info = "~{output_prefix}_gene_info.txt"
   }
 
