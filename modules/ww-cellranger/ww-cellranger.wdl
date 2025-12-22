@@ -75,7 +75,7 @@ task run_count {
   }
 
   runtime {
-    docker: "cellranger:10.0.0"
+    docker: "getwilds/cellranger:10.0.0"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
