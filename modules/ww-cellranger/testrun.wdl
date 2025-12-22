@@ -31,7 +31,7 @@ workflow cellranger_example {
     create_bam = false,
     cpu_cores = 4,
     memory_gb = 16,
-    expect_cells = 100
+    chemistry = "SC3Pv2"
   }
 
   # Validate outputs

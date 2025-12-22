@@ -23,6 +23,7 @@ task run_count {
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
     expect_cells: "Optional: Expected number of recovered cells"
+    chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
   }
 
   input {
@@ -33,6 +34,7 @@ task run_count {
     Int cpu_cores = 8
     Int memory_gb = 64
     Int? expect_cells
+    String? chemistry
   }
 
   command <<<
@@ -57,6 +59,7 @@ task run_count {
       --localmem=~{memory_gb} \
       --output-dir="~{sample_id}" \
       ~{"--expect-cells=" + expect_cells} \
+      ~{"--chemistry=" + chemistry} \
       --id="~{sample_id}" \
       --create-bam="~{create_bam}"
 
