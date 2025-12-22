@@ -20,7 +20,7 @@ workflow cellranger_example {
   call ww_cellranger.prepare_fastqs { input:
     r1_fastqs = [fastqdump.r1_end],
     r2_fastqs = [fastqdump.r2_end],
-    sample_id = "SRR9134714"
+    sample_name = "SRR9134714"
   }
 
   # Run cellranger count
