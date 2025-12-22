@@ -1,14 +1,15 @@
 version 1.0
 
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellranger/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellranger/modules/ww-cellranger/ww-cellranger.wdl" as ww_cellranger
 
 workflow cellranger_example {
-  # Download test GEX reference
-  call download_test_reference { }
 
-  # Download SRA data for SRR9134714 (10x scRNA-seq data)
-  # Limiting to 50k reads for faster testing
+  # Download a small GEX reference
+  call ww_testdata.download_test_cellranger_ref { }
+
+  # Download input FASTQs
   call ww_sra.fastqdump { input:
     sra_id = "SRR9134714",
     ncpu = 2,
@@ -18,7 +19,7 @@ workflow cellranger_example {
   # Run cellranger count
   call ww_cellranger.run_count { input:
     gex_fastqs = [fastqdump.r1_end, fastqdump.r2_end],
-    ref_gex = download_test_reference.ref_tar,
+    ref_gex = download_test_cellranger_ref.ref_tar,
     sample_id = "SRR9134714",
     create_bam = false,
     cpu_cores = 4,
@@ -39,40 +40,6 @@ workflow cellranger_example {
     File web_summary = run_count.web_summary
     File metrics_summary = run_count.metrics_summary
     File validation_report = validate_outputs.report
-  }
-}
-
-task download_test_reference {
-  meta {
-    description: "Download a minimal Cell Ranger reference for testing"
-    outputs: {
-        ref_tar: "Cell Ranger reference transcriptome tarball"
-    }
-  }
-
-  command <<<
-    set -eo pipefail
-
-    # Download a minimal human reference from 10x Genomics
-    # Using the GRCh38 reference (2020-A version)
-    # Note: This downloads the full reference (~11GB). For production testing,
-    # consider hosting a smaller test reference or using a pre-built minimal reference.
-
-    echo "Downloading Cell Ranger reference..."
-    curl -L -o refdata-gex-GRCh38-2020-A.tar.gz \
-      "https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz"
-
-    echo "Reference download complete"
-  >>>
-
-  output {
-    File ref_tar = "refdata-gex-GRCh38-2020-A.tar.gz"
-  }
-
-  runtime {
-    docker: "getwilds/awscli:2.27.49"
-    memory: "4 GB"
-    cpu: 2
   }
 }
 
