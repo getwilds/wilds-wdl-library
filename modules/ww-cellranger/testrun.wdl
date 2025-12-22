@@ -16,9 +16,16 @@ workflow cellranger_example {
     max_reads = 50000
   }
 
+  # Prepare FASTQs (rename to Cell Ranger convention for this testrun WDL)
+  call ww_cellranger.prepare_fastqs { input:
+    r1_fastqs = [fastqdump.r1_end],
+    r2_fastqs = [fastqdump.r2_end],
+    sample_id = "SRR9134714"
+  }
+
   # Run cellranger count
   call ww_cellranger.run_count { input:
-    gex_fastqs = [fastqdump.r1_end, fastqdump.r2_end],
+    gex_fastqs = prepare_fastqs.renamed_fastqs,
     ref_gex = download_test_cellranger_ref.ref_tar,
     sample_id = "SRR9134714",
     create_bam = false,
@@ -42,6 +49,7 @@ workflow cellranger_example {
     File validation_report = validate_outputs.report
   }
 }
+
 
 task validate_outputs {
   meta {
