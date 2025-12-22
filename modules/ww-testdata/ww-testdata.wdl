@@ -965,7 +965,7 @@ task download_test_cellranger_ref {
     # safety issues
 
     echo "Downloading small test reference (728 MB)..."
-    wget https://single-cell-transcriptomics.s3.eu-central-1.amazonaws.com/cellranger_index.tar.gz
+    curl -O https://single-cell-transcriptomics.s3.eu-central-1.amazonaws.com/cellranger_index.tar.gz
     echo "Reference download complete"
   >>>
 
