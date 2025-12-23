@@ -29,8 +29,8 @@ workflow cellranger_example {
     ref_gex = download_test_cellranger_ref.ref_tar,
     sample_id = "SRR9134714",
     create_bam = false,
-    cpu_cores = 4,
-    memory_gb = 16,
+    cpu_cores = 2,
+    memory_gb = 6,
     chemistry = "SC3Pv2"
   }
 
