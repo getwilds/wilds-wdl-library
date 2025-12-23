@@ -76,6 +76,19 @@ task validate_outputs {
   command <<<
     set -eo pipefail
 
+    validate_file() {
+      local file_path="$1"
+      local file_label="$2"
+
+      if [[ -f "$file_path" && -s "$file_path" ]]; then
+        echo "$file_label: $file_path - PASSED" >> validation_report.txt
+        return 0
+      else
+        echo "$file_label: $file_path - MISSING OR EMPTY" >> validation_report.txt
+        return 1
+      fi
+    }
+
     echo "=== Cell Ranger Count Validation Report ===" > validation_report.txt
     echo "" >> validation_report.txt
     echo "Sample ID: ~{sample_id}" >> validation_report.txt
@@ -83,49 +96,18 @@ task validate_outputs {
 
     validation_passed=true
 
-    # Check results tarball
-    echo "--- Results Tarball ---" >> validation_report.txt
-    if [[ -f "~{results_tar}" && -s "~{results_tar}" ]]; then
-      tar_size=$(stat -c%s "~{results_tar}" 2>/dev/null || stat -f%z "~{results_tar}")
-      echo "Results tarball: ~{results_tar} (${tar_size} bytes)" >> validation_report.txt
-
-      # List contents of tarball
-      echo "Tarball contents:" >> validation_report.txt
-      tar -tzf "~{results_tar}" | head -20 >> validation_report.txt
-      echo "..." >> validation_report.txt
-    else
-      echo "Results tarball: MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-    echo "" >> validation_report.txt
-
-    # Check web summary
-    echo "--- Web Summary ---" >> validation_report.txt
-    if [[ -f "~{web_summary}" && -s "~{web_summary}" ]]; then
-      summary_size=$(stat -c%s "~{web_summary}" 2>/dev/null || stat -f%z "~{web_summary}")
-      echo "Web summary: ~{web_summary} (${summary_size} bytes)" >> validation_report.txt
-    else
-      echo "Web summary: MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-    echo "" >> validation_report.txt
-
-    # Check and parse metrics summary
-    echo "--- Metrics Summary ---" >> validation_report.txt
-    if [[ -f "~{metrics_summary}" && -s "~{metrics_summary}" ]]; then
-      metrics_size=$(stat -c%s "~{metrics_summary}" 2>/dev/null || stat -f%z "~{metrics_summary}")
-      echo "Metrics summary: ~{metrics_summary} (${metrics_size} bytes)" >> validation_report.txt
-      echo "" >> validation_report.txt
-      echo "Key metrics:" >> validation_report.txt
-      cat "~{metrics_summary}" >> validation_report.txt
-    else
-      echo "Metrics summary: MISSING OR EMPTY" >> validation_report.txt
-      validation_passed=false
-    fi
-    echo "" >> validation_report.txt
+    # Validate all files using the function
+    validate_file "~{results_tar}" "Results tarball" || validation_passed=false
+    validate_file "~{web_summary}" "Web summary" || validation_passed=false
+    validate_file "~{metrics_summary}" "Metrics summary" || validation_passed=false
 
     # Final validation summary
-    echo "=== Validation Summary ===" >> validation_report.txt
+    {
+      echo ""
+      echo "=== Validation Summary ==="
+      echo "Total files validated: 3"
+    } >> validation_report.txt
+
     if [[ "$validation_passed" == "true" ]]; then
       echo "Overall Status: PASSED" >> validation_report.txt
     else
