@@ -321,7 +321,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 34"
+      echo "Total files validated: 36"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then
