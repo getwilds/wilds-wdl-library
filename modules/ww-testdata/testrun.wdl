@@ -288,7 +288,7 @@ task validate_outputs {
     validate_file "~{gnomad_vcf}" "Gnomad VCF" || validation_passed=false
     validate_file "~{gnomad_vcf_index}" "Gnomad VCF index" || validation_passed=false
     validate_file "~{annotsv_test_vcf}" "AnnotSV test VCF" || validation_passed=false
-    validate_file "~{cellranger_ref_tar} Cellranger test reference"  || validation_passed=false
+    validate_file "~{cellranger_ref_tar}" "Cellranger test reference"  || validation_passed=false
 
     # Validate pasilla count files
     for count_file in ~{sep=' ' pasilla_counts}; do
