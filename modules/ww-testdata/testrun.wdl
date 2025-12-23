@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellranger/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow testdata_example {
   # Pull down reference genome and index files for chr1
@@ -57,6 +57,8 @@ workflow testdata_example {
 
   call ww_testdata.download_shapemapper_data { }
 
+  call ww_testdata.download_test_cellranger_ref { }
+
   call validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
@@ -92,7 +94,8 @@ workflow testdata_example {
     shapemapper_modified_r1 = download_shapemapper_data.modified_r1,
     shapemapper_modified_r2 = download_shapemapper_data.modified_r2,
     shapemapper_untreated_r1 = download_shapemapper_data.untreated_r1,
-    shapemapper_untreated_r2 = download_shapemapper_data.untreated_r2
+    shapemapper_untreated_r2 = download_shapemapper_data.untreated_r2,
+    cellranger_ref_tar = download_test_cellranger_ref.ref_tar
   }
 
   output {
@@ -141,6 +144,8 @@ workflow testdata_example {
     File shapemapper_modified_r2 = download_shapemapper_data.modified_r2
     File shapemapper_untreated_r1 = download_shapemapper_data.untreated_r1
     File shapemapper_untreated_r2 = download_shapemapper_data.untreated_r2
+    # Output from CellRanger reference download
+    File cellranger_ref_tar = download_test_cellranger_ref.ref_tar
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
   }
@@ -190,6 +195,7 @@ task validate_outputs {
     shapemapper_modified_r2: "ShapeMapper modified R2 FASTQ file to validate"
     shapemapper_untreated_r1: "ShapeMapper untreated R1 FASTQ file to validate"
     shapemapper_untreated_r2: "ShapeMapper untreated R2 FASTQ file to validate"
+    cellranger_ref_tar: "CellRanger reference tar.gz file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -230,6 +236,7 @@ task validate_outputs {
     File shapemapper_modified_r2
     File shapemapper_untreated_r1
     File shapemapper_untreated_r2
+    File cellranger_ref_tar
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -281,6 +288,7 @@ task validate_outputs {
     validate_file "~{gnomad_vcf}" "Gnomad VCF" || validation_passed=false
     validate_file "~{gnomad_vcf_index}" "Gnomad VCF index" || validation_passed=false
     validate_file "~{annotsv_test_vcf}" "AnnotSV test VCF" || validation_passed=false
+    validate_file "~{cellranger_ref_tar}" "Cellranger test reference"  || validation_passed=false
 
     # Validate pasilla count files
     for count_file in ~{sep=' ' pasilla_counts}; do
@@ -313,7 +321,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 34"
+      echo "Total files validated: 36"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

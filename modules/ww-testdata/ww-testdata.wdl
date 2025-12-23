@@ -471,7 +471,7 @@ task download_dbsnp_vcf {
       https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz | \
     bcftools annotate --rename-chrs chr_mapping.txt \
       -O z -o "dbsnp.~{filter_name}.vcf.gz"
-    
+
     # Index the filtered VCF
     bcftools index --tbi "dbsnp.~{filter_name}.vcf.gz"
   >>>
@@ -666,7 +666,7 @@ task generate_pasilla_counts {
   output {
     Array[File] individual_count_files = glob("*.ReadsPerGene.out.tab")
     Array[String] sample_names = read_lines("~{output_prefix}_sample_names.txt")
-    Array[String] sample_conditions = read_lines("~{output_prefix}_sample_conditions.txt") 
+    Array[String] sample_conditions = read_lines("~{output_prefix}_sample_conditions.txt")
     File gene_info = "~{output_prefix}_gene_info.txt"
   }
 
@@ -932,5 +932,50 @@ task download_shapemapper_data {
     docker: "getwilds/samtools:1.11"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
+  }
+}
+
+task download_test_cellranger_ref {
+  meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
+    description: "Download a minimal Cell Ranger reference for testing"
+    outputs: {
+        ref_tar: "Cell Ranger reference transcriptome tarball"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 2
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download a minimal human reference from Swiss Bioinformatics Institute
+    # Only chromosomes 21 and 22
+    # https://sib-swiss.github.io/single-cell-training-archived/2023.3/day1/introduction_cellranger/#__tabbed_1_1
+    # Emma manually extracted and inspected the files within for any obvious
+    # safety issues
+
+    echo "Downloading small test reference (728 MB)..."
+    curl -O https://single-cell-transcriptomics.s3.eu-central-1.amazonaws.com/cellranger_index.tar.gz
+    echo "Reference download complete"
+  >>>
+
+  output {
+    File ref_tar = "cellranger_index.tar.gz"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
   }
 }
