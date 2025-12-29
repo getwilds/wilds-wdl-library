@@ -471,7 +471,7 @@ task download_dbsnp_vcf {
       https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz | \
     bcftools annotate --rename-chrs chr_mapping.txt \
       -O z -o "dbsnp.~{filter_name}.vcf.gz"
-    
+
     # Index the filtered VCF
     bcftools index --tbi "dbsnp.~{filter_name}.vcf.gz"
   >>>
@@ -666,7 +666,7 @@ task generate_pasilla_counts {
   output {
     Array[File] individual_count_files = glob("*.ReadsPerGene.out.tab")
     Array[String] sample_names = read_lines("~{output_prefix}_sample_names.txt")
-    Array[String] sample_conditions = read_lines("~{output_prefix}_sample_conditions.txt") 
+    Array[String] sample_conditions = read_lines("~{output_prefix}_sample_conditions.txt")
     File gene_info = "~{output_prefix}_gene_info.txt"
   }
 
@@ -930,6 +930,49 @@ task download_shapemapper_data {
 
   runtime {
     docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_diamond_data {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Download E. coli proteins and create a subset as a test query"
+    outputs: {
+        reference: "Full E. coli proteome FASTA file",
+        query: "Subset of first 10 sequences"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download E. coli Swiss-Prot proteins and save as ecoli_proteins.fasta
+    curl https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Bacteria/UP000000625/UP000000625_83333.fasta.gz | gunzip > ecoli_proteins.fasta
+
+    # Create subset with first 10 sequences
+    awk '/^>/ {n++} n<=10' ecoli_proteins.fasta > ecoli_subset.fasta
+  >>>
+
+  output {
+    File reference = "ecoli_proteins.fasta"
+    File query = "ecoli_subset.fasta"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-diamond/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow testdata_example {
   # Pull down reference genome and index files for chr1
@@ -57,6 +57,8 @@ workflow testdata_example {
 
   call ww_testdata.download_shapemapper_data { }
 
+  call ww_testdata.download_diamond_data { }
+
   call validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
@@ -92,7 +94,9 @@ workflow testdata_example {
     shapemapper_modified_r1 = download_shapemapper_data.modified_r1,
     shapemapper_modified_r2 = download_shapemapper_data.modified_r2,
     shapemapper_untreated_r1 = download_shapemapper_data.untreated_r1,
-    shapemapper_untreated_r2 = download_shapemapper_data.untreated_r2
+    shapemapper_untreated_r2 = download_shapemapper_data.untreated_r2,
+    diamond_reference = download_diamond_data.reference,
+    diamond_query = download_diamond_data.query
   }
 
   output {
@@ -141,6 +145,9 @@ workflow testdata_example {
     File shapemapper_modified_r2 = download_shapemapper_data.modified_r2
     File shapemapper_untreated_r1 = download_shapemapper_data.untreated_r1
     File shapemapper_untreated_r2 = download_shapemapper_data.untreated_r2
+    # Outputs from DIAMOND data download
+    File diamond_reference = download_diamond_data.reference
+    File diamond_query = download_diamond_data.query
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
   }
@@ -190,6 +197,8 @@ task validate_outputs {
     shapemapper_modified_r2: "ShapeMapper modified R2 FASTQ file to validate"
     shapemapper_untreated_r1: "ShapeMapper untreated R1 FASTQ file to validate"
     shapemapper_untreated_r2: "ShapeMapper untreated R2 FASTQ file to validate"
+    diamond_reference: "DIAMOND E. coli reference proteome FASTA file to validate"
+    diamond_query: "DIAMOND E. coli query subset FASTA file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -230,6 +239,8 @@ task validate_outputs {
     File shapemapper_modified_r2
     File shapemapper_untreated_r1
     File shapemapper_untreated_r2
+    File diamond_reference
+    File diamond_query
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -298,6 +309,8 @@ task validate_outputs {
     validate_file "~{shapemapper_modified_r2}" "ShapeMapper modified R2 FASTQ" || validation_passed=false
     validate_file "~{shapemapper_untreated_r1}" "ShapeMapper untreated R1 FASTQ" || validation_passed=false
     validate_file "~{shapemapper_untreated_r2}" "ShapeMapper untreated R2 FASTQ" || validation_passed=false
+    validate_file "~{diamond_reference}" "DIAMOND reference proteome FASTA" || validation_passed=false
+    validate_file "~{diamond_query}" "DIAMOND query subset FASTA" || validation_passed=false
 
     # Additional check: Verify no N bases in clean amplicon
     echo "" >> validation_report.txt
@@ -313,7 +326,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 34"
+      echo "Total files validated: 36"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then
@@ -336,4 +349,3 @@ task validate_outputs {
     memory: "~{memory_gb} GB"
   }
 }
-

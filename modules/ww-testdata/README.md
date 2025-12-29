@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_diamond_data`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -143,7 +143,7 @@ call testdata.download_dbsnp_vcf {
 }
 call testdata.download_known_indels_vcf {
   input:
-    region = "chr1:1-10000000", 
+    region = "chr1:1-10000000",
     filter_name = "chr1"
 }
 call gatk_tasks.base_recalibrator {
@@ -197,6 +197,20 @@ call shapemapper_tasks.run_shapemapper {
     untreated_r2 = download_shapemapper_data.untreated_r2,
     is_amplicon = true,
     min_depth = 1000
+}
+```
+
+**Protein sequence alignment with DIAMOND**:
+```wdl
+call testdata.download_diamond_data { }
+call diamond_tasks.make_database {
+  input:
+    fasta = download_diamond_data.reference
+}
+call diamond_tasks.diamond_blastp {
+  input:
+    db = make_database.db,
+    query = download_diamond_data.query
 }
 ```
 
@@ -413,6 +427,37 @@ call gatk.analyze_saturation_mutagenesis {
 }
 ```
 
+### download_diamond_data
+
+Downloads E. coli Swiss-Prot reference proteome and creates a small subset for testing DIAMOND protein alignment workflows.
+
+**Use Case**: When testing DIAMOND protein sequence alignment workflows, you need both a reference database and query sequences. This task downloads the E. coli reference proteome from UniProt and creates a small subset of 10 sequences that can be used as a test query.
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+
+**Outputs**:
+- `reference` (File): Full E. coli reference proteome FASTA file (ecoli_proteins.fasta, ~4,400 protein sequences)
+- `query` (File): Subset of first 10 sequences (ecoli_subset.fasta) for use as test queries
+
+**Example Usage**:
+```wdl
+# For testing DIAMOND protein alignment
+call testdata.download_diamond_data { }
+call diamond_tasks.make_database {
+  input:
+    fasta = download_diamond_data.reference
+}
+call diamond_tasks.diamond_blastp {
+  input:
+    db = make_database.db,
+    query = download_diamond_data.query,
+    align_id = "50",
+    query_cover = "50"
+}
+```
+
 ## Data Sources
 
 All reference data is downloaded from authoritative public repositories:
@@ -426,6 +471,7 @@ All reference data is downloaded from authoritative public repositories:
 - **GATK Resource Bundle**: Known indels and gnomAD population frequencies
 - **Bioconductor pasilla package**: Example RNA-seq count data for DESeq2 testing
 - **ShapeMapper Repository**: TPP riboswitch RNA structure probing example data
+- **UniProt**: E. coli K-12 reference proteome for DIAMOND protein alignment testing
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
 
@@ -452,6 +498,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-ichorcna**: Copy number analysis (requires ichorCNA reference files)
 - **ww-annotsv**: Structural variant annotation (requires test VCF)
 - **ww-shapemapper**: RNA structure analysis (uses TPP riboswitch example data from `download_shapemapper_data`)
+- **ww-diamond**: Protein sequence alignment (uses E. coli proteome from `download_diamond_data`)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:
