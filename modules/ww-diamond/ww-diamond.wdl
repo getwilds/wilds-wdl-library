@@ -40,7 +40,7 @@ task make_database {
   }
 
   runtime {
-    docker: "quay.io/fhcrc-microbiome/docker-diamond@sha256:0f06003c4190e5a1bf73d806146c1b0a3b0d3276d718a50e920670cf1bb395ed"
+    docker: "staphb/diamond:2.1.16"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -104,7 +104,7 @@ task diamond_blastp {
   }
 
   runtime {
-    docker: "quay.io/fhcrc-microbiome/docker-diamond@sha256:0f06003c4190e5a1bf73d806146c1b0a3b0d3276d718a50e920670cf1bb395ed"
+    docker: "staphb/diamond:2.1.16"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
