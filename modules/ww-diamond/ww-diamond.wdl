@@ -40,7 +40,7 @@ task make_database {
   }
 
   runtime {
-    docker: "staphb/diamond:2.1.16"
+    docker: "diamond:2.1.16"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -107,7 +107,7 @@ task diamond_blastp {
   }
 
   runtime {
-    docker: "staphb/diamond:2.1.16"
+    docker: "diamond:2.1.16"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
