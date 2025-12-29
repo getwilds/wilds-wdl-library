@@ -63,6 +63,7 @@ task diamond_blastp {
     top_pct: "Top percentage of hits to keep (0 = keep all, default: 0)"
     query_cover: "Minimum query coverage percentage (default: 50)"
     subject_cover: "Minimum subject coverage percentage (default: 50)"
+    blocksize: "Block size in billions of sequence letters to be processed at a time."
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
@@ -74,6 +75,7 @@ task diamond_blastp {
     String top_pct = "0"
     String query_cover = "50"
     String subject_cover = "50"
+    Float blocksize = "2.0"
     Int memory_gb = 2
     Int cpu_cores = 1
   }
@@ -94,6 +96,7 @@ task diamond_blastp {
         --top "~{top_pct}" \
         --query-cover "~{query_cover}" \
         --subject-cover "~{subject_cover}" \
+        --block-size ~{blocksize} \
         --threads ~{cpu_cores}
 
     gzip "~{query_name}.~{db_name}.aln"
