@@ -75,7 +75,7 @@ task diamond_blastp {
     String top_pct = "0"
     String query_cover = "50"
     String subject_cover = "50"
-    Float blocksize = "2.0"
+    Float blocksize = 2.0
     Int memory_gb = 2
     Int cpu_cores = 1
   }
