@@ -134,6 +134,8 @@ The test workflow (`diamond_example`) automatically:
 
 ### Resource Allocation
 
+DIAMOND may use substantial memory and temporary disk space during execution. If the program fails due to running out of memory or disk space, reduce the `blocksize` input parameter.
+
 The module supports flexible resource configuration:
 
 - **Memory**: 2-8 GB recommended (scales with database and query size)
@@ -145,23 +147,14 @@ The module supports flexible resource configuration:
 
 ### Advanced Considerations
 
-- **Sensitivity modes**: This module uses the default BLASTP mode; DIAMOND also supports `blastx` (DNA-to-protein) and `blastn` modes not included in this module
-- **Output format**: The task outputs tabular format (outfmt 6) with 12 standard BLAST columns
 - **Filtering parameters**: The `align_id`, `query_cover`, and `subject_cover` parameters allow fine-tuning of alignment stringency
-- **Performance**: DIAMOND is optimized for speed; for maximum sensitivity, consider adjusting the sensitivity mode in custom workflows
+- **Repeat masking**: DIAMOND applies repeat masking to both query and reference sequences by default. If you need to disable repeat masking for your analysis, please [file an issue](https://github.com/getwilds/wilds-wdl-library/issues) requesting the addition of the `--masking` flag to this workflow.
 
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
 - Docker/Apptainer support for containerized execution
 - Sufficient computational resources (DIAMOND is lightweight compared to traditional BLAST)
-
-## Performance Considerations
-
-- **Speed**: DIAMOND provides extremely fast protein alignment, making it suitable for large-scale comparative genomics and metagenomics
-- **Memory usage**: Generally modest; 2-8GB typically sufficient for most use cases
-- **CPU scaling**: Performance improves linearly with additional cores
-- **Storage requirements**: Minimal disk space needed; databases and alignments are compressed
 
 ## Output Description
 
