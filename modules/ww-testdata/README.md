@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -57,7 +57,7 @@ The `testrun.wdl` workflow requires no input parameters and automatically downlo
 
 - **Chromosome**: chr1 only (for efficient testing)
 - **Reference version**: hg38 (latest standard)
-- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), and Pasilla counts
+- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), Pasilla counts, ShapeMapper data, and Cell Ranger reference
 
 ### Running the Test Workflow
 
@@ -197,6 +197,17 @@ call shapemapper_tasks.run_shapemapper {
     untreated_r2 = download_shapemapper_data.untreated_r2,
     is_amplicon = true,
     min_depth = 1000
+}
+```
+
+**Single-cell RNA-seq with Cell Ranger**:
+```wdl
+call testdata.download_test_cellranger_ref { }
+call cellranger_tasks.run_count {
+  input:
+    gex_fastqs = my_fastqs,
+    ref_gex = download_test_cellranger_ref.ref_tar,
+    sample_id = "my_sample"
 }
 ```
 
@@ -413,6 +424,32 @@ call gatk.analyze_saturation_mutagenesis {
 }
 ```
 
+### download_test_cellranger_ref
+
+Downloads a minimal Cell Ranger reference transcriptome for testing single-cell RNA-seq workflows. This reference contains only chromosomes 21 and 22, making it small enough for CI testing while still being functional.
+
+**Use Case**: When testing Cell Ranger workflows, you need a properly formatted reference transcriptome. Full references are very large (>10GB), but this minimal reference (~728MB) is sufficient for validating workflow execution without excessive download times or storage requirements.
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 2)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `ref_tar` (File): Cell Ranger reference transcriptome tarball containing chromosomes 21 and 22
+
+**Data Source**: Swiss Institute of Bioinformatics single-cell training materials (https://sib-swiss.github.io/single-cell-training-archived/)
+
+**Example Usage**:
+```wdl
+call testdata.download_test_cellranger_ref { }
+call cellranger_tasks.run_count {
+  input:
+    gex_fastqs = my_prepared_fastqs,
+    ref_gex = download_test_cellranger_ref.ref_tar,
+    sample_id = "my_sample"
+}
+```
+
 ## Data Sources
 
 All reference data is downloaded from authoritative public repositories:
@@ -426,6 +463,7 @@ All reference data is downloaded from authoritative public repositories:
 - **GATK Resource Bundle**: Known indels and gnomAD population frequencies
 - **Bioconductor pasilla package**: Example RNA-seq count data for DESeq2 testing
 - **ShapeMapper Repository**: TPP riboswitch RNA structure probing example data
+- **Swiss Institute of Bioinformatics**: Minimal Cell Ranger reference (chr21/22) for single-cell testing
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
 
@@ -452,6 +490,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-ichorcna**: Copy number analysis (requires ichorCNA reference files)
 - **ww-annotsv**: Structural variant annotation (requires test VCF)
 - **ww-shapemapper**: RNA structure analysis (uses TPP riboswitch example data from `download_shapemapper_data`)
+- **ww-cellranger**: Single-cell RNA-seq analysis (uses minimal reference from `download_test_cellranger_ref`)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:
