@@ -316,7 +316,7 @@ task validate_outputs {
     haplotype_vcfs: "Array of HaplotypeCaller VCF files called via scatter-gather parallelization"
     mutect2_vcfs: "Array of Mutect2 VCF files called via scatter-gather parallelization"
     mutect2_stats: "Array of merged Mutect2 statistics files"
-    pon_vcf: "Compressed VCF file containing the panel of normals"
+    pon_vcf: "Array of gzipped VCF files containing the panel of normals"
     parallel_haplotype_vcfs: "Array of HaplotypeCaller VCF files called via internal parallelization"
     parallel_mutect2_vcfs: "Array of Mutect2 VCF files called via internal parallelization"
     wgs_metrics: "Array of WGS metrics files"
@@ -337,7 +337,7 @@ task validate_outputs {
     Array[File] haplotype_vcfs
     Array[File] mutect2_vcfs
     Array[File] mutect2_stats
-    File pon_vcf
+    Array[File] pon_vcf
     Array[File] parallel_haplotype_vcfs
     Array[File] parallel_mutect2_vcfs
     Array[File] wgs_metrics
@@ -508,14 +508,16 @@ task validate_outputs {
       fi
     done
 
-    # Check panel of normals VCF
-    if [[ -f "~{pon_vcf}" ]]; then
-      size=$(stat -f%z "~{pon_vcf}" 2>/dev/null || stat -c%s "~{pon_vcf}" 2>/dev/null || echo "unknown")
-      variants=$(zcat "~{pon_vcf}" | grep -v "^#" | wc -l || echo "0")
-      echo "Panel of Normals VCF: $(basename ~{pon_vcf}) (${size} bytes, ${variants} variants)" >> validation_report.txt
-    else
-      echo "Missing Panel of Normals VCF: ~{pon_vcf}" >> validation_report.txt
-    fi
+    # Check panel of normals VCFs
+    for vcf in ~{sep=" " pon_vcf}; do
+      if [[ -f "$vcf" ]]; then
+        size=$(stat -f%z "$vcf" 2>/dev/null || stat -c%s "$vcf" 2>/dev/null || echo "unknown")
+        variants=$(zcat "$vcf" | grep -v "^#" | wc -l || echo "0")
+        echo "Panel of Normals VCF: $(basename $vcf) (${size} bytes, ${variants} variants)" >> validation_report.txt
+      else
+        echo "Missing Panel of Normals VCF: $vcf" >> validation_report.txt
+      fi
+    done
 
     # Check saturation mutagenesis variant counts
     if [[ -f "~{saturation_variant_counts}" ]]; then
