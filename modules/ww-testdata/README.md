@@ -205,7 +205,8 @@ call shapemapper_tasks.run_shapemapper {
 call testdata.download_test_cellranger_ref { }
 call cellranger_tasks.run_count {
   input:
-    gex_fastqs = my_fastqs,
+    r1_fastqs = my_r1_fastqs,
+    r2_fastqs = my_r2_fastqs,
     ref_gex = download_test_cellranger_ref.ref_tar,
     sample_id = "my_sample"
 }
@@ -444,7 +445,8 @@ Downloads a minimal Cell Ranger reference transcriptome for testing single-cell 
 call testdata.download_test_cellranger_ref { }
 call cellranger_tasks.run_count {
   input:
-    gex_fastqs = my_prepared_fastqs,
+    r1_fastqs = my_r1_fastqs,
+    r2_fastqs = my_r2_fastqs,
     ref_gex = download_test_cellranger_ref.ref_tar,
     sample_id = "my_sample"
 }
