@@ -1,8 +1,8 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellranger/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellranger/modules/ww-cellranger/ww-cellranger.wdl" as ww_cellranger
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/cellranger-r1-r2/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/cellranger-r1-r2/modules/ww-sra/ww-sra.wdl" as ww_sra
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/cellranger-r1-r2/modules/ww-cellranger/ww-cellranger.wdl" as ww_cellranger
 
 workflow cellranger_example {
 
@@ -25,7 +25,8 @@ workflow cellranger_example {
 
   # Run cellranger count
   call ww_cellranger.run_count { input:
-    gex_fastqs = prepare_fastqs.renamed_fastqs,
+    r1_fastqs = prepare_fastqs.renamed_r1_fastqs,
+    r2_fastqs = prepare_fastqs.renamed_r2_fastqs,
     ref_gex = download_test_cellranger_ref.ref_tar,
     sample_id = "SRR9134714",
     create_bam = false,
