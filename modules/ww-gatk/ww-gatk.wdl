@@ -1277,3 +1277,48 @@ task analyze_saturation_mutagenesis {
     cpu: cpu_cores
   }
 }
+
+task create_somatic_pon {
+  meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
+    description: "Create a somatic panel of normals (PON) from one or more normal sample VCF files"
+    outputs: {
+        pon_vcf: "Compressed VCF file containing the panel of normals"
+    }
+  }
+
+  parameter_meta {
+    normal_vcfs: "Array of Mutect2 gzipped VCF files generated from normal samples"
+    base_file_name: "Base name for output files"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
+  }
+
+  input {
+    Array[File] normal_vcfs
+    String base_file_name
+    Int memory_gb = 8
+    Int cpu_cores = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
+      CreateSomaticPanelOfNormals \
+      -vcfs ~{sep=" -vcfs " normal_vcfs} \
+      -O "~{base_file_name}.pon.vcf.gz" \
+      --verbosity WARNING
+  >>>
+
+  output {
+    File pon_vcf = "~{base_file_name}.pon.vcf.gz"
+  }
+
+  runtime {
+    docker: "getwilds/gatk:4.6.1.0"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
