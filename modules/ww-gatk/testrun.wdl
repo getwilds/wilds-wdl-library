@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl" as ww_gatk
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-gatk-pon-task/modules/ww-gatk/ww-gatk.wdl" as ww_gatk
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
 
 struct GatkSample {
@@ -173,6 +173,12 @@ workflow gatk_example {
         base_file_name = sample.name + ".mutect2"
     }
 
+    # Create a panel of normals from the mutect2 VCF files
+    call ww_gatk.create_somatic_pon { input:
+        normal_vcfs = mutect2.vcf,
+        base_file_name = sample.name + ".pon"
+    }
+
     # Run HaplotypeCaller with internal parallelization
     call ww_gatk.haplotype_caller_parallel { input:
         bam = base_recalibrator.recalibrated_bam,
@@ -266,6 +272,7 @@ workflow gatk_example {
       haplotype_vcfs = merge_haplotype_vcfs.merged_vcf,
       mutect2_vcfs = merge_mutect2_vcfs.merged_vcf,
       mutect2_stats = merge_mutect_stats.merged_stats,
+      pon_vcf = create_somatic_pon.pon_vcf,
       parallel_haplotype_vcfs = haplotype_caller_parallel.vcf,
       parallel_mutect2_vcfs = mutect2_parallel.vcf,
       wgs_metrics = collect_wgs_metrics.metrics_file,
@@ -309,6 +316,7 @@ task validate_outputs {
     haplotype_vcfs: "Array of HaplotypeCaller VCF files called via scatter-gather parallelization"
     mutect2_vcfs: "Array of Mutect2 VCF files called via scatter-gather parallelization"
     mutect2_stats: "Array of merged Mutect2 statistics files"
+    pon_vcf: "Compressed VCF file containing the panel of normals"
     parallel_haplotype_vcfs: "Array of HaplotypeCaller VCF files called via internal parallelization"
     parallel_mutect2_vcfs: "Array of Mutect2 VCF files called via internal parallelization"
     wgs_metrics: "Array of WGS metrics files"
@@ -329,6 +337,7 @@ task validate_outputs {
     Array[File] haplotype_vcfs
     Array[File] mutect2_vcfs
     Array[File] mutect2_stats
+    File pon_vcf
     Array[File] parallel_haplotype_vcfs
     Array[File] parallel_mutect2_vcfs
     Array[File] wgs_metrics
@@ -498,6 +507,15 @@ task validate_outputs {
         echo "Missing Recalibrated BAM Validation: $validation" >> validation_report.txt
       fi
     done
+
+    # Check panel of normals VCF
+    if [[ -f "~{pon_vcf}" ]]; then
+      size=$(stat -f%z "~{pon_vcf}" 2>/dev/null || stat -c%s "~{pon_vcf}" 2>/dev/null || echo "unknown")
+      variants=$(zcat "~{pon_vcf}" | grep -v "^#" | wc -l || echo "0")
+      echo "Panel of Normals VCF: $(basename ~{pon_vcf}) (${size} bytes, ${variants} variants)" >> validation_report.txt
+    else
+      echo "Missing Panel of Normals VCF: ~{pon_vcf}" >> validation_report.txt
+    fi
 
     # Check saturation mutagenesis variant counts
     if [[ -f "~{saturation_variant_counts}" ]]; then
