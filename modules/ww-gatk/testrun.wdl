@@ -341,19 +341,19 @@ task validate_outputs {
 
   command <<<
     set -eo pipefail
-    
+
     echo "GATK Pipeline Validation Report" > validation_report.txt
     echo "Generated on: $(date)" >> validation_report.txt
     echo "======================================" >> validation_report.txt
     echo "" >> validation_report.txt
-    
+
     echo "Sample Summary:" >> validation_report.txt
     echo "Number of samples processed: ~{length(recalibrated_bams)}" >> validation_report.txt
     echo "" >> validation_report.txt
-    
+
     echo "File Validation:" >> validation_report.txt
     echo "Checking file existence and basic properties..." >> validation_report.txt
-    
+
     # Check MarkDuplicates BAM files
     for bam in ~{sep=" " markdup_bams}; do
       if [[ -f "$bam" ]]; then
@@ -413,7 +413,7 @@ task validate_outputs {
         echo "Missing Recal BAM Index: $bai" >> validation_report.txt
       fi
     done
-    
+
     # Check HaplotypeCaller VCFs if present
     for vcf in ~{sep=" " haplotype_vcfs}; do
       if [[ -f "$vcf" ]]; then
@@ -423,7 +423,7 @@ task validate_outputs {
         echo "Missing HaplotypeCaller VCF: $vcf" >> validation_report.txt
       fi
     done
-    
+
     # Check Mutect2 VCFs if present
     for vcf in ~{sep=" " mutect2_vcfs}; do
       if [[ -f "$vcf" ]]; then
@@ -443,7 +443,7 @@ task validate_outputs {
         echo "Missing Parallel HaplotypeCaller VCF: $vcf" >> validation_report.txt
       fi
     done
-    
+
     # Check Parallel Mutect2 VCFs if present
     for vcf in ~{sep=" " parallel_mutect2_vcfs}; do
       if [[ -f "$vcf" ]]; then
