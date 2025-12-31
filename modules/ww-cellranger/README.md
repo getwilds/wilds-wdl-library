@@ -13,7 +13,7 @@ This module provides reusable WDL tasks for preparing and processing single-cell
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `run_count`, `prepare_fastqs`
+- **Tasks**: `run_count`
 - **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
 - **Container**: `getwilds/cellranger:10.0.0` (WILDS Docker image with Cell Ranger installed)
 
@@ -34,7 +34,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 - Format: `SampleName_S1_L001_R1_001.fastq.gz` (for Read 1)
 - Format: `SampleName_S1_L001_R2_001.fastq.gz` (for Read 2)
 
-If your files don't follow this convention and you have just one pair of files, you use the `prepare_fastqs` task to rename them automatically.
+If your files don't follow this convention, you can use the `download_fastq_data` task from `ww-testdata` with the `prefix` parameter to rename them, or rename them manually before running the workflow.
 
 ### Current Limitations
 
@@ -65,19 +65,6 @@ Run `cellranger count` on gene expression reads from one GEM well.
 - `results_tar` (File): Compressed tarball of Cell Ranger count output directory
 - `web_summary` (File): Web summary HTML file with QC metrics
 - `metrics_summary` (File): Metrics summary CSV file with key statistics
-
-### `prepare_fastqs`
-
-Rename FASTQs to Cell Ranger convention: `<sample_name>_S1_L001_R1_001.fastq.gz`. Useful when working with FASTQs from SRA or other sources that don't follow Cell Ranger's naming requirements.
-
-**Inputs:**
-- `r1_fastqs` (Array[File]): Array of R1 FASTQ files
-- `r2_fastqs` (Array[File]): Array of R2 FASTQ files
-- `sample_name` (String): Sample name for FASTQ naming
-
-**Outputs:**
-- `renamed_r1_fastqs` (Array[File]): R1 FASTQ files renamed to Cell Ranger convention
-- `renamed_r2_fastqs` (Array[File]): R2 FASTQ files renamed to Cell Ranger convention
 
 ## Usage as a Module
 
@@ -148,25 +135,6 @@ call cellranger_tasks.run_count {
     ref_gex = reference,
     sample_id = "my_sample",
     create_bam = false
-}
-```
-
-**Using prepare_fastqs for SRA data:**
-```wdl
-# If your FASTQs don't follow Cell Ranger naming convention
-call cellranger_tasks.prepare_fastqs {
-  input:
-    r1_fastqs = sra_r1_files,
-    r2_fastqs = sra_r2_files,
-    sample_name = "my_sample"
-}
-
-call cellranger_tasks.run_count {
-  input:
-    r1_fastqs = prepare_fastqs.renamed_r1_fastqs,
-    r2_fastqs = prepare_fastqs.renamed_r2_fastqs,
-    ref_gex = reference,
-    sample_id = "my_sample"
 }
 ```
 
