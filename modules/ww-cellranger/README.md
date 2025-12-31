@@ -192,10 +192,9 @@ sprocket run testrun.wdl
 
 The test workflow (`cellranger_example`) automatically:
 1. Downloads a small GEX reference using `ww-testdata`
-2. Downloads demonstration FASTQ data from SRA using `ww-sra`
-3. Renames FASTQs to Cell Ranger naming convention using `prepare_fastqs`
-4. Runs Cell Ranger count analysis
-5. Validates all outputs
+2. Downloads test FASTQ data with proper naming convention using `ww-testdata`
+3. Runs Cell Ranger count analysis
+4. Validates all outputs
 
 ## Configuration Guidelines
 
@@ -238,9 +237,8 @@ The module supports flexible resource configuration:
 
 This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
-- Real single-cell sequencing data from SRA
+- Test data from the ww-testdata module
 - Comprehensive validation of all outputs
-- Integration testing with ww-testdata and ww-sra modules
 
 For questions specific to this module or to contribute improvements, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).
 

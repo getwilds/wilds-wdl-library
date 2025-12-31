@@ -235,13 +235,26 @@ call cellranger_tasks.run_count {
 
 ### download_fastq_data
 
+Downloads small example FASTQ files for testing. Renames to Illumina naming convention with optional gzip compression.
+
 **Inputs**:
+- `prefix` (String): Sample prefix for output filenames (default: "testdata")
+- `gzip_output` (Boolean): Compress output files with gzip (default: false)
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
-- `r1_fastq` (File): R1 FASTQ file for paired-end sequencing
-- `r2_fastq` (File): R2 FASTQ file for paired-end sequencing
+- `r1_fastq` (File): R1 FASTQ file named `<prefix>_S1_L001_R1_001.fastq[.gz]`
+- `r2_fastq` (File): R2 FASTQ file named `<prefix>_S1_L001_R2_001.fastq[.gz]`
+
+**Example Usage**:
+```wdl
+call testdata.download_fastq_data { input:
+  prefix = "my_sample",
+  gzip_output = true
+}
+# Outputs: my_sample_S1_L001_R1_001.fastq.gz, my_sample_S1_L001_R2_001.fastq.gz
+```
 
 ### download_test_transcriptome
 
