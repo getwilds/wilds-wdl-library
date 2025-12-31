@@ -16,7 +16,8 @@ task run_count {
   }
 
   parameter_meta {
-    gex_fastqs: "Paired GEX FASTQs with naming convention: SampleName_S1_L001_R1_001.fastq.gz"
+    r1_fastqs: "Array of R1 FASTQ files (contain cell barcodes and UMIs)"
+    r2_fastqs: "Array of R2 FASTQ files (contain cDNA sequences)"
     ref_gex: "GEX reference transcriptome tarball"
     sample_id: "Sample ID for output naming"
     create_bam: "Generate BAM file (default: true)"
@@ -27,7 +28,8 @@ task run_count {
   }
 
   input {
-    Array[File] gex_fastqs
+    Array[File] r1_fastqs
+    Array[File] r2_fastqs
     File ref_gex
     String sample_id
     Boolean create_bam = true
@@ -40,13 +42,50 @@ task run_count {
   command <<<
     set -eo pipefail
 
+    # Create arrays from WDL inputs
+    R1_FILES=(~{sep=' ' r1_fastqs})
+    R2_FILES=(~{sep=' ' r2_fastqs})
+
+    # Validate that R1 and R2 arrays have the same length
+    if [ "${#R1_FILES[@]}" -ne "${#R2_FILES[@]}" ]; then
+      echo "ERROR: Number of R1 files (${#R1_FILES[@]}) does not match number of R2 files (${#R2_FILES[@]})" >&2
+      exit 1
+    fi
+
+    # Validate FASTQ naming convention
+    # Pattern: SampleName_S[0-9]+_L[0-9]+_R[12]_001.fastq.gz (with lane)
+    # Or: SampleName_S[0-9]+_R[12]_001.fastq.gz (without lane, Cell Ranger v4.0+)
+    PATTERN_WITH_LANE='_S[0-9]+_L[0-9]+_R[12]_001\.fastq\.gz$'
+    PATTERN_WITHOUT_LANE='_S[0-9]+_R[12]_001\.fastq\.gz$'
+
+    validate_fastq_name() {
+      local file="$1"
+      local file_basename
+      file_basename=$(basename "$file")
+      if [[ ! "$file_basename" =~ $PATTERN_WITH_LANE ]] && [[ ! "$file_basename" =~ $PATTERN_WITHOUT_LANE ]]; then
+        echo "ERROR: FASTQ file '$file_basename' does not follow Cell Ranger naming convention." >&2
+        echo "Expected format: SampleName_S1_L001_R1_001.fastq.gz or SampleName_S1_R1_001.fastq.gz" >&2
+        exit 1
+      fi
+    }
+
+    for file in "${R1_FILES[@]}"; do
+      validate_fastq_name "$file"
+    done
+    for file in "${R2_FILES[@]}"; do
+      validate_fastq_name "$file"
+    done
+
+    echo "FASTQ validation passed"
+
     # Extract GEX reference
     mkdir -p gex_ref
     tar xf "~{ref_gex}" -C gex_ref --strip-components 1
 
     # Create folder and copy FASTQ files
     mkdir -p gex_fastqs
-    cp ~{sep=' ' gex_fastqs} gex_fastqs/
+    cp ~{sep=' ' r1_fastqs} gex_fastqs/
+    cp ~{sep=' ' r2_fastqs} gex_fastqs/
     FASTQS=$(pwd)/gex_fastqs
 
     mkdir -p "~{sample_id}_outs"
@@ -81,64 +120,5 @@ task run_count {
     docker: "getwilds/cellranger:10.0.0"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-  }
-}
-
-
-task prepare_fastqs {
-  meta {
-    author: "Emma Bishop"
-    email: "ebishop@fredhutch.org"
-    description: "Rename a pair of FASTQs to convention: SampleName_S1_L001_R1_001.fastq.gz"
-    outputs: {
-        renamed_fastqs: "FASTQ files renamed to Cell Ranger convention"
-    }
-  }
-
-  parameter_meta {
-    r1_fastqs: "Array of R1 FASTQ files"
-    r2_fastqs: "Array of R2 FASTQ files"
-    sample_name: "Sample name for FASTQ naming"
-  }
-
-  input {
-    Array[File] r1_fastqs
-    Array[File] r2_fastqs
-    String sample_name
-  }
-
-  command <<<
-    set -eo pipefail
-
-    # Create folder for FASTQ files
-    mkdir -p renamed_fastqs
-
-    # Create arrays from WDL inputs
-    R1_FILES=(~{sep=' ' r1_fastqs})
-    R2_FILES=(~{sep=' ' r2_fastqs})
-
-
-    # Process each pair of files
-    for i in "${!R1_FILES[@]}"; do
-      R1_FILE="${R1_FILES[$i]}"
-      R2_FILE="${R2_FILES[$i]}"
-
-      # Define Cell Ranger naming convention for this pair
-      TARGET_R1="~{sample_name}_S1_L001_R1_001.fastq.gz"
-      TARGET_R2="~{sample_name}_S1_L001_R2_001.fastq.gz"
-
-      cp "$R1_FILE" "renamed_fastqs/$TARGET_R1"
-      cp "$R2_FILE" "renamed_fastqs/$TARGET_R2"
-    done
-  >>>
-
-  output {
-    Array[File] renamed_fastqs = glob("renamed_fastqs/*.fastq.gz")
-  }
-
-  runtime {
-    docker: "getwilds/awscli:2.27.49"
-    cpu: 1
-    memory: "2 GB"
   }
 }

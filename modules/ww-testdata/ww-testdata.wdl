@@ -106,7 +106,7 @@ task download_fastq_data {
   meta {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
-    description: "Downloads small example FASTQ files for WILDS WDL test runs"
+    description: "Downloads small example FASTQ files for WILDS WDL test runs. Renames to Illumina naming convention with optional gzip compression."
     outputs: {
         r1_fastq: "R1 fastq file downloaded for the sample in question",
         r2_fastq: "R2 fastq file downloaded for the sample in question"
@@ -114,23 +114,43 @@ task download_fastq_data {
   }
 
   parameter_meta {
+    prefix: "Sample prefix for output filenames (default: 'testdata')"
+    gzip_output: "Compress output files with gzip (default: false)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
 
   input {
+    Boolean gzip_output = false
+    String prefix = "testdata"
     Int cpu_cores = 1
     Int memory_gb = 4
   }
 
+  # Determine output filenames based on prefix and gzip setting
+  String gz_ext = if gzip_output then ".gz" else ""
+  String r1_base = "~{prefix}_S1_L001_R1_001.fastq"
+  String r2_base = "~{prefix}_S1_L001_R2_001.fastq"
+  String r1_output = "~{r1_base}~{gz_ext}"
+  String r2_output = "~{r2_base}~{gz_ext}"
+
   command <<<
-    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq .
-    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq .
+    set -eo pipefail
+
+    # Download example FASTQ files from GATK test data bucket
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq "~{r1_base}"
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq "~{r2_base}"
+
+    # Optionally gzip the output FASTQ files
+    if [ "~{gzip_output}" == "true" ]; then
+      gzip "~{r1_base}"
+      gzip "~{r2_base}"
+    fi
   >>>
 
   output {
-    File r1_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq"
-    File r2_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq"
+    File r1_fastq = r1_output
+    File r2_fastq = r2_output
   }
 
   runtime {

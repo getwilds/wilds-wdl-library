@@ -13,7 +13,7 @@ This module provides reusable WDL tasks for preparing and processing single-cell
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `run_count`, `prepare_fastqs`
+- **Tasks**: `run_count`
 - **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
 - **Container**: `getwilds/cellranger:10.0.0` (WILDS Docker image with Cell Ranger installed)
 
@@ -21,10 +21,12 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 ### Platform Requirements
 
-**Cell Ranger can only be run on Linux x86_64 architecture.** This is a limitation of the Cell Ranger software itself.
+**Cell Ranger requires Linux x86_64 architecture with AVX instruction support.** This module runs Cell Ranger inside a Docker container (`getwilds/cellranger:10.0.0`), which works on:
+- Linux x86_64 systems (native)
+- Intel-based Macs (via Docker)
+- Cloud platforms and HPC clusters (GitHub Actions, AWS, Google Cloud, etc.)
 
-- **Fred Hutch users**: You can run this module on the Fred Hutch HPC cluster, which provides the required Linux x86_64 environment.
-- **Other users**: Ensure your compute environment provides Linux x86_64 architecture (most cloud platforms and HPC clusters support this).
+**Note for Apple Silicon (M1/M2/M3) Mac users:** Local testing is not supported. Docker's x86_64 emulation on Apple Silicon does not support the AVX instructions that Cell Ranger requires. The CI/CD pipeline will test this module on compatible infrastructure.
 
 ### FASTQ Naming Convention
 
@@ -32,7 +34,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 - Format: `SampleName_S1_L001_R1_001.fastq.gz` (for Read 1)
 - Format: `SampleName_S1_L001_R2_001.fastq.gz` (for Read 2)
 
-If your files don't follow this convention and you have just one pair of files, you use the `prepare_fastqs` task to rename them automatically.
+If your files don't follow this convention, you can use the `download_fastq_data` task from `ww-testdata` with the `prefix` parameter to rename them, or rename them manually before running the workflow.
 
 ### Current Limitations
 
@@ -47,7 +49,8 @@ If you need support for feature barcoding or other Cell Ranger features, please 
 Run `cellranger count` on gene expression reads from one GEM well.
 
 **Inputs:**
-- `gex_fastqs` (Array[File]): Paired GEX FASTQs with naming convention: `SampleName_S1_L001_R1_001.fastq.gz`
+- `r1_fastqs` (Array[File]): Array of R1 FASTQ files (contain cell barcodes and UMIs)
+- `r2_fastqs` (Array[File]): Array of R2 FASTQ files (contain cDNA sequences)
 - `ref_gex` (File): GEX reference transcriptome tarball (e.g., from 10x Genomics)
 - `sample_id` (String): Sample ID for output naming
 - `create_bam` (Boolean, default=true): Generate BAM file
@@ -56,24 +59,12 @@ Run `cellranger count` on gene expression reads from one GEM well.
 - `expect_cells` (Int, optional): Expected number of recovered cells
 - `chemistry` (String, optional): Assay configuration (e.g., SC3Pv3)
 
-**Important:** All input FASTQs must be from one GEM well. If you have multiple GEM wells, use `run_count` separately for each well.
+**Important:** All input FASTQs must be from one GEM well. If you have multiple GEM wells, use `run_count` separately for each well. The task validates that FASTQ filenames follow Cell Ranger's naming convention and will fail with a helpful error message if they don't.
 
 **Outputs:**
 - `results_tar` (File): Compressed tarball of Cell Ranger count output directory
 - `web_summary` (File): Web summary HTML file with QC metrics
 - `metrics_summary` (File): Metrics summary CSV file with key statistics
-
-### `prepare_fastqs`
-
-Rename a pair of FASTQs to Cell Ranger convention: `<sample_name>_S1_L001_R1_001.fastq.gz` (and the R2 version). This task was built for testing purposes.
-
-**Inputs:**
-- `r1_fastqs` (Array[File]): Array of R1 FASTQ files
-- `r2_fastqs` (Array[File]): Array of R2 FASTQ files
-- `sample_name` (String): Sample name for FASTQ naming
-
-**Outputs:**
-- `renamed_fastqs` (Array[File]): FASTQ files renamed to Cell Ranger convention
 
 ## Usage as a Module
 
@@ -84,8 +75,8 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow my_single_cell_pipeline {
   input {
-    Array[File] r1_fastqs
-    Array[File] r2_fastqs
+    Array[File] r1_fastqs  # Must follow Cell Ranger naming convention
+    Array[File] r2_fastqs  # Must follow Cell Ranger naming convention
     String sample_name
     File gex_reference
   }
@@ -93,7 +84,8 @@ workflow my_single_cell_pipeline {
   # Run Cell Ranger count
   call cellranger_tasks.run_count {
     input:
-      gex_fastqs = prepare_fastqs.renamed_fastqs,
+      r1_fastqs = r1_fastqs,
+      r2_fastqs = r2_fastqs,
       ref_gex = gex_reference,
       sample_id = sample_name
   }
@@ -112,7 +104,8 @@ workflow my_single_cell_pipeline {
 ```wdl
 call cellranger_tasks.run_count {
   input:
-    gex_fastqs = prepared_fastqs,
+    r1_fastqs = r1_fastqs,
+    r2_fastqs = r2_fastqs,
     ref_gex = reference,
     sample_id = "my_sample",
     cpu_cores = 16,
@@ -124,7 +117,8 @@ call cellranger_tasks.run_count {
 ```wdl
 call cellranger_tasks.run_count {
   input:
-    gex_fastqs = prepared_fastqs,
+    r1_fastqs = r1_fastqs,
+    r2_fastqs = r2_fastqs,
     ref_gex = reference,
     sample_id = "my_sample",
     chemistry = "SC3Pv3",
@@ -136,7 +130,8 @@ call cellranger_tasks.run_count {
 ```wdl
 call cellranger_tasks.run_count {
   input:
-    gex_fastqs = prepared_fastqs,
+    r1_fastqs = r1_fastqs,
+    r2_fastqs = r2_fastqs,
     ref_gex = reference,
     sample_id = "my_sample",
     create_bam = false
@@ -165,10 +160,9 @@ sprocket run testrun.wdl
 
 The test workflow (`cellranger_example`) automatically:
 1. Downloads a small GEX reference using `ww-testdata`
-2. Downloads demonstration FASTQ data from SRA using `ww-sra`
-3. Renames FASTQs to Cell Ranger naming convention using `prepare_fastqs`
-4. Runs Cell Ranger count analysis
-5. Validates all outputs
+2. Downloads test FASTQ data with proper naming convention using `ww-testdata`
+3. Runs Cell Ranger count analysis
+4. Validates all outputs
 
 ## Configuration Guidelines
 
@@ -194,8 +188,7 @@ The module supports flexible resource configuration:
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- Docker/Apptainer support for containerized execution
-- Linux x86_64 architecture (Cell Ranger requirement)
+- Docker or Apptainer support for containerized execution
 - Sufficient computational resources (Cell Ranger can be memory-intensive)
 - 10x Genomics reference transcriptome (available from [10x Genomics Download Center](https://www.10xgenomics.com/support/software/cell-ranger/downloads#reference-downloads))
 
@@ -212,9 +205,8 @@ The module supports flexible resource configuration:
 
 This module is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
-- Real single-cell sequencing data from SRA
+- Test data from the ww-testdata module
 - Comprehensive validation of all outputs
-- Integration testing with ww-testdata and ww-sra modules
 
 For questions specific to this module or to contribute improvements, please see the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library).
 

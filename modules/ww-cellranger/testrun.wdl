@@ -1,33 +1,25 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellranger/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellranger/modules/ww-cellranger/ww-cellranger.wdl" as ww_cellranger
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/cellranger-r1-r2/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/cellranger-r1-r2/modules/ww-cellranger/ww-cellranger.wdl" as ww_cellranger
 
 workflow cellranger_example {
 
   # Download a small GEX reference
   call ww_testdata.download_test_cellranger_ref { }
 
-  # Download input FASTQs
-  call ww_sra.fastqdump { input:
-    sra_id = "SRR9134714",
-    ncpu = 2,
-    max_reads = 50000
-  }
-
-  # Prepare FASTQs (rename to Cell Ranger convention for this testrun WDL)
-  call ww_cellranger.prepare_fastqs { input:
-    r1_fastqs = [fastqdump.r1_end],
-    r2_fastqs = [fastqdump.r2_end],
-    sample_name = "SRR9134714"
+  # Download input FASTQs with Cell Ranger naming convention
+  call ww_testdata.download_fastq_data { input:
+    prefix = "testdata",
+    gzip_output = true
   }
 
   # Run cellranger count
   call ww_cellranger.run_count { input:
-    gex_fastqs = prepare_fastqs.renamed_fastqs,
+    r1_fastqs = [download_fastq_data.r1_fastq],
+    r2_fastqs = [download_fastq_data.r2_fastq],
     ref_gex = download_test_cellranger_ref.ref_tar,
-    sample_id = "SRR9134714",
+    sample_id = "testdata",
     create_bam = false,
     cpu_cores = 2,
     memory_gb = 6,
@@ -36,7 +28,7 @@ workflow cellranger_example {
 
   # Validate outputs
   call validate_outputs { input:
-    sample_id = "SRR9134714",
+    sample_id = "testdata",
     results_tar = run_count.results_tar,
     web_summary = run_count.web_summary,
     metrics_summary = run_count.metrics_summary
