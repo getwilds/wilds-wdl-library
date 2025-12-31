@@ -1282,9 +1282,9 @@ task create_somatic_pon {
   meta {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
-    description: "Create a somatic panel of normals (PON) from one or more normal sample VCF files"
+    description: "Create a somatic panel of normals (PON) from VCF files"
     outputs: {
-        pon_vcf: "Compressed VCF file containing the panel of normals"
+        pon_vcf: "Gzipped VCF file containing the panel of normals"
     }
   }
 
@@ -1298,7 +1298,7 @@ task create_somatic_pon {
   input {
     Array[File] normal_vcfs
     String base_file_name
-    Int memory_gb = 8
+    Int memory_gb = 4
     Int cpu_cores = 2
   }
 
@@ -1308,8 +1308,7 @@ task create_somatic_pon {
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       CreateSomaticPanelOfNormals \
       -vcfs ~{sep=" -vcfs " normal_vcfs} \
-      -O "~{base_file_name}.pon.vcf.gz" \
-      --verbosity WARNING
+      -O "~{base_file_name}.pon.vcf.gz"
   >>>
 
   output {
