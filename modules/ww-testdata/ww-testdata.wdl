@@ -106,7 +106,7 @@ task download_fastq_data {
   meta {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
-    description: "Downloads small example FASTQ files for WILDS WDL test runs"
+    description: "Downloads small example FASTQ files for WILDS WDL test runs. Renames to Illumina naming convention with optional gzip compression."
     outputs: {
         r1_fastq: "R1 fastq file downloaded for the sample in question",
         r2_fastq: "R2 fastq file downloaded for the sample in question"
@@ -114,23 +114,43 @@ task download_fastq_data {
   }
 
   parameter_meta {
+    prefix: "Sample prefix for output filenames (default: 'testdata')"
+    gzip_output: "Compress output files with gzip (default: false)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
 
   input {
+    Boolean gzip_output = false
+    String prefix = "testdata"
     Int cpu_cores = 1
     Int memory_gb = 4
   }
 
+  # Determine output filenames based on prefix and gzip setting
+  String gz_ext = if gzip_output then ".gz" else ""
+  String r1_base = "~{prefix}_S1_L001_R1_001.fastq"
+  String r2_base = "~{prefix}_S1_L001_R2_001.fastq"
+  String r1_output = "~{r1_base}~{gz_ext}"
+  String r2_output = "~{r2_base}~{gz_ext}"
+
   command <<<
-    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq .
-    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq .
+    set -eo pipefail
+
+    # Download example FASTQ files from GATK test data bucket
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq "~{r1_base}"
+    aws s3 cp --no-sign-request s3://gatk-test-data/wgs_fastq/NA12878_20k/H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq "~{r2_base}"
+
+    # Optionally gzip the output FASTQ files
+    if [ "~{gzip_output}" == "true" ]; then
+      gzip "~{r1_base}"
+      gzip "~{r2_base}"
+    fi
   >>>
 
   output {
-    File r1_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_1.fastq"
-    File r2_fastq = "H06HDADXX130110.1.ATCACGAT.20k_reads_2.fastq"
+    File r1_fastq = r1_output
+    File r2_fastq = r2_output
   }
 
   runtime {
@@ -471,7 +491,7 @@ task download_dbsnp_vcf {
       https://ftp.ncbi.nlm.nih.gov/snp/latest_release/VCF/GCF_000001405.40.gz | \
     bcftools annotate --rename-chrs chr_mapping.txt \
       -O z -o "dbsnp.~{filter_name}.vcf.gz"
-    
+
     # Index the filtered VCF
     bcftools index --tbi "dbsnp.~{filter_name}.vcf.gz"
   >>>
@@ -666,7 +686,7 @@ task generate_pasilla_counts {
   output {
     Array[File] individual_count_files = glob("*.ReadsPerGene.out.tab")
     Array[String] sample_names = read_lines("~{output_prefix}_sample_names.txt")
-    Array[String] sample_conditions = read_lines("~{output_prefix}_sample_conditions.txt") 
+    Array[String] sample_conditions = read_lines("~{output_prefix}_sample_conditions.txt")
     File gene_info = "~{output_prefix}_gene_info.txt"
   }
 
@@ -932,5 +952,50 @@ task download_shapemapper_data {
     docker: "getwilds/samtools:1.11"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
+  }
+}
+
+task download_test_cellranger_ref {
+  meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
+    description: "Download a minimal Cell Ranger reference for testing"
+    outputs: {
+        ref_tar: "Cell Ranger reference transcriptome tarball"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 2
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download a minimal human reference from Swiss Bioinformatics Institute
+    # Only chromosomes 21 and 22
+    # https://sib-swiss.github.io/single-cell-training-archived/2023.3/day1/introduction_cellranger/#__tabbed_1_1
+    # Emma manually extracted and inspected the files within for any obvious
+    # safety issues
+
+    echo "Downloading small test reference (728 MB)..."
+    curl -O https://single-cell-transcriptomics.s3.eu-central-1.amazonaws.com/cellranger_index.tar.gz
+    echo "Reference download complete"
+  >>>
+
+  output {
+    File ref_tar = "cellranger_index.tar.gz"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
   }
 }
