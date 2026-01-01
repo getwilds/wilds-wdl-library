@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/cellranger-r1-r2/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/cellranger-r1-r2/modules/ww-cellranger/ww-cellranger.wdl" as ww_cellranger
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellranger/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellranger/modules/ww-cellranger/ww-cellranger.wdl" as ww_cellranger
 
 workflow cellranger_example {
 
