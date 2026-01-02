@@ -133,7 +133,7 @@ This module is commonly used with:
 ## Related WILDS Components
 
 - **ww-rseqc module**: Uses BED12 files for RNA-seq QC
-- **ww-star-deseq2 vignette**: Complete RNA-seq pipeline using this module for QC
+- **ww-star-deseq2 pipeline**: Complete RNA-seq pipeline using this module for QC
 - **ww-testdata module**: Provides test GTF files
 
 ## About bedparse

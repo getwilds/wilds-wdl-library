@@ -27,7 +27,7 @@ jobs:
       run: |
         EXITCODE=0
         echo "Checking WDL files using \`miniwdl check\`."
-        files=$(find modules vignettes workflows -name '*.wdl' 2>/dev/null || true)
+        files=$(find modules pipelines -name '*.wdl' 2>/dev/null || true)
         for file in $files; do
           echo "  [***] $file [***]"
           miniwdl check "$file"
@@ -55,7 +55,7 @@ jobs:
       run: |
         EXITCODE=0
         echo "Validating WDL files using WOMtool."
-        files=$(find modules vignettes workflows -name '*.wdl' 2>/dev/null || true)
+        files=$(find modules pipelines -name '*.wdl' 2>/dev/null || true)
         for file in $files; do
           echo "  [***] Validating $file [***]"
           java -jar womtool-86.jar validate "$file"

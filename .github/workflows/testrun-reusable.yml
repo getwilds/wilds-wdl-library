@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       item_type:
-        description: 'Type to test (modules, vignettes, or workflows)'
+        description: 'Type to test (modules or pipelines)'
         required: true
         type: string
       item_name:

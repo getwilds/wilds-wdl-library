@@ -114,9 +114,9 @@ All modules are automatically tested through GitHub Actions:
 - **Real data validation**: Uses actual bioinformatics datasets
 - **Output verification**: Comprehensive validation of all outputs
 
-## Integration with Vignettes
+## Integration with Pipelines
 
-Modules serve as the foundation for WILDS vignettes, which demonstrate how to combine multiple modules into complete analysis pipelines. See the `vignettes/` directory for examples of module integration.
+Modules serve as the foundation for WILDS pipelines, which demonstrate how to combine multiple modules into complete analysis workflows. See the `pipelines/` directory for examples of module integration.
 
 ## Contributing
 

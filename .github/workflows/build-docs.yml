@@ -47,8 +47,7 @@ jobs:
           cat > .sprocketignore << 'EOF'
           # Excluding test run WDL's from documentation builds
           modules/**/testrun.wdl
-          vignettes/**/testrun.wdl
-          workflows/**/testrun.wdl
+          pipelines/**/testrun.wdl
           EOF
           # Build docs
           sprocket dev doc -v --homepage docs-README.md --logo WILDSWDLNameLogo.svg .

@@ -79,7 +79,7 @@ call sra_tasks.fastqdump {
 This module pairs well with other WILDS modules:
 - **ww-star**: For RNA-seq alignment after SRA download
 - **ww-bwa**: For DNA-seq alignment after SRA download
-- **ww-sra-star vignette**: Complete pipeline from SRA to alignment
+- **ww-sra-star pipeline**: Complete pipeline from SRA to alignment
 
 ## Testing the Module
 

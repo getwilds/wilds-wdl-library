@@ -6,7 +6,7 @@
 @Author  :   Taylor Firman
 @Version :   v1.0
 @Contact :   tfirman@fredhutch.org
-@Desc    :   Unified script to identify WILDS modules or vignettes needing test runs based on PR changes.
+@Desc    :   Unified script to identify WILDS modules or pipelines needing test runs based on PR changes.
 '''
 
 import json
@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 # Valid item types
-VALID_TYPES = ['modules', 'vignettes', 'workflows']
+VALID_TYPES = ['modules', 'pipelines']
 
 def get_changed_files():
     """Get list of changed files in PR, or None for workflow_dispatch"""
@@ -112,7 +112,7 @@ def main():
     # Parse command line arguments
     if len(sys.argv) < 2:
         print("ERROR: Item type not specified")
-        print("Usage: discover_wdls.py <modules|vignettes|workflows> [specific_item_name]")
+        print("Usage: discover_wdls.py <modules|pipelines> [specific_item_name]")
         raise SystemExit(1)
 
     item_type = sys.argv[1].lower()

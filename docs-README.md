@@ -17,7 +17,7 @@
 
 ## Welcome to the WILDS WDL Library Documentation
 
-This site provides comprehensive technical documentation for all WDL modules, vignettes, and workflows in the WILDS WDL Library. Use the **sidebar navigation** to explore available components and view detailed task descriptions, inputs/outputs, and usage examples.
+This site provides comprehensive technical documentation for all WDL modules and pipelines in the WILDS WDL Library. Use the **sidebar navigation** to explore available components and view detailed task descriptions, inputs/outputs, and usage examples.
 
 ### Navigating This Documentation
 
@@ -26,15 +26,11 @@ This site provides comprehensive technical documentation for all WDL modules, vi
 - Each module page shows available tasks with complete parameter documentation
 - Includes test workflows demonstrating basic usage
 
-**Vignettes** - Integration examples
-- Compact workflows combining 2-3 modules into common analysis patterns
-- Demonstrates how modules work together
-- Serves as templates for custom workflows
-
-**Workflows** - Production pipelines
-- Complete, publication-ready analysis pipelines
-- Complex workflows combining multiple modules
-- Ready for production use with minimal customization
+**Pipelines** - Complete analysis workflows
+- Workflows combining multiple modules into functional analysis pipelines
+- Range from basic educational examples (2-3 modules) to advanced production pipelines (10+ modules)
+- Complexity levels documented in each pipeline's README
+- Serve as templates for custom workflows or production analyses
 
 ---
 
@@ -62,7 +58,22 @@ workflow my_analysis {
 - Easy version switching by changing the URL
 - Import only the modules you need
 
+### Running Pipelines Directly (No Clone Required)
+
+Thanks to GitHub URL imports, you can download and run any pipeline without cloning the entire repository:
+
+```bash
+# Download a pipeline and its example inputs
+curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipelines/ww-sra-star/ww-sra-star.wdl
+curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipelines/ww-sra-star/inputs.json
+
+# Modify inputs.json as necessary for your data, then run
+sprocket run ww-sra-star.wdl inputs.json
+```
+
 ### Running Components Locally
+
+If you prefer to clone the full repository:
 
 ```bash
 # Clone the repository
@@ -73,20 +84,16 @@ cd wilds-wdl-library
 cd modules/ww-star
 sprocket run testrun.wdl
 
-# Run a vignette (update inputs.json as needed)
-cd ../../vignettes/ww-sra-star
+# Run a pipeline (modify inputs.json as necessary)
+cd ../../pipelines/ww-sra-star
 sprocket run ww-sra-star.wdl inputs.json
-
-# Run a full workflow (update inputs.json as needed)
-cd ../../workflows/ww-leukemia
-sprocket run ww-leukemia.wdl inputs.json
 ```
 
 ---
 
 ## Library Architecture
 
-The WILDS WDL Library is organized into three complementary tiers:
+The WILDS WDL Library is organized into two complementary tiers:
 
 ### Modules (`modules/`)
 **Purpose**: Foundational building blocks for larger workflows
@@ -94,17 +101,12 @@ The WILDS WDL Library is organized into three complementary tiers:
 **Testing**: Unit tests ensure each task functions correctly
 **Usage**: Import tasks into custom workflows or run demonstration workflows
 
-### Vignettes (`vignettes/`)
-**Purpose**: Educational examples of module integration
-**Content**: 2-3 modules combined into standard analysis patterns
-**Testing**: Integration tests verify modules work together
-**Usage**: Templates for common workflows or learning examples
-
-### Workflows (`workflows/`)
-**Purpose**: End-to-end analyses suitable for research publications
-**Content**: Complex workflows combining multiple modules and custom logic
-**Testing**: Comprehensive validation with realistic datasets
-**Usage**: Production analyses requiring minimal customization
+### Pipelines (`pipelines/`)
+**Purpose**: Functional pipelines ranging from educational examples to production-ready analyses
+**Content**: Multiple modules combined into analysis workflows of varying complexity
+**Complexity Levels**: Basic (2-3 modules), Intermediate (4-6 modules), Advanced (10+ modules)
+**Testing**: Integration tests verify modules work together seamlessly
+**Usage**: Templates for common workflows, learning examples, or production analyses
 
 ---
 
@@ -135,4 +137,4 @@ All tasks use versioned, tested Docker images from the [WILDS Docker Library](ht
 
 ---
 
-**Ready to explore?** Use the sidebar to browse available modules, vignettes, and workflows. Each component page provides complete technical documentation including task signatures, parameter descriptions, and usage examples.
+**Ready to explore?** Use the sidebar to browse available modules and pipelines. Each component page provides complete technical documentation including task signatures, parameter descriptions, and usage examples.
