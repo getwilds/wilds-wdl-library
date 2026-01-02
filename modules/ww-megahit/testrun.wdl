@@ -82,7 +82,7 @@ task validate_outputs {
   }
 
   runtime {
-    docker: "megahit:latest"
+    docker: "getwilds/megahit:1.2.9"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
