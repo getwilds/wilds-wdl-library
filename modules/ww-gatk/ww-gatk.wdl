@@ -1317,7 +1317,7 @@ task create_somatic_pon {
     File intervals
     String database_name
     String base_file_name
-    Int memory_gb = 8
+    Int memory_gb = 6
     Int cpu_cores = 2
   }
 

@@ -214,8 +214,7 @@ workflow gatk_example {
       reference_dict = create_sequence_dictionary.sequence_dict,
       intervals = split_intervals.interval_files[0],
       database_name = "demo_pon_db",
-      base_file_name = "demo.pon",
-      memory_gb = 6
+      base_file_name = "demo.pon"
   }
 
   # Test saturation mutagenesis analysis
