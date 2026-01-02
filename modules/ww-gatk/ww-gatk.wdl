@@ -1307,7 +1307,7 @@ task create_somatic_pon {
 
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       CreateSomaticPanelOfNormals \
-      -vcfs ~{sep=" -vcfs " normal_vcfs} \
+      -V ~{sep=" -V " normal_vcfs} \
       -O "~{base_file_name}.pon.vcf.gz"
   >>>
 
