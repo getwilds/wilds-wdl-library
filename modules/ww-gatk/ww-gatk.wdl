@@ -673,6 +673,7 @@ task mutect2 {
     gnomad_vcf: "gnomAD population allele frequency VCF for germline resource"
     base_file_name: "Base name for output files"
     intervals: "Optional interval list file defining target regions"
+    max_mnp_distance: "Distance at which to merge MNPs (default: 1)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
@@ -686,6 +687,7 @@ task mutect2 {
     File gnomad_vcf
     String base_file_name
     File? intervals
+    Int max_mnp_distance = 1
     Int memory_gb = 8
     Int cpu_cores = 2
   }
@@ -712,6 +714,7 @@ task mutect2 {
       ~{if defined(intervals) then "--interval-padding 100" else ""} \
       --germline-resource "~{gnomad_vcf}" \
       --f1r2-tar-gz "~{base_file_name}.f1r2.tar.gz" \
+      --max-mnp-distance "~{max_mnp_distance}" \
       --verbosity WARNING
 
     # Filter Mutect2 calls
