@@ -1285,7 +1285,7 @@ task create_somatic_pon {
   meta {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
-    description: "Create a somatic panel of normals (PON) from VCF files"
+    description: "Create a somatic panel of normals (PON) from VCF files."
     outputs: {
         pon_vcf: "Gzipped VCF file containing the panel of normals",
         pon_vcf_index: "Index file for the panel of normals VCF"
@@ -1293,7 +1293,13 @@ task create_somatic_pon {
   }
 
   parameter_meta {
-    normal_vcfs: "Array of Mutect2 gzipped VCF files generated from normal samples"
+    normal_vcfs: "Array of Mutect2 VCFs generated with --max-mnp-distance=0"
+    normal_vcf_indices: "Array of index files for the normal VCFs"
+    reference_fasta: "Reference genome FASTA"
+    reference_fasta_index: "Index file for the reference FASTA"
+    reference_dict: "Reference genome sequence dictionary"
+    intervals: "Genomic intervals list, such as from GATK BedToIntervalList"
+    database_name: "Name for GenomicsDB workspace"
     base_file_name: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
@@ -1301,21 +1307,42 @@ task create_somatic_pon {
 
   input {
     Array[File] normal_vcfs
+    Array[File] normal_vcf_indices
+    File reference_fasta
+    File reference_fasta_index
+    File reference_dict
+    File intervals
+    String database_name
     String base_file_name
     Int memory_gb = 4
     Int cpu_cores = 2
   }
 
   command <<<
+    # Add local symbolic link for reference fasta and dict
+    # If soft links aren't allowed on your HPC system, copy them locally instead
+    ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
+    ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
+    ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+
     set -eo pipefail
 
-    # Run CreateSomaticPanelOfNormals directly with VCFs
+    # Create a GenomicsDB from normal calls
+    gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
+      GenomicsDBImport \
+      -R "~{basename(reference_fasta)}" \
+      -L "~{intervals}" \
+      --genomicsdb-workspace-path "~{database_name}" \
+      --variant ~{sep=" --variant " normal_vcfs} \
+      --verbosity WARNING
+
+    # Combine the normal calls using CreateSomaticPanelOfNormals
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       CreateSomaticPanelOfNormals \
-      -V ~{sep=" -V " normal_vcfs} \
+      -V gendb://"~{database_name}"\
+      -R "~{basename(reference_fasta)}" \
+      -L "~{intervals}" \
       -O "~{base_file_name}.pon.vcf.gz" \
-      --create-output-variant-index true \
-      --QUIET true \
       --verbosity WARNING
   >>>
 

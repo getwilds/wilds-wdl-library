@@ -176,6 +176,12 @@ workflow gatk_example {
     # Create a panel of normals from the mutect2 VCF files
     call ww_gatk.create_somatic_pon { input:
         normal_vcfs = mutect2.vcf,
+        normal_vcf_indices = mutect2.vcf_index,
+        reference_fasta = download_ref_data.fasta,
+        reference_fasta_index = download_ref_data.fasta_index,
+        reference_dict = create_sequence_dictionary.sequence_dict,
+        intervals = split_intervals.interval_files[0],
+        database_name = sample.name + "_pon_db",
         base_file_name = sample.name + ".pon"
     }
 
