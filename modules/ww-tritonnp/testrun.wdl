@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/caalo/wilds-wdl-library/refs/heads/ww-TritonNP/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/caalo/wilds-wdl-library/refs/heads/ww-TritonNP/modules/ww-tritonnp/ww-tritonnp.wdl" as ww_tritonnp
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-tritonnp/ww-tritonnp.wdl" as ww_tritonnp
 
 struct TritonSample {
     String name
