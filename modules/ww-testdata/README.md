@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_diamond_data`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -57,7 +57,7 @@ The `testrun.wdl` workflow requires no input parameters and automatically downlo
 
 - **Chromosome**: chr1 only (for efficient testing)
 - **Reference version**: hg38 (latest standard)
-- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), and Pasilla counts
+- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), Pasilla counts, ShapeMapper data, and Cell Ranger reference
 
 ### Running the Test Workflow
 
@@ -200,6 +200,18 @@ call shapemapper_tasks.run_shapemapper {
 }
 ```
 
+**Single-cell RNA-seq with Cell Ranger**:
+```wdl
+call testdata.download_test_cellranger_ref { }
+call cellranger_tasks.run_count {
+  input:
+    r1_fastqs = my_r1_fastqs,
+    r2_fastqs = my_r2_fastqs,
+    ref_gex = download_test_cellranger_ref.ref_tar,
+    sample_id = "my_sample"
+}
+```
+
 **Protein sequence alignment with DIAMOND**:
 ```wdl
 call testdata.download_diamond_data { }
@@ -237,13 +249,26 @@ call diamond_tasks.diamond_blastp {
 
 ### download_fastq_data
 
+Downloads small example FASTQ files for testing. Renames to Illumina naming convention with optional gzip compression.
+
 **Inputs**:
+- `prefix` (String): Sample prefix for output filenames (default: "testdata")
+- `gzip_output` (Boolean): Compress output files with gzip (default: false)
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
-- `r1_fastq` (File): R1 FASTQ file for paired-end sequencing
-- `r2_fastq` (File): R2 FASTQ file for paired-end sequencing
+- `r1_fastq` (File): R1 FASTQ file named `<prefix>_S1_L001_R1_001.fastq[.gz]`
+- `r2_fastq` (File): R2 FASTQ file named `<prefix>_S1_L001_R2_001.fastq[.gz]`
+
+**Example Usage**:
+```wdl
+call testdata.download_fastq_data { input:
+  prefix = "my_sample",
+  gzip_output = true
+}
+# Outputs: my_sample_S1_L001_R1_001.fastq.gz, my_sample_S1_L001_R2_001.fastq.gz
+```
 
 ### download_test_transcriptome
 
@@ -427,6 +452,33 @@ call gatk.analyze_saturation_mutagenesis {
 }
 ```
 
+### download_test_cellranger_ref
+
+Downloads a minimal Cell Ranger reference transcriptome for testing single-cell RNA-seq workflows. This reference contains only chromosomes 21 and 22, making it small enough for CI testing while still being functional.
+
+**Use Case**: When testing Cell Ranger workflows, you need a properly formatted reference transcriptome. Full references are very large (>10GB), but this minimal reference (~728MB) is sufficient for validating workflow execution without excessive download times or storage requirements.
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 2)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `ref_tar` (File): Cell Ranger reference transcriptome tarball containing chromosomes 21 and 22
+
+**Data Source**: Swiss Institute of Bioinformatics single-cell training materials (https://sib-swiss.github.io/single-cell-training-archived/)
+
+**Example Usage**:
+```wdl
+call testdata.download_test_cellranger_ref { }
+call cellranger_tasks.run_count {
+  input:
+    r1_fastqs = my_r1_fastqs,
+    r2_fastqs = my_r2_fastqs,
+    ref_gex = download_test_cellranger_ref.ref_tar,
+    sample_id = "my_sample"
+}
+```
+
 ### download_diamond_data
 
 Downloads E. coli Swiss-Prot reference proteome and creates a small subset for testing DIAMOND protein alignment workflows.
@@ -471,6 +523,7 @@ All reference data is downloaded from authoritative public repositories:
 - **GATK Resource Bundle**: Known indels and gnomAD population frequencies
 - **Bioconductor pasilla package**: Example RNA-seq count data for DESeq2 testing
 - **ShapeMapper Repository**: TPP riboswitch RNA structure probing example data
+- **Swiss Institute of Bioinformatics**: Minimal Cell Ranger reference (chr21/22) for single-cell testing
 - **UniProt**: E. coli K-12 reference proteome for DIAMOND protein alignment testing
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
@@ -498,6 +551,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-ichorcna**: Copy number analysis (requires ichorCNA reference files)
 - **ww-annotsv**: Structural variant annotation (requires test VCF)
 - **ww-shapemapper**: RNA structure analysis (uses TPP riboswitch example data from `download_shapemapper_data`)
+- **ww-cellranger**: Single-cell RNA-seq analysis (uses minimal reference from `download_test_cellranger_ref`)
 - **ww-diamond**: Protein sequence alignment (uses E. coli proteome from `download_diamond_data`)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 

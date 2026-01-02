@@ -57,6 +57,8 @@ workflow testdata_example {
 
   call ww_testdata.download_shapemapper_data { }
 
+  call ww_testdata.download_test_cellranger_ref { }
+
   call ww_testdata.download_diamond_data { }
 
   call validate_outputs { input:
@@ -95,6 +97,7 @@ workflow testdata_example {
     shapemapper_modified_r2 = download_shapemapper_data.modified_r2,
     shapemapper_untreated_r1 = download_shapemapper_data.untreated_r1,
     shapemapper_untreated_r2 = download_shapemapper_data.untreated_r2,
+    cellranger_ref_tar = download_test_cellranger_ref.ref_tar,
     diamond_reference = download_diamond_data.reference,
     diamond_query = download_diamond_data.query
   }
@@ -145,6 +148,8 @@ workflow testdata_example {
     File shapemapper_modified_r2 = download_shapemapper_data.modified_r2
     File shapemapper_untreated_r1 = download_shapemapper_data.untreated_r1
     File shapemapper_untreated_r2 = download_shapemapper_data.untreated_r2
+    # Output from CellRanger reference download
+    File cellranger_ref_tar = download_test_cellranger_ref.ref_tar
     # Outputs from DIAMOND data download
     File diamond_reference = download_diamond_data.reference
     File diamond_query = download_diamond_data.query
@@ -197,6 +202,7 @@ task validate_outputs {
     shapemapper_modified_r2: "ShapeMapper modified R2 FASTQ file to validate"
     shapemapper_untreated_r1: "ShapeMapper untreated R1 FASTQ file to validate"
     shapemapper_untreated_r2: "ShapeMapper untreated R2 FASTQ file to validate"
+    cellranger_ref_tar: "CellRanger reference tar.gz file to validate"
     diamond_reference: "DIAMOND E. coli reference proteome FASTA file to validate"
     diamond_query: "DIAMOND E. coli query subset FASTA file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
@@ -239,6 +245,7 @@ task validate_outputs {
     File shapemapper_modified_r2
     File shapemapper_untreated_r1
     File shapemapper_untreated_r2
+    File cellranger_ref_tar
     File diamond_reference
     File diamond_query
     Int cpu_cores = 1
@@ -292,6 +299,7 @@ task validate_outputs {
     validate_file "~{gnomad_vcf}" "Gnomad VCF" || validation_passed=false
     validate_file "~{gnomad_vcf_index}" "Gnomad VCF index" || validation_passed=false
     validate_file "~{annotsv_test_vcf}" "AnnotSV test VCF" || validation_passed=false
+    validate_file "~{cellranger_ref_tar}" "Cellranger test reference"  || validation_passed=false
 
     # Validate pasilla count files
     for count_file in ~{sep=' ' pasilla_counts}; do
