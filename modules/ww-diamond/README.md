@@ -14,7 +14,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 - **Tasks**: `make_database`, `diamond_blastp`
 - **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
-- **Container**: `staphb/diamond:2.1.16` (StaPH-B Docker image with DIAMOND installed)
+- **Container**: `getwilds/diamond:2.1.16` (WILDS Docker image with DIAMOND installed)
 
 ## Tasks
 
