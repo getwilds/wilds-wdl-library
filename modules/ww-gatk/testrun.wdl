@@ -147,7 +147,8 @@ workflow gatk_example {
         reference_fasta_index = download_ref_data.fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
         gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
-        base_file_name = sample.name + "." + basename(split_intervals.interval_files[i], ".interval_list")
+        base_file_name = sample.name + "." + basename(split_intervals.interval_files[i], ".interval_list"),
+        max_mnp_distance = 0
       }
     }
 
@@ -171,18 +172,6 @@ workflow gatk_example {
     call ww_gatk.merge_mutect_stats { input:
         stats = mutect2.stats_file,
         base_file_name = sample.name + ".mutect2"
-    }
-
-    # Create a panel of normals from the mutect2 VCF files
-    call ww_gatk.create_somatic_pon { input:
-        normal_vcfs = mutect2.vcf,
-        normal_vcf_indices = mutect2.vcf_index,
-        reference_fasta = download_ref_data.fasta,
-        reference_fasta_index = download_ref_data.fasta_index,
-        reference_dict = create_sequence_dictionary.sequence_dict,
-        intervals = split_intervals.interval_files[0],
-        database_name = sample.name + "_pon_db",
-        base_file_name = sample.name + ".pon"
     }
 
     # Run HaplotypeCaller with internal parallelization
@@ -214,6 +203,19 @@ workflow gatk_example {
         input_file = base_recalibrator.recalibrated_bam,
         base_file_name = sample.name + ".recal_validation"
     }
+  }
+
+  # Create a panel of normals from the merged mutect2 VCF files
+  call ww_gatk.create_somatic_pon { input:
+      normal_vcfs = merge_mutect2_vcfs.merged_vcf,
+      normal_vcf_indices = merge_mutect2_vcfs.merged_vcf_index,
+      reference_fasta = download_ref_data.fasta,
+      reference_fasta_index = download_ref_data.fasta_index,
+      reference_dict = create_sequence_dictionary.sequence_dict,
+      intervals = split_intervals.interval_files[0],
+      database_name = "demo_pon_db",
+      base_file_name = "demo.pon",
+      memory_gb = 6
   }
 
   # Test saturation mutagenesis analysis
@@ -322,7 +324,7 @@ task validate_outputs {
     haplotype_vcfs: "Array of HaplotypeCaller VCF files called via scatter-gather parallelization"
     mutect2_vcfs: "Array of Mutect2 VCF files called via scatter-gather parallelization"
     mutect2_stats: "Array of merged Mutect2 statistics files"
-    pon_vcf: "Array of gzipped VCF files containing the panel of normals"
+    pon_vcf: "Gzipped VCF file containing the panel of normals"
     parallel_haplotype_vcfs: "Array of HaplotypeCaller VCF files called via internal parallelization"
     parallel_mutect2_vcfs: "Array of Mutect2 VCF files called via internal parallelization"
     wgs_metrics: "Array of WGS metrics files"
@@ -343,7 +345,7 @@ task validate_outputs {
     Array[File] haplotype_vcfs
     Array[File] mutect2_vcfs
     Array[File] mutect2_stats
-    Array[File] pon_vcf
+    File pon_vcf
     Array[File] parallel_haplotype_vcfs
     Array[File] parallel_mutect2_vcfs
     Array[File] wgs_metrics
@@ -514,16 +516,14 @@ task validate_outputs {
       fi
     done
 
-    # Check panel of normals VCFs
-    for vcf in ~{sep=" " pon_vcf}; do
-      if [[ -f "$vcf" ]]; then
-        size=$(stat -f%z "$vcf" 2>/dev/null || stat -c%s "$vcf" 2>/dev/null || echo "unknown")
-        variants=$(zcat "$vcf" | grep -v "^#" | wc -l || echo "0")
-        echo "Panel of Normals VCF: $(basename $vcf) (${size} bytes, ${variants} variants)" >> validation_report.txt
-      else
-        echo "Missing Panel of Normals VCF: $vcf" >> validation_report.txt
-      fi
-    done
+    # Check panel of normals VCF
+    if [[ -f "~{pon_vcf}" ]]; then
+      size=$(stat -f%z "~{pon_vcf}" 2>/dev/null || stat -c%s "~{pon_vcf}" 2>/dev/null || echo "unknown")
+      variants=$(zcat "~{pon_vcf}" | grep -v "^#" | wc -l || echo "0")
+      echo "Panel of Normals VCF: $(basename ~{pon_vcf}) (${size} bytes, ${variants} variants)" >> validation_report.txt
+    else
+      echo "Missing Panel of Normals VCF: ~{pon_vcf}" >> validation_report.txt
+    fi
 
     # Check saturation mutagenesis variant counts
     if [[ -f "~{saturation_variant_counts}" ]]; then
