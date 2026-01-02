@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-diamond/modules/ww-diamond/ww-diamond.wdl" as ww_diamond
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-diamond/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-diamond/ww-diamond.wdl" as ww_diamond
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow diamond_example {
   call ww_testdata.download_diamond_data { }
