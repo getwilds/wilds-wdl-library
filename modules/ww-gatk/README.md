@@ -23,7 +23,7 @@ The module implements GATK best practices for variant calling, including proper 
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `fastq_to_bam`, `validate_sam_file`, `analyze_saturation_mutagenesis`
+- **Tasks**: `mark_duplicates`, `base_recalibrator`, `markdup_recal_metrics`, `haplotype_caller`, `mutect2`, `haplotype_caller_parallel`, `mutect2_parallel`, `split_intervals`, `print_reads`, `merge_vcfs`, `merge_mutect_stats`, `create_sequence_dictionary`, `collect_wgs_metrics`, `fastq_to_bam`, `validate_sam_file`, `analyze_saturation_mutagenesis`, `create_somatic_pon`
 - **Test workflow**: `testrun.wdl` (demonstration workflow using test data with parallelization)
 - **Container**: `getwilds/gatk:4.6.1.0`
 
@@ -173,6 +173,29 @@ Calls somatic variants using GATK Mutect2 with internal parallelization for redu
 - `vcf` (File): Compressed VCF file containing filtered somatic variant calls
 - `vcf_index` (File): Index file for the Mutect2 VCF output
 - `stats_file` (File): Merged Mutect2 statistics file
+
+### `create_somatic_pon`
+Creates a somatic panel of normals (PON) from Mutect2 VCF files for filtering germline variants and technical artifacts in tumor-only somatic variant calling.
+
+**Important Requirements:**
+- Input VCFs must be generated using the `mutect2` task with `max_mnp_distance` set to 0
+- VCFs must come from at least two different normal samples
+
+**Inputs:**
+- `normal_vcfs` (Array[File]): Array of Mutect2 VCFs generated with --max-mnp-distance=0
+- `normal_vcf_indices` (Array[File]): Array of index files for the normal VCFs
+- `reference_fasta` (File): Reference genome FASTA file
+- `reference_fasta_index` (File): Index file for the reference FASTA
+- `reference_dict` (File): Reference genome sequence dictionary
+- `intervals` (File): Genomic intervals list, such as from GATK BedToIntervalList
+- `database_name` (String): Name for GenomicsDB workspace
+- `base_file_name` (String): Base name for output files
+- `memory_gb` (Int): Memory allocation in GB (default: 6)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+
+**Outputs:**
+- `pon_vcf` (File): Gzipped VCF file containing the panel of normals
+- `pon_vcf_index` (File): Index file for the panel of normals VCF
 
 ### Parallelization and Utility Tasks
 
