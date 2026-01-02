@@ -1284,7 +1284,8 @@ task create_somatic_pon {
     email: "ebishop@fredhutch.org"
     description: "Create a somatic panel of normals (PON) from VCF files"
     outputs: {
-        pon_vcf: "Gzipped VCF file containing the panel of normals"
+        pon_vcf: "Gzipped VCF file containing the panel of normals",
+        pon_vcf_index: "Index file for the panel of normals VCF"
     }
   }
 
@@ -1305,14 +1306,19 @@ task create_somatic_pon {
   command <<<
     set -eo pipefail
 
+    # Run CreateSomaticPanelOfNormals directly with VCFs
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       CreateSomaticPanelOfNormals \
       -V ~{sep=" -V " normal_vcfs} \
-      -O "~{base_file_name}.pon.vcf.gz"
+      -O "~{base_file_name}.pon.vcf.gz" \
+      --create-output-variant-index true \
+      --QUIET true \
+      --verbosity WARNING
   >>>
 
   output {
     File pon_vcf = "~{base_file_name}.pon.vcf.gz"
+    File pon_vcf_index = "~{base_file_name}.pon.vcf.gz.tbi"
   }
 
   runtime {
