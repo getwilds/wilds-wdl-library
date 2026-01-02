@@ -999,3 +999,46 @@ task download_test_cellranger_ref {
     cpu: cpu_cores
   }
 }
+
+task download_diamond_data {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Download E. coli proteins and create a subset as a test query"
+    outputs: {
+        reference: "Full E. coli proteome FASTA file",
+        query: "Subset of first 10 sequences"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download E. coli Swiss-Prot proteins and save as ecoli_proteins.fasta
+    curl https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Bacteria/UP000000625/UP000000625_83333.fasta.gz | gunzip > ecoli_proteins.fasta
+
+    # Create subset with first 10 sequences
+    awk '/^>/ {n++} n<=10' ecoli_proteins.fasta > ecoli_subset.fasta
+  >>>
+
+  output {
+    File reference = "ecoli_proteins.fasta"
+    File query = "ecoli_subset.fasta"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}

@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -143,7 +143,7 @@ call testdata.download_dbsnp_vcf {
 }
 call testdata.download_known_indels_vcf {
   input:
-    region = "chr1:1-10000000", 
+    region = "chr1:1-10000000",
     filter_name = "chr1"
 }
 call gatk_tasks.base_recalibrator {
@@ -209,6 +209,20 @@ call cellranger_tasks.run_count {
     r2_fastqs = my_r2_fastqs,
     ref_gex = download_test_cellranger_ref.ref_tar,
     sample_id = "my_sample"
+}
+```
+
+**Protein sequence alignment with DIAMOND**:
+```wdl
+call testdata.download_diamond_data { }
+call diamond_tasks.make_database {
+  input:
+    fasta = download_diamond_data.reference
+}
+call diamond_tasks.diamond_blastp {
+  input:
+    db = make_database.db,
+    query = download_diamond_data.query
 }
 ```
 
@@ -465,6 +479,37 @@ call cellranger_tasks.run_count {
 }
 ```
 
+### download_diamond_data
+
+Downloads E. coli Swiss-Prot reference proteome and creates a small subset for testing DIAMOND protein alignment workflows.
+
+**Use Case**: When testing DIAMOND protein sequence alignment workflows, you need both a reference database and query sequences. This task downloads the E. coli reference proteome from UniProt and creates a small subset of 10 sequences that can be used as a test query.
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+
+**Outputs**:
+- `reference` (File): Full E. coli reference proteome FASTA file (ecoli_proteins.fasta, ~4,400 protein sequences)
+- `query` (File): Subset of first 10 sequences (ecoli_subset.fasta) for use as test queries
+
+**Example Usage**:
+```wdl
+# For testing DIAMOND protein alignment
+call testdata.download_diamond_data { }
+call diamond_tasks.make_database {
+  input:
+    fasta = download_diamond_data.reference
+}
+call diamond_tasks.diamond_blastp {
+  input:
+    db = make_database.db,
+    query = download_diamond_data.query,
+    align_id = "50",
+    query_cover = "50"
+}
+```
+
 ## Data Sources
 
 All reference data is downloaded from authoritative public repositories:
@@ -479,6 +524,7 @@ All reference data is downloaded from authoritative public repositories:
 - **Bioconductor pasilla package**: Example RNA-seq count data for DESeq2 testing
 - **ShapeMapper Repository**: TPP riboswitch RNA structure probing example data
 - **Swiss Institute of Bioinformatics**: Minimal Cell Ranger reference (chr21/22) for single-cell testing
+- **UniProt**: E. coli K-12 reference proteome for DIAMOND protein alignment testing
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
 
@@ -506,6 +552,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-annotsv**: Structural variant annotation (requires test VCF)
 - **ww-shapemapper**: RNA structure analysis (uses TPP riboswitch example data from `download_shapemapper_data`)
 - **ww-cellranger**: Single-cell RNA-seq analysis (uses minimal reference from `download_test_cellranger_ref`)
+- **ww-diamond**: Protein sequence alignment (uses E. coli proteome from `download_diamond_data`)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:
