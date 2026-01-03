@@ -147,12 +147,14 @@ wilds-wdl-library/
 
 **Pipeline inputs.json**
 
-In order to pass the automated GitHub Action (GHA) tests, your `inputs.json` must:
+Each pipeline should include an `inputs.json` file that serves as an example for users. This file demonstrates the expected input structure and helps users understand what values they need to provide when running the pipeline. Your `inputs.json` should:
 
-- Use no more than 4 CPUs (for the sprocket executor)
-- Use input files that get downloaded as part of the GHA.
-    - See the `download-test-data` job within `./github/workflows/pipelines-testrun.yml`
-    - Modify `pipelines-testrun.yml` as needed
+- Use dummy/placeholder paths for file inputs (e.g., `"/path/to/your/sample.fastq.gz"`)
+- Include common or recommended values for non-file parameters
+- Document all required inputs with realistic example values
+- Use the pipeline's README to provide descriptions and guidance for each input parameter
+
+**Note**: GitHub Action tests use the `ww-testdata` module to automatically download test data, so your `inputs.json` does not need to reference actual test files for CI purposes.
 
 **Platform-Specific Configurations (Optional)**
 
