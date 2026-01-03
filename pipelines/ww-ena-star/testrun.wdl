@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-ena-star/ww-ena-star.wdl" as ena_star_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/consolidate-levels/pipelines/ww-ena-star/ww-ena-star.wdl" as ena_star_workflow
 
 workflow ena_star_example {
   # Call testdata workflow to get test data
