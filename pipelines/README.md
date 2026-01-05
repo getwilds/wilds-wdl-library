@@ -83,10 +83,12 @@ Thanks to GitHub URL imports, you can download and run any pipeline without clon
 
 ```bash
 # Download a pipeline and its example inputs
+# Option 1: Use curl from the command line
 curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipelines/ww-sra-star/ww-sra-star.wdl
 curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipelines/ww-sra-star/inputs.json
+# Option 2: Download directly from GitHub by navigating to the file and clicking the download button
 
-# Modify inputs.json as necessary for your data, then run
+# Modify inputs.json as necessary for your data, then run via the command line or PROOF's point-and-click interface
 sprocket run ww-sra-star.wdl inputs.json
 ```
 
