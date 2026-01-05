@@ -1322,13 +1322,13 @@ task create_somatic_pon {
   }
 
   command <<<
+    set -eo pipefail
+
     # Add local symbolic link for reference fasta and dict
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
-    set -eo pipefail
 
     # Create a GenomicsDB from normal calls
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
@@ -1342,7 +1342,7 @@ task create_somatic_pon {
     # Combine the normal calls using CreateSomaticPanelOfNormals
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       CreateSomaticPanelOfNormals \
-      -V gendb://"~{database_name}"\
+      -V gendb://"~{database_name}" \
       -R "~{basename(reference_fasta)}" \
       -L "~{intervals}" \
       -O "~{base_file_name}.pon.vcf.gz" \
