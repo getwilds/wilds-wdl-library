@@ -147,12 +147,6 @@ All pipelines are automatically tested through GitHub Actions:
 - Publicly available reference data
 - Automatically downloaded during continuous integration
 
-## Integration Patterns
-
-Pipelines demonstrate key WDL patterns:
-- **Module Composition**: How to effectively combine different tools
-- **Data Flow Management**: Passing complex outputs between modules
-- **Resource Coordination**: Balancing compute requirements across steps
 
 ## Contributing
 
