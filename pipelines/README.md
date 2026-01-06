@@ -102,15 +102,13 @@ If you have the repository cloned:
 cd pipelines/ww-sra-star
 
 # Run test workflow with your preferred executor (no inputs needed):
-
 # Sprocket
 sprocket run testrun.wdl
-
 # Cromwell
 java -jar cromwell.jar run testrun.wdl
-
 # miniWDL
 miniwdl run testrun.wdl
+```
 
 ### **As Complete Workflows**
 
@@ -121,15 +119,13 @@ Pipelines can be executed as standalone workflows with your own data:
 cd pipelines/ww-sra-star
 
 # Run with your preferred executor using the example inputs.json as a starting point:
-
 # Sprocket
 sprocket run ww-sra-star.wdl inputs.json
-
 # Cromwell
 java -jar cromwell.jar run ww-sra-star.wdl --inputs inputs.json
-
 # miniWDL
 miniwdl run ww-sra-star.wdl -i inputs.json
+```
 
 ### **As Templates**
 
