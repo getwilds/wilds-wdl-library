@@ -141,7 +141,6 @@ Pipelines serve as starting points for custom workflows:
 All pipelines are automatically tested through GitHub Actions:
 - **Multi-executor testing**: Cromwell, miniWDL, and Sprocket
 - **End-to-end validation**: Complete pipeline testing with real data
-- **Integration verification**: Ensures modules work together correctly
 
 ### **Test Data**
 - Small but realistic datasets for efficient testing
