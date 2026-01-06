@@ -21,7 +21,6 @@ Pipelines focus on workflows that are:
 ### **Educational Value**
 Every pipeline serves as:
 - A working example of best practices
-- Documentation of integration patterns
 - A template for similar workflows
 - A testing framework for module compatibility
 
