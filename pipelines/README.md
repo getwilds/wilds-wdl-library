@@ -175,4 +175,4 @@ Pipelines demonstrate key WDL patterns:
 For questions about pipelines or to report issues:
 - Open an issue in the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library/issues)
 - Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
-- See the [WILDS Contributor Guide](https://getwilds.org/guide/) for detailed guidelines
+- See the [WILDS Contributor Guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for detailed guidelines
