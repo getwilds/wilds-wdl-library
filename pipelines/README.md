@@ -11,7 +11,6 @@ Each pipeline demonstrates how to:
 - Import and combine multiple WILDS WDL modules effectively
 - Pass data seamlessly between different tools
 - Coordinate resource allocation across modules
-- Handle complex data structures and dependencies
 
 ### **Real-World Patterns**
 Pipelines focus on workflows that are:
