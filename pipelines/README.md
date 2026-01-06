@@ -26,7 +26,7 @@ Every pipeline serves as:
 
 ## Complexity Levels
 
-Pipelines vary in scope and complexity. Each pipeline's README documents its complexity level to help you choose the right starting point:
+Pipelines vary in scope and complexity. Each pipeline and its complexity level is documented below to help you choose the right starting point:
 
 | Level | Modules | Typical Runtime | Description |
 |-------|---------|-----------------|-------------|
