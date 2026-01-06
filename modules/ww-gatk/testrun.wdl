@@ -160,11 +160,19 @@ workflow gatk_example {
         reference_dict = create_sequence_dictionary.sequence_dict
     }
 
-    # Merge Mutect2 VCFs
+    # Merge Mutect2 VCFs (filtered)
     call ww_gatk.merge_vcfs as merge_mutect2_vcfs { input:
         vcfs = mutect2.vcf,
         vcf_indices = mutect2.vcf_index,
         base_file_name = sample.name + ".mutect2",
+        reference_dict = create_sequence_dictionary.sequence_dict
+    }
+
+    # Merge Mutect2 VCFs (unfiltered, for PON creation)
+    call ww_gatk.merge_vcfs as merge_mutect2_unfiltered_vcfs { input:
+        vcfs = mutect2.unfiltered_vcf,
+        vcf_indices = mutect2.unfiltered_vcf_index,
+        base_file_name = sample.name + ".mutect2.unfiltered",
         reference_dict = create_sequence_dictionary.sequence_dict
     }
 
@@ -205,10 +213,10 @@ workflow gatk_example {
     }
   }
 
-  # Create a panel of normals from the merged mutect2 VCF files
+  # Create a panel of normals from the merged unfiltered mutect2 VCF files
   call ww_gatk.create_somatic_pon { input:
-      normal_vcfs = merge_mutect2_vcfs.merged_vcf,
-      normal_vcf_indices = merge_mutect2_vcfs.merged_vcf_index,
+      normal_vcfs = merge_mutect2_unfiltered_vcfs.merged_vcf,
+      normal_vcf_indices = merge_mutect2_unfiltered_vcfs.merged_vcf_index,
       reference_fasta = download_ref_data.fasta,
       reference_fasta_index = download_ref_data.fasta_index,
       reference_dict = create_sequence_dictionary.sequence_dict,

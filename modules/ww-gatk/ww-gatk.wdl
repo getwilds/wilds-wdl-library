@@ -659,6 +659,8 @@ task mutect2 {
     outputs: {
         vcf: "Compressed VCF file containing filtered somatic variant calls",
         vcf_index: "Index file for the Mutect2 VCF output",
+        unfiltered_vcf: "Compressed VCF file containing unfiltered somatic variant calls (for PON creation)",
+        unfiltered_vcf_index: "Index file for the unfiltered Mutect2 VCF output",
         stats_file: "Mutect2 statistics file",
         f1r2_counts: "F1R2 counts for filtering"
     }
@@ -730,6 +732,8 @@ task mutect2 {
   output {
     File vcf = "~{base_file_name}.mutect2.vcf.gz"
     File vcf_index = "~{base_file_name}.mutect2.vcf.gz.tbi"
+    File unfiltered_vcf = "~{base_file_name}.unfiltered.vcf.gz"
+    File unfiltered_vcf_index = "~{base_file_name}.unfiltered.vcf.gz.tbi"
     File stats_file = "~{base_file_name}.unfiltered.vcf.gz.stats"
     File f1r2_counts = "~{base_file_name}.f1r2.tar.gz"
   }
@@ -955,6 +959,8 @@ task mutect2_parallel {
     outputs: {
         vcf: "Compressed VCF file containing filtered somatic variant calls",
         vcf_index: "Index file for the Mutect2 VCF output",
+        unfiltered_vcf: "Compressed VCF file containing unfiltered somatic variant calls (for PON creation)",
+        unfiltered_vcf_index: "Index file for the unfiltered Mutect2 VCF output",
         stats_file: "Merged Mutect2 statistics file"
     }
   }
@@ -1050,14 +1056,23 @@ task mutect2_parallel {
 
     # Collect VCF files and stats files for merging
     find . -name "~{base_file_name}.*.vcf.gz" -not -name "*.unfiltered.*" | sort -V > vcf_list.txt
+    find . -name "~{base_file_name}.*.unfiltered.vcf.gz" | sort -V > unfiltered_vcf_list.txt
     find . -name "~{base_file_name}.*.unfiltered.vcf.gz.stats" | sort -V > stats_list.txt
 
-    # Merge VCFs using input list file
+    # Merge filtered VCFs using input list file
     gatk --java-options "-Xms4g -Xmx6g" \
       MergeVcfs \
       --INPUT vcf_list.txt \
       -D "~{basename(reference_dict)}" \
       -O "~{base_file_name}.mutect2.vcf.gz" \
+      --VERBOSITY WARNING
+
+    # Merge unfiltered VCFs using input list file
+    gatk --java-options "-Xms4g -Xmx6g" \
+      MergeVcfs \
+      --INPUT unfiltered_vcf_list.txt \
+      -D "~{basename(reference_dict)}" \
+      -O "~{base_file_name}.unfiltered.vcf.gz" \
       --VERBOSITY WARNING
 
     # Merge stats files - build argument list properly
@@ -1076,6 +1091,8 @@ task mutect2_parallel {
   output {
     File vcf = "~{base_file_name}.mutect2.vcf.gz"
     File vcf_index = "~{base_file_name}.mutect2.vcf.gz.tbi"
+    File unfiltered_vcf = "~{base_file_name}.unfiltered.vcf.gz"
+    File unfiltered_vcf_index = "~{base_file_name}.unfiltered.vcf.gz.tbi"
     File stats_file = "~{base_file_name}.mutect2.stats"
   }
 
@@ -1304,6 +1321,7 @@ task create_somatic_pon {
     intervals: "Genomic intervals list, such as from GATK BedToIntervalList"
     database_name: "Name for GenomicsDB workspace"
     base_file_name: "Base name for output files"
+    germline_resource: "Optional gnomAD VCF for additional germline filtering"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
@@ -1317,7 +1335,8 @@ task create_somatic_pon {
     File intervals
     String database_name
     String base_file_name
-    Int memory_gb = 6
+    File? germline_resource
+    Int memory_gb = 8
     Int cpu_cores = 2
   }
 
@@ -1330,12 +1349,18 @@ task create_somatic_pon {
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
 
+    # Index germline resource if provided
+    if [[ -f "~{germline_resource}" ]]; then
+      gatk IndexFeatureFile -I "~{germline_resource}"
+    fi
+
     # Create a GenomicsDB from normal calls
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       GenomicsDBImport \
       -R "~{basename(reference_fasta)}" \
       -L "~{intervals}" \
       --genomicsdb-workspace-path "~{database_name}" \
+      --merge-input-intervals \
       --variant ~{sep=" --variant " normal_vcfs} \
       --verbosity WARNING
 
@@ -1345,6 +1370,7 @@ task create_somatic_pon {
       -V gendb://"~{database_name}" \
       -R "~{basename(reference_fasta)}" \
       -L "~{intervals}" \
+      ~{if defined(germline_resource) then "--germline-resource " + germline_resource else ""} \
       -O "~{base_file_name}.pon.vcf.gz" \
       --verbosity WARNING
   >>>

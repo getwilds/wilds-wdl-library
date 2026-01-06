@@ -145,12 +145,15 @@ Calls somatic variants using GATK Mutect2 in tumor-only mode with filtering for 
 - `gnomad_vcf` (File): gnomAD population allele frequency VCF for germline resource
 - `base_file_name` (String): Base name for output files
 - `intervals` (File?): Optional interval list file defining target regions
+- `max_mnp_distance` (Int): Distance at which to merge MNPs (default: 1, use 0 for PON creation)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 
 **Outputs:**
 - `vcf` (File): Compressed VCF file containing filtered somatic variant calls
 - `vcf_index` (File): Index file for the Mutect2 VCF output
+- `unfiltered_vcf` (File): Compressed VCF file containing unfiltered somatic variant calls (for PON creation)
+- `unfiltered_vcf_index` (File): Index file for the unfiltered Mutect2 VCF output
 - `stats_file` (File): Mutect2 statistics file
 - `f1r2_counts` (File): F1R2 counts for filtering
 
@@ -166,23 +169,26 @@ Calls somatic variants using GATK Mutect2 with internal parallelization for redu
 - `reference_dict` (File): Reference genome sequence dictionary
 - `gnomad_vcf` (File): gnomAD population allele frequency VCF for germline resource
 - `base_file_name` (String): Base name for output files
+- `max_mnp_distance` (Int): Distance at which to merge MNPs (default: 1, use 0 for PON creation)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 
 **Outputs:**
 - `vcf` (File): Compressed VCF file containing filtered somatic variant calls
 - `vcf_index` (File): Index file for the Mutect2 VCF output
+- `unfiltered_vcf` (File): Compressed VCF file containing unfiltered somatic variant calls (for PON creation)
+- `unfiltered_vcf_index` (File): Index file for the unfiltered Mutect2 VCF output
 - `stats_file` (File): Merged Mutect2 statistics file
 
 ### `create_somatic_pon`
 Creates a somatic panel of normals (PON) from Mutect2 VCF files for filtering germline variants and technical artifacts in tumor-only somatic variant calling.
 
 **Important Requirements:**
-- Input VCFs must be generated using the `mutect2` task with `max_mnp_distance` set to 0
+- Input VCFs must be **unfiltered** Mutect2 VCFs generated with `max_mnp_distance` set to 0
 - VCFs must come from at least two different normal samples
 
 **Inputs:**
-- `normal_vcfs` (Array[File]): Array of Mutect2 VCFs generated with --max-mnp-distance=0
+- `normal_vcfs` (Array[File]): Array of **unfiltered** Mutect2 VCFs generated with --max-mnp-distance=0
 - `normal_vcf_indices` (Array[File]): Array of index files for the normal VCFs
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Index file for the reference FASTA
@@ -190,7 +196,8 @@ Creates a somatic panel of normals (PON) from Mutect2 VCF files for filtering ge
 - `intervals` (File): Genomic intervals list, such as from GATK BedToIntervalList
 - `database_name` (String): Name for GenomicsDB workspace
 - `base_file_name` (String): Base name for output files
-- `memory_gb` (Int): Memory allocation in GB (default: 6)
+- `germline_resource` (File?): Optional gnomAD VCF for additional germline filtering
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 
 **Outputs:**
