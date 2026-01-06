@@ -68,7 +68,7 @@ pipelines/pipeline-name/
 
 ## Using Pipelines
 
-### **Running Directly (No Clone Required)**
+### **Running Directly (No Git Clone Required)**
 
 You can download and run any pipeline without cloning the entire repository:
 
