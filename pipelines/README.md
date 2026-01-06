@@ -140,7 +140,7 @@ All pipelines are automatically tested through GitHub Actions:
 ### **Test Data**
 - Small but realistic datasets for efficient testing
 - Publicly available reference data
-- Automated download and setup during CI
+- Automatically downloaded during continuous integration
 
 ## Integration Patterns
 
