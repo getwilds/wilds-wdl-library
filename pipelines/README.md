@@ -162,7 +162,7 @@ Pipelines demonstrate key WDL patterns:
 3. Import existing modules (prefer existing modules over creating new tasks)
 4. Document the complexity level in this README
 5. Add comprehensive documentation and test inputs
-6. Submit a pull request demonstrating the integration pattern
+6. Submit a pull request
 
 ### **Improving Existing Pipelines**
 - Performance optimizations and resource tuning
