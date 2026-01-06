@@ -1,0 +1,25 @@
+name: Pipeline Test Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      pipeline_name:
+        description: 'Specific pipeline to test (leave empty to test all pipelines)'
+        required: false
+        type: string
+        default: ''
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - 'pipelines/**/*.wdl'
+      - 'pipelines/**/*.json'
+
+permissions:
+  contents: read
+
+jobs:
+  test-pipelines:
+    uses: ./.github/workflows/testrun-reusable.yml
+    with:
+      item_type: pipelines
+      item_name: ${{ github.event.inputs.pipeline_name || '' }}

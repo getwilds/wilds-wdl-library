@@ -121,7 +121,7 @@ call star_tasks.align_two_pass {
 This module integrates seamlessly with other WILDS components:
 - **ww-sra**: Download sequencing data before alignment
 - **ww-testdata**: Automatic provisioning of reference data and test samples
-- **ww-sra-star vignette**: Complete SRA-to-alignment pipeline
+- **ww-sra-star pipeline**: Complete SRA-to-alignment pipeline
 - **Custom workflows**: Foundation for RNA-seq analysis pipelines
 
 ## Testing the Module

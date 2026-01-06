@@ -46,8 +46,8 @@ check_wdlparse:
 
 check_name:
 	@if [ "$(NAME)" != "*" ]; then \
-		if [ ! -d "modules/$(NAME)" ] && [ ! -d "vignettes/$(NAME)" ] && [ ! -d "workflows/$(NAME)" ]; then \
-			echo >&2 "Error: '$(NAME)' not found in modules/, vignettes/, or workflows/ directory"; \
+		if [ ! -d "modules/$(NAME)" ] && [ ! -d "pipelines/$(NAME)" ]; then \
+			echo >&2 "Error: '$(NAME)' not found in modules/ or pipelines/ directory"; \
 			exit 1; \
 		fi; \
 	fi
@@ -105,18 +105,18 @@ check_cromwell:
 
 ##@ Linting
 
-lint_sprocket: check_sprocket check_name ## Run sprocket lint on modules, vignettes, and workflows (use NAME=foo for specific item)
+lint_sprocket: check_sprocket check_name ## Run sprocket lint on modules and pipelines (use NAME=foo for specific item)
 	@echo "Running sprocket lint..."
-	@for dir in modules/$(NAME)/ vignettes/$(NAME)/ workflows/$(NAME)/; do \
+	@for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
 		if [ -d "$$dir" ]; then \
 			echo "Linting $$dir"; \
 			sprocket lint "$$dir"; \
 		fi; \
 	done
 
-lint_miniwdl: check_uv check_name ## Run miniwdl lint on modules, vignettes, and workflows (use NAME=foo, VERBOSE=1 for details)
+lint_miniwdl: check_uv check_name ## Run miniwdl lint on modules and pipelines (use NAME=foo, VERBOSE=1 for details)
 	@echo "Running miniwdl lint..."
-	@for file in modules/$(NAME)/*.wdl vignettes/$(NAME)/*.wdl workflows/$(NAME)/*.wdl; do \
+	@for file in modules/$(NAME)/*.wdl pipelines/$(NAME)/*.wdl; do \
 		if [ -f "$$file" ]; then \
 			echo "Linting $$file"; \
 			if [ "$(VERBOSE)" = "1" ]; then \
@@ -127,9 +127,9 @@ lint_miniwdl: check_uv check_name ## Run miniwdl lint on modules, vignettes, and
 		fi; \
 	done
 
-lint_womtool: check_java check_womtool check_name ## Run WOMtool validate on modules, vignettes, and workflows (use NAME=foo for specific item)
+lint_womtool: check_java check_womtool check_name ## Run WOMtool validate on modules and pipelines (use NAME=foo for specific item)
 	@echo "Running WOMtool validate..."
-	@set -e; for file in modules/$(NAME)/*.wdl vignettes/$(NAME)/*.wdl workflows/$(NAME)/*.wdl; do \
+	@set -e; for file in modules/$(NAME)/*.wdl pipelines/$(NAME)/*.wdl; do \
 		if [ -f "$$file" ]; then \
 			echo "Validating $$file"; \
 			java -jar $(WOMTOOL_JAR) validate "$$file"; \
@@ -143,7 +143,7 @@ lint: lint_sprocket lint_miniwdl lint_womtool ## Run all linting checks
 
 run_sprocket: check_sprocket check_name check_wdlparse ## Run sprocket on testrun.wdl files (use NAME=foo for specific item)
 	@echo "Running sprocket on testrun.wdl files..."
-	@set -e; for dir in modules/$(NAME)/ vignettes/$(NAME)/ workflows/$(NAME)/; do \
+	@set -e; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			echo "... Running $$(basename $$dir)"; \
 			entrypoint=$$(wdlparse parse --format json "$$dir/testrun.wdl" | jq -r '.wdl.workflows[].name'); \
@@ -154,7 +154,7 @@ run_sprocket: check_sprocket check_name check_wdlparse ## Run sprocket on testru
 
 run_miniwdl: check_uv check_name ## Run miniwdl on testrun.wdl files (use NAME=foo for specific item)
 	@echo "Running miniwdl on testrun.wdl files..."
-	@set -e; for dir in modules/$(NAME)/ vignettes/$(NAME)/ workflows/$(NAME)/; do \
+	@set -e; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			echo "... Running $$(basename $$dir)"; \
 			uv run --python 3.13 --with miniwdl miniwdl run "$$dir/testrun.wdl"; \
@@ -163,7 +163,7 @@ run_miniwdl: check_uv check_name ## Run miniwdl on testrun.wdl files (use NAME=f
 
 run_cromwell: check_java check_cromwell check_name ## Run Cromwell on testrun.wdl files (use NAME=foo for specific item)
 	@echo "Running Cromwell on testrun.wdl files..."
-	@set -e; for dir in modules/$(NAME)/ vignettes/$(NAME)/ workflows/$(NAME)/; do \
+	@set -e; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			echo "... Running $$(basename $$dir)"; \
 			java -jar $(CROMWELL_JAR) run "$$dir/testrun.wdl"; \
@@ -177,12 +177,12 @@ run: run_sprocket run_miniwdl run_cromwell ## Run all engines on testrun.wdl fil
 docs-preview: check_sprocket check_uv ## Build and serve documentation preview locally
 	@echo "Building documentation preview..."
 	@echo "Step 1/7: Checking for uncommitted changes..."
-	@if git diff --quiet HEAD -- modules/ vignettes/ workflows/ && \
-	   ! git ls-files --others --exclude-standard modules/ vignettes/ workflows/ | grep -q .; then \
+	@if git diff --quiet HEAD -- modules/ pipelines/ && \
+	   ! git ls-files --others --exclude-standard modules/ pipelines/ | grep -q .; then \
 		echo "... No uncommitted changes detected"; \
 	else \
 		echo ""; \
-		echo "WARNING: You have uncommitted changes in modules/, vignettes/, or workflows/"; \
+		echo "WARNING: You have uncommitted changes in modules/ or pipelines/"; \
 		echo "         The documentation will be built from your LAST COMMITTED version."; \
 		echo "         Your uncommitted changes will be preserved but NOT included in the preview."; \
 		echo "         To include them, commit your changes first, then run 'make docs-preview'."; \
@@ -195,17 +195,17 @@ docs-preview: check_sprocket check_uv ## Build and serve documentation preview l
 		fi; \
 	fi
 	@echo "Step 2/7: Saving current state..."
-	@git stash push -u -m "docs-preview: temporary stash before building docs" -- modules/ vignettes/ workflows/
+	@git stash push -u -m "docs-preview: temporary stash before building docs" -- modules/ pipelines/
 	@echo "Step 3/7: Creating preambles..."
 	@uv run --python 3.13 .github/scripts/make_preambles.py
 	@echo "Step 4/7: Creating .sprocketignore..."
-	@printf '%s\n' '# Excluding test run WDL'\''s from documentation builds' 'modules/**/testrun.wdl' 'vignettes/**/testrun.wdl' 'workflows/**/testrun.wdl' > .sprocketignore
+	@printf '%s\n' '# Excluding test run WDL'\''s from documentation builds' 'modules/**/testrun.wdl' 'pipelines/**/testrun.wdl' > .sprocketignore
 	@echo "Step 5/7: Building docs with sprocket..."
 	@sprocket dev doc -v --homepage docs-README.md --logo WILDSWDLNameLogo.svg .
 	@echo "Step 6/7: Post-processing documentation..."
 	@uv run --python 3.13 .github/scripts/postprocess_docs.py
 	@echo "Step 7/7: Restoring original state..."
-	@git restore README.md modules/ vignettes/ workflows/ 2>/dev/null || true
+	@git restore README.md modules/ pipelines/ 2>/dev/null || true
 	@rm -f .sprocketignore
 	@if git stash list | grep -q "docs-preview: temporary stash before building docs"; then \
 		echo "... Restoring your previous changes"; \

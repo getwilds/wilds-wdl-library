@@ -13,16 +13,16 @@
 [![WDL Executors](https://img.shields.io/badge/WDL-Cromwell%20%7C%20miniWDL%20%7C%20Sprocket-blue.svg)](https://github.com/getwilds/wilds-wdl-library)
 [![WDL](https://img.shields.io/badge/WDL-1.0-orange.svg)](https://openwdl.org/)<br>
 [![Module Tests](https://github.com/getwilds/wilds-wdl-library/actions/workflows/modules-testrun.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/modules-testrun.yml)
-[![Vignette Tests](https://github.com/getwilds/wilds-wdl-library/actions/workflows/vignettes-testrun.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/vignettes-testrun.yml)
+[![Pipeline Tests](https://github.com/getwilds/wilds-wdl-library/actions/workflows/pipelines-testrun.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/pipelines-testrun.yml)
 [![Linting](https://github.com/getwilds/wilds-wdl-library/actions/workflows/linting.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/linting.yml)
 
 ## Overview
 
-The WILDS WDL Library consolidates bioinformatics workflows into a single, well-organized repository that serves as both a collection of production-ready tools and a demonstration of WDL best practices. Rather than maintaining separate repositories for each workflow, this library promotes modularity and reusability through a three-tier architecture.
+The WILDS WDL Library consolidates bioinformatics workflows into a single, well-organized repository that serves as both a collection of production-ready tools and a demonstration of WDL best practices. Rather than maintaining separate repositories for each workflow, this library promotes modularity and reusability through a two-tier architecture.
 
 ## Library Architecture
 
-The library is organized into three complementary levels:
+The library is organized into two complementary levels:
 
 ### **Modules** (`modules/`)
 Tool-specific collections of reusable WDL tasks with comprehensive testing.
@@ -31,23 +31,34 @@ Tool-specific collections of reusable WDL tasks with comprehensive testing.
 - **Testing**: Unit tests ensure each task functions correctly over time
 - **Usage**: Import tasks into custom workflows or run demonstration workflows
 
-### **Vignettes** (`vignettes/`)
-Compact workflows demonstrating common bioinformatics patterns.
-- **Purpose**: Educational examples of module integration
-- **Content**: 2-3 modules combined into standard analysis patterns
+### **Pipelines** (`pipelines/`)
+Complete analysis workflows combining multiple modules.
+- **Purpose**: Functional pipelines ranging from educational examples to production-ready analyses
+- **Content**: Multiple modules combined into analysis workflows of varying complexity
+- **Complexity Levels**: Basic (2-3 modules), Intermediate (4-6 modules), Advanced (10+ modules)
 - **Testing**: Integration tests verify modules work together seamlessly
-- **Usage**: Templates for common workflows or learning examples
-
-### **Workflows** (`workflows/`)
-Complete, publication-ready analysis pipelines.
-- **Purpose**: End-to-end analyses suitable for research publications
-- **Content**: Complex workflows combining multiple modules and custom logic
-- **Testing**: Comprehensive validation with realistic datasets
-- **Usage**: Production analyses requiring minimal customization
+- **Usage**: Templates for common workflows, learning examples, or production analyses
 
 ## Quick Start
 
-### Using Existing Components
+### Running Pipelines Directly (No Clone Required)
+
+Thanks to GitHub URL imports, you can download and run any pipeline without cloning the entire repository:
+
+```bash
+# Download a pipeline and its example inputs
+# Option 1: Use curl from the command line
+curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipelines/ww-sra-star/ww-sra-star.wdl
+curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipelines/ww-sra-star/inputs.json
+# Option 2: Download directly from GitHub by navigating to the file and clicking the download button
+
+# Modify inputs.json as necessary for your data, then run via the command line or PROOF's point-and-click interface
+sprocket run ww-sra-star.wdl inputs.json
+```
+
+### Using the Full Repository
+
+If you want to explore multiple components or contribute:
 
 ```bash
 # Clone the repository
@@ -56,15 +67,11 @@ cd wilds-wdl-library
 
 # Run a module test workflow (no inputs needed)
 cd modules/ww-star
-miniwdl run ww-star.wdl
+sprocket run testrun.wdl
 
-# Run a complete vignette (update inputs json as needed)
-cd ../../vignettes/ww-sra-star
-miniwdl run ww-sra-star.wdl -i inputs.json
-
-# Run a full workflow (update inputs json as needed)
-cd ../../workflows/ww-leukemia
-miniwdl run ww-leukemia.wdl -i inputs.json
+# Run a pipeline (modify inputs.json as necessary)
+cd ../../pipelines/ww-sra-star
+sprocket run ww-sra-star.wdl inputs.json
 ```
 
 ### Importing into Your Workflows
@@ -81,7 +88,7 @@ workflow my_analysis {
 }
 ```
 
-WILDS vignettes and workflows use GitHub URLs for imports, providing several advantages:
+WILDS pipelines use GitHub URLs for imports, providing several advantages:
 
 - **No local cloning required**: Use modules directly without downloading the repository
 - **Version control**: Pin to specific commits or tags for reproducibility
@@ -101,7 +108,7 @@ Fred Hutch researchers can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/p
 
 **Cromwell Configuration**: PROOF users can customize workflow execution using Cromwell options. See [cromwell-options.json](cromwell-options.json) for example configurations including call caching, output directories, and more. For detailed information, refer to the [Cromwell workflow options documentation](https://cromwell.readthedocs.io/en/stable/wf_options/Overview/).
 
-**Platform-Specific Configurations**: Some vignettes include optional platform-specific configurations (e.g., `.cirro/` directories) for execution on cloud platforms like [Cirro](https://cirro.bio/). These configurations are self-contained within each vignette directory.
+**Platform-Specific Configurations**: Some pipelines include optional platform-specific configurations (e.g., `.cirro/` directories) for execution on cloud platforms like [Cirro](https://cirro.bio/). These configurations are self-contained within each pipeline directory.
 
 ## Quality Assurance
 
@@ -127,11 +134,11 @@ We welcome contributions at all levels:
 3. Include comprehensive tests and validation
 4. Provide detailed documentation
 
-### Creating Vignettes
-1. Combine existing modules (no new tasks)
+### Creating Pipelines
+1. Combine existing modules (prefer existing modules over new tasks)
 2. Demonstrate common analysis patterns
 3. Include realistic test datasets
-4. Document integration approaches
+4. Document complexity level and integration approaches
 
 ### Improving Documentation
 - Enhance existing README files
@@ -145,13 +152,13 @@ See our [Contributing Guidelines](.github/CONTRIBUTING.md) and the [WILDS Contri
 
 ### Current Focus
 - Expanding the module collection with high-priority tools (GATK variant calling, additional alignment tools)
-- Converting existing WILDS workflows to the modular architecture
+- Adding new pipelines across all complexity levels
 - Enhancing testing infrastructure and validation
 
 ### Future Plans
-- Complete workflow tier with publication-ready pipelines
+- Additional advanced pipelines for publication-ready analyses
 - Enhanced integration with Fred Hutch computing infrastructure
-- Community-contributed modules and workflows
+- Community-contributed modules and pipelines
 - Advanced documentation and tutorial content
 
 ## Support

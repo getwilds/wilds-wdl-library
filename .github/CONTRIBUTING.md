@@ -1,6 +1,6 @@
 # Contributing to the WILDS WDL Library
 
-Thank you for your interest in contributing to the WILDS WDL Library! This document provides guidelines for contributing modules, vignettes, workflows, and improvements to our centralized collection of bioinformatics WDL infrastructure.
+Thank you for your interest in contributing to the WILDS WDL Library! This document provides guidelines for contributing modules, pipelines, and improvements to our centralized collection of bioinformatics WDL infrastructure.
 
 ## Table of Contents
 
@@ -8,8 +8,7 @@ Thank you for your interest in contributing to the WILDS WDL Library! This docum
 - [Repository Structure](#repository-structure)
 - [Types of Contributions](#types-of-contributions)
 - [Module Development Guidelines](#module-development-guidelines)
-- [Vignette Development Guidelines](#vignette-development-guidelines)
-- [Workflow Development Guidelines](#workflow-development-guidelines)
+- [Pipeline Development Guidelines](#pipeline-development-guidelines)
 - [Testing Requirements](#testing-requirements)
 - [Documentation Standards](#documentation-standards)
 - [Documentation Website](#documentation-website)
@@ -37,11 +36,10 @@ Before contributing code changes, please:
 
 ## Repository Structure
 
-The WILDS WDL Library follows a three-tier architecture:
+The WILDS WDL Library follows a two-tier architecture:
 
 - **Modules**: Collection of tasks that use a given tool
-- **Vignettes**: Small example pipelines that import module tasks
-- **Workflows**: Production-ready pipelines
+- **Pipelines**: Analysis workflows that import and combine module tasks (ranging from basic examples to production-ready pipelines)
 
 ```
 wilds-wdl-library/
@@ -49,12 +47,7 @@ wilds-wdl-library/
 │   └── ww-toolname/
 │       ├── ww-toolname.wdl
 │       └── README.md
-├── vignettes/
-│   └── ww-example-name/
-│       ├── ww-example-name.wdl
-│       ├── inputs.json
-│       └── README.md
-├── workflows/
+├── pipelines/
 │   └── ww-pipeline-name/
 │       ├── ww-pipeline-name.wdl
 │       ├── inputs.json
@@ -83,17 +76,12 @@ wilds-wdl-library/
 - Follow standardized module structure
 - Include comprehensive testing and validation
 
-### 4. Vignette Contributions
+### 4. Pipeline Contributions
 
-- Combine 2-3 existing modules
-- Demonstrate common analysis patterns
-- Provide educational value for the community
-
-### 5. Workflow Contributions
-
-- Create publication-ready analysis pipelines
-- Integrate multiple modules
-- Include comprehensive validation with realistic datasets
+- Combine existing modules into analysis workflows
+- Range from basic educational examples (2-3 modules) to advanced production pipelines (10+ modules)
+- Document complexity level in the README
+- Provide educational and/or production value for the community
 
 ## Module Development Guidelines
 
@@ -135,50 +123,53 @@ wilds-wdl-library/
 - Document image dependencies in the README
 
 
-## Vignette Development Guidelines
+## Pipeline Development Guidelines
 
-**Vignettes should:**
+**Pipelines should:**
 
-- Combine 2-3 existing modules from the library
+- Combine existing modules from the library
 - Demonstrate realistic analysis workflows
-- Serve as educational templates
+- Serve as educational templates and/or production-ready analyses
 - Use publicly available test data
+- Document their complexity level (Basic, Intermediate, or Advanced)
 
-**No New Tasks Rule**
+**Complexity Levels:**
 
-- Vignettes should **only** combine existing modules - do not create new task definitions. If you need new functionality, contribute it as a module first.
+| Level | Modules | Typical Runtime | Description |
+|-------|---------|-----------------|-------------|
+| **Basic** | 2-3 | < 30 minutes | Simple integrations ideal for learning |
+| **Intermediate** | 4-6 | 1-4 hours | Multi-step analyses for common use cases |
+| **Advanced** | 10+ | > 4 hours | Comprehensive production pipelines |
 
-**Vignette inputs.json**
+**Prefer Existing Modules**
 
-In order to pass the automated GitHub Action (GHA) tests, your `inputs.json` must:
+- Pipelines should primarily combine existing modules - prefer using existing modules over creating new task definitions. If you need new functionality, consider contributing it as a module first.
 
-- Use no more than 4 CPUs (for the sprocket executor)
-- Use input files that get downloaded as part of the GHA.
-    - See the `download-test-data` job within `./github/workflows/vignettes-testrun.yml`
-    - Modify `vignettes-testrun.yml` as needed
+**Pipeline inputs.json**
+
+Each pipeline should include an `inputs.json` file that serves as an example for users. This file demonstrates the expected input structure and helps users understand what values they need to provide when running the pipeline. Your `inputs.json` should:
+
+- Use dummy/placeholder paths for file inputs (e.g., `"/path/to/your/sample.fastq.gz"`)
+- Include common or recommended values for non-file parameters
+- Document all required inputs with realistic example values
+- Use the pipeline's README to provide descriptions and guidance for each input parameter
+
+**Note**: GitHub Action tests use the `ww-testdata` module to automatically download test data, so your `inputs.json` does not need to reference actual test files for CI purposes.
 
 **Platform-Specific Configurations (Optional)**
 
-Vignettes may include optional platform-specific configuration directories for execution on cloud platforms or workflow management systems:
+Pipelines may include optional platform-specific configuration directories for execution on cloud platforms or workflow management systems:
 
-- **Location**: Place platform configs in a subdirectory within the vignette (e.g., `vignettes/ww-example/.cirro/`)
+- **Location**: Place platform configs in a subdirectory within the pipeline (e.g., `pipelines/ww-example/.cirro/`)
 - **Naming convention**: Use dotfile directory names (`.cirro/`, `.terra/`, etc.) to indicate platform
-- **Standalone principle**: Keep all vignette-related files (WDL, inputs, platform configs) in the vignette directory
-- **Documentation**: Document platform configurations in the vignette's README with links to platform documentation
+- **Standalone principle**: Keep all pipeline-related files (WDL, inputs, platform configs) in the pipeline directory
+- **Documentation**: Document platform configurations in the pipeline's README with links to platform documentation
 - **Examples**:
   - `.cirro/` for [Cirro](https://cirro.bio/) platform ([config documentation](https://docs.cirro.bio/pipelines/adding-pipelines/))
   - `.terra/` for [Terra](https://terra.bio/) workspace configurations
   - Other platform-specific directories as needed
 
-Platform configurations are entirely optional and should not be required to run the vignette with standard WDL executors (Cromwell, miniWDL, Sprocket).
-
-## Workflow Development Guidelines
-
-**Workflows represent the highest tier and must meet production standards:**
-
-- **Comprehensive validation**: Extensive testing with realistic datasets
-- **Scalability**: Support for large datasets and batch processing
-- **Documentation**: Thorough documentation to aid in publication
+Platform configurations are entirely optional and should not be required to run the pipeline with standard WDL executors (Cromwell, miniWDL, Sprocket).
 
 ## Testing Requirements
 
@@ -264,13 +255,13 @@ All contributions must pass our automated testing pipeline which executes on a P
 
 ## Documentation Website
 
-The WILDS WDL Library includes an automatically-generated documentation website that provides comprehensive technical documentation for all modules, vignettes, and workflows. Understanding how this documentation works is important for contributors.
+The WILDS WDL Library includes an automatically-generated documentation website that provides comprehensive technical documentation for all modules and pipelines. Understanding how this documentation works is important for contributors.
 
 ### How Documentation is Generated
 
 The documentation website is built using [Sprocket](https://sprocket.bio/) and automatically deployed to GitHub Pages. The documentation is generated from:
 
-- **README files**: Each module, vignette, and workflow directory contains a README.md that becomes the documentation homepage for that component
+- **README files**: Each module and pipeline directory contains a README.md that becomes the documentation homepage for that component
 - **WDL files**: Task descriptions, inputs, outputs, and metadata are automatically extracted from WDL files
 - **Main README**: The repository's root README.md serves as the documentation site homepage
 
@@ -325,7 +316,7 @@ When you run `make docs-preview`, the build process:
 
 When contributing, ensure your documentation is clear and complete:
 
-- **README files**: Write clear, user-focused descriptions of what your module/vignette/workflow does
+- **README files**: Write clear, user-focused descriptions of what your module/pipeline does
 - **Task metadata**: Use `meta` blocks to document task purpose, authors, and other high-level information
 - **Parameter metadata**: Use `parameter_meta` blocks to describe all inputs and outputs
 - **Examples**: Include usage examples in README files
@@ -346,7 +337,7 @@ For questions about documentation, please contact [wilds@fredhutch.org](mailto:w
 After meeting the requirements above, submit a PR to merge your forked repo into `main`.
 
 1. **Create descriptive PR title**:
-   - Examples: `Add BWA alignment module`, `RNA-seq analysis example vingette`
+   - Examples: `Add BWA alignment module`, `Add RNA-seq analysis pipeline`
 
 2. **Fill out PR template**: Provide detailed information about your contribution
 

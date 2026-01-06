@@ -47,7 +47,7 @@ def update_page_title(html_content: str, file_path: Path) -> str:
 def set_accordions_closed(html_content: str) -> str:
     """
     Set all sidebar accordion items to be closed by default, except top-level folders.
-    Keeps 'modules', 'vignettes', and 'workflows' visible but collapsed.
+    Keeps 'modules' and 'pipelines' visible but collapsed.
 
     showChildrenCache controls whether folder contents are visible (accordion state).
         - Should be FALSE for all folders (including top-level) so they start collapsed
@@ -56,7 +56,7 @@ def set_accordions_closed(html_content: str) -> str:
         - Should be FALSE for nested items so they're hidden until parent is expanded
     """
     # Top-level folders that should be visible
-    top_level_keys = ["'modules'", "'vignettes'", "'workflows'"]
+    top_level_keys = ["'modules'", "'pipelines'"]
 
     # Pattern to match showChildrenCache - set ALL to false (all folders start collapsed)
     children_pattern = r"showChildrenCache: \$persist\(\{[^}]+\}\)\.using\(sessionStorage\)"
