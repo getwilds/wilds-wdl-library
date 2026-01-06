@@ -15,7 +15,6 @@ Each pipeline demonstrates how to:
 ### **Real-World Patterns**
 Pipelines focus on workflows that are:
 - Commonly used in bioinformatics research
-- Representative of standard analysis patterns
 - Suitable for production use with real datasets
 - Extensible for specific research needs
 
