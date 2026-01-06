@@ -147,7 +147,8 @@ workflow gatk_example {
         reference_fasta_index = download_ref_data.fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
         gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
-        base_file_name = sample.name + "." + basename(split_intervals.interval_files[i], ".interval_list")
+        base_file_name = sample.name + "." + basename(split_intervals.interval_files[i], ".interval_list"),
+        max_mnp_distance = 0
       }
     }
 
@@ -159,11 +160,19 @@ workflow gatk_example {
         reference_dict = create_sequence_dictionary.sequence_dict
     }
 
-    # Merge Mutect2 VCFs
+    # Merge Mutect2 VCFs (filtered)
     call ww_gatk.merge_vcfs as merge_mutect2_vcfs { input:
         vcfs = mutect2.vcf,
         vcf_indices = mutect2.vcf_index,
         base_file_name = sample.name + ".mutect2",
+        reference_dict = create_sequence_dictionary.sequence_dict
+    }
+
+    # Merge Mutect2 VCFs (unfiltered, for PON creation)
+    call ww_gatk.merge_vcfs as merge_mutect2_unfiltered_vcfs { input:
+        vcfs = mutect2.unfiltered_vcf,
+        vcf_indices = mutect2.unfiltered_vcf_index,
+        base_file_name = sample.name + ".mutect2.unfiltered",
         reference_dict = create_sequence_dictionary.sequence_dict
     }
 
@@ -202,6 +211,18 @@ workflow gatk_example {
         input_file = base_recalibrator.recalibrated_bam,
         base_file_name = sample.name + ".recal_validation"
     }
+  }
+
+  # Create a panel of normals from the merged unfiltered mutect2 VCF files
+  call ww_gatk.create_somatic_pon { input:
+      normal_vcfs = merge_mutect2_unfiltered_vcfs.merged_vcf,
+      normal_vcf_indices = merge_mutect2_unfiltered_vcfs.merged_vcf_index,
+      reference_fasta = download_ref_data.fasta,
+      reference_fasta_index = download_ref_data.fasta_index,
+      reference_dict = create_sequence_dictionary.sequence_dict,
+      intervals = split_intervals.interval_files[0],
+      database_name = "demo_pon_db",
+      base_file_name = "demo.pon"
   }
 
   # Test saturation mutagenesis analysis
@@ -266,6 +287,7 @@ workflow gatk_example {
       haplotype_vcfs = merge_haplotype_vcfs.merged_vcf,
       mutect2_vcfs = merge_mutect2_vcfs.merged_vcf,
       mutect2_stats = merge_mutect_stats.merged_stats,
+      pon_vcf = create_somatic_pon.pon_vcf,
       parallel_haplotype_vcfs = haplotype_caller_parallel.vcf,
       parallel_mutect2_vcfs = mutect2_parallel.vcf,
       wgs_metrics = collect_wgs_metrics.metrics_file,
@@ -309,6 +331,7 @@ task validate_outputs {
     haplotype_vcfs: "Array of HaplotypeCaller VCF files called via scatter-gather parallelization"
     mutect2_vcfs: "Array of Mutect2 VCF files called via scatter-gather parallelization"
     mutect2_stats: "Array of merged Mutect2 statistics files"
+    pon_vcf: "Gzipped VCF file containing the panel of normals"
     parallel_haplotype_vcfs: "Array of HaplotypeCaller VCF files called via internal parallelization"
     parallel_mutect2_vcfs: "Array of Mutect2 VCF files called via internal parallelization"
     wgs_metrics: "Array of WGS metrics files"
@@ -329,6 +352,7 @@ task validate_outputs {
     Array[File] haplotype_vcfs
     Array[File] mutect2_vcfs
     Array[File] mutect2_stats
+    File pon_vcf
     Array[File] parallel_haplotype_vcfs
     Array[File] parallel_mutect2_vcfs
     Array[File] wgs_metrics
@@ -341,19 +365,19 @@ task validate_outputs {
 
   command <<<
     set -eo pipefail
-    
+
     echo "GATK Pipeline Validation Report" > validation_report.txt
     echo "Generated on: $(date)" >> validation_report.txt
     echo "======================================" >> validation_report.txt
     echo "" >> validation_report.txt
-    
+
     echo "Sample Summary:" >> validation_report.txt
     echo "Number of samples processed: ~{length(recalibrated_bams)}" >> validation_report.txt
     echo "" >> validation_report.txt
-    
+
     echo "File Validation:" >> validation_report.txt
     echo "Checking file existence and basic properties..." >> validation_report.txt
-    
+
     # Check MarkDuplicates BAM files
     for bam in ~{sep=" " markdup_bams}; do
       if [[ -f "$bam" ]]; then
@@ -413,7 +437,7 @@ task validate_outputs {
         echo "Missing Recal BAM Index: $bai" >> validation_report.txt
       fi
     done
-    
+
     # Check HaplotypeCaller VCFs if present
     for vcf in ~{sep=" " haplotype_vcfs}; do
       if [[ -f "$vcf" ]]; then
@@ -423,7 +447,7 @@ task validate_outputs {
         echo "Missing HaplotypeCaller VCF: $vcf" >> validation_report.txt
       fi
     done
-    
+
     # Check Mutect2 VCFs if present
     for vcf in ~{sep=" " mutect2_vcfs}; do
       if [[ -f "$vcf" ]]; then
@@ -443,7 +467,7 @@ task validate_outputs {
         echo "Missing Parallel HaplotypeCaller VCF: $vcf" >> validation_report.txt
       fi
     done
-    
+
     # Check Parallel Mutect2 VCFs if present
     for vcf in ~{sep=" " parallel_mutect2_vcfs}; do
       if [[ -f "$vcf" ]]; then
@@ -498,6 +522,15 @@ task validate_outputs {
         echo "Missing Recalibrated BAM Validation: $validation" >> validation_report.txt
       fi
     done
+
+    # Check panel of normals VCF
+    if [[ -f "~{pon_vcf}" ]]; then
+      size=$(stat -f%z "~{pon_vcf}" 2>/dev/null || stat -c%s "~{pon_vcf}" 2>/dev/null || echo "unknown")
+      variants=$(zcat "~{pon_vcf}" | grep -v "^#" | wc -l || echo "0")
+      echo "Panel of Normals VCF: $(basename ~{pon_vcf}) (${size} bytes, ${variants} variants)" >> validation_report.txt
+    else
+      echo "Missing Panel of Normals VCF: ~{pon_vcf}" >> validation_report.txt
+    fi
 
     # Check saturation mutagenesis variant counts
     if [[ -f "~{saturation_variant_counts}" ]]; then

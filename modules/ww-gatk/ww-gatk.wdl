@@ -30,7 +30,7 @@ task create_sequence_dictionary {
 
   command <<<
     set -eo pipefail
-    
+
     gatk --java-options "-Xms~{memory_gb - 2}g -Xmx~{memory_gb - 1}g" \
       CreateSequenceDictionary \
       -R "~{reference_fasta}" \
@@ -151,7 +151,7 @@ task base_recalibrator {
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-    
+
     # Generate vcf index files using GATK
     gatk IndexFeatureFile -I "~{dbsnp_vcf}"
     known_vcfs=(~{sep=" " known_indels_sites_vcfs})
@@ -237,7 +237,7 @@ task collect_wgs_metrics {
 
   command <<<
     set -eo pipefail
-    
+
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       CollectWgsMetrics \
       -I "~{bam}" \
@@ -320,7 +320,7 @@ task markdup_recal_metrics {
       --METRICS_FILE "~{base_file_name}.duplicate_metrics" \
       --OPTICAL_DUPLICATE_PIXEL_DISTANCE 2500 \
       --VERBOSITY WARNING
-    
+
     # Index resulting bam file
     samtools index "~{base_file_name}.markdup.bam"
 
@@ -329,7 +329,7 @@ task markdup_recal_metrics {
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-    
+
     # Generate vcf index files using GATK
     gatk IndexFeatureFile -I "~{dbsnp_vcf}"
     known_vcfs=(~{sep=" " known_indels_sites_vcfs})
@@ -426,23 +426,23 @@ task split_intervals {
 
   command <<<
     set -eo pipefail
-    
+
     # Add local symbolic link for reference files
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-    
+
     # Create output directories
     mkdir -p scattered_intervals
-    
+
     # Create canonical chromosome intervals if filtering is enabled and no custom intervals provided
     if [[ "~{filter_to_canonical_chromosomes}" == "true" && ! -f "~{intervals}" ]]; then
       echo "Creating canonical chromosome intervals..."
       echo "@HD	VN:1.0	SO:coordinate" > canonical_chromosomes.interval_list
-      
+
       # Add sequence dictionary headers for canonical chromosomes only
       grep -E "^@SQ.*SN:(chr[1-9]|chr1[0-9]|chr2[0-2]|chrX|chrY|chrM)\s" "~{basename(reference_dict)}" >> canonical_chromosomes.interval_list || true
-      
+
       # Add interval entries for canonical chromosomes
       grep -E "^@SQ.*SN:(chr[1-9]|chr1[0-9]|chr2[0-2]|chrX|chrY|chrM)\s" "~{basename(reference_dict)}" | \
         awk '{
@@ -462,14 +462,14 @@ task split_intervals {
           }
           seq_name=""; seq_length="";
         }' >> canonical_chromosomes.interval_list
-      
+
       INTERVAL_ARG="--intervals canonical_chromosomes.interval_list"
     elif [[ -f "~{intervals}" ]]; then
       INTERVAL_ARG="--intervals ~{intervals}"
     else
       INTERVAL_ARG=""
     fi
-    
+
     # Run SplitIntervals
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       SplitIntervals \
@@ -478,7 +478,7 @@ task split_intervals {
       ${INTERVAL_ARG} \
       -O scattered_intervals/ \
       --verbosity WARNING
-    
+
     # List all created files for output
     find scattered_intervals/ -name "*.interval_list" | sort -V > interval_files.txt
   >>>
@@ -531,7 +531,7 @@ task print_reads {
 
   command <<<
     set -eo pipefail
-    
+
     # Add local symbolic link for reference files
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
@@ -540,13 +540,13 @@ task print_reads {
     # Create arrays to store output filenames
     bam_files=()
     bai_files=()
-    
+
     # Process each interval file
     counter=0
     for interval_file in ~{sep=" " intervals}; do
       interval_name=$(basename "$interval_file" .interval_list)
       output_bam="~{output_basename}.${counter}.${interval_name}.bam"
-      
+
       gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
         PrintReads \
         -R "~{basename(reference_fasta)}" \
@@ -555,12 +555,12 @@ task print_reads {
         -O "$output_bam" \
         --verbosity WARNING
       samtools index "$output_bam"
-      
+
       bam_files+=("$output_bam")
       bai_files+=("${output_bam}.bai")
       counter=$((counter + 1))
     done
-    
+
     # Write output file lists
     printf '%s\n' "${bam_files[@]}" > bam_files.txt
     printf '%s\n' "${bai_files[@]}" > bai_files.txt
@@ -617,7 +617,7 @@ task haplotype_caller {
 
   command <<<
     set -eo pipefail
-    
+
     # Add local symbolic link for reference fasta and dict
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
@@ -627,7 +627,7 @@ task haplotype_caller {
     # Create index for dbSNP vcf
     gatk IndexFeatureFile -I "~{dbsnp_vcf}"
 
-    # Run HaplotypeCaller    
+    # Run HaplotypeCaller
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       HaplotypeCaller \
       -R "~{basename(reference_fasta)}" \
@@ -659,6 +659,8 @@ task mutect2 {
     outputs: {
         vcf: "Compressed VCF file containing filtered somatic variant calls",
         vcf_index: "Index file for the Mutect2 VCF output",
+        unfiltered_vcf: "Compressed VCF file containing unfiltered somatic variant calls (for PON creation)",
+        unfiltered_vcf_index: "Index file for the unfiltered Mutect2 VCF output",
         stats_file: "Mutect2 statistics file",
         f1r2_counts: "F1R2 counts for filtering"
     }
@@ -673,6 +675,7 @@ task mutect2 {
     gnomad_vcf: "gnomAD population allele frequency VCF for germline resource"
     base_file_name: "Base name for output files"
     intervals: "Optional interval list file defining target regions"
+    max_mnp_distance: "Distance at which to merge MNPs (default: 1)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
@@ -686,13 +689,14 @@ task mutect2 {
     File gnomad_vcf
     String base_file_name
     File? intervals
+    Int max_mnp_distance = 1
     Int memory_gb = 8
     Int cpu_cores = 2
   }
 
   command <<<
     set -eo pipefail
-    
+
     # Add local symbolic link for reference fasta and dict
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
@@ -712,6 +716,7 @@ task mutect2 {
       ~{if defined(intervals) then "--interval-padding 100" else ""} \
       --germline-resource "~{gnomad_vcf}" \
       --f1r2-tar-gz "~{base_file_name}.f1r2.tar.gz" \
+      --max-mnp-distance "~{max_mnp_distance}" \
       --verbosity WARNING
 
     # Filter Mutect2 calls
@@ -727,6 +732,8 @@ task mutect2 {
   output {
     File vcf = "~{base_file_name}.mutect2.vcf.gz"
     File vcf_index = "~{base_file_name}.mutect2.vcf.gz.tbi"
+    File unfiltered_vcf = "~{base_file_name}.unfiltered.vcf.gz"
+    File unfiltered_vcf_index = "~{base_file_name}.unfiltered.vcf.gz.tbi"
     File stats_file = "~{base_file_name}.unfiltered.vcf.gz.stats"
     File f1r2_counts = "~{base_file_name}.f1r2.tar.gz"
   }
@@ -769,7 +776,7 @@ task merge_vcfs {
 
   command <<<
     set -eo pipefail
-    
+
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       MergeVcfs \
       -I ~{sep=" -I " vcfs} \
@@ -816,7 +823,7 @@ task merge_mutect_stats {
 
   command <<<
     set -eo pipefail
-    
+
     gatk --java-options "-Xms~{memory_gb - 2}g -Xmx~{memory_gb - 1}g" \
       MergeMutectStats \
       --stats ~{sep=" --stats " stats} \
@@ -874,7 +881,7 @@ task haplotype_caller_parallel {
 
   command <<<
     set -eo pipefail
-    
+
     # Add local symbolic link for reference fasta and dict
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
@@ -891,12 +898,12 @@ task haplotype_caller_parallel {
 
     # Create array of interval files
     intervals=(~{sep=" " intervals})
-    
+
     # Function to run HaplotypeCaller on a single interval
     run_haplotypecaller() {
       local interval_file=$1
       local interval_name=$(basename "$interval_file" .interval_list)
-      
+
       gatk --java-options "-Xms${mem_per_job}g -Xmx${mem_per_job}g" \
         HaplotypeCaller \
         -R "~{basename(reference_fasta)}" \
@@ -922,7 +929,7 @@ task haplotype_caller_parallel {
 
     # Collect all VCF files for merging
     find . -name "~{base_file_name}.*.vcf.gz" | sort -V > vcf_list.txt
-    
+
     # Merge VCFs using MergeVcfs with input list file
     gatk --java-options "-Xms4g -Xmx6g" \
       MergeVcfs \
@@ -952,6 +959,8 @@ task mutect2_parallel {
     outputs: {
         vcf: "Compressed VCF file containing filtered somatic variant calls",
         vcf_index: "Index file for the Mutect2 VCF output",
+        unfiltered_vcf: "Compressed VCF file containing unfiltered somatic variant calls (for PON creation)",
+        unfiltered_vcf_index: "Index file for the unfiltered Mutect2 VCF output",
         stats_file: "Merged Mutect2 statistics file"
     }
   }
@@ -965,6 +974,7 @@ task mutect2_parallel {
     reference_dict: "Reference genome sequence dictionary"
     gnomad_vcf: "gnomAD population allele frequency VCF for germline resource"
     base_file_name: "Base name for output files"
+    max_mnp_distance: "Distance at which to merge MNPs (default: 1)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
   }
@@ -978,13 +988,14 @@ task mutect2_parallel {
     File reference_dict
     File gnomad_vcf
     String base_file_name
+    Int max_mnp_distance = 1
     Int memory_gb = 8
     Int cpu_cores = 2
   }
 
   command <<<
     set -eo pipefail
-    
+
     # Add local symbolic link for reference fasta and dict
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
@@ -1002,12 +1013,12 @@ task mutect2_parallel {
 
     # Create array of interval files
     intervals=(~{sep=" " intervals})
-    
+
     # Function to run Mutect2 on a single interval
     run_mutect2() {
       local interval_file=$1
       local interval_name=$(basename "$interval_file" .interval_list)
-      
+
       # Run Mutect2
       gatk --java-options "-Xms${mem_per_job}g -Xmx${mem_per_job}g" \
         Mutect2 \
@@ -1018,6 +1029,7 @@ task mutect2_parallel {
         --interval-padding 100 \
         --germline-resource "~{gnomad_vcf}" \
         --f1r2-tar-gz "~{base_file_name}.${interval_name}.f1r2.tar.gz" \
+        --max-mnp-distance "~{max_mnp_distance}" \
         --verbosity WARNING
 
       # Filter Mutect2 calls
@@ -1044,9 +1056,10 @@ task mutect2_parallel {
 
     # Collect VCF files and stats files for merging
     find . -name "~{base_file_name}.*.vcf.gz" -not -name "*.unfiltered.*" | sort -V > vcf_list.txt
+    find . -name "~{base_file_name}.*.unfiltered.vcf.gz" | sort -V > unfiltered_vcf_list.txt
     find . -name "~{base_file_name}.*.unfiltered.vcf.gz.stats" | sort -V > stats_list.txt
-    
-    # Merge VCFs using input list file
+
+    # Merge filtered VCFs using input list file
     gatk --java-options "-Xms4g -Xmx6g" \
       MergeVcfs \
       --INPUT vcf_list.txt \
@@ -1054,12 +1067,20 @@ task mutect2_parallel {
       -O "~{base_file_name}.mutect2.vcf.gz" \
       --VERBOSITY WARNING
 
+    # Merge unfiltered VCFs using input list file
+    gatk --java-options "-Xms4g -Xmx6g" \
+      MergeVcfs \
+      --INPUT unfiltered_vcf_list.txt \
+      -D "~{basename(reference_dict)}" \
+      -O "~{base_file_name}.unfiltered.vcf.gz" \
+      --VERBOSITY WARNING
+
     # Merge stats files - build argument list properly
     stats_args=""
     while IFS= read -r stats_file; do
       stats_args="${stats_args} --stats ${stats_file}"
     done < stats_list.txt
-    
+
     gatk --java-options "-Xms2g -Xmx3g" \
       MergeMutectStats \
       ${stats_args} \
@@ -1070,6 +1091,8 @@ task mutect2_parallel {
   output {
     File vcf = "~{base_file_name}.mutect2.vcf.gz"
     File vcf_index = "~{base_file_name}.mutect2.vcf.gz.tbi"
+    File unfiltered_vcf = "~{base_file_name}.unfiltered.vcf.gz"
+    File unfiltered_vcf_index = "~{base_file_name}.unfiltered.vcf.gz.tbi"
     File stats_file = "~{base_file_name}.mutect2.stats"
   }
 
@@ -1269,6 +1292,92 @@ task analyze_saturation_mutagenesis {
     File read_counts = "~{base_file_name}.readCounts"
     File ref_coverage = "~{base_file_name}.refCoverage"
     File variant_counts = "~{base_file_name}.variantCounts"
+  }
+
+  runtime {
+    docker: "getwilds/gatk:4.6.1.0"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
+task create_somatic_pon {
+  meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
+    description: "Create a somatic panel of normals (PON) from VCF files."
+    outputs: {
+        pon_vcf: "Gzipped VCF file containing the panel of normals",
+        pon_vcf_index: "Index file for the panel of normals VCF"
+    }
+  }
+
+  parameter_meta {
+    normal_vcfs: "Array of Mutect2 VCFs generated with --max-mnp-distance=0"
+    normal_vcf_indices: "Array of index files for the normal VCFs"
+    reference_fasta: "Reference genome FASTA"
+    reference_fasta_index: "Index file for the reference FASTA"
+    reference_dict: "Reference genome sequence dictionary"
+    intervals: "Genomic intervals list, such as from GATK BedToIntervalList"
+    database_name: "Name for GenomicsDB workspace"
+    base_file_name: "Base name for output files"
+    germline_resource: "Optional gnomAD VCF for additional germline filtering"
+    memory_gb: "Memory allocation in GB"
+    cpu_cores: "Number of CPU cores to use"
+  }
+
+  input {
+    Array[File] normal_vcfs
+    Array[File] normal_vcf_indices
+    File reference_fasta
+    File reference_fasta_index
+    File reference_dict
+    File intervals
+    String database_name
+    String base_file_name
+    File? germline_resource
+    Int memory_gb = 8
+    Int cpu_cores = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Add local symbolic link for reference fasta and dict
+    # If soft links aren't allowed on your HPC system, copy them locally instead
+    ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
+    ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
+    ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+
+    # Index germline resource if provided
+    if [[ -f "~{germline_resource}" ]]; then
+      gatk IndexFeatureFile -I "~{germline_resource}"
+    fi
+
+    # Create a GenomicsDB from normal calls
+    gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
+      GenomicsDBImport \
+      -R "~{basename(reference_fasta)}" \
+      -L "~{intervals}" \
+      --genomicsdb-workspace-path "~{database_name}" \
+      --merge-input-intervals \
+      --variant ~{sep=" --variant " normal_vcfs} \
+      --verbosity WARNING
+
+    # Combine the normal calls using CreateSomaticPanelOfNormals
+    gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
+      CreateSomaticPanelOfNormals \
+      -V gendb://"~{database_name}" \
+      -R "~{basename(reference_fasta)}" \
+      -L "~{intervals}" \
+      ~{if defined(germline_resource) then "--germline-resource " + germline_resource else ""} \
+      -O "~{base_file_name}.pon.vcf.gz" \
+      --verbosity WARNING
+  >>>
+
+  output {
+    File pon_vcf = "~{base_file_name}.pon.vcf.gz"
+    File pon_vcf_index = "~{base_file_name}.pon.vcf.gz.tbi"
   }
 
   runtime {
