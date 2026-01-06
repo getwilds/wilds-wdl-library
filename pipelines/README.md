@@ -49,8 +49,8 @@ pipelines/pipeline-name/
 
 ### **Optional Components**
 
-- **Options JSON**: Workflow execution configuration for different executors
-- **Additional Input Files**: Alternative configurations for different use cases
+- **Options JSON**: Workflow execution configuration for different WDL engines
+- **Additional Input Files**: Alternative inputs for different use cases
 - **Platform Configurations**: Platform-specific execution configs in subdirectories (e.g., `.cirro/` for Cirro platform integration)
 
 ## Available Pipelines
