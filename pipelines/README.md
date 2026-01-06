@@ -101,11 +101,16 @@ If you have the repository cloned:
 # Navigate to pipeline directory
 cd pipelines/ww-sra-star
 
-# Run test workflow with your preferred executor (no inputs needed)
+# Run test workflow with your preferred executor (no inputs needed):
+
+# Sprocket
 sprocket run testrun.wdl
+
+# Cromwell
 java -jar cromwell.jar run testrun.wdl
+
+# miniWDL
 miniwdl run testrun.wdl
-```
 
 ### **As Complete Workflows**
 
