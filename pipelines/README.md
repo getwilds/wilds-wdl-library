@@ -120,11 +120,16 @@ Pipelines can be executed as standalone workflows with your own data:
 # Navigate to pipeline directory
 cd pipelines/ww-sra-star
 
-# Run with your preferred executor using the example inputs.json as a starting point
-miniwdl run ww-sra-star.wdl -i inputs.json
-java -jar cromwell.jar run ww-sra-star.wdl --inputs inputs.json
+# Run with your preferred executor using the example inputs.json as a starting point:
+
+# Sprocket
 sprocket run ww-sra-star.wdl inputs.json
-```
+
+# Cromwell
+java -jar cromwell.jar run ww-sra-star.wdl --inputs inputs.json
+
+# miniWDL
+miniwdl run ww-sra-star.wdl -i inputs.json
 
 ### **As Templates**
 
