@@ -70,7 +70,7 @@ pipelines/pipeline-name/
 
 ### **Running Directly (No Clone Required)**
 
-Thanks to GitHub URL imports, you can download and run any pipeline without cloning the entire repository:
+You can download and run any pipeline without cloning the entire repository:
 
 ```bash
 # Download a pipeline and its example inputs
