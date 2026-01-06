@@ -36,7 +36,7 @@ Pipelines vary in scope and complexity. Each pipeline's README documents its com
 
 ## Pipeline Structure
 
-Each pipeline directory contains the following standard components:
+Each pipeline directory contains the following required components:
 
 ```
 pipelines/pipeline-name/
