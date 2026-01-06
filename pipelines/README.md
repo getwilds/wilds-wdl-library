@@ -46,12 +46,6 @@ pipelines/pipeline-name/
 └── README.md            # Pipeline-specific documentation
 ```
 
-### **Required Components**
-
-- **WDL File**: Main workflow that imports and combines modules
-- **Test Workflow**: `testrun.wdl` - Zero-configuration demonstration workflow with hardcoded test inputs
-- **Inputs JSON**: Example input configurations to use as a starting point for real data
-- **README**: Detailed documentation with usage examples and integration patterns
 
 ### **Optional Components**
 
