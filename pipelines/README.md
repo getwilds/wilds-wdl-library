@@ -160,7 +160,7 @@ Pipelines demonstrate key WDL patterns:
 1. Fork the repository
 2. Create a new pipeline directory following the standard structure
 3. Import existing modules (prefer existing modules over creating new tasks)
-4. Document the complexity level in your README
+4. Document the complexity level in this README
 5. Add comprehensive documentation and test inputs
 6. Submit a pull request demonstrating the integration pattern
 
