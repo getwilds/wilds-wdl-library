@@ -9,6 +9,7 @@ task download_ref_data {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Downloads reference genome and index files for WILDS WDL test runs"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         fasta: "Reference genome FASTA file",
         fasta_index: "Index file for the reference FASTA",
@@ -107,6 +108,7 @@ task download_fastq_data {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Downloads small example FASTQ files for WILDS WDL test runs. Renames to Illumina naming convention with optional gzip compression."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         r1_fastq: "R1 fastq file downloaded for the sample in question",
         r2_fastq: "R2 fastq file downloaded for the sample in question"
@@ -165,6 +167,7 @@ task interleave_fastq {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Interleaves a set of R1 and R2 FASTQ files"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         inter_fastq: "Interleaved FASTQ"
     }
@@ -208,6 +211,7 @@ task download_cram_data {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Downloads small example CRAM files for WILDS WDL test runs"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         cram: "CRAM file downloaded for the sample in question",
         crai: "Index file for the CRAM file"
@@ -270,6 +274,7 @@ task download_bam_data {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Downloads small example BAM files for WILDS WDL test runs"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         bam: "BAM file downloaded for the sample in question",
         bai: "Index file for the BAM file"
@@ -328,6 +333,7 @@ task download_ichor_data {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Downloads reference data for ichorCNA analysis on hg38"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         wig_gc: "GC content WIG file for hg38",
         wig_map: "Mapping quality WIG file for hg38",
@@ -373,7 +379,10 @@ task download_ichor_data {
 
 task download_tritonnp_data {
   meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
     description: "Downloads test data for TritonNP analysis"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         annotation: "BED annotation file",
         plot_list: "Genes to plot",
@@ -434,6 +443,7 @@ task download_dbsnp_vcf {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Downloads dbSNP VCF files for GATK workflows"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         dbsnp_vcf: "dbSNP VCF file (filtered down if region specified)",
         dbsnp_vcf_index: "Index file for the dbSNP VCF"
@@ -513,6 +523,7 @@ task download_known_indels_vcf {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Downloads known indel VCF files for GATK workflows"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         known_indels_vcf: "Known indels VCF file (filtered down if region specified)",
         known_indels_vcf_index: "Index file for the known indels VCF"
@@ -560,6 +571,7 @@ task download_gnomad_vcf {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Downloads gnomad VCF files for GATK workflows"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         gnomad_vcf: "Gnomad VCF file (filtered down if region specified)",
         gnomad_vcf_index: "Index file for the gnomad VCF"
@@ -607,6 +619,7 @@ task download_annotsv_vcf {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Downloads test VCF files for structural variant annotation workflows"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         test_vcf: "Test VCF file for AnnotSV"
     }
@@ -645,6 +658,7 @@ task generate_pasilla_counts {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Generate DESeq2 test count matrices and metadata using the pasilla Bioconductor dataset raw files"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         individual_count_files: "Array of individual count files for each sample from Pasilla dataset",
         sample_names: "Array of sample names corresponding to the count files",
@@ -702,6 +716,7 @@ task download_test_transcriptome {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Download a small test transcriptome for RNA-seq quantification testing. NOTE: This uses GENCODE (Ensembl) annotations, while other ww-testdata tasks use NCBI RefSeq. For production use, ensure annotation consistency across your pipeline."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         transcriptome_fasta: "Small test transcriptome FASTA file containing protein-coding transcripts"
     }
@@ -745,6 +760,7 @@ task create_clean_amplicon_reference {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Extract and clean a reference sequence region for saturation mutagenesis analysis"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         clean_fasta: "Cleaned reference FASTA file with no ambiguous bases",
         clean_fasta_index: "Index file for the cleaned reference FASTA",
@@ -837,6 +853,7 @@ task create_gdc_manifest {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Create a test GDC manifest file with small open-access files for testing gdc-client downloads"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         manifest: "GDC manifest file containing test file UUIDs"
     }
@@ -873,6 +890,7 @@ task download_shapemapper_data {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Downloads ShapeMapper example data (TPP riboswitch) from the official repository for testing RNA structure analysis workflows"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         target_fa: "Target RNA FASTA file (TPP riboswitch sequence)",
         modified_r1: "R1 FASTQ file from modified/treated sample (TPPplus)",
@@ -960,6 +978,7 @@ task download_test_cellranger_ref {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Download a minimal Cell Ranger reference for testing"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         ref_tar: "Cell Ranger reference transcriptome tarball"
     }
@@ -1005,6 +1024,7 @@ task download_diamond_data {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Download E. coli proteins and create a subset as a test query"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         reference: "Full E. coli proteome FASTA file",
         query: "Subset of first 10 sequences"

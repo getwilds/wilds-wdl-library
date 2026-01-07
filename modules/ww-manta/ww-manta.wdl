@@ -9,6 +9,7 @@ task manta_call {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Call structural variants using Manta on a single sample"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-manta/ww-manta.wdl"
     outputs: {
         vcf: "Structural variant calls in compressed VCF format",
         vcf_index: "Index file for the VCF output"

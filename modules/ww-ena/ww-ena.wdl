@@ -10,6 +10,7 @@ task download_files {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Downloads sequencing data files from the European Nucleotide Archive (ENA) using the ena-file-downloader tool. Supports download by accession numbers with configurable file formats and transfer protocols."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ena/ww-ena.wdl"
     outputs: {
         downloaded_files: "Array of downloaded files from ENA",
         download_log: "Log file containing download status and details",
@@ -97,6 +98,7 @@ task download_by_query {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Downloads sequencing data files from ENA using a search query. Allows filtering by result type and query parameters to retrieve multiple files matching specific criteria."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ena/ww-ena.wdl"
     outputs: {
         downloaded_files: "Array of downloaded files from ENA",
         download_log: "Log file containing download status and details",
@@ -176,6 +178,7 @@ task extract_fastq_pairs {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Extract R1 and R2 FASTQ file pairs from ENA downloads for downstream processing."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ena/ww-ena.wdl"
     outputs: {
         r1_files: "Array of Read 1 FASTQ files, parallel with r2_files and accessions",
         r2_files: "Array of Read 2 FASTQ files, parallel with r1_files and accessions",

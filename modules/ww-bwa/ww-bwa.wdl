@@ -9,6 +9,7 @@ task bwa_index {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Task for building BWA index files from a reference FASTA"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl"
     outputs: {
         bwa_index_tar: "Compressed tarball containing BWA genome index"
     }
@@ -56,6 +57,7 @@ task bwa_mem {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Task for aligning sequence reads using BWA-MEM"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl"
     outputs: {
         sorted_bam: "Sorted BWA-MEM alignment output BAM file",
         sorted_bai: "Index files for the sorted BWA-MEM alignment BAM files"

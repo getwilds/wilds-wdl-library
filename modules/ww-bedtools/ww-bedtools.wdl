@@ -9,6 +9,7 @@ task coverage {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Task that gets BAM coverage across BED intervals using BEDTools"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedtools/ww-bedtools.wdl"
     outputs: {
         name: "Sample name that was processed",
         mean_coverage: "File containing mean read coverage across BED intervals"
@@ -59,6 +60,7 @@ task intersect {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Task that performs BEDTools intersect between two genomic files"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedtools/ww-bedtools.wdl"
     outputs: {
         name: "Sample name that was processed",
         intersect_output: "BEDTools intersect results file"
@@ -105,6 +107,7 @@ task makewindows {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Task that creates genomic windows and counts reads per window across chromosomes"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedtools/ww-bedtools.wdl"
     outputs: {
         name: "Sample name that was processed",
         counts_bed: "Tarball of per-chromosome BED files of read counts"

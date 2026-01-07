@@ -9,6 +9,7 @@ task mpileup_call {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Call variants using bcftools mpileup and call"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bcftools/ww-bcftools.wdl"
     outputs: {
         mpileup_vcf: "Compressed VCF file containing variants called by mpileup",
         mpileup_vcf_index: "Index file for the mpileup VCF"

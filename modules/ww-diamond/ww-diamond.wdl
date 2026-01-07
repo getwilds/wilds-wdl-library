@@ -10,6 +10,7 @@ task make_database {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Create a DIAMOND database from a FASTA file"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-diamond/ww-diamond.wdl"
     outputs: {
         diamond_db: "DIAMOND database file (.dmnd) created from input FASTA"
     }
@@ -51,6 +52,7 @@ task diamond_blastp {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Align protein sequences to DIAMOND database using BLASTP"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-diamond/ww-diamond.wdl"
     outputs: {
         aln: "Compressed alignment file in tabular format (outfmt 6)"
     }

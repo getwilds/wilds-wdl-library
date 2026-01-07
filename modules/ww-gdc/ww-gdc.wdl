@@ -10,6 +10,7 @@ task download_by_manifest {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Download files from GDC using a manifest file. Supports both controlled-access (with token) and open-access data."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gdc/ww-gdc.wdl"
     outputs: {
         downloaded_files: "Array of downloaded data files from GDC",
         download_log: "Log file with download statistics and any errors"
@@ -125,6 +126,7 @@ task download_by_uuids {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Download files from GDC using file UUIDs. Supports both controlled-access (with token) and open-access data."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gdc/ww-gdc.wdl"
     outputs: {
         downloaded_files: "Array of downloaded data files from GDC",
         download_log: "Log file with download statistics and any errors"

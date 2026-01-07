@@ -9,6 +9,7 @@ task annovar_annotate {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Annotate variants using Annovar with customizable protocols and operations"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-annovar/ww-annovar.wdl"
     outputs: {
         annotated_vcf: "VCF file with Annovar annotations added",
         annotated_table: "Tab-delimited table with variant annotations"

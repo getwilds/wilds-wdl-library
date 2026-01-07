@@ -9,6 +9,7 @@ task readcounter_wig {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Generate tumor WIG file from aligned bam files using HMMcopy's readCounter"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ichorcna/ww-ichorcna.wdl"
     outputs: {
         wig_file: "WIG file created from binned read count data within input BED files"
     }
@@ -61,6 +62,7 @@ task ichorcna_call {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Estimate cfDNA tumor fraction using ichorCNA"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ichorcna/ww-ichorcna.wdl"
     outputs: {
         params: "Final converged parameters for optimal solution. Also contains table of converged parameters for all solutions",
         seg: "Segments called by the Viterbi algorithm, including subclonal status of segments (0=clonal, 1=subclonal), and filtered fo exclude Y chromosome segments if not male",

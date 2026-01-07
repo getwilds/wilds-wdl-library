@@ -9,6 +9,7 @@ task annotsv_annotate {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Annotate structural variants using AnnotSV with comprehensive genomic and clinical annotations"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-annotsv/ww-annotsv.wdl"
     outputs: {
         annotated_tsv: "Tab-delimited file with detailed annotations per SV"
     }

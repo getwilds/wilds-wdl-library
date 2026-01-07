@@ -8,6 +8,7 @@ task crams_to_fastq {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Merge CRAM/BAM/SAM files and convert to FASTQ's using samtools."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl"
     outputs: {
         r1_fastq: "R1 FASTQ file generated from merged CRAM/BAM/SAM file",
         r2_fastq: "R2 FASTQ file generated from merged CRAM/BAM/SAM file",
@@ -58,6 +59,7 @@ task merge_bams_to_cram {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Merge multiple BAM files into a single CRAM file using samtools merge"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl"
     outputs: {
         cram: "Merged CRAM file containing all reads from input BAMs",
         crai: "Index file for the merged CRAM"
@@ -103,6 +105,7 @@ task mpileup {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Generate samtools mpileup from a BAM file"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl"
     outputs: {
         pileup: "Pileup file"
     }

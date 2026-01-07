@@ -61,7 +61,7 @@ workflow ww_leukemia {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing with focus on leukemia analysis - Refactored with WILDS modules"
-    url: "https://github.com/getwilds/ww-leukemia"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-leukemia/ww-leukemia.wdl"
     outputs: {
         haplotype_vcf: "Array of variant calls from GATK HaplotypeCaller",
         mpileup_vcf: "Array of variant calls from samtools/bcftools mpileup",

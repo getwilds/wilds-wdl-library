@@ -10,6 +10,7 @@ task combine_count_matrices {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Combine STAR gene count files from multiple samples into a single count matrix"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl"
     outputs: {
         counts_matrix: "Combined matrix of gene-level counts from all samples",
         sample_metadata: "Metadata file containing sample names and conditions"
@@ -66,6 +67,7 @@ task run_deseq2 {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Perform differential expression analysis using DESeq2"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl"
     outputs: {
         deseq2_results: "Complete results of DESeq2 differential expression analysis with statistics",
         deseq2_significant: "Filtered results containing only statistically significant differentially expressed genes",

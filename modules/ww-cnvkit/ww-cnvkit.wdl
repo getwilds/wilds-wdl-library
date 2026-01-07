@@ -10,6 +10,7 @@ task create_reference {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Create CNVkit reference from normal samples or pooled reference"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cnvkit/ww-cnvkit.wdl"
     outputs: {
         reference_cnn: "CNVkit reference file (.cnn)"
     }
@@ -105,6 +106,7 @@ task run_cnvkit {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Run CNVkit copy number analysis on tumor sample"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cnvkit/ww-cnvkit.wdl"
     outputs: {
         cnv_calls: "CNV calls file (.cns)",
         cnv_segments: "CNV segments file (.cnr)",

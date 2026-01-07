@@ -9,6 +9,7 @@ task smoove_call {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Call structural variants using Smoove for a single sample"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-smoove/ww-smoove.wdl"
     outputs: {
         vcf: "Structural variant calls in compressed VCF format",
         vcf_index: "Index file for the VCF output"
