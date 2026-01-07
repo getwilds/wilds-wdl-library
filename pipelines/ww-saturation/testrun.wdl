@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/consolidate-levels/pipelines/ww-saturation/ww-saturation.wdl" as saturation_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-saturation/ww-saturation.wdl" as saturation_workflow
 
 struct SaturationSample {
     String name
