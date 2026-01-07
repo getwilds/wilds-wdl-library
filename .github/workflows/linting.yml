@@ -2,6 +2,9 @@ name: WDL Validation and Linting
 
 on:
   workflow_dispatch:
+  schedule:
+    # Run monthly on the 1st at midnight UTC
+    - cron: '0 0 1 * *'
   pull_request:
     types: [opened, reopened, synchronize]
 
