@@ -72,7 +72,6 @@ task ichorcna_call {
   }
 
   parameter_meta {
-    # TODO: Take a user-generated WIG file as input, instead of making one from BED files
     wig_tumor: "Tumor WIG file being analyzed"
     wig_gc: "GC-content WIG file"
     wig_map: "Mappability score WIG file"

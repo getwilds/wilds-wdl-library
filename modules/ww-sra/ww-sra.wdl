@@ -1,7 +1,6 @@
-## Pulls down paired fastq's for SRA ID's provided
-## TODO: add metadata pull using efetch
-## TODO: add checksum for validation purposes
-## TODO: add logging for better visibility
+## WILDS WDL module for downloading FASTQ data from NCBI's Sequence Read Archive (SRA).
+## Designed to be a modular component within the WILDS ecosystem that can be used
+## independently or integrated with other WILDS workflows.
 
 version 1.0
 
