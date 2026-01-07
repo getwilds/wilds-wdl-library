@@ -75,7 +75,6 @@ workflow ichorcna_example {
 }
 
 task validate_outputs {
-  # TODO: Do a basic check of the file contents too
   meta {
     description: "Validate that ichorCNA outputs are non-empty and generate report"
     outputs: {

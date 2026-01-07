@@ -312,8 +312,6 @@ workflow gatk_example {
 }
 
 task validate_outputs {
-  # TODO: Add validation for GATK dictionary, intervals, and duplicate metrics files
-  # TODO: Ensure that the recalibrated BAM files match between the separate and all-in-one tasks
   meta {
     description: "Validate GATK outputs and generate comprehensive statistics report"
     outputs: {
