@@ -30,7 +30,7 @@ jobs:
 
       - name: Install Sprocket
         run: |
-          cargo-binstall sprocket --version 0.16.0 -y
+          cargo-binstall sprocket --version 0.18.0 -y
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
