@@ -8,6 +8,7 @@ task triton_main {
     author: "Chris Lo"
     email: "clo2@fredhutch.org"
     description: "Task for running TritonNP"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-tritonnp/ww-tritonnp.wdl"
     outputs: {
         fm_file: "Array of outputs from TritonNP"
     }
@@ -87,6 +88,7 @@ task combine_fms {
     author: "Chris Lo"
     email: "clo2@fredhutch.org"
     description: "Task for combine all sample outputs from TritonNP together"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-tritonnp/ww-tritonnp.wdl"
     outputs: {
         final: "Aggregrated output file from TritonNP."
     }

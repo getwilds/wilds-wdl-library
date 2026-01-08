@@ -9,6 +9,7 @@ task strelka_germline {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Run Strelka germline variant calling on a single sample"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-strelka/ww-strelka.wdl"
     outputs: {
         variants_vcf: "Compressed VCF file containing germline variant calls",
         variants_vcf_index: "Index file for the variants VCF"
@@ -99,6 +100,7 @@ task strelka_somatic {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Run Strelka somatic variant calling on tumor/normal pair"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-strelka/ww-strelka.wdl"
     outputs: {
         somatic_snvs_vcf: "Compressed VCF file containing somatic SNV calls",
         somatic_indels_vcf: "Compressed VCF file containing somatic indel calls",

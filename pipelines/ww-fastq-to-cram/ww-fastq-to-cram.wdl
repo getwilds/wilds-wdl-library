@@ -28,7 +28,7 @@ workflow fastq_to_cram {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Convert paired FASTQ files to unmapped CRAM format using WILDS WDL modules"
-    url: "https://github.com/getwilds/wilds-wdl-library/pipelines/ww-fastq-to-cram"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-fastq-to-cram/ww-fastq-to-cram.wdl"
     outputs: {
         unmapped_crams: "Array of unmapped CRAM files for each sample",
         unmapped_cram_indexes: "Array of index files for each unmapped CRAM file",

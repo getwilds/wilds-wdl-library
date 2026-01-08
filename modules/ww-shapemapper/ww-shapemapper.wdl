@@ -10,6 +10,7 @@ task run_shapemapper {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Run ShapeMapper to analyze RNA structure probing data and generate reactivity profiles"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-shapemapper/ww-shapemapper.wdl"
     outputs: {
         output_tar: "Compressed tarball of the ShapeMapper output directory",
         log_file: "ShapeMapper log file with processing details and quality metrics"

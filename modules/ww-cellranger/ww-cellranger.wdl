@@ -8,6 +8,7 @@ task run_count {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Run cellranger count on gene expression reads from one GEM well"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cellranger/ww-cellranger.wdl"
     outputs: {
         results_tar: "Compressed tarball of Cell Ranger count output directory",
         web_summary: "Web summary HTML file",

@@ -9,6 +9,7 @@ task build_index {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Task for building the STAR index files from fasta/gtf."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl"
     outputs: {
         star_index_tar: "Compressed tarball containing the STAR genome index for future alignment steps"
     }
@@ -70,6 +71,7 @@ task align_two_pass {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Task for aligning RNA-seq reads using STAR's two-pass technique."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl"
     outputs: {
         bam: "Aligned reads in sorted BAM format",
         bai: "Index file for the aligned BAM file",

@@ -9,6 +9,7 @@ task delly_call {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Calls structural variants using Delly for a single sample"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-delly/ww-delly.wdl"
     outputs: {
         vcf: "VCF file containing structural variant calls",
         vcf_index: "Index file for the VCF output",

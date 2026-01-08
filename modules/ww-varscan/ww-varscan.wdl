@@ -10,6 +10,7 @@ task somatic {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Run VarScan somatic variant calling on tumor-normal pair"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-varscan/ww-varscan.wdl"
     outputs: {
         somatic_snvs_vcf: "VCF file containing somatic SNV calls",
         somatic_indels_vcf: "VCF file containing somatic indel calls"
@@ -60,6 +61,7 @@ task mpileup2cns {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Run VarScan mpileup2cns for germline variant calling"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-varscan/ww-varscan.wdl"
     outputs: {
         vcf: "VCF file containing SNV and indel calls"
     }

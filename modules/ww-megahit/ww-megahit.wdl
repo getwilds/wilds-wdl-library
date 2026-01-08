@@ -9,6 +9,7 @@ task megahit {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "De novo metagenome assembly using MEGAHIT"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-megahit/ww-megahit.wdl"
     outputs: {
         contigs: "Assembled contigs in compressed FASTA format"
     }

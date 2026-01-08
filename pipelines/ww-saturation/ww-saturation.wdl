@@ -14,7 +14,7 @@ workflow saturation_mutagenesis {
         author: "Taylor Firman"
         email: "tfirman@fredhutch.org"
         description: "WDL workflow to analyze saturation mutagenesis data using BWA alignment and GATK AnalyzeSaturationMutagenesis"
-        url: "https://github.com/getwilds/wilds-wdl-library/pipelines/ww-saturation"
+        url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-saturation/ww-saturation.wdl"
         outputs: {
             variant_counts: "Array of variant count tables for each sample",
             aa_counts: "Array of amino acid count tables for each sample",

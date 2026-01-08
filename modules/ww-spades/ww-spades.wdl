@@ -9,6 +9,7 @@ task metaspades {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "De novo metagenomic assembly using metaSPAdes"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-spades/ww-spades.wdl"
     outputs: {
         scaffolds_fasta: "Assembled scaffolds in compressed FASTA format",
         contigs_fasta: "Assembled contigs in compressed FASTA format",

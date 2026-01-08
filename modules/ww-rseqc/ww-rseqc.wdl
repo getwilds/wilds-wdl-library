@@ -9,6 +9,7 @@ task run_rseqc {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Run comprehensive RSeQC quality control metrics on aligned RNA-seq data"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rseqc/ww-rseqc.wdl"
     outputs: {
         read_distribution: "Distribution of reads across genomic features (CDS, UTR, introns, intergenic)",
         gene_body_coverage: "Gene body coverage metrics (text file)",

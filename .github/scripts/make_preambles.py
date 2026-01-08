@@ -58,8 +58,8 @@ def make_preambles() -> None:
     paths = list(root.glob("**/*.wdl"))
 
     for path in paths:
-        # Skip testrun.wdl files
-        if path.name == "testrun.wdl":
+        # Skip testrun.wdl files and any files in notes directories
+        if path.name == "testrun.wdl" or "notes" in path.parts:
             continue
 
         path_readme = list(path.parent.glob("README.md"))

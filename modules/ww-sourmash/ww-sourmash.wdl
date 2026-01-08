@@ -8,6 +8,7 @@ task sketch {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Generate a sourmash sketch from BAM or FASTA file"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sourmash/ww-sourmash.wdl"
     outputs: {
       sig: "Sourmash sketch (.sig) file"
     }
@@ -67,6 +68,7 @@ task gather {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Run sourmash gather with specific reference signature(s) included"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sourmash/ww-sourmash.wdl"
     outputs: {
       result: "CSV file of sourmash gather results"
     }
@@ -119,6 +121,7 @@ task compare {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Generate similarity matrix from signature files using sourmash compare"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sourmash/ww-sourmash.wdl"
     outputs: {
       npy: "Numpy binary matrix file of angular similarity matrix",
       csv: "CSV file of angular similarity matrix"

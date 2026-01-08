@@ -9,6 +9,7 @@ task fastqdump {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Task for pulling down fastq data from SRA."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl"
     outputs: {
         r1_end: "R1 fastq file downloaded for the sample in question",
         r2_end: "R2 fastq file downloaded for the sample in question (empty file for single-end reads)",

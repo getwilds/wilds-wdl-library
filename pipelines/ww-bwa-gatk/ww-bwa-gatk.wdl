@@ -14,7 +14,7 @@ workflow bwa_gatk {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "WDL workflow to align sequencing data using BWA and perform QC steps with GATK"
-    url: "https://github.com/getwilds/wilds-wdl-library/pipelines/ww-bwa-gatk"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-bwa-gatk/ww-bwa-gatk.wdl"
     outputs: {
         duplicate_metrics: "Array of duplicate marking statistics for each sample",
         recalibrated_bam: "Array of BAM files with recalibrated base quality scores",

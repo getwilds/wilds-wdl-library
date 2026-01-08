@@ -15,6 +15,7 @@ task s3_download_file {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Download a single file from an S3 bucket"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-aws-sso/ww-aws-sso.wdl"
     outputs: {
         downloaded_file: "Downloaded file from S3"
     }
@@ -85,6 +86,7 @@ task s3_upload_file {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Upload a single file to an S3 bucket"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-aws-sso/ww-aws-sso.wdl"
     outputs: {
         s3_uri: "S3 URI of the uploaded file"
     }
@@ -148,6 +150,7 @@ task s3_list_bucket {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "List contents of an S3 bucket or prefix"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-aws-sso/ww-aws-sso.wdl"
     outputs: {
         file_list: "Text file containing list of S3 objects",
         object_count: "Number of objects found"

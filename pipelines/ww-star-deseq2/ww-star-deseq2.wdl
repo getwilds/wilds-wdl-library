@@ -23,7 +23,7 @@ workflow star_deseq2 {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "WDL workflow for RNA-seq alignment via STAR and DESeq2 differential expression analysis"
-    url: "https://github.com/getwilds/ww-star-deseq2"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-star-deseq2/ww-star-deseq2.wdl"
     outputs: {
         star_bam: "STAR alignment output BAM files for each sample",
         star_bai: "Index files for the STAR alignment BAM files",

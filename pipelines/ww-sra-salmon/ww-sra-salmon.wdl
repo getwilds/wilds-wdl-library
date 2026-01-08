@@ -14,7 +14,7 @@ workflow sra_salmon {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "WDL workflow to download raw sequencing data from SRA and quantify using Salmon quasi-mapping"
-    url: "https://github.com/getwilds/wilds-wdl-library/pipelines/ww-sra-salmon"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-sra-salmon/ww-sra-salmon.wdl"
     outputs: {
         salmon_quant_dirs: "array of Salmon quantification output directories for each sample",
         tpm_matrix: "matrix of TPM (transcripts per million) values across all samples",

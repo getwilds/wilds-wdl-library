@@ -10,6 +10,7 @@ task run_fastqc {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Run FastQC quality control analysis on FASTQ files"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-fastqc/ww-fastqc.wdl"
     outputs: {
         html_reports: "FastQC HTML quality control reports",
         zip_reports: "FastQC ZIP archives containing all report data"

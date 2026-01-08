@@ -15,6 +15,7 @@ task process_sample {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Simple template processing task that creates a hello world output file"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-template/ww-template.wdl"
     outputs: {
         output_file: "Simple text file with hello world message and sample information"
     }

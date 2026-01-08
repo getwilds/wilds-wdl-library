@@ -14,7 +14,7 @@ workflow sra_star {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "WDL workflow to download raw sequencing data from SRA and align using STAR two-pass methodology"
-    url: "https://github.com/getwilds/wilds-wdl-library/pipelines/ww-sra-star"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-sra-star/ww-sra-star.wdl"
     outputs: {
         star_bam: "array of aligned bam files for each sample",
         star_bai: "array of corresponding index files for each aligned bam file",

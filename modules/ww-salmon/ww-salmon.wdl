@@ -10,6 +10,7 @@ task build_index {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Build Salmon index from reference transcriptome FASTA file"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl"
     outputs: {
         salmon_index: "Compressed tarball containing the Salmon index for quantification"
     }
@@ -66,6 +67,7 @@ task quantify {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Quantify transcript expression from paired-end RNA-seq reads using Salmon"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl"
     outputs: {
         salmon_quant_dir: "Compressed tarball containing Salmon quantification results including abundance estimates",
         output_sample_name: "Sample name used for output files"
@@ -130,6 +132,7 @@ task merge_results {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
     description: "Merge Salmon quantification results from multiple samples into count and TPM matrices"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl"
     outputs: {
         tpm_matrix: "Tab-separated matrix of TPM (Transcripts Per Million) values for all samples",
         counts_matrix: "Tab-separated matrix of estimated read counts for all samples",

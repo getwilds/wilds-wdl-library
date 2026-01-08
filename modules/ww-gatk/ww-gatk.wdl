@@ -9,6 +9,7 @@ task create_sequence_dictionary {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Create a sequence dictionary file from a reference FASTA file"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         sequence_dict: "Sequence dictionary file (.dict) for the reference genome"
     }
@@ -54,6 +55,7 @@ task mark_duplicates {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Mark duplicate reads in aligned BAM file to improve variant calling accuracy"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         markdup_bam: "BAM file with duplicate reads marked",
         markdup_bai: "Index file for the duplicate-marked BAM",
@@ -108,6 +110,7 @@ task base_recalibrator {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Generate Base Quality Score Recalibration (BQSR) model and apply it to improve base quality scores"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         recalibrated_bam: "BAM file with recalibrated base quality scores",
         recalibrated_bai: "Index file for the recalibrated BAM",
@@ -202,6 +205,7 @@ task collect_wgs_metrics {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Collect whole genome sequencing metrics using GATK CollectWgsMetrics"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         metrics_file: "Comprehensive WGS metrics file with coverage and quality statistics"
     }
@@ -266,6 +270,7 @@ task markdup_recal_metrics {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Performs duplicate marking, base recalibration, and WGS metrics in a single task to avoid data duplication"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         recalibrated_bam: "BAM file with recalibrated base quality scores",
         recalibrated_bai: "Index file for the recalibrated BAM",
@@ -397,6 +402,7 @@ task split_intervals {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Split intervals into smaller chunks for parallelization using GATK SplitIntervals"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         interval_files: "Array of interval files optimized for parallel processing"
     }
@@ -499,6 +505,7 @@ task print_reads {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Extract reads from specific intervals using GATK PrintReads"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         interval_bams: "Array of BAM files containing reads from specified intervals",
         interval_bam_indices: "Array of index files for the interval BAMs"
@@ -583,6 +590,7 @@ task haplotype_caller {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Call germline variants using GATK HaplotypeCaller"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         vcf: "Compressed VCF file containing germline variant calls",
         vcf_index: "Index file for the VCF output"
@@ -656,6 +664,7 @@ task mutect2 {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Call somatic variants using GATK Mutect2 in tumor-only mode with filtering"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         vcf: "Compressed VCF file containing filtered somatic variant calls",
         vcf_index: "Index file for the Mutect2 VCF output",
@@ -750,6 +759,7 @@ task merge_vcfs {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Merge multiple VCF files into a single VCF"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         merged_vcf: "Merged VCF file",
         merged_vcf_index: "Index for merged VCF file"
@@ -802,6 +812,7 @@ task merge_mutect_stats {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Merge Mutect2 statistics files"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         merged_stats: "Merged Mutect2 statistics file"
     }
@@ -847,6 +858,7 @@ task haplotype_caller_parallel {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Call germline variants using GATK HaplotypeCaller with internal parallelization for reduced data duplication"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         vcf: "Compressed VCF file containing germline variant calls",
         vcf_index: "Index file for the VCF output"
@@ -956,6 +968,7 @@ task mutect2_parallel {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Call somatic variants using GATK Mutect2 with internal parallelization for reduced data duplication"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         vcf: "Compressed VCF file containing filtered somatic variant calls",
         vcf_index: "Index file for the Mutect2 VCF output",
@@ -1108,6 +1121,7 @@ task fastq_to_bam {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Convert paired FASTQ files to unmapped BAM using GATK FastqToSam"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         unmapped_bam: "Unmapped BAM file containing reads from input FASTQ files"
     }
@@ -1174,6 +1188,7 @@ task validate_sam_file {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Validate BAM/CRAM/SAM files for formatting issues using GATK ValidateSamFile"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         validation_report: "Text file containing validation statistics and any errors/warnings"
     }
@@ -1226,6 +1241,7 @@ task analyze_saturation_mutagenesis {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Analyze saturation mutagenesis data using GATK AnalyzeSaturationMutagenesis"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         aa_counts: "Amino acid count table",
         aa_fractions: "Amino acid fraction table",
@@ -1306,6 +1322,7 @@ task create_somatic_pon {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
     description: "Create a somatic panel of normals (PON) from VCF files."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl"
     outputs: {
         pon_vcf: "Gzipped VCF file containing the panel of normals",
         pon_vcf_index: "Index file for the panel of normals VCF"

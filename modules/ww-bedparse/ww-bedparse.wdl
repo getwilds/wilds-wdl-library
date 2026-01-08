@@ -9,6 +9,7 @@ task gtf2bed {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "Convert GTF annotation file to BED12 format using bedparse"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedparse/ww-bedparse.wdl"
     outputs: {
         bed_file: "BED12-formatted annotation file"
     }
