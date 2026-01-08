@@ -5,6 +5,33 @@ from pathlib import Path
 import re
 import sys
 
+# Google Analytics tag ID - replace with your actual tag ID
+GOOGLE_ANALYTICS_ID = "G-PL1XVGX8T2"
+
+
+def add_google_analytics(html_content: str) -> str:
+    """
+    Add Google Analytics gtag.js script to the <head> section.
+    """
+    # Skip if already added
+    if 'googletagmanager.com/gtag' in html_content:
+        return html_content
+
+    gtag_script = f'''<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={GOOGLE_ANALYTICS_ID}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){{dataLayer.push(arguments);}}
+  gtag('js', new Date());
+  gtag('config', '{GOOGLE_ANALYTICS_ID}');
+</script>
+'''
+
+    # Insert just before </head>
+    html_content = html_content.replace('</head>', f'{gtag_script}</head>')
+
+    return html_content
+
 
 def set_default_sidebar_tab(html_content: str) -> str:
     """
@@ -174,6 +201,7 @@ def postprocess_html_file(file_path: Path) -> None:
         content = fix_badge_paragraphs(content)
         content = shorten_sprocket_paths(content)
         content = add_github_link(content)
+        content = add_google_analytics(content)
 
         # Only write if content changed
         if content != original_content:
