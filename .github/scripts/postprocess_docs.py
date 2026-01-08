@@ -124,8 +124,9 @@ def add_github_link(html_content: str) -> str:
 
     # Wrap the theme toggle button and add GitHub icon before it, in a flex container
     # This keeps both buttons together as a single flex item
+    # Use a more flexible regex that handles varying whitespace
     html_content = re.sub(
-        r'''(<button x-on:click="\s*document\.documentElement\.classList\.toggle\('light'\)\s*localStorage\.setItem\('theme', document\.documentElement\.classList\.contains\('light'\) \? 'light' : 'dark'\)\s*" class="[^"]*">☀︎</button>)''',
+        r'''(<button x-on:click="[^"]*classList\.toggle\('light'\)[^"]*"[^>]*>☀︎</button>)''',
         rf'<div style="display: flex; align-items: center;">{github_icon}\1</div>',
         html_content
     )
