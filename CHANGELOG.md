@@ -30,7 +30,7 @@ We're excited to announce the first official release of the WILDS WDL Library â€
 | QC & Processing | `ww-samtools`, `ww-fastqc` |
 | Copy Number | `ww-ichorcna`, `ww-cnvkit` |
 | Specialized | `ww-cellranger`, `ww-shapemapper`, `ww-sourmash`, `ww-spades`, `ww-megahit`, `ww-diamond` |
-| Utilities | `ww-aws-sso`, `ww-testdata`, `ww-template`, `ww-tritonnp` |
+| Utilities | `ww-aws-sso`, `ww-testdata`, `ww-tritonnp` |
 
 ### Pipelines
 
