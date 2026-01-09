@@ -5,7 +5,7 @@ All notable changes to the WILDS WDL Library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2025-01-08
+## [0.1.0] - 2025-01-09
 
 We're excited to announce the first official release of the WILDS WDL Library â€” a comprehensive, centralized collection of reusable WDL modules and production-ready pipelines for bioinformatics research.
 
@@ -29,8 +29,9 @@ We're excited to announce the first official release of the WILDS WDL Library â€
 | RNA-seq | `ww-salmon`, `ww-rseqc`, `ww-deseq2` |
 | QC & Processing | `ww-samtools`, `ww-fastqc` |
 | Copy Number | `ww-ichorcna`, `ww-cnvkit` |
-| Specialized | `ww-cellranger`, `ww-shapemapper`, `ww-sourmash`, `ww-spades`, `ww-megahit`, `ww-diamond` |
-| Utilities | `ww-aws-sso`, `ww-testdata`, `ww-tritonnp` |
+| Assembly | `ww-spades`, `ww-megahit` |
+| Specialized | `ww-cellranger`, `ww-shapemapper`, `ww-sourmash`, `ww-diamond`, `ww-tritonnp` |
+| Utilities | `ww-aws-sso`, `ww-testdata` |
 
 ### Pipelines
 
