@@ -11,7 +11,7 @@ We're excited to announce the first official release of the WILDS WDL Library �
 
 ### Highlights
 
-- **33 Modules** covering alignment, variant calling, structural variants, annotation, RNA-seq, QC, and more
+- **32 Modules** covering alignment, variant calling, structural variants, annotation, RNA-seq, QC, and more
 - **8 Pipelines** ranging from basic (2-3 modules) to advanced research-grade workflows
 - **Multi-executor support** — validated on Cromwell, miniWDL, and Sprocket
 - **Zero-configuration testing** — every module includes a testrun that works out of the box
