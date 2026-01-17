@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: Questions or Help
-    url: mailto:wilds@fredhutch.org
-    about: For questions, please email us instead of opening an issue
+    url: https://getwilds.org/wilds-wdl-library/
+    about: For questions, check our documentation or email us at wilds@fredhutch.org
