@@ -8,6 +8,9 @@ about: Report a problem with a module or pipeline in the WILDS WDL Library
 **Which module or pipeline has the issue?**
 <!-- e.g., ww-bwa, ww-rnaseq-basic, etc. -->
 
+**What version are you using?**
+<!-- e.g., commit hash, release tag, or "latest from main" -->
+
 **What went wrong?**
 <!-- Describe what happened. Include error messages if you have them. -->
 
