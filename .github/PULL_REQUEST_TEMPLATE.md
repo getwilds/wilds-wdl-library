@@ -1,8 +1,3 @@
----
-name: Pull request
-about: Contribute changes to the WILDS WDL Library
----
-
 ## Type of Change
 
 <!-- Check all that apply -->
