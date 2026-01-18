@@ -1,10 +1,8 @@
 version 1.0
 
 # Import the GLIMPSE2 module and testdata module for automatic test data provisioning
-# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl" as ww_glimpse2
-# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "ww-glimpse2.wdl" as ww_glimpse2
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-glimpse2/modules/ww-glimpse2/ww-glimpse2.wdl" as ww_glimpse2
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-glimpse2/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
 # This workflow demonstrates the GLIMPSE2 imputation pipeline with automatic test data download.
