@@ -545,9 +545,10 @@ task download_known_indels_vcf {
   }
 
   command <<<
-    # Download filtered known indels vcf from GATK
+    # Download filtered known indels vcf from 1000 Genomes EBI FTP
+    # Note: The original Google Cloud Storage URL (genomics-public-data) now requires authentication
     bcftools view ~{if defined(region) then "-r " + region else ""} \
-    https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz \
+    https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/GRCh38_reference_genome/other_mapping_resources/Mills_and_1000G_gold_standard.indels.b38.primary_assembly.vcf.gz \
     -O z -o "mills_1000g_known_indels.~{filter_name}.vcf.gz"
 
     # Index the filtered VCF
@@ -1058,6 +1059,188 @@ task download_diamond_data {
 
   runtime {
     docker: "getwilds/awscli:2.27.49"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_glimpse2_genetic_map {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Downloads genetic map files for GLIMPSE2 imputation from the official GLIMPSE repository"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        genetic_map: "Genetic map file for the specified chromosome"
+    }
+  }
+
+  parameter_meta {
+    chromosome: "Chromosome to download genetic map for (e.g., chr22)"
+    genome_build: "Genome build version (b37 or b38)"
+    cpu_cores: "Number of CPU cores to use for downloading"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    String chromosome = "chr22"
+    String genome_build = "b38"
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download genetic map from GLIMPSE repository
+    wget -q --no-check-certificate -O "~{chromosome}.~{genome_build}.gmap.gz" \
+      "https://raw.githubusercontent.com/odelaneau/GLIMPSE/master/maps/genetic_maps.~{genome_build}/~{chromosome}.~{genome_build}.gmap.gz"
+
+    # Keep compressed - GLIMPSE2 can read gzipped genetic maps
+    echo "Downloaded genetic map for ~{chromosome} (~{genome_build})"
+  >>>
+
+  output {
+    File genetic_map = "~{chromosome}.~{genome_build}.gmap.gz"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_glimpse2_reference_panel {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Downloads and prepares a 1000 Genomes reference panel subset for GLIMPSE2 testing. Downloads chr22 data and filters to a small region for efficient CI/CD testing."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        reference_vcf: "Reference panel VCF/BCF file for imputation",
+        reference_vcf_index: "Index file for the reference panel",
+        sites_vcf: "Sites-only VCF for genotype likelihood calculation",
+        sites_vcf_index: "Index file for sites VCF"
+    }
+  }
+
+  parameter_meta {
+    region: "Genomic region to extract (e.g., chr22:20000000-21000000)"
+    exclude_samples: "Comma-separated list of samples to exclude (useful for validation)"
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    String region = "chr22:20000000-21000000"
+    String exclude_samples = "NA12878"
+    Int cpu_cores = 2
+    Int memory_gb = 8
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download 1000 Genomes high-coverage phased data for chr22
+    # This is the same source used in the GLIMPSE tutorial
+    echo "Downloading 1000 Genomes chr22 reference panel..."
+    wget -q -O 1000GP.chr22.vcf.gz \
+      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/CCDG_14151_B01_GRM_WGS_2020-08-05_chr22.filtered.shapeit2-duohmm-phased.vcf.gz"
+    wget -q -O 1000GP.chr22.vcf.gz.tbi \
+      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/CCDG_14151_B01_GRM_WGS_2020-08-05_chr22.filtered.shapeit2-duohmm-phased.vcf.gz.tbi"
+
+    # Create samples to exclude file
+    echo "~{exclude_samples}" | tr ',' '\n' > exclude_samples.txt
+
+    # Filter to region, normalize, keep only biallelic SNPs, and exclude validation samples
+    echo "Processing reference panel for region ~{region}..."
+    bcftools view -r "~{region}" 1000GP.chr22.vcf.gz | \
+      bcftools norm -m -any | \
+      bcftools view -m 2 -M 2 -v snps -S ^exclude_samples.txt | \
+      bcftools annotate -x ^INFO/AC,^INFO/AN,^FORMAT/GT -Ob -o reference_panel.bcf
+
+    bcftools index reference_panel.bcf
+
+    # Create sites-only VCF for GL calculation
+    bcftools view -G -Oz -o reference_panel.sites.vcf.gz reference_panel.bcf
+    bcftools index -t reference_panel.sites.vcf.gz
+
+    # Clean up large intermediate files
+    rm 1000GP.chr22.vcf.gz 1000GP.chr22.vcf.gz.tbi
+
+    echo "Reference panel preparation complete"
+    echo "Variants in panel: $(bcftools view -H reference_panel.bcf | wc -l)"
+  >>>
+
+  output {
+    File reference_vcf = "reference_panel.bcf"
+    File reference_vcf_index = "reference_panel.bcf.csi"
+    File sites_vcf = "reference_panel.sites.vcf.gz"
+    File sites_vcf_index = "reference_panel.sites.vcf.gz.tbi"
+  }
+
+  runtime {
+    docker: "getwilds/bcftools:1.19"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_glimpse2_test_gl_vcf {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Downloads low-coverage sequencing data from 1000 Genomes and generates a VCF with genotype likelihoods for GLIMPSE2 imputation testing. Uses NA12878 chr22 data from the 1000 Genomes low-coverage dataset."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        gl_vcf: "VCF file with genotype likelihoods (GL field) for imputation",
+        gl_vcf_index: "Index file for the GL VCF"
+    }
+  }
+
+  parameter_meta {
+    region: "Genomic region to extract (e.g., chr22:20000000-21000000)"
+    sample_name: "Sample to extract from 1000 Genomes (must be in low-coverage dataset)"
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    String region = "chr22:20000000-21000000"
+    String sample_name = "NA12878"
+    Int cpu_cores = 2
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download 1000 Genomes Phase 3 low-coverage data for chr22
+    # This data includes genotype likelihoods (GL field) from low-coverage sequencing
+    echo "Downloading 1000 Genomes Phase 3 low-coverage data for chr22..."
+
+    # Extract region and sample, keeping GL field
+    bcftools view \
+      -r "~{region}" \
+      -s "~{sample_name}" \
+      --force-samples \
+      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz" | \
+    bcftools annotate -x ^INFO/AF,^FORMAT/GT,^FORMAT/GL -Oz -o "~{sample_name}.gl.vcf.gz"
+
+    bcftools index -t "~{sample_name}.gl.vcf.gz"
+
+    echo "GL VCF download complete"
+    echo "Variants with GL: $(bcftools view -H ~{sample_name}.gl.vcf.gz | wc -l)"
+  >>>
+
+  output {
+    File gl_vcf = "~{sample_name}.gl.vcf.gz"
+    File gl_vcf_index = "~{sample_name}.gl.vcf.gz.tbi"
+  }
+
+  runtime {
+    docker: "getwilds/bcftools:1.19"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

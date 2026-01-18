@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -57,7 +57,7 @@ The `testrun.wdl` workflow requires no input parameters and automatically downlo
 
 - **Chromosome**: chr1 only (for efficient testing)
 - **Reference version**: hg38 (latest standard)
-- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), Pasilla counts, ShapeMapper data, and Cell Ranger reference
+- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), Pasilla counts, ShapeMapper data, Cell Ranger reference, DIAMOND data, and GLIMPSE2 imputation data
 
 ### Running the Test Workflow
 
@@ -510,6 +510,75 @@ call diamond_tasks.diamond_blastp {
 }
 ```
 
+### download_glimpse2_genetic_map
+
+Downloads genetic map files for GLIMPSE2 imputation from the official GLIMPSE repository.
+
+**Use Case**: GLIMPSE2 requires genetic map files for accurate imputation. This task downloads chromosome-specific genetic maps that define recombination rates across the genome.
+
+**Inputs**:
+- `chromosome` (String): Chromosome to download genetic map for (default: "chr22")
+- `genome_build` (String): Genome build version, "b37" or "b38" (default: "b38")
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+
+**Outputs**:
+- `genetic_map` (File): Compressed genetic map file for the specified chromosome
+
+**Data Source**: https://github.com/odelaneau/GLIMPSE/tree/master/maps
+
+### download_glimpse2_reference_panel
+
+Downloads and prepares a 1000 Genomes reference panel subset for GLIMPSE2 testing. This task downloads chr22 phased data and filters to a small region for efficient CI/CD testing.
+
+**Use Case**: GLIMPSE2 imputation requires a phased reference panel. This task downloads the 1000 Genomes high-coverage phased panel, filters to biallelic SNPs, and creates a sites-only VCF for genotype likelihood calculation.
+
+**Inputs**:
+- `region` (String): Genomic region to extract (default: "chr22:20000000-21000000")
+- `exclude_samples` (String): Comma-separated list of samples to exclude, useful for leave-one-out validation (default: "NA12878")
+- `cpu_cores` (Int): CPU allocation (default: 2)
+- `memory_gb` (Int): Memory allocation (default: 8)
+
+**Outputs**:
+- `reference_vcf` (File): Reference panel BCF file for imputation
+- `reference_vcf_index` (File): Index file for the reference panel
+- `sites_vcf` (File): Sites-only VCF for genotype likelihood calculation
+- `sites_vcf_index` (File): Index file for sites VCF
+
+**Data Source**: 1000 Genomes high-coverage phased data (http://ftp.1000genomes.ebi.ac.uk/)
+
+### download_glimpse2_test_gl_vcf
+
+Downloads low-coverage sequencing data from 1000 Genomes and extracts a VCF with genotype likelihoods for GLIMPSE2 imputation testing. Uses NA12878 chr22 data from the 1000 Genomes Phase 3 low-coverage dataset.
+
+**Use Case**: GLIMPSE2 can impute from VCF files containing genotype likelihoods (GL fields). This task downloads pre-computed genotype likelihoods from 1000 Genomes rather than generating them from BAM data, providing a simpler and more reliable test data source.
+
+**Inputs**:
+- `region` (String): Genomic region to extract (default: "chr22:20000000-21000000")
+- `sample_name` (String): Sample to extract from 1000 Genomes (default: "NA12878")
+- `cpu_cores` (Int): CPU allocation (default: 2)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `gl_vcf` (File): VCF file with genotype likelihoods (GL field) for imputation
+- `gl_vcf_index` (File): Index file for the GL VCF
+
+**Data Source**: 1000 Genomes Phase 3 low-coverage data (http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/)
+
+**Example Usage**:
+```wdl
+# For testing GLIMPSE2 imputation
+call testdata.download_glimpse2_genetic_map { }
+call testdata.download_glimpse2_reference_panel { }
+call testdata.download_glimpse2_test_gl_vcf { }
+
+call glimpse2_tasks.glimpse2_phase {
+  input:
+    input_vcf = download_glimpse2_test_gl_vcf.gl_vcf,
+    reference_chunk = my_reference_chunk
+}
+```
+
 ## Data Sources
 
 All reference data is downloaded from authoritative public repositories:
@@ -520,7 +589,11 @@ All reference data is downloaded from authoritative public repositories:
 - **ichorCNA Repository**: Copy number analysis references
 - **AnnotSV Repository**: Structural variant test data
 - **NCBI dbSNP**: Latest dbSNP variant database
-- **GATK Resource Bundle**: Known indels and gnomAD population frequencies
+- **1000 Genomes EBI FTP**: Mills and 1000G gold standard indels (GRCh38)
+- **GATK Best Practices**: gnomAD population frequencies
+- **GLIMPSE Repository**: Genetic maps for imputation (https://github.com/odelaneau/GLIMPSE)
+- **1000 Genomes High-Coverage**: Phased reference panels for GLIMPSE2 imputation
+- **1000 Genomes Phase 3**: Low-coverage sequencing data with genotype likelihoods for imputation testing
 - **Bioconductor pasilla package**: Example RNA-seq count data for DESeq2 testing
 - **ShapeMapper Repository**: TPP riboswitch RNA structure probing example data
 - **Swiss Institute of Bioinformatics**: Minimal Cell Ranger reference (chr21/22) for single-cell testing
@@ -553,6 +626,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-shapemapper**: RNA structure analysis (uses TPP riboswitch example data from `download_shapemapper_data`)
 - **ww-cellranger**: Single-cell RNA-seq analysis (uses minimal reference from `download_test_cellranger_ref`)
 - **ww-diamond**: Protein sequence alignment (uses E. coli proteome from `download_diamond_data`)
+- **ww-glimpse2**: Genotype imputation (uses genetic maps, reference panels, and GL VCFs from GLIMPSE2 tasks)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:

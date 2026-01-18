@@ -1,6 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "ww-testdata.wdl" as ww_testdata
 
 workflow testdata_example {
   # Pull down reference genome and index files for chr1
@@ -61,6 +62,12 @@ workflow testdata_example {
 
   call ww_testdata.download_diamond_data { }
 
+  call ww_testdata.download_glimpse2_genetic_map { }
+
+  call ww_testdata.download_glimpse2_reference_panel { }
+
+  call ww_testdata.download_glimpse2_test_gl_vcf { }
+
   call validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
@@ -99,7 +106,14 @@ workflow testdata_example {
     shapemapper_untreated_r2 = download_shapemapper_data.untreated_r2,
     cellranger_ref_tar = download_test_cellranger_ref.ref_tar,
     diamond_reference = download_diamond_data.reference,
-    diamond_query = download_diamond_data.query
+    diamond_query = download_diamond_data.query,
+    glimpse2_genetic_map = download_glimpse2_genetic_map.genetic_map,
+    glimpse2_reference_vcf = download_glimpse2_reference_panel.reference_vcf,
+    glimpse2_reference_vcf_index = download_glimpse2_reference_panel.reference_vcf_index,
+    glimpse2_sites_vcf = download_glimpse2_reference_panel.sites_vcf,
+    glimpse2_sites_vcf_index = download_glimpse2_reference_panel.sites_vcf_index,
+    glimpse2_gl_vcf = download_glimpse2_test_gl_vcf.gl_vcf,
+    glimpse2_gl_vcf_index = download_glimpse2_test_gl_vcf.gl_vcf_index
   }
 
   output {
@@ -153,6 +167,14 @@ workflow testdata_example {
     # Outputs from DIAMOND data download
     File diamond_reference = download_diamond_data.reference
     File diamond_query = download_diamond_data.query
+    # Outputs from GLIMPSE2 test data downloads
+    File glimpse2_genetic_map = download_glimpse2_genetic_map.genetic_map
+    File glimpse2_reference_vcf = download_glimpse2_reference_panel.reference_vcf
+    File glimpse2_reference_vcf_index = download_glimpse2_reference_panel.reference_vcf_index
+    File glimpse2_sites_vcf = download_glimpse2_reference_panel.sites_vcf
+    File glimpse2_sites_vcf_index = download_glimpse2_reference_panel.sites_vcf_index
+    File glimpse2_gl_vcf = download_glimpse2_test_gl_vcf.gl_vcf
+    File glimpse2_gl_vcf_index = download_glimpse2_test_gl_vcf.gl_vcf_index
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
   }
@@ -205,6 +227,13 @@ task validate_outputs {
     cellranger_ref_tar: "CellRanger reference tar.gz file to validate"
     diamond_reference: "DIAMOND E. coli reference proteome FASTA file to validate"
     diamond_query: "DIAMOND E. coli query subset FASTA file to validate"
+    glimpse2_genetic_map: "GLIMPSE2 genetic map file to validate"
+    glimpse2_reference_vcf: "GLIMPSE2 reference panel BCF file to validate"
+    glimpse2_reference_vcf_index: "GLIMPSE2 reference panel BCF index to validate"
+    glimpse2_sites_vcf: "GLIMPSE2 sites-only VCF file to validate"
+    glimpse2_sites_vcf_index: "GLIMPSE2 sites-only VCF index to validate"
+    glimpse2_gl_vcf: "GLIMPSE2 genotype likelihoods VCF file to validate"
+    glimpse2_gl_vcf_index: "GLIMPSE2 genotype likelihoods VCF index to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -248,6 +277,13 @@ task validate_outputs {
     File cellranger_ref_tar
     File diamond_reference
     File diamond_query
+    File glimpse2_genetic_map
+    File glimpse2_reference_vcf
+    File glimpse2_reference_vcf_index
+    File glimpse2_sites_vcf
+    File glimpse2_sites_vcf_index
+    File glimpse2_gl_vcf
+    File glimpse2_gl_vcf_index
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -319,6 +355,13 @@ task validate_outputs {
     validate_file "~{shapemapper_untreated_r2}" "ShapeMapper untreated R2 FASTQ" || validation_passed=false
     validate_file "~{diamond_reference}" "DIAMOND reference proteome FASTA" || validation_passed=false
     validate_file "~{diamond_query}" "DIAMOND query subset FASTA" || validation_passed=false
+    validate_file "~{glimpse2_genetic_map}" "GLIMPSE2 genetic map" || validation_passed=false
+    validate_file "~{glimpse2_reference_vcf}" "GLIMPSE2 reference panel BCF" || validation_passed=false
+    validate_file "~{glimpse2_reference_vcf_index}" "GLIMPSE2 reference panel BCF index" || validation_passed=false
+    validate_file "~{glimpse2_sites_vcf}" "GLIMPSE2 sites-only VCF" || validation_passed=false
+    validate_file "~{glimpse2_sites_vcf_index}" "GLIMPSE2 sites-only VCF index" || validation_passed=false
+    validate_file "~{glimpse2_gl_vcf}" "GLIMPSE2 genotype likelihoods VCF" || validation_passed=false
+    validate_file "~{glimpse2_gl_vcf_index}" "GLIMPSE2 genotype likelihoods VCF index" || validation_passed=false
 
     # Additional check: Verify no N bases in clean amplicon
     echo "" >> validation_report.txt
@@ -334,7 +377,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 36"
+      echo "Total files validated: 43"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then
