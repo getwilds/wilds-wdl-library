@@ -5,8 +5,6 @@
 
 version 1.0
 
-#### TASK DEFINITIONS ####
-
 task glimpse2_chunk {
   meta {
     author: "WILDS Team"
@@ -299,11 +297,6 @@ task glimpse2_ligate {
   command <<<
     set -eo pipefail
 
-    # Create list file with imputed chunks
-    for chunk in ~{sep=' ' imputed_chunks}; do
-      echo "$chunk" >> chunks_list.txt
-    done
-
     # Determine output extension and bcftools index type
     output_ext="~{output_format}"
     if [ "$output_ext" == "bcf" ]; then
@@ -313,7 +306,7 @@ task glimpse2_ligate {
     fi
 
     GLIMPSE2_ligate \
-      --input chunks_list.txt \
+      --input "~{write_lines(imputed_chunks)}" \
       --output "~{output_prefix}.${output_ext}" \
       --threads ~{cpu_cores}
 
