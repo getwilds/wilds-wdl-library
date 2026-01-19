@@ -236,10 +236,9 @@ The test workflow automatically:
 1. Downloads a reference genome region (chr22:20000000-21000000) from UCSC
 2. Downloads genetic map files from the GLIMPSE repository
 3. Downloads and prepares a 1000 Genomes reference panel subset
-4. Downloads test BAM data (NA12878)
-5. Generates genotype likelihoods from BAM at reference panel sites
-6. Runs the complete GLIMPSE2 imputation pipeline
-7. Outputs the final imputed VCF
+4. Downloads a VCF with genotype likelihoods (NA12878 from 1000 Genomes Phase 3)
+5. Runs the complete GLIMPSE2 imputation pipeline
+6. Outputs the final imputed VCF
 
 ### Running the Test Workflow
 

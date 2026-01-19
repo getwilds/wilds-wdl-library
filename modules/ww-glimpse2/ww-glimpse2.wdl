@@ -51,8 +51,8 @@ task glimpse2_chunk {
       --input "~{reference_vcf}" \
       --region "~{region}" \
       --map "~{genetic_map}" \
-      --window-size ~{window_size_cm} \
-      --buffer-size ~{buffer_size_cm} \
+      --window-cm ~{window_size_cm} \
+      --buffer-cm ~{buffer_size_cm} \
       ~{if uniform_number_variants then "--uniform-number-variants" else ""} \
       --output "~{output_prefix}.chunks.txt" \
       --threads ~{cpu_cores}
