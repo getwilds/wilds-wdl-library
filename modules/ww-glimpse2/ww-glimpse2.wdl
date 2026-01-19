@@ -45,6 +45,7 @@ task glimpse2_chunk {
   command <<<
     set -eo pipefail
 
+    # Use --recursive algorithm which may be more stable for small regions
     GLIMPSE2_chunk \
       --input "~{reference_vcf}" \
       --region "~{region}" \
@@ -52,7 +53,7 @@ task glimpse2_chunk {
       --window-cm ~{window_size_cm} \
       --buffer-cm ~{buffer_size_cm} \
       ~{if uniform_number_variants then "--uniform-number-variants" else ""} \
-      --sequential \
+      --recursive \
       --output "~{output_prefix}.chunks.txt" \
       --threads ~{cpu_cores}
   >>>
