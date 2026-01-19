@@ -297,6 +297,12 @@ task glimpse2_ligate {
   command <<<
     set -eo pipefail
 
+    # Debug: show what files we received
+    echo "=== Number of imputed chunks: ~{length(imputed_chunks)} ===" >&2
+    echo "=== Contents of write_lines file ===" >&2
+    cat "~{write_lines(imputed_chunks)}" >&2
+    echo "=== End write_lines file ===" >&2
+
     # Determine output extension and bcftools index type
     output_ext="~{output_format}"
     if [ "$output_ext" == "bcf" ]; then
@@ -418,10 +424,25 @@ task parse_chunks_file {
   command <<<
     set -eo pipefail
 
+    # Debug: show the chunks file content
+    echo "=== Chunks file content ===" >&2
+    cat "~{chunks_file}" >&2
+    echo "=== End chunks file ===" >&2
+
+    # GLIMPSE2_chunk with --sequential outputs a file with format:
+    # chunk_id index input_region output_region [additional_columns...]
     # Extract input regions (column 3), output regions (column 4), and chunk IDs (columns 1-2)
     awk '{print $3}' "~{chunks_file}" > input_regions.txt
     awk '{print $4}' "~{chunks_file}" > output_regions.txt
     awk '{print $1"_"$2}' "~{chunks_file}" > chunk_ids.txt
+
+    # Debug: show parsed content
+    echo "=== Parsed input_regions ===" >&2
+    cat input_regions.txt >&2
+    echo "=== Parsed output_regions ===" >&2
+    cat output_regions.txt >&2
+    echo "=== Parsed chunk_ids ===" >&2
+    cat chunk_ids.txt >&2
   >>>
 
   output {
