@@ -174,8 +174,9 @@ task glimpse2_phase {
   command <<<
     set -eo pipefail
 
+    # Use --input-gl for VCF files with genotype likelihoods
     GLIMPSE2_phase \
-      --input "~{input_vcf}" \
+      --input-gl "~{input_vcf}" \
       --reference "~{reference_chunk}" \
       --burnin ~{n_burnin} \
       --main ~{n_main} \
@@ -184,6 +185,7 @@ task glimpse2_phase {
       --output "~{output_prefix}.bcf" \
       --threads ~{cpu_cores}
 
+    # Index the output BCF
     bcftools index "~{output_prefix}.bcf"
   >>>
 
