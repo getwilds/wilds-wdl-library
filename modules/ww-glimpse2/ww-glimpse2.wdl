@@ -115,10 +115,15 @@ task glimpse2_split_reference {
       ~{if keep_monomorphic_ref_sites then "--keep-monomorphic-ref-sites" else ""} \
       --output "~{output_prefix}" \
       --threads ~{cpu_cores}
+
+    # GLIMPSE2 appends region info to output filename, so find the actual output
+    ls -la ~{output_prefix}*.bin >&2
   >>>
 
   output {
-    File reference_chunk = "~{output_prefix}.bin"
+    # GLIMPSE2_split_reference appends region info to the filename
+    # e.g., output_prefix_chr22_20000095_20999877.bin
+    File reference_chunk = glob("~{output_prefix}*.bin")[0]
   }
 
   runtime {
