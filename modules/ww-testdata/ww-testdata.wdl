@@ -1093,11 +1093,20 @@ task download_glimpse2_genetic_map {
     set -eo pipefail
 
     # Download genetic map from GLIMPSE repository
-    wget -q --no-check-certificate -O "~{chromosome}.~{genome_build}.gmap.gz" \
+    # Note: GLIMPSE genetic maps use chromosome numbers without 'chr' prefix,
+    # but 1000 Genomes GRCh38 data uses 'chr' prefix, so we need to convert
+    wget -q --no-check-certificate -O "original.gmap.gz" \
       "https://raw.githubusercontent.com/odelaneau/GLIMPSE/master/maps/genetic_maps.~{genome_build}/~{chromosome}.~{genome_build}.gmap.gz"
 
-    # Keep compressed - GLIMPSE2 can read gzipped genetic maps
-    echo "Downloaded genetic map for ~{chromosome} (~{genome_build})"
+    # Convert chromosome naming from "22" to "chr22" format to match GRCh38 convention
+    # The genetic map has format: pos chr cM
+    zcat original.gmap.gz | awk 'BEGIN{OFS="\t"} NR==1{print; next} {$2="chr"$2; print}' | gzip > "~{chromosome}.~{genome_build}.gmap.gz"
+
+    rm original.gmap.gz
+
+    echo "Downloaded and converted genetic map for ~{chromosome} (~{genome_build})"
+    echo "First few lines:"
+    zcat "~{chromosome}.~{genome_build}.gmap.gz" | head -5
   >>>
 
   output {
