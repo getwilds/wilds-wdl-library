@@ -54,6 +54,7 @@ task glimpse2_chunk {
       --window-cm ~{window_size_cm} \
       --buffer-cm ~{buffer_size_cm} \
       ~{if uniform_number_variants then "--uniform-number-variants" else ""} \
+      --sequential \
       --output "~{output_prefix}.chunks.txt" \
       --threads ~{cpu_cores}
   >>>
