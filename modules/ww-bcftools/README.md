@@ -14,7 +14,7 @@ The module is designed to be a foundational component within the WILDS ecosystem
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `mpileup_call`
+- **Tasks**: `mpileup_call`, `concat`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes core tasks)
 - **Container**: `getwilds/bcftools:1.19`
 
@@ -40,6 +40,22 @@ Calls variants using bcftools mpileup and call pipeline with comprehensive param
 **Outputs:**
 - `mpileup_vcf` (File): Compressed VCF file with called variants
 - `mpileup_vcf_index` (File): Index for the VCF file (.csi)
+
+### `concat`
+Concatenate multiple VCF/BCF files into a single file using bcftools concat.
+
+**Inputs:**
+- `vcf_files` (Array[File]): Array of VCF/BCF files to concatenate
+- `vcf_indices` (Array[File]): Array of index files for input VCFs
+- `output_prefix` (String): Prefix for output file
+- `output_format` (String): Output format: bcf, vcf, or vcf.gz (default: "bcf")
+- `allow_overlaps` (Boolean): Allow overlapping positions in input files (default: false)
+- `cpu_cores` (Int): Number of CPU cores (default: 4)
+- `memory_gb` (Int): Memory allocation (default: 8)
+
+**Outputs:**
+- `concatenated_vcf` (File): Concatenated VCF/BCF file
+- `concatenated_vcf_index` (File): Index file for concatenated VCF
 
 ## Usage as a Module
 
