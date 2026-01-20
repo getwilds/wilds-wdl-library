@@ -7,8 +7,8 @@
 
 version 1.0
 
-import https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-glimpse2/modules/ww-glimpse2/ww-glimpse2.wdl as glimpse2
-import https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-glimpse2/modules/ww-bcftools/ww-bcftools.wdl as bcftools
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-glimpse2/modules/ww-glimpse2/ww-glimpse2.wdl" as glimpse2
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-glimpse2/modules/ww-bcftools/ww-bcftools.wdl" as bcftools
 
 struct ImputationSample {
     String sample_id
