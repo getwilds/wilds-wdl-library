@@ -517,7 +517,7 @@ Downloads genetic map files for GLIMPSE2 imputation from the official GLIMPSE re
 **Use Case**: GLIMPSE2 requires genetic map files for accurate imputation. This task downloads chromosome-specific genetic maps that define recombination rates across the genome.
 
 **Inputs**:
-- `chromosome` (String): Chromosome to download genetic map for (default: "chr22")
+- `chromosome` (String): Chromosome to download genetic map for (default: "chr1")
 - `genome_build` (String): Genome build version, "b37" or "b38" (default: "b38")
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
@@ -529,12 +529,13 @@ Downloads genetic map files for GLIMPSE2 imputation from the official GLIMPSE re
 
 ### download_glimpse2_reference_panel
 
-Downloads and prepares a 1000 Genomes reference panel subset for GLIMPSE2 testing. This task downloads chr22 phased data and filters to a small region for efficient CI/CD testing.
+Downloads and prepares a 1000 Genomes reference panel subset for GLIMPSE2 testing. This task downloads phased data for a specified chromosome and filters to a region for efficient CI/CD testing.
 
 **Use Case**: GLIMPSE2 imputation requires a phased reference panel. This task downloads the 1000 Genomes high-coverage phased panel, filters to biallelic SNPs, and creates a sites-only VCF for genotype likelihood calculation.
 
 **Inputs**:
-- `region` (String): Genomic region to extract (default: "chr22:20000000-21000000")
+- `chromosome` (String): Chromosome to download (default: "chr1")
+- `region` (String): Genomic region to extract (default: "chr1:1-10000000"). Must match the chromosome parameter.
 - `exclude_samples` (String): Comma-separated list of samples to exclude, useful for leave-one-out validation (default: "NA12878")
 - `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 8)
@@ -549,12 +550,13 @@ Downloads and prepares a 1000 Genomes reference panel subset for GLIMPSE2 testin
 
 ### download_glimpse2_test_gl_vcf
 
-Downloads low-coverage sequencing data from 1000 Genomes and extracts a VCF with genotype likelihoods for GLIMPSE2 imputation testing. Uses NA12878 chr22 data from the 1000 Genomes Phase 3 low-coverage dataset.
+Downloads low-coverage sequencing data from 1000 Genomes and extracts a VCF with genotype likelihoods for GLIMPSE2 imputation testing. Uses NA12878 data from the 1000 Genomes Phase 3 low-coverage dataset.
 
 **Use Case**: GLIMPSE2 can impute from VCF files containing genotype likelihoods (GL fields). This task downloads pre-computed genotype likelihoods from 1000 Genomes rather than generating them from BAM data, providing a simpler and more reliable test data source.
 
 **Inputs**:
-- `region` (String): Genomic region to extract (default: "chr22:20000000-21000000")
+- `chromosome` (String): Chromosome to download (default: "chr1"). Note: Phase 3 data uses numeric chromosome names (1-22).
+- `region` (String): Genomic region to extract (default: "chr1:1-10000000"). Must match the chromosome parameter.
 - `sample_name` (String): Sample to extract from 1000 Genomes (default: "NA12878")
 - `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 4)
@@ -567,10 +569,21 @@ Downloads low-coverage sequencing data from 1000 Genomes and extracts a VCF with
 
 **Example Usage**:
 ```wdl
-# For testing GLIMPSE2 imputation
-call testdata.download_glimpse2_genetic_map { }
-call testdata.download_glimpse2_reference_panel { }
-call testdata.download_glimpse2_test_gl_vcf { }
+# For testing GLIMPSE2 imputation on chr22
+call testdata.download_glimpse2_genetic_map {
+  input:
+    chromosome = "chr22"
+}
+call testdata.download_glimpse2_reference_panel {
+  input:
+    chromosome = "chr22",
+    region = "chr22:20000000-21000000"
+}
+call testdata.download_glimpse2_test_gl_vcf {
+  input:
+    chromosome = "chr22",
+    region = "chr22:20000000-21000000"
+}
 
 call glimpse2_tasks.glimpse2_phase {
   input:

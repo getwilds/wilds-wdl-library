@@ -1083,7 +1083,7 @@ task download_glimpse2_genetic_map {
   }
 
   input {
-    String chromosome = "chr22"
+    String chromosome = "chr1"
     String genome_build = "b38"
     Int cpu_cores = 1
     Int memory_gb = 2
@@ -1124,7 +1124,7 @@ task download_glimpse2_reference_panel {
   meta {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
-    description: "Downloads and prepares a 1000 Genomes reference panel subset for GLIMPSE2 testing. Downloads chr22 data and filters to a small region for efficient CI/CD testing."
+    description: "Downloads and prepares a 1000 Genomes reference panel subset for GLIMPSE2 imputation. Downloads phased data for the specified chromosome and filters to a region."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         reference_vcf: "Reference panel VCF/BCF file for imputation",
@@ -1135,14 +1135,16 @@ task download_glimpse2_reference_panel {
   }
 
   parameter_meta {
-    region: "Genomic region to extract (e.g., chr22:20000000-21000000)"
+    chromosome: "Chromosome to download (e.g., chr1, chr22)"
+    region: "Genomic region to extract (e.g., chr1:1-10000000). Must match the chromosome parameter."
     exclude_samples: "Comma-separated list of samples to exclude (useful for validation)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
 
   input {
-    String region = "chr22:20000000-21000000"
+    String chromosome = "chr1"
+    String region = "chr1:1-10000000"
     String exclude_samples = "NA12878"
     Int cpu_cores = 2
     Int memory_gb = 8
@@ -1151,20 +1153,20 @@ task download_glimpse2_reference_panel {
   command <<<
     set -eo pipefail
 
-    # Download 1000 Genomes high-coverage phased data for chr22
-    # This is the same source used in the GLIMPSE tutorial
-    echo "Downloading 1000 Genomes chr22 reference panel..."
-    wget -q -O 1000GP.chr22.vcf.gz \
-      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/CCDG_14151_B01_GRM_WGS_2020-08-05_chr22.filtered.shapeit2-duohmm-phased.vcf.gz"
-    wget -q -O 1000GP.chr22.vcf.gz.tbi \
-      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/CCDG_14151_B01_GRM_WGS_2020-08-05_chr22.filtered.shapeit2-duohmm-phased.vcf.gz.tbi"
+    # Download 1000 Genomes high-coverage phased data for the specified chromosome
+    # Files follow the naming pattern: CCDG_14151_B01_GRM_WGS_2020-08-05_chrN.filtered.shapeit2-duohmm-phased.vcf.gz
+    echo "Downloading 1000 Genomes ~{chromosome} reference panel..."
+    wget -q -O "1000GP.~{chromosome}.vcf.gz" \
+      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/CCDG_14151_B01_GRM_WGS_2020-08-05_~{chromosome}.filtered.shapeit2-duohmm-phased.vcf.gz"
+    wget -q -O "1000GP.~{chromosome}.vcf.gz.tbi" \
+      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/CCDG_14151_B01_GRM_WGS_2020-08-05_~{chromosome}.filtered.shapeit2-duohmm-phased.vcf.gz.tbi"
 
     # Create samples to exclude file
     echo "~{exclude_samples}" | tr ',' '\n' > exclude_samples.txt
 
     # Filter to region, normalize, keep only biallelic SNPs, and exclude validation samples
     echo "Processing reference panel for region ~{region}..."
-    bcftools view -r "~{region}" 1000GP.chr22.vcf.gz | \
+    bcftools view -r "~{region}" "1000GP.~{chromosome}.vcf.gz" | \
       bcftools norm -m -any | \
       bcftools view -m 2 -M 2 -v snps -S ^exclude_samples.txt | \
       bcftools annotate -x ^INFO/AC,^INFO/AN,^FORMAT/GT -Ob -o reference_panel.bcf
@@ -1176,7 +1178,7 @@ task download_glimpse2_reference_panel {
     bcftools index -t reference_panel.sites.vcf.gz
 
     # Clean up large intermediate files
-    rm 1000GP.chr22.vcf.gz 1000GP.chr22.vcf.gz.tbi
+    rm "1000GP.~{chromosome}.vcf.gz" "1000GP.~{chromosome}.vcf.gz.tbi"
 
     echo "Reference panel preparation complete"
     echo "Variants in panel: $(bcftools view -H reference_panel.bcf | wc -l)"
@@ -1200,7 +1202,7 @@ task download_glimpse2_test_gl_vcf {
   meta {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
-    description: "Downloads low-coverage sequencing data from 1000 Genomes and generates a VCF with genotype likelihoods for GLIMPSE2 imputation testing. Uses NA12878 chr22 data from the 1000 Genomes low-coverage dataset."
+    description: "Downloads low-coverage sequencing data from 1000 Genomes and generates a VCF with genotype likelihoods for GLIMPSE2 imputation testing."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         gl_vcf: "VCF file with genotype likelihoods (GL field) for imputation",
@@ -1209,14 +1211,16 @@ task download_glimpse2_test_gl_vcf {
   }
 
   parameter_meta {
-    region: "Genomic region to extract (e.g., chr22:20000000-21000000)"
+    chromosome: "Chromosome to download (e.g., chr1, chr22). Note: Phase 3 data uses numeric chromosome names (1-22)."
+    region: "Genomic region to extract (e.g., chr1:1-10000000). Must match the chromosome parameter."
     sample_name: "Sample to extract from 1000 Genomes (must be in low-coverage dataset)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
   }
 
   input {
-    String region = "chr22:20000000-21000000"
+    String chromosome = "chr1"
+    String region = "chr1:1-10000000"
     String sample_name = "NA12878"
     Int cpu_cores = 2
     Int memory_gb = 4
@@ -1225,16 +1229,17 @@ task download_glimpse2_test_gl_vcf {
   command <<<
     set -eo pipefail
 
-    # Download 1000 Genomes Phase 3 low-coverage data for chr22
+    # Download 1000 Genomes Phase 3 low-coverage data for the specified chromosome
     # This data includes genotype likelihoods (GL field) from low-coverage sequencing
-    echo "Downloading 1000 Genomes Phase 3 low-coverage data for chr22..."
+    # Note: Phase 3 files use numeric chromosome names (e.g., ALL.chr1.phase3...)
+    echo "Downloading 1000 Genomes Phase 3 low-coverage data for ~{chromosome}..."
 
     # Extract region and sample, keeping GL field
     bcftools view \
       -r "~{region}" \
       -s "~{sample_name}" \
       --force-samples \
-      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz" | \
+      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.~{chromosome}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz" | \
     bcftools annotate -x ^INFO/AF,^FORMAT/GT,^FORMAT/GL -Oz -o "~{sample_name}.gl.vcf.gz"
 
     bcftools index -t "~{sample_name}.gl.vcf.gz"

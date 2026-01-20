@@ -233,7 +233,7 @@ The module includes a zero-configuration test workflow (`testrun.wdl`) that auto
 ### Automatic Demo Mode
 
 The test workflow automatically:
-1. Downloads a reference genome region (chr22:20000000-21000000) from UCSC
+1. Downloads a reference genome region (chr1:1-10000000) from UCSC
 2. Downloads genetic map files from the GLIMPSE repository
 3. Downloads and prepares a 1000 Genomes reference panel subset
 4. Downloads a VCF with genotype likelihoods (NA12878 from 1000 Genomes Phase 3)
@@ -261,8 +261,8 @@ For testing with your own data, you can provide inputs.json:
 
 ```json
 {
-  "glimpse2_example.test_region": "chr22:16000000-17000000",
-  "glimpse2_example.test_chromosome": "chr22",
+  "glimpse2_example.test_region": "chr1:1-5000000",
+  "glimpse2_example.test_chromosome": "chr1",
   "glimpse2_example.output_prefix": "my_test"
 }
 ```
