@@ -64,7 +64,7 @@ task validate_outputs {
     echo "" >> validation_report.txt
 
     # Arrays for bash processing
-    vcf_files=~{sep=" " vcf_files}
+    vcf_files=(~{sep=" " vcf_files})
 
     validation_passed=true
     total_variants=0
