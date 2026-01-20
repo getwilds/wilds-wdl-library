@@ -10,12 +10,6 @@ import "ww-imputation.wdl" as ww_imputation
 # on a single sample from CRAM input.
 
 workflow imputation_testrun {
-  meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
-    description: "Zero-configuration test workflow for ww-imputation. Downloads test data and runs imputation on a small chr1 region."
-  }
-
   # Test region on chr1 - small enough for CI/CD but large enough for meaningful testing
   String test_region = "chr1:1-10000000"
   String test_chromosome = "chr1"
