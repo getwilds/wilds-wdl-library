@@ -182,8 +182,8 @@ task glimpse2_phase {
       --output "~{output_prefix}.bcf" \
       --threads ~{cpu_cores}
 
-    # Index the output BCF
-    bcftools index "~{output_prefix}.bcf"
+    # Index the output BCF (use -f to overwrite if GLIMPSE2 already created one)
+    bcftools index -f "~{output_prefix}.bcf"
   >>>
 
   output {
@@ -254,7 +254,8 @@ task glimpse2_phase_cram {
       --output "~{output_prefix}.bcf" \
       --threads ~{cpu_cores}
 
-    bcftools index "~{output_prefix}.bcf"
+    # Index the output BCF (use -f to overwrite if GLIMPSE2 already created one)
+    bcftools index -f "~{output_prefix}.bcf"
   >>>
 
   output {
@@ -315,11 +316,11 @@ task glimpse2_ligate {
       --output "~{output_prefix}.${output_ext}" \
       --threads ~{cpu_cores}
 
-    # Index the output
+    # Index the output (use -f to overwrite if GLIMPSE2 already created one)
     if [ "$output_ext" == "bcf" ]; then
-      bcftools index "~{output_prefix}.${output_ext}"
+      bcftools index -f "~{output_prefix}.${output_ext}"
     else
-      bcftools index -t "~{output_prefix}.${output_ext}"
+      bcftools index -f -t "~{output_prefix}.${output_ext}"
     fi
   >>>
 
