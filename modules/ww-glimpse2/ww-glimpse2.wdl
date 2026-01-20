@@ -311,8 +311,12 @@ task glimpse2_ligate {
       index_type="tbi"
     fi
 
+    # Create input file list from localized paths
+    # (using sep instead of write_lines for better cross-engine compatibility)
+    echo "~{sep='\n' imputed_chunks}" > input_chunks.txt
+
     GLIMPSE2_ligate \
-      --input "~{write_lines(imputed_chunks)}" \
+      --input input_chunks.txt \
       --output "~{output_prefix}.${output_ext}" \
       --threads ~{cpu_cores}
 
