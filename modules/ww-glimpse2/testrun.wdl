@@ -9,11 +9,6 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 # It downloads a small region of chr22 data from 1000 Genomes and performs imputation.
 
 workflow glimpse2_example {
-  meta {
-    description: "Zero-configuration test workflow demonstrating GLIMPSE2 imputation pipeline"
-    author: "WILDS Team"
-  }
-
   # Test region on chr22 - small enough for CI/CD but large enough for meaningful testing
   String test_region = "chr22:20000000-21000000"
   String test_chromosome = "chr22"

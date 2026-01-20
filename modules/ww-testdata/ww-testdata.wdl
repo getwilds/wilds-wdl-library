@@ -1106,7 +1106,7 @@ task download_glimpse2_genetic_map {
 
     echo "Downloaded and converted genetic map for ~{chromosome} (~{genome_build})"
     echo "First few lines:"
-    zcat "~{chromosome}.~{genome_build}.gmap.gz" | head -5
+    zcat "~{chromosome}.~{genome_build}.gmap.gz" | head -5 || true
   >>>
 
   output {
