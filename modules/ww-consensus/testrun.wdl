@@ -5,10 +5,6 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/move-consensus/modules/ww-consensus/ww-consensus.wdl" as ww_consensus
 
 workflow consensus_example {
-  meta {
-    description: "Test workflow for the ww-consensus module demonstrating consensus variant calling"
-  }
-
   # Download three different test VCFs to simulate outputs from different callers
   call ww_testdata.download_gnomad_vcf { input:
       region = "chr1:1-5000000",
