@@ -233,8 +233,18 @@ task download_cram_data {
   command <<<
     set -euo pipefail
 
-    # Pull down BAM files from GATK test data bucket
-    samtools view -@ ~{cpu_cores} -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1 | \
+    # Download the small BAM file from GATK test data bucket using AWS CLI
+    # This approach works in all environments (Docker, Apptainer, local) unlike samtools S3 streaming
+    # Suboptimal approach, but necessary to ensure functionality across environments
+    aws s3 cp --no-sign-request \
+      s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam \
+      NA12878_full.bam
+    aws s3 cp --no-sign-request \
+      s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bai \
+      NA12878_full.bam.bai
+
+    # Extract chr1 and subsample to reduce size (using lower subsample rate for CRAM)
+    samtools view -@ ~{cpu_cores} -h -b NA12878_full.bam chr1 | \
     samtools view -@ ~{cpu_cores} -s 0.05 -b - > NA12878.bam
     samtools index -@ ~{cpu_cores} NA12878.bam
 
@@ -254,7 +264,7 @@ task download_cram_data {
     samtools index -@ ~{cpu_cores} NA12878_chr1.cram
 
     # Clean up intermediate files
-    rm NA12878.bam NA12878.bam.bai NA12878_chr1.bam NA12878_chr1.bam.bai NA12878_24RG_small.hg38.bai
+    rm NA12878_full.bam NA12878_full.bam.bai NA12878.bam NA12878.bam.bai NA12878_chr1.bam NA12878_chr1.bam.bai
   >>>
 
   output {
@@ -296,8 +306,18 @@ task download_bam_data {
   command <<<
     set -euo pipefail
 
-    # Pull down BAM files from GATK test data bucket
-    samtools view -@ ~{cpu_cores} -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1 | \
+    # Download the small BAM file from GATK test data bucket using AWS CLI
+    # This approach works in all environments (Docker, Apptainer, local) unlike samtools S3 streaming
+    # Suboptimal approach, but necessary to ensure functionality across environments
+    aws s3 cp --no-sign-request \
+      s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam \
+      NA12878_full.bam
+    aws s3 cp --no-sign-request \
+      s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bai \
+      NA12878_full.bam.bai
+
+    # Extract chr1 and subsample to reduce size
+    samtools view -@ ~{cpu_cores} -h -b NA12878_full.bam chr1 | \
     samtools view -@ ~{cpu_cores} -s 0.1 -b - > NA12878.bam
     samtools index -@ ~{cpu_cores} NA12878.bam
 
@@ -313,7 +333,7 @@ task download_bam_data {
     samtools index -@ ~{cpu_cores} "~{filename}"
 
     # Clean up intermediate files
-    rm NA12878.bam NA12878.bam.bai
+    rm NA12878_full.bam NA12878_full.bam.bai NA12878.bam NA12878.bam.bai
   >>>
 
   output {
