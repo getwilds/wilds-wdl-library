@@ -545,9 +545,10 @@ task download_known_indels_vcf {
   }
 
   command <<<
-    # Download filtered known indels vcf from GATK
+    # Download filtered known indels vcf from EBI 1000 Genomes FTP
+    # (Previously used Google Cloud Storage but that source became inaccessible)
     bcftools view ~{if defined(region) then "-r " + region else ""} \
-    https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz \
+    https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/GRCh38_reference_genome/other_mapping_resources/Mills_and_1000G_gold_standard.indels.b38.primary_assembly.vcf.gz \
     -O z -o "mills_1000g_known_indels.~{filter_name}.vcf.gz"
 
     # Index the filtered VCF

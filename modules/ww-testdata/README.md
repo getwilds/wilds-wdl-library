@@ -520,7 +520,8 @@ All reference data is downloaded from authoritative public repositories:
 - **ichorCNA Repository**: Copy number analysis references
 - **AnnotSV Repository**: Structural variant test data
 - **NCBI dbSNP**: Latest dbSNP variant database
-- **GATK Resource Bundle**: Known indels and gnomAD population frequencies
+- **EBI 1000 Genomes FTP**: Mills and 1000G gold standard known indels
+- **GATK Resource Bundle**: gnomAD population frequencies
 - **Bioconductor pasilla package**: Example RNA-seq count data for DESeq2 testing
 - **ShapeMapper Repository**: TPP riboswitch RNA structure probing example data
 - **Swiss Institute of Bioinformatics**: Minimal Cell Ranger reference (chr21/22) for single-cell testing
