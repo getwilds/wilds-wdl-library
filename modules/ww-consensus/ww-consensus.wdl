@@ -38,7 +38,12 @@ task consensus_processing {
 
   command <<<
     set -eo pipefail
-    Rscript /consensus-trio-unpaired.R \
+
+    # Pull consensus script from GitHub
+    curl -sL "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/move-consensus/modules/ww-consensus/consensus-trio.R" \
+      -o consensus-trio.R
+
+    Rscript consensus-trio.R \
       "~{gatk_vars}" "~{sam_vars}" "~{mutect_vars}" "~{base_file_name}"
   >>>
 
@@ -49,6 +54,6 @@ task consensus_processing {
   runtime {
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    docker: "getwilds/consensus:0.1.1"
+    docker: "rocker/tidyverse:4.4.2"
   }
 }

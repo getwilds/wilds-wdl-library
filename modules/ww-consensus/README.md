@@ -16,7 +16,8 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 - **Tasks**: `consensus_processing`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
-- **Container**: `getwilds/consensus:0.1.1`
+- **Script**: `consensus-trio.R` (pulled from GitHub at runtime)
+- **Container**: `rocker/tidyverse:4.4.2`
 
 ## Tasks
 

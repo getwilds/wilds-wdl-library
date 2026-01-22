@@ -118,7 +118,7 @@ task validate_outputs {
   }
 
   runtime {
-    docker: "getwilds/consensus:0.1.1"
+    docker: "ubuntu:22.04"
     memory: "4GB"
     cpu: 1
   }
