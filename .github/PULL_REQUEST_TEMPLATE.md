@@ -1,11 +1,11 @@
 ## Type of Change
 
-<!-- Check all that apply -->
-- [ ] New module
-- [ ] New pipeline
-- [ ] Bug fix
-- [ ] Documentation update
-- [ ] Other (please describe):
+<!-- List all that apply:
+- New module
+- New pipeline
+- Bug fix
+- Documentation update
+- Other (please describe) -->
 
 ## Description
 
