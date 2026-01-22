@@ -54,6 +54,6 @@ task consensus_processing {
   runtime {
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    docker: "rocker/tidyverse:4.4.2"
+    docker: "rocker/tidyverse:4"
   }
 }
