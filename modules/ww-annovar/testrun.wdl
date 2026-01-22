@@ -4,19 +4,17 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-annovar/ww-annovar.wdl" as ww_annovar
 
 workflow annovar_example {
-  # Download test data for annotation
-  call ww_testdata.download_gnomad_vcf { input:
-      region = "chr1:1-10000000",
-      filter_name = "chr1"
-  }
+  # Download Annovar example VCF which has proper small variant format
+  call ww_testdata.download_annovar_test_vcf { }
 
   # Use test VCF data
-  Array[File] vcfs_to_process = [download_gnomad_vcf.gnomad_vcf]
+  Array[File] vcfs_to_process = [download_annovar_test_vcf.test_vcf]
 
   scatter (vcf in vcfs_to_process) {
+    # Use hg19 since the Annovar example VCF uses hg19 coordinates
     call ww_annovar.annovar_annotate { input:
         vcf_to_annotate = vcf,
-        ref_name = "hg38",
+        ref_name = "hg19",
         annovar_protocols = "refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome",
         annovar_operation = "g,f,f,f,f,f"
     }

@@ -654,6 +654,46 @@ task download_annotsv_vcf {
   }
 }
 
+task download_annovar_test_vcf {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Downloads Annovar example VCF file for testing small variant annotation workflows"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        test_vcf: "Annovar example VCF file with standard SNV/indel format"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -euo pipefail
+
+    # Download Annovar example VCF file (ex1.vcf) which has proper small variant format
+    # This VCF contains SNVs and indels in standard VCF format suitable for Annovar annotation
+    wget -q --no-check-certificate -O annovar_test.vcf https://raw.githubusercontent.com/WGLab/doc-ANNOVAR/master/user-guide/download/ex1.vcf
+  >>>
+
+  output {
+    File test_vcf = "annovar_test.vcf"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task generate_pasilla_counts {
   meta {
     author: "WILDS Team"
