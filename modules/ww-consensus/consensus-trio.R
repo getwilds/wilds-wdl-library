@@ -1,9 +1,8 @@
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 
-# test if there is one argument: if not, return an error
 if (length(args) != 4) {
-  stop("4 arguments must be provided, GATK file, SAMtools file, Mutect file and the base file name.n", call.=FALSE)
+  stop("4 arguments must be provided: GATK file, SAMtools file, Mutect file, and base file name.", call.=FALSE)
 }
 
 GATKfile <- args[1]
@@ -11,107 +10,120 @@ SAMfile <- args[2]
 MutectFile <- args[3]
 baseName <- args[4]
 
-## Load Libraries
 library(tidyverse)
-library(dplyr)
 
-print("Process GATK variants")
-G <- read.delim(file = GATKfile, row.names = NULL,
-                  header=FALSE, stringsAsFactors = FALSE, skip = 1)
-annHead <- read.delim(file = GATKfile, row.names = NULL,
-                        nrows = 1, header=FALSE, stringsAsFactors = FALSE)
-extraHead <- c("QUAL1", "DP.GATK", "CHR", "POS", "END", "REF",
-               "ALT", "QUAL.GATK", "FILTER", "INFO.GATK", "FORMAT.GATK", "MAGIC.GATK")
-colnames(G) <- c(annHead[1,], extraHead)
-G[, "QUAL1"]<- NULL
-G$DP.GATK <- as.integer(G$DP.GATK)
-G$VariantID <- paste(G$CHR, G$Gene.refGene, G$POS, G$REF, G$ALT, sep = "-")
-G$AD.GATK <- as.integer(gsub("^[^:]+:[^,]+,|:.*", "", G$MAGIC.GATK));
-G$VAF.GATK <- 100*as.numeric(G$AD.GATK)/as.numeric(G$DP.GATK);
-G <- Filter(function(y)!all(y == "."), G);
-G[G == ""] <- NA
-G <- G %>% dplyr::mutate_if(is.factor, as.character);
-G <- G %>% mutate_if(is.integer, as.character);
+# Simple function to read Annovar-annotated table and extract key variant info
+read_variants <- function(filepath, caller_name) {
+  df <- read.delim(filepath, header = TRUE, stringsAsFactors = FALSE)
 
+  # Create variant ID from position columns (these should be consistent across Annovar output)
+  df$VariantID <- paste(df$Chr, df$Start, df$End, df$Ref, df$Alt, sep = "-")
+  df$Caller <- caller_name
 
-print("Process SAMTOOLS variants")
-S <- read.delim(file = SAMfile, row.names=NULL, 
-                  header = FALSE, skip = 1)
-annHead <- read.delim(file = SAMfile, row.names = NULL, 
-                        nrows = 1, header=FALSE, stringsAsFactors = FALSE)
-extraHead <- c("QUAL1", "DP.SAM", "CHR", "POS", "END", "REF", 
-               "ALT", "QUAL.SAM", "FILTER", "INFO.SAM", "FORMAT.SAM", "MAGIC.SAM")
-colnames(S) <- c(annHead[1,], extraHead)
-#DP4 = Number of 1) forward ref alleles; 2) reverse ref; 3) forward non-ref; 4) reverse non-ref alleles,
-# used in variant calling. Sum can be smaller than DP because low-quality bases are not counted.
-S[,"QUAL1"]<- NULL
-S$VariantID <- paste(S$CHR, S$Gene.refGene, S$POS, S$REF, S$ALT, sep = "-")
-a <- gsub(".*:", "",S$MAGIC.SAM);
-REF <- as.numeric(gsub(",.*$","",a));
-S$AD.SAM <- as.numeric(gsub("^.*,","",a));
-S$DP.SAM <- REF+S$AD.SAM;
-S$VAF.SAM <- 100*S$AD.SAM/S$DP.SAM;
-S <- Filter(function(y)!all(y == "."), S);
-S[S == ""] <- NA
-S <- S %>% mutate_if(is.factor, as.character);
-S <- S %>% mutate_if(is.integer, as.character);
-
-
-print("Process Mutect variants")
-
-Mu <- read.delim(file = MutectFile, row.names=NULL, 
-                header = FALSE, skip = 1)
-annHead <- read.delim(file = MutectFile, row.names = NULL, 
-                      nrows = 1, header=FALSE, stringsAsFactors = FALSE)
-extraHead <- c("col1", "DP.Mu", "CHR", "POS", "END", "REF", 
-               "ALT", "col2", "FILTER.Mu", "INFO.Mu", "FORMAT.Mu", "MAGIC.Mu")
-colnames(Mu) <- c(annHead[1,], extraHead)
-Mu[,"col1"]<- NULL
-Mu$VariantID <- paste(Mu$CHR, Mu$Gene.refGene, Mu$POS, Mu$REF, Mu$ALT, sep = "-")
-Mu$DP.Mu <- as.integer(Mu$DP.Mu)
-Mu$VariantID <- paste(Mu$CHR, Mu$Gene.refGene, Mu$POS, Mu$REF, Mu$ALT, sep = "-")
-Mu$AD.Mu <- as.integer(gsub("^[^:]+:[^,]+,|:.*", "", Mu$MAGIC.Mu));
-Mu$VAF.Mu <- 100*as.numeric(Mu$AD.Mu)/as.numeric(Mu$DP.Mu);
-Mu <- Filter(function(y)!all(y == "."), Mu);
-Mu[Mu == ""] <- NA
-Mu <- Mu %>% dplyr::mutate_if(is.factor, as.character);
-Mu <- Mu %>% mutate_if(is.integer, as.character);
-
-## Deal with flubbed annotation issues where the same variant is now annotated two different ways!  ARGH!
-commonCols <- c("VariantID","CHR", "POS", "REF", "ALT", "Chr", "Start", "End", "Ref", "Alt")
-GATKCols <- colnames(G)[!colnames(G) %in% c(colnames(S), colnames(Mu))]
-SAMCols <- colnames(S)[!colnames(S) %in% c(colnames(G), colnames(Mu))]
-MuCols <- colnames(Mu)[!colnames(Mu) %in% c(colnames(G), colnames(S))]
-
-GMerge <- G %>% select(c(commonCols, GATKCols))
-SMerge <- S %>% select(c(commonCols, SAMCols))
-MuMerge <- Mu %>% select(c(commonCols, MuCols))
-
-variants <- full_join(full_join(GMerge, SMerge), MuMerge)
-variants$Type <- ifelse(nchar(variants$REF) == nchar(variants$ALT), "SNV", "INDEL");
-
-reannotate <- left_join(variants, G, by = c("VariantID", "CHR", "POS", "REF", "ALT"))
-reannotate <- left_join(reannotate, S, by = c("VariantID", "CHR", "POS", "REF", "ALT"))
-reannotate <- left_join(reannotate, Mu, by = c("VariantID", "CHR", "POS", "REF", "ALT"))
-
-print("DEBUG: Columns in reannotate after joins:")
-print(colnames(reannotate))
-print(paste("DEBUG: nrow =", nrow(reannotate)))
-print("DEBUG: AD columns check:")
-print(paste("AD.GATK exists:", "AD.GATK" %in% colnames(reannotate)))
-print(paste("AD.SAM exists:", "AD.SAM" %in% colnames(reannotate)))
-print(paste("AD.Mu exists:", "AD.Mu" %in% colnames(reannotate)))
-if ("AD.GATK" %in% colnames(reannotate)) {
-  print("DEBUG: AD.GATK values:")
-  print(reannotate$AD.GATK)
+  return(df)
 }
 
-reannotate$Confidence <- case_when(
-  !is.na(reannotate$AD.GATK) & !is.na(reannotate$AD.SAM) & !is.na(reannotate$AD.Mu) ~ "conftier1",
-  (is.na(reannotate$AD.GATK) | is.na(reannotate$AD.Mu)) & !is.na(reannotate$AD.SAM) & reannotate$Type == "SNV" ~ "conftier2",
-  !(is.na(reannotate$AD.GATK) | is.na(reannotate$AD.Mu)) & is.na(reannotate$AD.SAM) & reannotate$Type == "INDEL" ~ "conftier2",
-  TRUE ~ "conftier3"
-)
-write.table(reannotate, file = paste0(baseName, ".consensus.tsv"), sep = "\t",
-            row.names = F)
+print("Reading GATK variants...")
+gatk <- read_variants(GATKfile, "GATK")
+print(paste("  Found", nrow(gatk), "variants"))
 
+print("Reading SAMtools variants...")
+sam <- read_variants(SAMfile, "SAMtools")
+print(paste("  Found", nrow(sam), "variants"))
+
+print("Reading Mutect variants...")
+mutect <- read_variants(MutectFile, "Mutect")
+print(paste("  Found", nrow(mutect), "variants"))
+
+# Get unique variant IDs from each caller
+gatk_ids <- unique(gatk$VariantID)
+sam_ids <- unique(sam$VariantID)
+mutect_ids <- unique(mutect$VariantID)
+
+# Find all unique variants across all callers
+all_ids <- unique(c(gatk_ids, sam_ids, mutect_ids))
+print(paste("Total unique variants across all callers:", length(all_ids)))
+
+# Build consensus table
+consensus <- data.frame(VariantID = all_ids, stringsAsFactors = FALSE)
+
+# Add caller detection flags
+consensus$InGATK <- consensus$VariantID %in% gatk_ids
+consensus$InSAMtools <- consensus$VariantID %in% sam_ids
+consensus$InMutect <- consensus$VariantID %in% mutect_ids
+
+# Count how many callers detected each variant
+consensus$CallerCount <- rowSums(consensus[, c("InGATK", "InSAMtools", "InMutect")])
+
+# Assign confidence tiers based on caller agreement
+consensus$Confidence <- case_when(
+  consensus$CallerCount == 3 ~ "HighConfidence",
+  consensus$CallerCount == 2 ~ "MediumConfidence",
+  consensus$CallerCount == 1 ~ "LowConfidence"
+)
+
+# Split VariantID back into components
+consensus <- consensus %>%
+  separate(VariantID, into = c("Chr", "Start", "End", "Ref", "Alt"),
+           sep = "-", remove = FALSE)
+
+# Determine variant type
+consensus$Type <- ifelse(nchar(consensus$Ref) == nchar(consensus$Alt), "SNV", "INDEL")
+
+# Add annotation data from first available caller (prefer GATK > SAMtools > Mutect)
+# Only include columns that exist in the source data
+get_annotations <- function(variant_id, gatk_df, sam_df, mutect_df) {
+  # Try GATK first
+  gatk_row <- gatk_df[gatk_df$VariantID == variant_id, ]
+  if (nrow(gatk_row) > 0) return(gatk_row[1, ])
+
+  # Then SAMtools
+  sam_row <- sam_df[sam_df$VariantID == variant_id, ]
+  if (nrow(sam_row) > 0) return(sam_row[1, ])
+
+  # Finally Mutect
+  mutect_row <- mutect_df[mutect_df$VariantID == variant_id, ]
+  if (nrow(mutect_row) > 0) return(mutect_row[1, ])
+
+  return(NULL)
+}
+
+# Get common annotation columns (Annovar standard columns)
+annovar_cols <- c("Func.refGene", "Gene.refGene", "GeneDetail.refGene",
+                  "ExonicFunc.refGene", "AAChange.refGene")
+
+# Find which annotation columns actually exist
+available_cols <- annovar_cols[annovar_cols %in% colnames(gatk)]
+
+if (length(available_cols) > 0) {
+  # Create annotation lookup from GATK (or fall back to others)
+  all_variants <- bind_rows(
+    gatk %>% select(VariantID, all_of(available_cols)),
+    sam %>% select(VariantID, all_of(available_cols)),
+    mutect %>% select(VariantID, all_of(available_cols))
+  ) %>%
+    distinct(VariantID, .keep_all = TRUE)
+
+  consensus <- left_join(consensus, all_variants, by = "VariantID")
+}
+
+# Reorder columns for cleaner output
+output_cols <- c("VariantID", "Chr", "Start", "End", "Ref", "Alt", "Type",
+                 "InGATK", "InSAMtools", "InMutect", "CallerCount", "Confidence")
+if (length(available_cols) > 0) {
+  output_cols <- c(output_cols, available_cols)
+}
+consensus <- consensus %>% select(all_of(output_cols))
+
+# Summary stats
+print("")
+print("=== Consensus Summary ===")
+print(paste("High confidence (3 callers):", sum(consensus$Confidence == "HighConfidence")))
+print(paste("Medium confidence (2 callers):", sum(consensus$Confidence == "MediumConfidence")))
+print(paste("Low confidence (1 caller):", sum(consensus$Confidence == "LowConfidence")))
+print(paste("Total variants:", nrow(consensus)))
+
+# Write output
+output_file <- paste0(baseName, ".consensus.tsv")
+write.table(consensus, file = output_file, sep = "\t", row.names = FALSE, quote = FALSE)
+print(paste("Output written to:", output_file))
