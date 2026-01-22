@@ -94,6 +94,18 @@ reannotate <- left_join(variants, G, by = c("VariantID", "CHR", "POS", "REF", "A
 reannotate <- left_join(reannotate, S, by = c("VariantID", "CHR", "POS", "REF", "ALT"))
 reannotate <- left_join(reannotate, Mu, by = c("VariantID", "CHR", "POS", "REF", "ALT"))
 
+print("DEBUG: Columns in reannotate after joins:")
+print(colnames(reannotate))
+print(paste("DEBUG: nrow =", nrow(reannotate)))
+print("DEBUG: AD columns check:")
+print(paste("AD.GATK exists:", "AD.GATK" %in% colnames(reannotate)))
+print(paste("AD.SAM exists:", "AD.SAM" %in% colnames(reannotate)))
+print(paste("AD.Mu exists:", "AD.Mu" %in% colnames(reannotate)))
+if ("AD.GATK" %in% colnames(reannotate)) {
+  print("DEBUG: AD.GATK values:")
+  print(reannotate$AD.GATK)
+}
+
 reannotate$Confidence <- case_when(
   !is.na(reannotate$AD.GATK) & !is.na(reannotate$AD.SAM) & !is.na(reannotate$AD.Mu) ~ "conftier1",
   (is.na(reannotate$AD.GATK) | is.na(reannotate$AD.Mu)) & !is.na(reannotate$AD.SAM) & reannotate$Type == "SNV" ~ "conftier2",
