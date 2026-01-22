@@ -97,10 +97,12 @@ reannotate <- left_join(variants, G)
 reannotate <- left_join(reannotate, S)
 reannotate <- left_join(reannotate, Mu)
 
-reannotate$Confidence  <- ifelse(!is.na(reannotate$AD.GATK) & !is.na(reannotate$AD.SAM) & !is.na(reannotate$AD.Mu), "conftier1",
-                  ifelse((is.na(reannotate$AD.GATK) | is.na(reannotate$AD.Mu)) & !is.na(reannotate$AD.SAM) & reannotate$Type == "SNV", "conftier2",
-                         ifelse(!(is.na(reannotate$AD.GATK) | is.na(reannotate$AD.Mu)) & is.na(reannotate$AD.SAM) & reannotate$Type == "INDEL", "conftier2", 
-                                "conftier3")))
+reannotate$Confidence <- case_when(
+  !is.na(reannotate$AD.GATK) & !is.na(reannotate$AD.SAM) & !is.na(reannotate$AD.Mu) ~ "conftier1",
+  (is.na(reannotate$AD.GATK) | is.na(reannotate$AD.Mu)) & !is.na(reannotate$AD.SAM) & reannotate$Type == "SNV" ~ "conftier2",
+  !(is.na(reannotate$AD.GATK) | is.na(reannotate$AD.Mu)) & is.na(reannotate$AD.SAM) & reannotate$Type == "INDEL" ~ "conftier2",
+  TRUE ~ "conftier3"
+)
 write.table(reannotate, file = paste0(baseName, ".consensus.tsv"), sep = "\t",
             row.names = F)
 
