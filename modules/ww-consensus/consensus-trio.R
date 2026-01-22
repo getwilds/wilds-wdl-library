@@ -16,15 +16,14 @@ library(tidyverse)
 library(dplyr)
 
 print("Process GATK variants")
-G <- read.delim(file = GATKfile, row.names = NULL, 
+G <- read.delim(file = GATKfile, row.names = NULL,
                   header=FALSE, stringsAsFactors = FALSE, skip = 1)
-annHead <- read.delim(file = GATKfile, row.names = NULL, 
+annHead <- read.delim(file = GATKfile, row.names = NULL,
                         nrows = 1, header=FALSE, stringsAsFactors = FALSE)
-extraHead <- c("QUAL1", "DP.GATK", "CHR", "POS", "END", "REF", 
+extraHead <- c("QUAL1", "DP.GATK", "CHR", "POS", "END", "REF",
                "ALT", "QUAL.GATK", "FILTER", "INFO.GATK", "FORMAT.GATK", "MAGIC.GATK")
 colnames(G) <- c(annHead[1,], extraHead)
 G[, "QUAL1"]<- NULL
-G <- G %>% filter(Otherinfo %in% c("0", "0.5", "1"))
 G$DP.GATK <- as.integer(G$DP.GATK)
 G$VariantID <- paste(G$CHR, G$Gene.refGene, G$POS, G$REF, G$ALT, sep = "-")
 G$AD.GATK <- as.integer(gsub("^[^:]+:[^,]+,|:.*", "", G$MAGIC.GATK));
@@ -46,7 +45,6 @@ colnames(S) <- c(annHead[1,], extraHead)
 #DP4 = Number of 1) forward ref alleles; 2) reverse ref; 3) forward non-ref; 4) reverse non-ref alleles,
 # used in variant calling. Sum can be smaller than DP because low-quality bases are not counted.
 S[,"QUAL1"]<- NULL
-S <- S %>% filter(Otherinfo %in% c("0", "0.5", "1"))
 S$VariantID <- paste(S$CHR, S$Gene.refGene, S$POS, S$REF, S$ALT, sep = "-")
 a <- gsub(".*:", "",S$MAGIC.SAM);
 REF <- as.numeric(gsub(",.*$","",a));
@@ -69,7 +67,6 @@ extraHead <- c("col1", "DP.Mu", "CHR", "POS", "END", "REF",
                "ALT", "col2", "FILTER.Mu", "INFO.Mu", "FORMAT.Mu", "MAGIC.Mu")
 colnames(Mu) <- c(annHead[1,], extraHead)
 Mu[,"col1"]<- NULL
-Mu <- Mu %>% filter(Otherinfo %in% c("0", "0.5", "1"))
 Mu$VariantID <- paste(Mu$CHR, Mu$Gene.refGene, Mu$POS, Mu$REF, Mu$ALT, sep = "-")
 Mu$DP.Mu <- as.integer(Mu$DP.Mu)
 Mu$VariantID <- paste(Mu$CHR, Mu$Gene.refGene, Mu$POS, Mu$REF, Mu$ALT, sep = "-")
@@ -96,12 +93,6 @@ variants$Type <- ifelse(nchar(variants$REF) == nchar(variants$ALT), "SNV", "INDE
 reannotate <- left_join(variants, G)
 reannotate <- left_join(reannotate, S)
 reannotate <- left_join(reannotate, Mu)
-
-print("Columns in reannotate:")
-print(colnames(reannotate))
-print(paste("Number of rows:", nrow(reannotate)))
-print("AD columns present:")
-print(c("AD.GATK" %in% colnames(reannotate), "AD.SAM" %in% colnames(reannotate), "AD.Mu" %in% colnames(reannotate), "Type" %in% colnames(reannotate)))
 
 reannotate$Confidence <- case_when(
   !is.na(reannotate$AD.GATK) & !is.na(reannotate$AD.SAM) & !is.na(reannotate$AD.Mu) ~ "conftier1",
