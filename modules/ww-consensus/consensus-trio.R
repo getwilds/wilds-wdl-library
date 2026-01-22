@@ -90,9 +90,9 @@ MuMerge <- Mu %>% select(c(commonCols, MuCols))
 variants <- full_join(full_join(GMerge, SMerge), MuMerge)
 variants$Type <- ifelse(nchar(variants$REF) == nchar(variants$ALT), "SNV", "INDEL");
 
-reannotate <- left_join(variants, G)
-reannotate <- left_join(reannotate, S)
-reannotate <- left_join(reannotate, Mu)
+reannotate <- left_join(variants, G, by = c("VariantID", "CHR", "POS", "REF", "ALT"))
+reannotate <- left_join(reannotate, S, by = c("VariantID", "CHR", "POS", "REF", "ALT"))
+reannotate <- left_join(reannotate, Mu, by = c("VariantID", "CHR", "POS", "REF", "ALT"))
 
 reannotate$Confidence <- case_when(
   !is.na(reannotate$AD.GATK) & !is.na(reannotate$AD.SAM) & !is.na(reannotate$AD.Mu) ~ "conftier1",
