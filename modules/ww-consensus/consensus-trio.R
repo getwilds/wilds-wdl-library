@@ -97,6 +97,12 @@ reannotate <- left_join(variants, G)
 reannotate <- left_join(reannotate, S)
 reannotate <- left_join(reannotate, Mu)
 
+print("Columns in reannotate:")
+print(colnames(reannotate))
+print(paste("Number of rows:", nrow(reannotate)))
+print("AD columns present:")
+print(c("AD.GATK" %in% colnames(reannotate), "AD.SAM" %in% colnames(reannotate), "AD.Mu" %in% colnames(reannotate), "Type" %in% colnames(reannotate)))
+
 reannotate$Confidence <- case_when(
   !is.na(reannotate$AD.GATK) & !is.na(reannotate$AD.SAM) & !is.na(reannotate$AD.Mu) ~ "conftier1",
   (is.na(reannotate$AD.GATK) | is.na(reannotate$AD.Mu)) & !is.na(reannotate$AD.SAM) & reannotate$Type == "SNV" ~ "conftier2",
