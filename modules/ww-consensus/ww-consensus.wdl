@@ -40,8 +40,8 @@ task consensus_processing {
     set -eo pipefail
 
     # Pull consensus script from GitHub
-    curl -sL "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/move-consensus/modules/ww-consensus/consensus-trio.R" \
-      -o consensus-trio.R
+    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/move-consensus/modules/ww-consensus/consensus-trio.R" \
+      -O consensus-trio.R
 
     Rscript consensus-trio.R \
       "~{gatk_vars}" "~{sam_vars}" "~{mutect_vars}" "~{base_file_name}"
