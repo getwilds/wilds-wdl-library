@@ -5,43 +5,44 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/move-consensus/modules/ww-consensus/ww-consensus.wdl" as ww_consensus
 
 workflow consensus_example {
-  # Download gnomAD VCF with three overlapping regions to simulate different callers
+  # Download Mills/1000G known indels VCF with three overlapping regions to simulate different callers
+  # This VCF has a simpler, more standard format that works well with the consensus R script
   # Region overlap (chr1:2000000-4000000) should produce consensus variants
   # - "gatk":     chr1:1000000-4000000
   # - "bcftools": chr1:2000000-5000000
   # - "mutect":   chr1:3000000-6000000
-  call ww_testdata.download_gnomad_vcf as download_gatk_vcf { input:
+  call ww_testdata.download_known_indels_vcf as download_gatk_vcf { input:
       region = "chr1:1000000-4000000",
       filter_name = "chr1_gatk"
   }
 
-  call ww_testdata.download_gnomad_vcf as download_bcftools_vcf { input:
+  call ww_testdata.download_known_indels_vcf as download_bcftools_vcf { input:
       region = "chr1:2000000-5000000",
       filter_name = "chr1_bcftools"
   }
 
-  call ww_testdata.download_gnomad_vcf as download_mutect_vcf { input:
+  call ww_testdata.download_known_indels_vcf as download_mutect_vcf { input:
       region = "chr1:3000000-6000000",
       filter_name = "chr1_mutect"
   }
 
   # Annotate each VCF with Annovar
   call ww_annovar.annovar_annotate as annotate_gatk { input:
-      vcf_to_annotate = download_gatk_vcf.gnomad_vcf,
+      vcf_to_annotate = download_gatk_vcf.known_indels_vcf,
       ref_name = "hg38",
       annovar_protocols = "refGene",
       annovar_operation = "g"
   }
 
   call ww_annovar.annovar_annotate as annotate_bcftools { input:
-      vcf_to_annotate = download_bcftools_vcf.gnomad_vcf,
+      vcf_to_annotate = download_bcftools_vcf.known_indels_vcf,
       ref_name = "hg38",
       annovar_protocols = "refGene",
       annovar_operation = "g"
   }
 
   call ww_annovar.annovar_annotate as annotate_mutect { input:
-      vcf_to_annotate = download_mutect_vcf.gnomad_vcf,
+      vcf_to_annotate = download_mutect_vcf.known_indels_vcf,
       ref_name = "hg38",
       annovar_protocols = "refGene",
       annovar_operation = "g"
