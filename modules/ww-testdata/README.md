@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_test_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -398,53 +398,6 @@ Downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-
 **Outputs**:
 - `test_vcf` (File): Example VCF file for testing structural variant annotation
 
-### generate_test_vcf
-
-Creates a minimal test VCF file for testing small variant annotation workflows with Annovar. This task generates VCF files with different variant subsets to enable consensus variant testing.
-
-**Use Case**: When testing Annovar annotation workflows or consensus variant calling, you need small VCF files with standard SNV/indel format. This task generates test VCFs with well-characterized variants on hg38 coordinates. By specifying different `caller_type` values, you can simulate realistic scenarios where different variant callers produce overlapping but distinct variant sets.
-
-**Inputs**:
-- `caller_type` (String): Optional caller type to simulate (default: "all")
-  - `"gatk"`: 11 variants (shared + GATK-specific)
-  - `"bcftools"`: 10 variants (shared + bcftools-specific)
-  - `"mutect"`: 10 variants (shared + mutect-specific)
-  - `"all"`: All 13 variants
-- `cpu_cores` (Int): CPU allocation (default: 1)
-- `memory_gb` (Int): Memory allocation (default: 4)
-
-**Variant Distribution**:
-- 6 variants shared by all callers (high confidence consensus)
-- 2 variants shared by GATK + bcftools only
-- 2 variants shared by GATK + mutect only
-- 2 variants shared by bcftools + mutect only
-- 1 variant unique to GATK
-
-**Outputs**:
-- `test_vcf` (File): Test VCF file with standard SNV/indel format suitable for Annovar annotation
-
-**Example Usage**:
-```wdl
-# For basic Annovar testing (all variants)
-call testdata.generate_test_vcf { }
-call annovar_tasks.annotate {
-  input:
-    vcf = generate_test_vcf.test_vcf,
-    ref_name = "hg38"
-}
-
-# For consensus variant testing (different caller subsets)
-call testdata.generate_test_vcf as gatk_vcf { input: caller_type = "gatk" }
-call testdata.generate_test_vcf as bcftools_vcf { input: caller_type = "bcftools" }
-call testdata.generate_test_vcf as mutect_vcf { input: caller_type = "mutect" }
-call consensus_tasks.process {
-  input:
-    gatk_variants = gatk_vcf.test_vcf,
-    bcftools_variants = bcftools_vcf.test_vcf,
-    mutect_variants = mutect_vcf.test_vcf
-}
-```
-
 ### generate_pasilla_counts
 
 **Inputs**:
@@ -601,8 +554,8 @@ This module is specifically designed to support other WILDS modules:
 - **ww-shapemapper**: RNA structure analysis (uses TPP riboswitch example data from `download_shapemapper_data`)
 - **ww-cellranger**: Single-cell RNA-seq analysis (uses minimal reference from `download_test_cellranger_ref`)
 - **ww-diamond**: Protein sequence alignment (uses E. coli proteome from `download_diamond_data`)
-- **ww-annovar**: Variant annotation (uses test VCF from `generate_test_vcf`)
-- **ww-consensus**: Consensus variant calling (uses caller-specific VCFs from `generate_test_vcf` with different `caller_type` values)
+- **ww-annovar**: Variant annotation (uses gnomAD VCF from `download_gnomad_vcf`)
+- **ww-consensus**: Consensus variant calling (uses gnomAD VCF from `download_gnomad_vcf`)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:
