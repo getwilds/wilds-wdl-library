@@ -12,24 +12,24 @@ workflow consensus_example {
   call ww_testdata.download_annovar_test_vcf as download_bcftools_vcf { }
   call ww_testdata.download_annovar_test_vcf as download_mutect_vcf { }
 
-  # Annotate each VCF with Annovar using hg19 (matches the example VCF coordinates)
+  # Annotate each VCF with Annovar
   call ww_annovar.annovar_annotate as annotate_gatk { input:
       vcf_to_annotate = download_gatk_vcf.test_vcf,
-      ref_name = "hg19",
+      ref_name = "hg38",
       annovar_protocols = "refGene",
       annovar_operation = "g"
   }
 
   call ww_annovar.annovar_annotate as annotate_bcftools { input:
       vcf_to_annotate = download_bcftools_vcf.test_vcf,
-      ref_name = "hg19",
+      ref_name = "hg38",
       annovar_protocols = "refGene",
       annovar_operation = "g"
   }
 
   call ww_annovar.annovar_annotate as annotate_mutect { input:
       vcf_to_annotate = download_mutect_vcf.test_vcf,
-      ref_name = "hg19",
+      ref_name = "hg38",
       annovar_protocols = "refGene",
       annovar_operation = "g"
   }

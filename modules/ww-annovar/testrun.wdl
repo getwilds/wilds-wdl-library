@@ -11,10 +11,9 @@ workflow annovar_example {
   Array[File] vcfs_to_process = [download_annovar_test_vcf.test_vcf]
 
   scatter (vcf in vcfs_to_process) {
-    # Use hg19 since the Annovar example VCF uses hg19 coordinates
     call ww_annovar.annovar_annotate { input:
         vcf_to_annotate = vcf,
-        ref_name = "hg19",
+        ref_name = "hg38",
         annovar_protocols = "refGene,knownGene,cosmic70,esp6500siv2_all,clinvar_20180603,gnomad211_exome",
         annovar_operation = "g,f,f,f,f,f"
     }

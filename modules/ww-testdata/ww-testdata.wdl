@@ -658,15 +658,15 @@ task download_annovar_test_vcf {
   meta {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
-    description: "Downloads Annovar example VCF file for testing small variant annotation workflows"
+    description: "Creates a minimal test VCF file for testing small variant annotation workflows with Annovar"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
-        test_vcf: "Annovar example VCF file with standard SNV/indel format"
+        test_vcf: "Test VCF file with standard SNV/indel format suitable for Annovar annotation"
     }
   }
 
   parameter_meta {
-    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB for the task"
   }
 
@@ -678,9 +678,31 @@ task download_annovar_test_vcf {
   command <<<
     set -euo pipefail
 
-    # Download Annovar example VCF file (ex1.vcf) which has proper small variant format
-    # This VCF contains SNVs and indels in standard VCF format suitable for Annovar annotation
-    wget -q --no-check-certificate -O annovar_test.vcf https://raw.githubusercontent.com/WGLab/doc-ANNOVAR/master/user-guide/download/ex1.vcf
+    # Create a minimal test VCF with standard format for Annovar annotation testing
+    # These are well-characterized variants on hg38/GRCh38 coordinates
+    cat > annovar_test.vcf << 'EOF'
+##fileformat=VCFv4.2
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">
+##INFO=<ID=AF,Number=A,Type=Float,Description="Allele Frequency">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
+##contig=<ID=chr1,length=248956422>
+##contig=<ID=chr16,length=90338345>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	SAMPLE1
+chr1	1014143	rs15842	T	C	100	PASS	DP=30;AF=0.5	GT:DP	0/1:30
+chr1	1469323	rs149123833	G	A	100	PASS	DP=25;AF=0.5	GT:DP	0/1:25
+chr1	5935162	rs1287637	A	T	100	PASS	DP=40;AF=1.0	GT:DP	1/1:40
+chr1	6594504	rs1571583	T	C	100	PASS	DP=35;AF=0.5	GT:DP	0/1:35
+chr1	9259737	rs2272757	G	A	100	PASS	DP=28;AF=0.5	GT:DP	0/1:28
+chr1	11791700	rs6603781	G	A	100	PASS	DP=32;AF=0.5	GT:DP	0/1:32
+chr1	13238301	rs1057079	C	T	100	PASS	DP=45;AF=0.5	GT:DP	0/1:45
+chr1	16797962	rs12137065	G	C	100	PASS	DP=38;AF=0.5	GT:DP	0/1:38
+chr1	20894341	rs553668	G	C	100	PASS	DP=42;AF=1.0	GT:DP	1/1:42
+chr1	40692869	rs4656945	A	G	100	PASS	DP=36;AF=0.5	GT:DP	0/1:36
+chr16	50731048	rs2066844	C	T	100	PASS	DP=33;AF=0.5	GT:DP	0/1:33
+chr16	50741662	rs2066845	G	C	100	PASS	DP=29;AF=0.5	GT:DP	0/1:29
+chr16	50748900	rs2066847	C	CINS	100	PASS	DP=31;AF=0.5	GT:DP	0/1:31
+EOF
   >>>
 
   output {
