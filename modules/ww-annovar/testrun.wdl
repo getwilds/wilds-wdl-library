@@ -1,14 +1,17 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/move-consensus/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/move-consensus/modules/ww-annovar/ww-annovar.wdl" as ww_annovar
 
 workflow annovar_example {
-  # Generate Annovar test VCF which has proper small variant format
-  call ww_testdata.generate_test_vcf { }
+  # Download test data for annotation
+  call ww_testdata.download_gnomad_vcf { input:
+      region = "chr1:1-1000000",
+      filter_name = "chr1_1Mb"
+  }
 
   # Use test VCF data
-  Array[File] vcfs_to_process = [generate_test_vcf.test_vcf]
+  Array[File] vcfs_to_process = [download_gnomad_vcf.gnomad_vcf]
 
   scatter (vcf in vcfs_to_process) {
     call ww_annovar.annovar_annotate { input:
@@ -51,26 +54,26 @@ task validate_outputs {
 
   command <<<
     set -euo pipefail
-    
+
     echo "=== ANNOVAR OUTPUT VALIDATION REPORT ===" > validation_report.txt
     echo "Generated: $(date)" >> validation_report.txt
     echo "" >> validation_report.txt
-    
+
     # Validate VCF files
     echo "VCF Files Validation:" >> validation_report.txt
     vcf_count=0
     for vcf in ~{sep=" " annotated_vcf_files}; do
       vcf_count=$((vcf_count + 1))
       echo "  File $vcf_count: $(basename $vcf)" >> validation_report.txt
-      
+
       # Check if file exists and is not empty
       if [ -f "$vcf" ] && [ -s "$vcf" ]; then
         echo "    Status: File exists and is not empty" >> validation_report.txt
-        
+
         # Count variants
         variant_count=$(zcat "$vcf" | grep -v "^#" | wc -l || echo "0")
         echo "    Variants: $variant_count" >> validation_report.txt
-        
+
         # Check VCF format
         if zcat "$vcf" | head -1 | grep -q "^##fileformat=VCF"; then
           echo "    Format: Valid VCF header" >> validation_report.txt
@@ -82,21 +85,21 @@ task validate_outputs {
       fi
       echo "" >> validation_report.txt
     done
-    
+
     # Validate annotation table files
     echo "Annotation Table Files Validation:" >> validation_report.txt
     table_count=0
     for table in ~{sep=" " annotated_table_files}; do
       table_count=$((table_count + 1))
       echo "  File $table_count: $(basename $table)" >> validation_report.txt
-      
+
       if [ -f "$table" ] && [ -s "$table" ]; then
         echo "    Status: File exists and is not empty" >> validation_report.txt
-        
+
         # Count lines (excluding header)
         line_count=$(($(wc -l < "$table") - 1))
         echo "    Annotated variants: $line_count" >> validation_report.txt
-        
+
         # Check for key annotation columns
         if head -1 "$table" | grep -q "Chr.*Start.*End.*Ref.*Alt"; then
           echo "    Format: Contains expected annotation columns" >> validation_report.txt
@@ -108,7 +111,7 @@ task validate_outputs {
       fi
       echo "" >> validation_report.txt
     done
-    
+
     echo "=== VALIDATION SUMMARY ===" >> validation_report.txt
     echo "Total VCF files processed: $vcf_count" >> validation_report.txt
     echo "Total annotation tables generated: $table_count" >> validation_report.txt

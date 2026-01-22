@@ -42,8 +42,6 @@ workflow testdata_example {
 
   call ww_testdata.download_annotsv_vcf { }
 
-  call ww_testdata.generate_test_vcf { }
-
   call ww_testdata.generate_pasilla_counts { }
 
   call ww_testdata.download_test_transcriptome { }
@@ -87,7 +85,6 @@ workflow testdata_example {
     gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
     gnomad_vcf_index = download_gnomad_vcf.gnomad_vcf_index,
     annotsv_test_vcf = download_annotsv_vcf.test_vcf,
-    annovar_test_vcf = generate_test_vcf.test_vcf,
     pasilla_counts = generate_pasilla_counts.individual_count_files,
     pasilla_gene_info = generate_pasilla_counts.gene_info,
     transcriptome_fasta = download_test_transcriptome.transcriptome_fasta,
@@ -132,7 +129,6 @@ workflow testdata_example {
     File gnomad_vcf = download_gnomad_vcf.gnomad_vcf
     File gnomad_vcf_index = download_gnomad_vcf.gnomad_vcf_index
     File annotsv_test_vcf = download_annotsv_vcf.test_vcf
-    File annovar_test_vcf = generate_test_vcf.test_vcf
     # Outputs from Pasilla DESeq2 count generation
     Array[File] pasilla_counts = generate_pasilla_counts.individual_count_files
     Array[String] pasilla_sample_names = generate_pasilla_counts.sample_names
@@ -194,7 +190,6 @@ task validate_outputs {
     gnomad_vcf: "gnomad VCF to validate"
     gnomad_vcf_index: "gnomad VCF index to validate"
     annotsv_test_vcf: "AnnotSV test VCF file to validate"
-    annovar_test_vcf: "Annovar test VCF file to validate"
     pasilla_counts: "Array of individual count files for each sample from Pasilla dataset to validate"
     pasilla_gene_info: "Pasilla gene annotation information to validate"
     transcriptome_fasta: "Test transcriptome FASTA file to validate"
@@ -238,7 +233,6 @@ task validate_outputs {
     File gnomad_vcf
     File gnomad_vcf_index
     File annotsv_test_vcf
-    File annovar_test_vcf
     Array[File] pasilla_counts
     File pasilla_gene_info
     File transcriptome_fasta
@@ -305,7 +299,6 @@ task validate_outputs {
     validate_file "~{gnomad_vcf}" "Gnomad VCF" || validation_passed=false
     validate_file "~{gnomad_vcf_index}" "Gnomad VCF index" || validation_passed=false
     validate_file "~{annotsv_test_vcf}" "AnnotSV test VCF" || validation_passed=false
-    validate_file "~{annovar_test_vcf}" "Annovar test VCF" || validation_passed=false
     validate_file "~{cellranger_ref_tar}" "Cellranger test reference"  || validation_passed=false
 
     # Validate pasilla count files
@@ -341,7 +334,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 37"
+      echo "Total files validated: 36"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then
