@@ -22,7 +22,7 @@
 <!-- e.g., "Ran testrun.wdl with miniWDL using test data" -->
 
 **What workflow engine did you use?**
-<!-- e.g., Cromwell, miniWDL, Sprocket -->
+<!-- e.g., Cromwell, miniWDL, Sprocket, PROOF at Fred Hutch -->
 
 **Did the tests pass?**
 <!-- Yes/No, and include any relevant output or errors -->
