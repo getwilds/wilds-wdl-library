@@ -4,11 +4,11 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/move-consensus/modules/ww-annovar/ww-annovar.wdl" as ww_annovar
 
 workflow annovar_example {
-  # Download Annovar example VCF which has proper small variant format
-  call ww_testdata.download_annovar_test_vcf { }
+  # Generate Annovar test VCF which has proper small variant format
+  call ww_testdata.generate_test_vcf { }
 
   # Use test VCF data
-  Array[File] vcfs_to_process = [download_annovar_test_vcf.test_vcf]
+  Array[File] vcfs_to_process = [generate_test_vcf.test_vcf]
 
   scatter (vcf in vcfs_to_process) {
     call ww_annovar.annovar_annotate { input:

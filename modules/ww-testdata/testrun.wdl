@@ -42,7 +42,7 @@ workflow testdata_example {
 
   call ww_testdata.download_annotsv_vcf { }
 
-  call ww_testdata.download_annovar_test_vcf { }
+  call ww_testdata.generate_test_vcf { }
 
   call ww_testdata.generate_pasilla_counts { }
 
@@ -87,7 +87,7 @@ workflow testdata_example {
     gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
     gnomad_vcf_index = download_gnomad_vcf.gnomad_vcf_index,
     annotsv_test_vcf = download_annotsv_vcf.test_vcf,
-    annovar_test_vcf = download_annovar_test_vcf.test_vcf,
+    annovar_test_vcf = generate_test_vcf.test_vcf,
     pasilla_counts = generate_pasilla_counts.individual_count_files,
     pasilla_gene_info = generate_pasilla_counts.gene_info,
     transcriptome_fasta = download_test_transcriptome.transcriptome_fasta,
@@ -132,7 +132,7 @@ workflow testdata_example {
     File gnomad_vcf = download_gnomad_vcf.gnomad_vcf
     File gnomad_vcf_index = download_gnomad_vcf.gnomad_vcf_index
     File annotsv_test_vcf = download_annotsv_vcf.test_vcf
-    File annovar_test_vcf = download_annovar_test_vcf.test_vcf
+    File annovar_test_vcf = generate_test_vcf.test_vcf
     # Outputs from Pasilla DESeq2 count generation
     Array[File] pasilla_counts = generate_pasilla_counts.individual_count_files
     Array[String] pasilla_sample_names = generate_pasilla_counts.sample_names

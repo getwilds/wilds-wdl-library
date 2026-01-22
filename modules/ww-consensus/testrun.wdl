@@ -5,30 +5,40 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/move-consensus/modules/ww-consensus/ww-consensus.wdl" as ww_consensus
 
 workflow consensus_example {
-  # Download Annovar example VCF three times to simulate different callers
-  # The same VCF is used for all three to ensure identical column structure
-  # which is required by the consensus R script
-  call ww_testdata.download_annovar_test_vcf as download_gatk_vcf { }
-  call ww_testdata.download_annovar_test_vcf as download_bcftools_vcf { }
-  call ww_testdata.download_annovar_test_vcf as download_mutect_vcf { }
+  # Generate test VCFs with different variant subsets to simulate different callers
+  # Each caller_type produces overlapping but distinct variant sets:
+  # - 6 variants shared by all callers (high confidence consensus)
+  # - 2 variants shared by GATK + bcftools only
+  # - 2 variants shared by GATK + mutect only
+  # - 2 variants shared by bcftools + mutect only
+  # - 1 variant unique to GATK
+  call ww_testdata.generate_test_vcf as generate_gatk_vcf { input:
+      caller_type = "gatk"
+  }
+  call ww_testdata.generate_test_vcf as generate_bcftools_vcf { input:
+      caller_type = "bcftools"
+  }
+  call ww_testdata.generate_test_vcf as generate_mutect_vcf { input:
+      caller_type = "mutect"
+  }
 
   # Annotate each VCF with Annovar
   call ww_annovar.annovar_annotate as annotate_gatk { input:
-      vcf_to_annotate = download_gatk_vcf.test_vcf,
+      vcf_to_annotate = generate_gatk_vcf.test_vcf,
       ref_name = "hg38",
       annovar_protocols = "refGene",
       annovar_operation = "g"
   }
 
   call ww_annovar.annovar_annotate as annotate_bcftools { input:
-      vcf_to_annotate = download_bcftools_vcf.test_vcf,
+      vcf_to_annotate = generate_bcftools_vcf.test_vcf,
       ref_name = "hg38",
       annovar_protocols = "refGene",
       annovar_operation = "g"
   }
 
   call ww_annovar.annovar_annotate as annotate_mutect { input:
-      vcf_to_annotate = download_mutect_vcf.test_vcf,
+      vcf_to_annotate = generate_mutect_vcf.test_vcf,
       ref_name = "hg38",
       annovar_protocols = "refGene",
       annovar_operation = "g"
