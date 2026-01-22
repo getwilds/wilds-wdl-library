@@ -14,7 +14,7 @@
 ## Related Issue
 
 <!-- If this closes an issue, use "Fixes #issue-number" -->
-<!-- If it just relates to an issue, mention it like "#issue-number" -->
+<!-- If it just relates to an issue, use "Related to #issue-number" -->
 
 ## Testing
 
