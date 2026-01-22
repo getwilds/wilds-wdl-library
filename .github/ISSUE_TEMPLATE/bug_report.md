@@ -27,7 +27,7 @@ about: Report a problem with a module or pipeline in the WILDS WDL Library
 -->
 
 **What workflow engine are you using?**
-<!-- e.g., Cromwell, miniWDL, Sprocket, etc. -->
+<!-- e.g., Cromwell, miniWDL, Sprocket, PROOF at Fred Hutch, etc. -->
 
 **Input files/data:**
 <!-- Describe your input files (type, size, source). You don't need to share the actual files unless asked. -->
