@@ -284,25 +284,6 @@ Genetic maps can be downloaded from:
 - [GLIMPSE GitHub repository](https://github.com/odelaneau/GLIMPSE)
 - [Eagle genetic maps](https://alkesgroup.broadinstitute.org/Eagle/)
 
-## Parameters and Resource Requirements
-
-### Default Resources
-
-| Task | CPU | Memory | Typical Runtime |
-|------|-----|--------|-----------------|
-| glimpse2_chunk | 4 | 8 GB | Minutes |
-| glimpse2_split_reference | 4 | 8 GB | Minutes per chunk |
-| glimpse2_phase | 4 | 8 GB | Minutes per chunk |
-| glimpse2_ligate | 4 | 8 GB | Minutes |
-| glimpse2_concordance | 4 | 8 GB | Minutes |
-
-### Resource Scaling
-
-For larger datasets or higher coverage:
-- **Higher sample counts**: Increase memory for phase tasks
-- **Whole genome**: Process chromosomes in parallel
-- **Large reference panels**: Increase memory for split_reference
-
 ## Citation
 
 If you use GLIMPSE2 in your research, please cite:

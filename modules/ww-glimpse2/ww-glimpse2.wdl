@@ -199,8 +199,8 @@ task glimpse2_phase {
 
 task glimpse2_phase_cram {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Perform imputation directly from CRAM/BAM files using GLIMPSE2_phase"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl"
     outputs: {
