@@ -1,8 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-glimpse2/modules/ww-glimpse2/ww-glimpse2.wdl" as ww_glimpse2
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-glimpse2/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl" as ww_glimpse2
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow glimpse2_example {
   # Test region on chr1 - small enough for CI/CD but large enough for meaningful testing
