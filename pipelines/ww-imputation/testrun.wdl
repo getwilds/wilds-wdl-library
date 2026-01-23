@@ -1,6 +1,5 @@
 version 1.0
 
-# Import the imputation pipeline and testdata module for automatic test data provisioning
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-glimpse2/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-glimpse2/pipelines/ww-imputation/ww-imputation.wdl" as ww_imputation
 

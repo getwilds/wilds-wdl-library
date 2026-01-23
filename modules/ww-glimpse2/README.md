@@ -13,10 +13,7 @@ This module wraps the core GLIMPSE2 tools and is inspired by the [Broad Institut
 
 **Key Features:**
 - Efficient chunking of genomic regions for parallel processing
-- Support for both VCF (with genotype likelihoods) and CRAM/BAM input formats
-- Binary reference panel conversion for optimized imputation
-- Chunk ligation for seamless chromosome-wide results
-- Concordance analysis for quality assessment
+- Support for both VCF/BCF and CRAM/BAM input formats for phasing
 
 ## Module Structure
 
@@ -96,7 +93,12 @@ Perform imputation directly from CRAM/BAM files.
 - `reference_fasta_index` (File): Reference genome FASTA index
 - `reference_chunk` (File): Binary reference chunk
 - `output_prefix` (String): Prefix for output files
-- Additional parameters same as `glimpse2_phase`
+- impute_reference_only_variants: "Impute variants only present in reference panel"
+- n_burnin: "Number of burn-in iterations (default: 5)"
+- n_main: "Number of main iterations (default: 15)"
+- effective_population_size: "Effective population size (default: 15000)"
+- cpu_cores: "Number of CPU cores allocated for the task"
+- memory_gb: "Memory allocated for the task in GB"
 
 **Outputs:**
 - `imputed_chunk` (File): Imputed BCF file
@@ -257,7 +259,7 @@ sprocket run testrun.wdl --entrypoint glimpse2_example
 
 ### Custom Testing with Inputs
 
-For testing with your own data, you can provide inputs.json:
+For testing with your own data, you can provide an `inputs.json` file:
 
 ```json
 {
@@ -266,13 +268,6 @@ For testing with your own data, you can provide inputs.json:
   "glimpse2_example.output_prefix": "my_test"
 }
 ```
-
-## Docker Container
-
-This module uses the `getwilds/glimpse2:2.0.0` container image, which includes:
-- GLIMPSE2 tools (chunk, split_reference, phase, ligate, concordance)
-- bcftools for VCF manipulation and indexing
-- HTSlib for file format support
 
 ## Reference Data
 

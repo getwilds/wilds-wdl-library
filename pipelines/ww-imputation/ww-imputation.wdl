@@ -25,8 +25,8 @@ struct ChromosomeData {
 
 workflow imputation {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "WDL workflow for genotype imputation from low-coverage WGS data using GLIMPSE2. Processes CRAM/BAM files against a reference panel to produce imputed VCF files."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-imputation/ww-imputation.wdl"
     outputs: {
@@ -44,9 +44,9 @@ workflow imputation {
     impute_reference_only_variants: "Only impute variants present in reference panel (default: false)"
     window_size_cm: "Chunk window size in centiMorgans (default: 2.0)"
     buffer_size_cm: "Chunk buffer size in centiMorgans (default: 0.2)"
-    n_burnin: "Number of burn-in MCMC iterations (default: 5)"
-    n_main: "Number of main MCMC iterations (default: 15)"
-    effective_population_size: "Effective population size for HMM (default: 15000)"
+    n_burnin: "Number of burn-in Markov chain Monte Carlo iterations (default: 5)"
+    n_main: "Number of main Markov chain Monte Carlo iterations (default: 15)"
+    effective_population_size: "Effective population size for hidden Markov model (default: 15000)"
     chunk_cpu_cores: "CPU cores for chunking tasks"
     chunk_memory_gb: "Memory in GB for chunking tasks"
     phase_cpu_cores: "CPU cores for phasing/imputation tasks"

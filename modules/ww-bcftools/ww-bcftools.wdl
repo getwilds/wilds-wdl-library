@@ -98,8 +98,8 @@ task mpileup_call {
 
 task concat {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Concatenate multiple VCF/BCF files into a single file using bcftools concat"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bcftools/ww-bcftools.wdl"
     outputs: {

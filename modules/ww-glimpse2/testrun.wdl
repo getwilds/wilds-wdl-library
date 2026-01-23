@@ -1,12 +1,8 @@
 version 1.0
 
-# Import the GLIMPSE2 module and testdata module for automatic test data provisioning
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-glimpse2/modules/ww-glimpse2/ww-glimpse2.wdl" as ww_glimpse2
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-glimpse2/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
-#### TEST WORKFLOW DEFINITION ####
-# This workflow demonstrates the GLIMPSE2 imputation pipeline with automatic test data download.
-# It downloads a small region of chr1 data from 1000 Genomes and performs imputation.
 
 workflow glimpse2_example {
   # Test region on chr1 - small enough for CI/CD but large enough for meaningful testing

@@ -7,8 +7,8 @@ version 1.0
 
 task glimpse2_chunk {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Split a genomic region into chunks for parallel imputation using GLIMPSE2_chunk"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl"
     outputs: {
@@ -24,7 +24,7 @@ task glimpse2_chunk {
     output_prefix: "Prefix for output files"
     window_size_cm: "Minimal window size in centiMorgans (default: 2.0)"
     buffer_size_cm: "Buffer size in centiMorgans (default: 0.2)"
-    uniform_number_variants: "Use uniform number of variants per chunk instead of cM-based"
+    uniform_number_variants: "Use uniform number of variants per chunk instead of centiMorgans-based"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
@@ -71,8 +71,8 @@ task glimpse2_chunk {
 
 task glimpse2_split_reference {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Convert reference panel VCF to binary format for a specific chunk using GLIMPSE2_split_reference"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl"
     outputs: {
@@ -132,8 +132,8 @@ task glimpse2_split_reference {
 
 task glimpse2_phase {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Perform imputation and phasing for a single chunk using GLIMPSE2_phase"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl"
     outputs: {
@@ -171,7 +171,6 @@ task glimpse2_phase {
   command <<<
     set -eo pipefail
 
-    # Use --input-gl for VCF files with genotype likelihoods
     GLIMPSE2_phase \
       --input-gl "~{input_vcf}" \
       --reference "~{reference_chunk}" \
@@ -182,7 +181,7 @@ task glimpse2_phase {
       --output "~{output_prefix}.bcf" \
       --threads ~{cpu_cores}
 
-    # Index the output BCF (use -f to overwrite if GLIMPSE2 already created one)
+    # Index the output BCF
     bcftools index -f "~{output_prefix}.bcf"
   >>>
 
@@ -254,7 +253,7 @@ task glimpse2_phase_cram {
       --output "~{output_prefix}.bcf" \
       --threads ~{cpu_cores}
 
-    # Index the output BCF (use -f to overwrite if GLIMPSE2 already created one)
+    # Index the output BCF
     bcftools index -f "~{output_prefix}.bcf"
   >>>
 
@@ -272,8 +271,8 @@ task glimpse2_phase_cram {
 
 task glimpse2_ligate {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Ligate multiple imputed chunks into a single chromosome file using GLIMPSE2_ligate"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl"
     outputs: {
@@ -312,7 +311,6 @@ task glimpse2_ligate {
     fi
 
     # Create input file list from localized paths
-    # (using sep instead of write_lines for better cross-engine compatibility)
     echo "~{sep='\n' imputed_chunks}" > input_chunks.txt
 
     GLIMPSE2_ligate \
@@ -320,7 +318,6 @@ task glimpse2_ligate {
       --output "~{output_prefix}.${output_ext}" \
       --threads ~{cpu_cores}
 
-    # Index the output (use -f to overwrite if GLIMPSE2 already created one)
     if [ "$output_ext" == "bcf" ]; then
       bcftools index -f "~{output_prefix}.${output_ext}"
     else
@@ -342,8 +339,8 @@ task glimpse2_ligate {
 
 task glimpse2_concordance {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Compute concordance metrics between imputed and truth genotypes using GLIMPSE2_concordance"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl"
     outputs: {
@@ -406,8 +403,8 @@ task glimpse2_concordance {
 
 task parse_chunks_file {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Parse the chunks file to extract input and output regions for parallel processing"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl"
     outputs: {

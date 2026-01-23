@@ -42,7 +42,7 @@ Calls variants using bcftools mpileup and call pipeline with comprehensive param
 - `mpileup_vcf_index` (File): Index for the VCF file (.csi)
 
 ### `concat`
-Concatenate multiple VCF/BCF files into a single file using bcftools concat.
+Concatenate multiple VCF/BCF files into a single file using bcftools concat. Input files need to have the same sample columns and be sorted by chromosome and position.
 
 **Inputs:**
 - `vcf_files` (Array[File]): Array of VCF/BCF files to concatenate
