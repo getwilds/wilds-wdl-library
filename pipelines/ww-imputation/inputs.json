@@ -1,0 +1,37 @@
+{
+  "imputation.samples": [
+    {
+      "sample_id": "SAMPLE001",
+      "cram": "/path/to/sample001.cram",
+      "cram_index": "/path/to/sample001.cram.crai"
+    },
+    {
+      "sample_id": "SAMPLE002",
+      "cram": "/path/to/sample002.cram",
+      "cram_index": "/path/to/sample002.cram.crai"
+    }
+  ],
+  "imputation.chromosomes": [
+    {
+      "chromosome": "chr22",
+      "reference_vcf": "/path/to/1000GP_chr22.bcf",
+      "reference_vcf_index": "/path/to/1000GP_chr22.bcf.csi",
+      "genetic_map": "/path/to/genetic_map_chr22.txt"
+    }
+  ],
+  "imputation.reference_fasta": "/path/to/GRCh38.fa",
+  "imputation.reference_fasta_index": "/path/to/GRCh38.fa.fai",
+  "imputation.output_format": "bcf",
+  "imputation.impute_reference_only_variants": false,
+  "imputation.window_size_cm": 2.0,
+  "imputation.buffer_size_cm": 0.2,
+  "imputation.n_burnin": 5,
+  "imputation.n_main": 15,
+  "imputation.effective_population_size": 15000,
+  "imputation.chunk_cpu_cores": 4,
+  "imputation.chunk_memory_gb": 8,
+  "imputation.phase_cpu_cores": 4,
+  "imputation.phase_memory_gb": 8,
+  "imputation.ligate_cpu_cores": 4,
+  "imputation.ligate_memory_gb": 16
+}

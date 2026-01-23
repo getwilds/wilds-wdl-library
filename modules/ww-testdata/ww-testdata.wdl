@@ -233,8 +233,18 @@ task download_cram_data {
   command <<<
     set -euo pipefail
 
-    # Pull down BAM files from GATK test data bucket
-    samtools view -@ ~{cpu_cores} -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1 | \
+    # Download the small BAM file from GATK test data bucket using AWS CLI
+    # This approach works in all environments (Docker, Apptainer, local) unlike samtools S3 streaming
+    # Suboptimal approach, but necessary to ensure functionality across environments
+    aws s3 cp --no-sign-request \
+      s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam \
+      NA12878_full.bam
+    aws s3 cp --no-sign-request \
+      s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bai \
+      NA12878_full.bam.bai
+
+    # Extract chr1 and subsample to reduce size (using lower subsample rate for CRAM)
+    samtools view -@ ~{cpu_cores} -h -b NA12878_full.bam chr1 | \
     samtools view -@ ~{cpu_cores} -s 0.05 -b - > NA12878.bam
     samtools index -@ ~{cpu_cores} NA12878.bam
 
@@ -254,7 +264,7 @@ task download_cram_data {
     samtools index -@ ~{cpu_cores} NA12878_chr1.cram
 
     # Clean up intermediate files
-    rm NA12878.bam NA12878.bam.bai NA12878_chr1.bam NA12878_chr1.bam.bai NA12878_24RG_small.hg38.bai
+    rm NA12878_full.bam NA12878_full.bam.bai NA12878.bam NA12878.bam.bai NA12878_chr1.bam NA12878_chr1.bam.bai
   >>>
 
   output {
@@ -296,8 +306,18 @@ task download_bam_data {
   command <<<
     set -euo pipefail
 
-    # Pull down BAM files from GATK test data bucket
-    samtools view -@ ~{cpu_cores} -h -b s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam chr1 | \
+    # Download the small BAM file from GATK test data bucket using AWS CLI
+    # This approach works in all environments (Docker, Apptainer, local) unlike samtools S3 streaming
+    # Suboptimal approach, but necessary to ensure functionality across environments
+    aws s3 cp --no-sign-request \
+      s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam \
+      NA12878_full.bam
+    aws s3 cp --no-sign-request \
+      s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bai \
+      NA12878_full.bam.bai
+
+    # Extract chr1 and subsample to reduce size
+    samtools view -@ ~{cpu_cores} -h -b NA12878_full.bam chr1 | \
     samtools view -@ ~{cpu_cores} -s 0.1 -b - > NA12878.bam
     samtools index -@ ~{cpu_cores} NA12878.bam
 
@@ -313,7 +333,7 @@ task download_bam_data {
     samtools index -@ ~{cpu_cores} "~{filename}"
 
     # Clean up intermediate files
-    rm NA12878.bam NA12878.bam.bai
+    rm NA12878_full.bam NA12878_full.bam.bai NA12878.bam NA12878.bam.bai
   >>>
 
   output {
@@ -545,9 +565,10 @@ task download_known_indels_vcf {
   }
 
   command <<<
-    # Download filtered known indels vcf from GATK
+    # Download filtered known indels vcf from 1000 Genomes EBI FTP
+    # Note: The original Google Cloud Storage URL (genomics-public-data) now requires authentication
     bcftools view ~{if defined(region) then "-r " + region else ""} \
-    https://storage.googleapis.com/genomics-public-data/resources/broad/hg38/v0/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz \
+    https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/GRCh38_reference_genome/other_mapping_resources/Mills_and_1000G_gold_standard.indels.b38.primary_assembly.vcf.gz \
     -O z -o "mills_1000g_known_indels.~{filter_name}.vcf.gz"
 
     # Index the filtered VCF
@@ -616,8 +637,8 @@ task download_gnomad_vcf {
 
 task download_annotsv_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads test VCF files for structural variant annotation workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -655,8 +676,8 @@ task download_annotsv_vcf {
 
 task generate_pasilla_counts {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Generate DESeq2 test count matrices and metadata using the pasilla Bioconductor dataset raw files"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -713,9 +734,9 @@ task generate_pasilla_counts {
 
 task download_test_transcriptome {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
-    description: "Download a small test transcriptome for RNA-seq quantification testing. NOTE: This uses GENCODE (Ensembl) annotations, while other ww-testdata tasks use NCBI RefSeq. For production use, ensure annotation consistency across your pipeline."
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Download a small test transcriptome for RNA-seq quantification testing. NOTE: This uses GENCODE (Ensembl) annotations."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         transcriptome_fasta: "Small test transcriptome FASTA file containing protein-coding transcripts"
@@ -757,8 +778,8 @@ task download_test_transcriptome {
 
 task create_clean_amplicon_reference {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Extract and clean a reference sequence region for saturation mutagenesis analysis"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -850,8 +871,8 @@ task create_clean_amplicon_reference {
 
 task create_gdc_manifest {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Create a test GDC manifest file with small open-access files for testing gdc-client downloads"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -887,8 +908,8 @@ EOF
 
 task download_shapemapper_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads ShapeMapper example data (TPP riboswitch) from the official repository for testing RNA structure analysis workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -1021,8 +1042,8 @@ task download_test_cellranger_ref {
 
 task download_diamond_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Download E. coli proteins and create a subset as a test query"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -1058,6 +1079,202 @@ task download_diamond_data {
 
   runtime {
     docker: "getwilds/awscli:2.27.49"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_glimpse2_genetic_map {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Downloads genetic map files for GLIMPSE2 imputation from the official GLIMPSE repository"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        genetic_map: "Genetic map file for the specified chromosome"
+    }
+  }
+
+  parameter_meta {
+    chromosome: "Chromosome to download genetic map for (e.g., chr22)"
+    genome_build: "Genome build version (b37 or b38)"
+    cpu_cores: "Number of CPU cores to use for downloading"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    String chromosome = "chr1"
+    String genome_build = "b38"
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download genetic map from GLIMPSE repository
+    # Note: GLIMPSE genetic maps use chromosome numbers without 'chr' prefix,
+    # but 1000 Genomes GRCh38 data uses 'chr' prefix, so we need to convert
+    curl -sL -o "original.gmap.gz" \
+      "https://raw.githubusercontent.com/odelaneau/GLIMPSE/master/maps/genetic_maps.~{genome_build}/~{chromosome}.~{genome_build}.gmap.gz"
+
+    # Convert chromosome naming from "22" to "chr22" format to match GRCh38 convention
+    # The genetic map has format: pos chr cM
+    zcat original.gmap.gz | awk 'BEGIN{OFS="\t"} NR==1{print; next} {$2="chr"$2; print}' | gzip > "~{chromosome}.~{genome_build}.gmap.gz"
+
+    rm original.gmap.gz
+
+    echo "Downloaded and converted genetic map for ~{chromosome} (~{genome_build})"
+    echo "First few lines:"
+    zcat "~{chromosome}.~{genome_build}.gmap.gz" | head -5 || true
+  >>>
+
+  output {
+    File genetic_map = "~{chromosome}.~{genome_build}.gmap.gz"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_glimpse2_reference_panel {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Downloads and prepares a 1000 Genomes reference panel subset for GLIMPSE2 imputation. Downloads phased data for the specified chromosome and filters to a region."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        reference_vcf: "Reference panel VCF/BCF file for imputation",
+        reference_vcf_index: "Index file for the reference panel",
+        sites_vcf: "Sites-only VCF for genotype likelihood calculation",
+        sites_vcf_index: "Index file for sites VCF"
+    }
+  }
+
+  parameter_meta {
+    chromosome: "Chromosome to download (e.g., chr1, chr22)"
+    region: "Genomic region to extract (e.g., chr1:1-10000000). Must match the chromosome parameter."
+    exclude_samples: "Comma-separated list of samples to exclude (useful for validation)"
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    String chromosome = "chr1"
+    String region = "chr1:1-10000000"
+    String exclude_samples = "NA12878"
+    Int cpu_cores = 2
+    Int memory_gb = 8
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download 1000 Genomes high-coverage phased data for the specified chromosome
+    # Files follow the naming pattern: CCDG_14151_B01_GRM_WGS_2020-08-05_chrN.filtered.shapeit2-duohmm-phased.vcf.gz
+    echo "Downloading 1000 Genomes ~{chromosome} reference panel..."
+    wget -q -O "1000GP.~{chromosome}.vcf.gz" \
+      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/CCDG_14151_B01_GRM_WGS_2020-08-05_~{chromosome}.filtered.shapeit2-duohmm-phased.vcf.gz"
+    wget -q -O "1000GP.~{chromosome}.vcf.gz.tbi" \
+      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/CCDG_14151_B01_GRM_WGS_2020-08-05_~{chromosome}.filtered.shapeit2-duohmm-phased.vcf.gz.tbi"
+
+    # Create samples to exclude file
+    echo "~{exclude_samples}" | tr ',' '\n' > exclude_samples.txt
+
+    # Filter to region, normalize, keep only biallelic SNPs, and exclude validation samples
+    echo "Processing reference panel for region ~{region}..."
+    bcftools view -r "~{region}" "1000GP.~{chromosome}.vcf.gz" | \
+      bcftools norm -m -any | \
+      bcftools view -m 2 -M 2 -v snps -S ^exclude_samples.txt | \
+      bcftools annotate -x ^INFO/AC,^INFO/AN,^FORMAT/GT -Ob -o reference_panel.bcf
+
+    bcftools index reference_panel.bcf
+
+    # Create sites-only VCF for GL calculation
+    bcftools view -G -Oz -o reference_panel.sites.vcf.gz reference_panel.bcf
+    bcftools index -t reference_panel.sites.vcf.gz
+
+    # Clean up large intermediate files
+    rm "1000GP.~{chromosome}.vcf.gz" "1000GP.~{chromosome}.vcf.gz.tbi"
+
+    echo "Reference panel preparation complete"
+    echo "Variants in panel: $(bcftools view -H reference_panel.bcf | wc -l)"
+  >>>
+
+  output {
+    File reference_vcf = "reference_panel.bcf"
+    File reference_vcf_index = "reference_panel.bcf.csi"
+    File sites_vcf = "reference_panel.sites.vcf.gz"
+    File sites_vcf_index = "reference_panel.sites.vcf.gz.tbi"
+  }
+
+  runtime {
+    docker: "getwilds/bcftools:1.19"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_glimpse2_test_gl_vcf {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Downloads low-coverage sequencing data from 1000 Genomes and generates a VCF with genotype likelihoods for GLIMPSE2 imputation testing."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        gl_vcf: "VCF file with genotype likelihoods (GL field) for imputation",
+        gl_vcf_index: "Index file for the GL VCF"
+    }
+  }
+
+  parameter_meta {
+    chromosome: "Chromosome to download (e.g., chr1, chr22). Note: Phase 3 data uses numeric chromosome names (1-22)."
+    region: "Genomic region to extract (e.g., chr1:1-10000000). Must match the chromosome parameter."
+    sample_name: "Sample to extract from 1000 Genomes (must be in low-coverage dataset)"
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    String chromosome = "chr1"
+    String region = "chr1:1-10000000"
+    String sample_name = "NA12878"
+    Int cpu_cores = 2
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download 1000 Genomes Phase 3 low-coverage data for the specified chromosome
+    # This data includes genotype likelihoods (GL field) from low-coverage sequencing
+    # Note: Phase 3 files use numeric chromosome names (e.g., ALL.chr1.phase3...)
+    echo "Downloading 1000 Genomes Phase 3 low-coverage data for ~{chromosome}..."
+
+    # Extract region and sample, keeping GL field
+    bcftools view \
+      -r "~{region}" \
+      -s "~{sample_name}" \
+      --force-samples \
+      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.~{chromosome}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz" | \
+    bcftools annotate -x ^INFO/AF,^FORMAT/GT,^FORMAT/GL -Oz -o "~{sample_name}.gl.vcf.gz"
+
+    bcftools index -t "~{sample_name}.gl.vcf.gz"
+
+    echo "GL VCF download complete"
+    echo "Variants with GL: $(bcftools view -H ~{sample_name}.gl.vcf.gz | wc -l)"
+  >>>
+
+  output {
+    File gl_vcf = "~{sample_name}.gl.vcf.gz"
+    File gl_vcf_index = "~{sample_name}.gl.vcf.gz.tbi"
+  }
+
+  runtime {
+    docker: "getwilds/bcftools:1.19"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
