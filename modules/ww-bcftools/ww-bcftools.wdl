@@ -95,3 +95,81 @@ task mpileup_call {
     cpu: cpu_cores
   }
 }
+
+task concat {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Concatenate multiple VCF/BCF files into a single file using bcftools concat"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bcftools/ww-bcftools.wdl"
+    outputs: {
+        concatenated_vcf: "Concatenated VCF/BCF file",
+        concatenated_vcf_index: "Index file for concatenated VCF"
+    }
+  }
+
+  parameter_meta {
+    vcf_files: "Array of VCF/BCF files to concatenate"
+    vcf_indices: "Array of index files for input VCFs"
+    output_prefix: "Prefix for output file"
+    output_format: "Output format: bcf, vcf, or vcf.gz (default: bcf)"
+    allow_overlaps: "Allow overlapping positions in input files (default: false)"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+  }
+
+  input {
+    Array[File] vcf_files
+    Array[File] vcf_indices
+    String output_prefix
+    String output_format = "bcf"
+    Boolean allow_overlaps = false
+    Int cpu_cores = 4
+    Int memory_gb = 8
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Determine output type flag and extension
+    if [ "~{output_format}" == "bcf" ]; then
+      output_type="b"
+      output_ext="bcf"
+    elif [ "~{output_format}" == "vcf.gz" ]; then
+      output_type="z"
+      output_ext="vcf.gz"
+    else
+      output_type="v"
+      output_ext="vcf"
+    fi
+
+    # Create file list
+    echo "~{sep='\n' vcf_files}" > file_list.txt
+
+    # Concatenate files
+    bcftools concat \
+      --file-list file_list.txt \
+      ~{if allow_overlaps then "--allow-overlaps" else ""} \
+      --output-type "${output_type}" \
+      --output "~{output_prefix}.${output_ext}" \
+      --threads ~{cpu_cores}
+
+    # Index the output
+    if [ "$output_ext" == "bcf" ]; then
+      bcftools index "~{output_prefix}.${output_ext}"
+    else
+      bcftools index -t "~{output_prefix}.${output_ext}"
+    fi
+  >>>
+
+  output {
+    File concatenated_vcf = "~{output_prefix}.~{output_format}"
+    File concatenated_vcf_index = if output_format == "bcf" then "~{output_prefix}.~{output_format}.csi" else "~{output_prefix}.~{output_format}.tbi"
+  }
+
+  runtime {
+    docker: "getwilds/bcftools:1.19"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
