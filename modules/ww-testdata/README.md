@@ -570,15 +570,6 @@ Downloads low-coverage sequencing data from 1000 Genomes and extracts a VCF with
 **Example Usage**:
 ```wdl
 # For testing GLIMPSE2 imputation on chr22
-call testdata.download_glimpse2_genetic_map {
-  input:
-    chromosome = "chr22"
-}
-call testdata.download_glimpse2_reference_panel {
-  input:
-    chromosome = "chr22",
-    region = "chr22:20000000-21000000"
-}
 call testdata.download_glimpse2_test_gl_vcf {
   input:
     chromosome = "chr22",

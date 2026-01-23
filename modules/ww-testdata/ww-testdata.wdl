@@ -637,8 +637,8 @@ task download_gnomad_vcf {
 
 task download_annotsv_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads test VCF files for structural variant annotation workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -676,8 +676,8 @@ task download_annotsv_vcf {
 
 task generate_pasilla_counts {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Generate DESeq2 test count matrices and metadata using the pasilla Bioconductor dataset raw files"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -734,9 +734,9 @@ task generate_pasilla_counts {
 
 task download_test_transcriptome {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
-    description: "Download a small test transcriptome for RNA-seq quantification testing. NOTE: This uses GENCODE (Ensembl) annotations, while other ww-testdata tasks use NCBI RefSeq. For production use, ensure annotation consistency across your pipeline."
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Download a small test transcriptome for RNA-seq quantification testing. NOTE: This uses GENCODE (Ensembl) annotations."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         transcriptome_fasta: "Small test transcriptome FASTA file containing protein-coding transcripts"
@@ -778,8 +778,8 @@ task download_test_transcriptome {
 
 task create_clean_amplicon_reference {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Extract and clean a reference sequence region for saturation mutagenesis analysis"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -871,8 +871,8 @@ task create_clean_amplicon_reference {
 
 task create_gdc_manifest {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Create a test GDC manifest file with small open-access files for testing gdc-client downloads"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -908,8 +908,8 @@ EOF
 
 task download_shapemapper_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads ShapeMapper example data (TPP riboswitch) from the official repository for testing RNA structure analysis workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -1042,8 +1042,8 @@ task download_test_cellranger_ref {
 
 task download_diamond_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Download E. coli proteins and create a subset as a test query"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -1134,7 +1134,7 @@ task download_glimpse2_genetic_map {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: "getwilds/awscli:2.27.49"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
