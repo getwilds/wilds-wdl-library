@@ -1279,3 +1279,64 @@ task download_glimpse2_test_gl_vcf {
     memory: "~{memory_gb} GB"
   }
 }
+
+task download_jcast_test_data {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Downloads example rMATS output files for JCAST alternative splicing proteomics testing"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        rmats_output: "Tarball containing rMATS output files for JCAST testing"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use for downloading"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Create directory for rMATS test data
+    mkdir -p rmats_test_output
+
+    # Download rMATS example files from the JCAST GitHub repository
+    # These are minimal test files that demonstrate the expected rMATS output format
+    BASE_URL="https://raw.githubusercontent.com/ed-lau/jcast/master/tests/data"
+
+    echo "Downloading rMATS test data from JCAST repository..."
+
+    # Download each splice type file that JCAST expects
+    for splice_type in SE MXE RI A3SS A5SS; do
+      echo "Downloading ${splice_type}.MATS.JC.txt..."
+      wget -q --no-check-certificate -O "rmats_test_output/${splice_type}.MATS.JC.txt" \
+        "${BASE_URL}/${splice_type}.MATS.JC.txt" || echo "Warning: ${splice_type}.MATS.JC.txt not found"
+    done
+
+    # List downloaded files
+    echo "Downloaded rMATS test files:"
+    ls -la rmats_test_output/
+
+    # Create tarball of test data
+    tar -czf rmats_test_output.tar.gz rmats_test_output
+
+    echo "Test data preparation complete"
+  >>>
+
+  output {
+    File rmats_output = "rmats_test_output.tar.gz"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}

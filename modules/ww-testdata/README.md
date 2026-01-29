@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_jcast_test_data`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -57,7 +57,7 @@ The `testrun.wdl` workflow requires no input parameters and automatically downlo
 
 - **Chromosome**: chr1 only (for efficient testing)
 - **Reference version**: hg38 (latest standard)
-- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), Pasilla counts, ShapeMapper data, Cell Ranger reference, DIAMOND data, and GLIMPSE2 imputation data
+- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), Pasilla counts, ShapeMapper data, Cell Ranger reference, DIAMOND data, GLIMPSE2 imputation data, and JCAST rMATS test data
 
 ### Running the Test Workflow
 
@@ -583,6 +583,39 @@ call glimpse2_tasks.glimpse2_phase {
 }
 ```
 
+### download_jcast_test_data
+
+Downloads example rMATS output files for JCAST alternative splicing proteomics testing. These files are downloaded from the official JCAST repository and represent the standard rMATS output format.
+
+**Use Case**: When testing the ww-jcast module for alternative splicing proteomics, you need rMATS output files containing splice junction information. This task downloads minimal test files that demonstrate the expected format.
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+
+**Outputs**:
+- `rmats_output` (File): Tarball containing rMATS output files (SE.MATS.JC.txt, MXE.MATS.JC.txt, RI.MATS.JC.txt, A3SS.MATS.JC.txt, A5SS.MATS.JC.txt)
+
+**Data Source**: https://github.com/ed-lau/jcast/tree/master/tests/data
+
+**Example Usage**:
+```wdl
+# For testing JCAST alternative splicing proteomics
+call testdata.download_jcast_test_data { }
+call testdata.download_ref_data {
+  input:
+    chromo = "chr1",
+    version = "hg38"
+}
+
+call jcast_tasks.jcast {
+  input:
+    rmats_directory = download_jcast_test_data.rmats_output,
+    gtf_file = download_ref_data.gtf,
+    genome_fasta = download_ref_data.fasta
+}
+```
+
 ## Data Sources
 
 All reference data is downloaded from authoritative public repositories:
@@ -602,6 +635,7 @@ All reference data is downloaded from authoritative public repositories:
 - **ShapeMapper Repository**: TPP riboswitch RNA structure probing example data
 - **Swiss Institute of Bioinformatics**: Minimal Cell Ranger reference (chr21/22) for single-cell testing
 - **UniProt**: E. coli K-12 reference proteome for DIAMOND protein alignment testing
+- **JCAST Repository**: rMATS output test files for alternative splicing proteomics testing
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
 
@@ -631,6 +665,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-cellranger**: Single-cell RNA-seq analysis (uses minimal reference from `download_test_cellranger_ref`)
 - **ww-diamond**: Protein sequence alignment (uses E. coli proteome from `download_diamond_data`)
 - **ww-glimpse2**: Genotype imputation (uses genetic maps, reference panels, and GL VCFs from GLIMPSE2 tasks)
+- **ww-jcast**: Alternative splicing proteomics (uses rMATS test data from `download_jcast_test_data`)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:
