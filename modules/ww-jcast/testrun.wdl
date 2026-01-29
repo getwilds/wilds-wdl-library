@@ -1,12 +1,7 @@
 version 1.0
 
-## Test workflow for the ww-jcast module
-## Downloads test data and demonstrates JCAST functionality for alternative splicing proteomics
-
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-jcast/ww-jcast.wdl" as ww_jcast
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-
-#### TEST WORKFLOW DEFINITION ####
 
 workflow jcast_example {
   # Download reference data (GTF and FASTA)

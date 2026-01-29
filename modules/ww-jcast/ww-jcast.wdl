@@ -6,8 +6,6 @@
 
 version 1.0
 
-#### TASK DEFINITIONS ####
-
 task jcast {
   meta {
     author: "Taylor Firman"

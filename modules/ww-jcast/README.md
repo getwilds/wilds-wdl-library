@@ -9,12 +9,6 @@ A WILDS WDL module for [JCAST](https://github.com/ed-lau/jcast) (Junction Centri
 
 JCAST processes alternative splicing events identified by [rMATS](http://rnaseq-mats.sourceforge.net/) and translates them into protein sequences. This enables researchers to identify unique protein isoforms in mass spectrometry experiments that arise from alternative splicing events detected in RNA-seq data.
 
-**Key Features:**
-- Translates alternative splicing events (SE, MXE, RI, A3SS, A5SS) into protein sequences
-- Integrates with rMATS output for splicing event detection
-- Supports Gaussian mixture model for read count cutoff determination
-- Produces FASTA files suitable for proteomics database searches
-
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
@@ -113,11 +107,11 @@ call jcast_tasks.jcast {
 The module includes a test workflow (`testrun.wdl`) that can be run independently:
 
 ```bash
-# Using miniWDL
-miniwdl run testrun.wdl
-
 # Using Sprocket
 sprocket run testrun.wdl --entrypoint jcast_example
+
+# Using miniWDL
+miniwdl run testrun.wdl
 
 # Using Cromwell
 java -jar cromwell.jar run testrun.wdl
@@ -158,18 +152,6 @@ The input can be provided as:
 
 - **GTF file**: Should be an Ensembl-format GTF annotation file matching your reference genome
 - **Genome FASTA**: Should be unmasked (no `N` characters in coding regions) for accurate translation
-
-## Parameters and Resource Requirements
-
-### Default Resources
-- **CPU**: 2 cores
-- **Memory**: 8 GB
-
-### Resource Scaling
-
-For larger datasets with many splicing events:
-- Increase `memory_gb` to 16-32 GB
-- `cpu_cores` has minimal impact as JCAST is primarily memory-bound
 
 ## Citation
 
