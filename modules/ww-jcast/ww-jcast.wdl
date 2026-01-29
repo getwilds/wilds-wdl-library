@@ -88,25 +88,19 @@ task jcast {
 
     echo "JCAST completed successfully"
 
-    # List outputs
-    echo "Output directory contents:"
-    ls -la "~{output_name}"* || ls -la . | grep "~{output_name}" || echo "Checking for FASTA output..."
+    # JCAST creates a nested directory structure: {output_name}/jcast_{timestamp}/*.fasta
+    # Combine all protein sequence FASTA files into a single output
+    find "~{output_name}" -name "*.fasta" -exec cat {} + > "~{output_name}_combined.fasta" 2>/dev/null || \
+    touch "~{output_name}_combined.fasta"
 
-    # Find the main output FASTA file
-    if [ -f "~{output_name}.fasta" ]; then
-      echo "Found output FASTA: ~{output_name}.fasta"
-    elif [ -f "~{output_name}/~{output_name}.fasta" ]; then
-      mv "~{output_name}/~{output_name}.fasta" "~{output_name}.fasta"
-    fi
+    echo "Combined FASTA sequences: $(grep -c '^>' "~{output_name}_combined.fasta" || echo 0)"
 
     # Create output tarball of all results
-    mkdir -p "~{output_name}_results"
-    mv ~{output_name}* "~{output_name}_results/" 2>/dev/null || true
-    tar -czf "~{output_name}_results.tar.gz" "~{output_name}_results"
+    tar -czf "~{output_name}_results.tar.gz" "~{output_name}"
   >>>
 
   output {
-    File output_fasta = "~{output_name}_results/~{output_name}.fasta"
+    File output_fasta = "~{output_name}_combined.fasta"
     File output_directory = "~{output_name}_results.tar.gz"
   }
 

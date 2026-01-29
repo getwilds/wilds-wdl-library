@@ -41,8 +41,8 @@ Translates alternative splicing events from rMATS output into protein sequences 
 | `memory_gb` | Int | No | `8` | Memory allocated in GB |
 
 **Outputs:**
-- `output_fasta` (File): FASTA file containing translated protein sequences from alternative splicing events
-- `output_directory` (File): Tarball containing all JCAST output files
+- `output_fasta` (File): Combined FASTA file containing all translated protein sequences from alternative splicing events
+- `output_directory` (File): Tarball containing all JCAST output files, including tier-specific FASTA files (T1, T2, T3, T4, canonical, orphan)
 
 ## Usage as a Module
 
