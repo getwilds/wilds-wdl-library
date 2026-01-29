@@ -120,9 +120,11 @@ java -jar cromwell.jar run testrun.wdl
 ### Automatic Demo Mode
 
 The test workflow automatically:
-1. Downloads reference genome data (chr1 subset) using `ww-testdata`
+1. Downloads Ensembl reference data (human chr15 GTF and FASTA) from the JCAST repository
 2. Downloads example rMATS output files from the JCAST repository
 3. Runs JCAST to generate protein sequences from alternative splicing events
+
+Note: The test uses Ensembl-format files from the JCAST repository rather than `ww-testdata.download_ref_data` because JCAST requires Ensembl GTF format.
 
 ## Docker Container
 
@@ -150,7 +152,16 @@ The input can be provided as:
 
 ### Reference Files
 
-- **GTF file**: Should be an Ensembl-format GTF annotation file matching your reference genome
+> **Important: Ensembl GTF Required**
+>
+> JCAST requires **Ensembl-format GTF** annotation files, which contain the `transcript_type` attribute. GTF files from other sources (UCSC, NCBI RefSeq) use different attribute names and will cause JCAST to fail with a `KeyError: 'transcript_type'` error.
+>
+> - **Use**: Ensembl GTF files (e.g., from [Ensembl FTP](https://ftp.ensembl.org/pub/))
+> - **Do NOT use**: UCSC or NCBI RefSeq GTF files (e.g., from `ww-testdata.download_ref_data`)
+>
+> For testing, use `ww-testdata.download_jcast_test_data` which provides compatible Ensembl GTF and FASTA files.
+
+- **GTF file**: Must be an Ensembl-format GTF annotation file (with `transcript_type` attribute)
 - **Genome FASTA**: Should be unmasked (no `N` characters in coding regions) for accurate translation
 
 ## Citation

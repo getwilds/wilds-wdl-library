@@ -115,7 +115,9 @@ workflow testdata_example {
     glimpse2_sites_vcf_index = download_glimpse2_reference_panel.sites_vcf_index,
     glimpse2_gl_vcf = download_glimpse2_test_gl_vcf.gl_vcf,
     glimpse2_gl_vcf_index = download_glimpse2_test_gl_vcf.gl_vcf_index,
-    jcast_rmats_output = download_jcast_test_data.rmats_output
+    jcast_rmats_output = download_jcast_test_data.rmats_output,
+    jcast_gtf_file = download_jcast_test_data.gtf_file,
+    jcast_genome_fasta = download_jcast_test_data.genome_fasta
   }
 
   output {
@@ -179,6 +181,8 @@ workflow testdata_example {
     File glimpse2_gl_vcf_index = download_glimpse2_test_gl_vcf.gl_vcf_index
     # Output from JCAST test data download
     File jcast_rmats_output = download_jcast_test_data.rmats_output
+    File jcast_gtf_file = download_jcast_test_data.gtf_file
+    File jcast_genome_fasta = download_jcast_test_data.genome_fasta
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
   }
@@ -239,6 +243,8 @@ task validate_outputs {
     glimpse2_gl_vcf: "GLIMPSE2 genotype likelihoods VCF file to validate"
     glimpse2_gl_vcf_index: "GLIMPSE2 genotype likelihoods VCF index to validate"
     jcast_rmats_output: "JCAST rMATS output tarball to validate"
+    jcast_gtf_file: "JCAST Ensembl GTF annotation file to validate"
+    jcast_genome_fasta: "JCAST Ensembl genome FASTA file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -290,6 +296,8 @@ task validate_outputs {
     File glimpse2_gl_vcf
     File glimpse2_gl_vcf_index
     File jcast_rmats_output
+    File jcast_gtf_file
+    File jcast_genome_fasta
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -369,6 +377,8 @@ task validate_outputs {
     validate_file "~{glimpse2_gl_vcf}" "GLIMPSE2 genotype likelihoods VCF" || validation_passed=false
     validate_file "~{glimpse2_gl_vcf_index}" "GLIMPSE2 genotype likelihoods VCF index" || validation_passed=false
     validate_file "~{jcast_rmats_output}" "JCAST rMATS output tarball" || validation_passed=false
+    validate_file "~{jcast_gtf_file}" "JCAST Ensembl GTF file" || validation_passed=false
+    validate_file "~{jcast_genome_fasta}" "JCAST Ensembl genome FASTA" || validation_passed=false
 
     # Additional check: Verify no N bases in clean amplicon
     echo "" >> validation_report.txt
@@ -384,7 +394,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 44"
+      echo "Total files validated: 46"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

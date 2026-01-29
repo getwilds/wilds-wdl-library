@@ -4,23 +4,16 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow jcast_example {
-  # Download reference data (GTF and FASTA)
-  call ww_testdata.download_ref_data {
-    input:
-      chromo = "chr1",
-      version = "hg38",
-      region = "1-5000000"
-  }
-
-  # Download rMATS test data from the JCAST repository
+  # Download rMATS test data, Ensembl GTF, and genome FASTA from the JCAST repository
+  # Note: JCAST requires Ensembl-format GTF files (with transcript_type attribute)
   call ww_testdata.download_jcast_test_data { }
 
   # Run JCAST with test data
   call ww_jcast.jcast {
     input:
       rmats_directory = download_jcast_test_data.rmats_output,
-      gtf_file = download_ref_data.gtf,
-      genome_fasta = download_ref_data.fasta,
+      gtf_file = download_jcast_test_data.gtf_file,
+      genome_fasta = download_jcast_test_data.genome_fasta,
       output_name = "test_jcast",
       min_read_count = 1,
       qvalue_min = 0,

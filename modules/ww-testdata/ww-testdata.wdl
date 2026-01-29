@@ -1284,10 +1284,12 @@ task download_jcast_test_data {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Downloads example rMATS output files for JCAST alternative splicing proteomics testing"
+    description: "Downloads example rMATS output files and Ensembl reference data for JCAST alternative splicing proteomics testing"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
-        rmats_output: "Tarball containing rMATS output files for JCAST testing"
+        rmats_output: "Tarball containing rMATS output files for JCAST testing",
+        gtf_file: "Ensembl GTF annotation file (human chr15) required by JCAST",
+        genome_fasta: "Ensembl genome FASTA file (human chr15) required by JCAST"
     }
   }
 
@@ -1304,12 +1306,11 @@ task download_jcast_test_data {
   command <<<
     set -eo pipefail
 
+    # Base URL for JCAST test data
+    BASE_URL="https://raw.githubusercontent.com/ed-lau/jcast/master/tests/data"
+
     # Create directory for rMATS test data
     mkdir -p rmats_test_output
-
-    # Download rMATS example files from the JCAST GitHub repository
-    # These are minimal test files that demonstrate the expected rMATS output format
-    BASE_URL="https://raw.githubusercontent.com/ed-lau/jcast/master/tests/data/rmats"
 
     echo "Downloading rMATS test data from JCAST repository..."
 
@@ -1317,21 +1318,35 @@ task download_jcast_test_data {
     for splice_type in SE MXE RI A3SS A5SS; do
       echo "Downloading ${splice_type}.MATS.JC.txt..."
       wget -q --no-check-certificate -O "rmats_test_output/${splice_type}.MATS.JC.txt" \
-        "${BASE_URL}/${splice_type}.MATS.JC.txt" || echo "Warning: ${splice_type}.MATS.JC.txt not found"
+        "${BASE_URL}/rmats/${splice_type}.MATS.JC.txt" || echo "Warning: ${splice_type}.MATS.JC.txt not found"
     done
 
-    # List downloaded files
+    # List downloaded rMATS files
     echo "Downloaded rMATS test files:"
     ls -la rmats_test_output/
 
-    # Create tarball of test data
+    # Create tarball of rMATS test data
     tar -czf rmats_test_output.tar.gz rmats_test_output
 
+    # Download Ensembl GTF file (JCAST requires Ensembl format with transcript_type attribute)
+    echo "Downloading Ensembl GTF annotation file..."
+    wget -q --no-check-certificate -O "test_reference.gtf" \
+      "${BASE_URL}/genome/Homo_sapiens.GRCh38.89.chromosome.15.gtf"
+
+    # Download Ensembl genome FASTA file
+    echo "Downloading Ensembl genome FASTA file..."
+    wget -q --no-check-certificate -O "test_reference.fa.gz" \
+      "${BASE_URL}/genome/Homo_sapiens.GRCh38.dna.chromosome.15.fa.gz"
+    gunzip test_reference.fa.gz
+
     echo "Test data preparation complete"
+    ls -la
   >>>
 
   output {
     File rmats_output = "rmats_test_output.tar.gz"
+    File gtf_file = "test_reference.gtf"
+    File genome_fasta = "test_reference.fa"
   }
 
   runtime {

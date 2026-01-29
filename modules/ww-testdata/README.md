@@ -585,9 +585,9 @@ call glimpse2_tasks.glimpse2_phase {
 
 ### download_jcast_test_data
 
-Downloads example rMATS output files for JCAST alternative splicing proteomics testing. These files are downloaded from the official JCAST repository and represent the standard rMATS output format.
+Downloads example rMATS output files and Ensembl reference data for JCAST alternative splicing proteomics testing. These files are downloaded from the official JCAST repository.
 
-**Use Case**: When testing the ww-jcast module for alternative splicing proteomics, you need rMATS output files containing splice junction information. This task downloads minimal test files that demonstrate the expected format.
+**Use Case**: When testing the ww-jcast module for alternative splicing proteomics, you need rMATS output files containing splice junction information, along with Ensembl-format GTF and genome FASTA files. JCAST specifically requires Ensembl GTF format (with `transcript_type` attribute), which differs from UCSC/RefSeq formats.
 
 **Inputs**:
 - `cpu_cores` (Int): CPU allocation (default: 1)
@@ -595,24 +595,22 @@ Downloads example rMATS output files for JCAST alternative splicing proteomics t
 
 **Outputs**:
 - `rmats_output` (File): Tarball containing rMATS output files (SE.MATS.JC.txt, MXE.MATS.JC.txt, RI.MATS.JC.txt, A3SS.MATS.JC.txt, A5SS.MATS.JC.txt)
+- `gtf_file` (File): Ensembl GTF annotation file (human chromosome 15, GRCh38.89)
+- `genome_fasta` (File): Ensembl genome FASTA file (human chromosome 15, GRCh38)
 
 **Data Source**: https://github.com/ed-lau/jcast/tree/master/tests/data
 
 **Example Usage**:
 ```wdl
 # For testing JCAST alternative splicing proteomics
+# Note: Use the Ensembl GTF and FASTA from this task, not from download_ref_data
 call testdata.download_jcast_test_data { }
-call testdata.download_ref_data {
-  input:
-    chromo = "chr1",
-    version = "hg38"
-}
 
 call jcast_tasks.jcast {
   input:
     rmats_directory = download_jcast_test_data.rmats_output,
-    gtf_file = download_ref_data.gtf,
-    genome_fasta = download_ref_data.fasta
+    gtf_file = download_jcast_test_data.gtf_file,
+    genome_fasta = download_jcast_test_data.genome_fasta
 }
 ```
 
