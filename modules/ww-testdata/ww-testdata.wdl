@@ -1309,7 +1309,7 @@ task download_jcast_test_data {
 
     # Download rMATS example files from the JCAST GitHub repository
     # These are minimal test files that demonstrate the expected rMATS output format
-    BASE_URL="https://raw.githubusercontent.com/ed-lau/jcast/master/tests/data"
+    BASE_URL="https://raw.githubusercontent.com/ed-lau/jcast/master/tests/data/rmats"
 
     echo "Downloading rMATS test data from JCAST repository..."
 
