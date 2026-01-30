@@ -79,10 +79,10 @@ workflow splicing_proteomics_example {
       output_prefix = "airway_splicing",
       sjdb_overhang = 62,  # read_length - 1
       genome_sa_index_nbases = 11,  # Reduced for chr15 subset
-      star_cpu = 4,
-      star_memory_gb = 16,
-      rmats_cpu = 4,
-      rmats_memory_gb = 8,
+      star_cpu = 2,
+      star_memory_gb = 6,  # Reduced for local laptop testing
+      rmats_cpu = 2,
+      rmats_memory_gb = 4,
       jcast_cpu = 2,
       jcast_memory_gb = 4
   }
