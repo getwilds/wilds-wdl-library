@@ -18,10 +18,6 @@ struct RefGenome {
 }
 
 workflow splicing_proteomics_example {
-  meta {
-    description: "Test workflow for the splicing proteomics pipeline using airway RNA-seq data"
-  }
-
   # Download Ensembl chr15 reference data from JCAST test data
   # This provides both the Ensembl GTF (required by JCAST) and genome FASTA
   call ww_testdata.download_jcast_test_data { }

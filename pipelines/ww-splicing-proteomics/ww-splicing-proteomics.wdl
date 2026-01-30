@@ -6,9 +6,9 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as star_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rmats-turbo/ww-rmats-turbo.wdl" as rmats_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-jcast/ww-jcast.wdl" as jcast_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-star/ww-star.wdl" as star_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-rmats-turbo/ww-rmats-turbo.wdl" as rmats_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-jcast/ww-jcast.wdl" as jcast_tasks
 
 struct SampleInfo {
     String name
