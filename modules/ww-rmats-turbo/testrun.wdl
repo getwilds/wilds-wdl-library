@@ -10,10 +10,6 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow rmats_turbo_example {
-  meta {
-    description: "Example workflow demonstrating rMATS-turbo differential alternative splicing analysis"
-  }
-
   # Download reference GTF annotation
   call ww_testdata.download_ref_data {
     input:
