@@ -13,8 +13,11 @@ baseName <- args[4]
 library(tidyverse)
 
 # Simple function to read Annovar-annotated table and extract key variant info
+# Note: fill=TRUE and quote="" handle Annovar's Otherinfo column which contains
+# extra tab-separated VCF fields beyond the defined header columns
 read_variants <- function(filepath, caller_name) {
-  df <- read.delim(filepath, header = TRUE, stringsAsFactors = FALSE)
+  df <- read.delim(filepath, header = TRUE, stringsAsFactors = FALSE,
+                   fill = TRUE, quote = "")
 
   # Create variant ID from position columns (these should be consistent across Annovar output)
   df$VariantID <- paste(df$Chr, df$Start, df$End, df$Ref, df$Alt, sep = "-")
