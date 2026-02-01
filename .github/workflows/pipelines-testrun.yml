@@ -10,7 +10,7 @@ on:
         default: ''
   schedule:
     # Run monthly on the 1st at midnight UTC
-    - cron: '0 0 1 * *'
+    - cron: '0 0 2 * *'
   pull_request:
     types: [opened, reopened, synchronize]
     paths:

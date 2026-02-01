@@ -141,6 +141,10 @@ def main():
     if event_name == 'workflow_dispatch':
         # Handle manual workflow dispatch
         final_items = handle_workflow_dispatch_input(all_items, dispatch_item, item_type)
+    elif event_name == 'schedule':
+        # Scheduled runs test all items
+        print("Scheduled run - testing all items")
+        final_items = all_items
     else:
         # Handle PR - filter by changes
         changed_files = get_changed_files()
