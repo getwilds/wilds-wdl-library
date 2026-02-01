@@ -93,6 +93,10 @@ wilds-wdl-library/
 2. **`testrun.wdl`** - Test workflow demonstrating module functionality (must be named `testrun.wdl`)
 3. **`README.md`** - Comprehensive documentation
 
+**The module folder may optionally contain:**
+
+- **Custom scripts** (e.g., `.R`, `.py`, `.sh`) - If your task requires a custom script that isn't part of the container image, place it directly in the module directory alongside the WDL files. The script can be fetched at runtime using `curl` or `wget` in the task's command block.
+
 
 **Your main WDL file (`ww-toolname.wdl`) must include:**
 
