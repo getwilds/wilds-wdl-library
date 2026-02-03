@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import pandas as pd
-from cirro.helpers.preprocess_dataset import PreprocessDataset
+from cirro.helpers.preprocess_dataset import PreprocessDataset, read_json
 
 
 def main():
@@ -17,20 +17,17 @@ def main():
     # For workflows without input datasets, we can't use from_running()
     # because it expects a files.csv. Instead, we read params directly.
     dataset_root = os.getenv("PW_S3_DATASET")
-    config_dir = os.path.join(dataset_root, "config")
+    config_dir = f"{dataset_root}/config"
 
     logger.info(f"Reading params from {config_dir}")
 
-    # Read params from the config directory
-    with open(os.path.join(config_dir, "params.json")) as f:
-        params = json.load(f)
+    # Read params from the config directory using the SDK's S3-aware read_json
+    params = read_json(f"{config_dir}/params.json")
 
-    # Read metadata if it exists
-    metadata_path = os.path.join(config_dir, "metadata.json")
-    if os.path.exists(metadata_path):
-        with open(metadata_path) as f:
-            metadata = json.load(f)
-    else:
+    # Read metadata if it exists (wrap in try/except for S3)
+    try:
+        metadata = read_json(f"{config_dir}/metadata.json")
+    except Exception:
         metadata = {}
 
     # Create PreprocessDataset with empty files/samplesheet since this
