@@ -1,0 +1,60 @@
+{
+  "form": {
+    "type": "object",
+    "properties": {
+      "dbsnp_vcf": {
+        "title": "Known SNPs (VCF)",
+        "description": "dbSNP VCF file for known variant sites",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.vcf"
+      },
+      "known_indels_vcf": {
+        "title": "Known Indels (VCF)",
+        "description": "Array of VCF files with known indel sites",
+        "type": "string",
+        "multiple": true,
+        "pathType": "dataset",
+        "file": "**/*.vcf"
+      },
+      "cpu_cores": {
+        "title": "CPUs",
+        "description": "Number of CPUs to use for BWA alignment and GATK processing",
+        "type": "integer",
+        "default": 4
+      },
+      "memory_gb": {
+        "title": "Memory (GB)",
+        "description": "Memory allocation in GB",
+        "type": "number",
+        "default": 8
+      },
+      "reference_fasta": {
+        "title": "Reference Genome (FASTA)",
+        "description": "Reference genome FASTA file that has a companion index (.fai)",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*"
+      },
+      "reference_fasta_index": {
+        "title": "Reference Genome Index (FAI)",
+        "description": "Index for reference genome FASTA file",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.fai"
+      }
+    },
+    "required": [
+      "dbsnp_vcf",
+      "known_indels_vcf",
+      "cpu_cores",
+      "memory_gb",
+      "reference_fasta",
+      "reference_fasta_index"
+    ]
+  },
+  "ui": {}
+}
