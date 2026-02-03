@@ -41,6 +41,14 @@ workflow glimpse2_example {
       sample_name = "NA12878"
   }
 
+  # Step 4b: Download truth VCF for concordance evaluation (NA12878 high-coverage genotypes)
+  call ww_testdata.download_glimpse2_truth_vcf as download_truth_vcf {
+    input:
+      chromosome = test_chromosome,
+      region = test_region,
+      sample_name = "NA12878"
+  }
+
   # Step 5: Create chunks for the test region
   call ww_glimpse2.glimpse2_chunk {
     input:
@@ -88,12 +96,23 @@ workflow glimpse2_example {
       output_prefix = "~{output_prefix}_final"
   }
 
+  # Step 9: Evaluate imputation accuracy with concordance
+  call ww_glimpse2.glimpse2_concordance {
+    input:
+      imputed_vcf = glimpse2_ligate.ligated_vcf,
+      imputed_vcf_index = glimpse2_ligate.ligated_vcf_index,
+      truth_vcf = download_truth_vcf.truth_vcf,
+      truth_vcf_index = download_truth_vcf.truth_vcf_index,
+      output_prefix = "~{output_prefix}_concordance"
+  }
+
   output {
     # Test data outputs
     File reference_fasta = download_reference.fasta
     File genetic_map = download_genetic_map.genetic_map
     File reference_panel = download_reference_panel.reference_vcf
     File input_gl_vcf = download_gl_vcf.gl_vcf
+    File truth_vcf = download_truth_vcf.truth_vcf
 
     # GLIMPSE2 intermediate outputs
     File chunks_file = glimpse2_chunk.chunks_file
@@ -103,5 +122,8 @@ workflow glimpse2_example {
     # Final imputed output
     File final_imputed_vcf = glimpse2_ligate.ligated_vcf
     File final_imputed_vcf_index = glimpse2_ligate.ligated_vcf_index
+
+    # Concordance output
+    Array[File] concordance_results = glimpse2_concordance.concordance_output
   }
 }

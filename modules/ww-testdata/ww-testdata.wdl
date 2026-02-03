@@ -1218,6 +1218,67 @@ task download_glimpse2_reference_panel {
   }
 }
 
+task download_glimpse2_truth_vcf {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Downloads high-coverage truth genotypes from 1000 Genomes for GLIMPSE2 concordance validation. Uses the same high-coverage phased dataset as the reference panel but extracts only the validation sample."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        truth_vcf: "Truth VCF file with high-confidence genotypes for concordance evaluation",
+        truth_vcf_index: "Index file for the truth VCF"
+    }
+  }
+
+  parameter_meta {
+    chromosome: "Chromosome to download (e.g., chr1, chr22)"
+    region: "Genomic region to extract (e.g., chr1:1-10000000). Must match the chromosome parameter."
+    sample_name: "Sample to extract as truth (must be in the high-coverage dataset)"
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    String chromosome = "chr1"
+    String region = "chr1:1-10000000"
+    String sample_name = "NA12878"
+    Int cpu_cores = 2
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Download 1000 Genomes high-coverage phased data for the specified chromosome
+    # This is the same dataset used for reference panels, but we extract only our validation sample
+    echo "Downloading 1000 Genomes high-coverage truth genotypes for ~{sample_name}..."
+
+    bcftools view \
+      -r "~{region}" \
+      -s "~{sample_name}" \
+      --force-samples \
+      "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/CCDG_14151_B01_GRM_WGS_2020-08-05_~{chromosome}.filtered.shapeit2-duohmm-phased.vcf.gz" | \
+    bcftools view -m 2 -M 2 -v snps | \
+    bcftools annotate -x ^FORMAT/GT -Oz -o "~{sample_name}.truth.vcf.gz"
+
+    bcftools index -t "~{sample_name}.truth.vcf.gz"
+
+    echo "Truth VCF download complete"
+    echo "Truth variants: $(bcftools view -H ~{sample_name}.truth.vcf.gz | wc -l)"
+  >>>
+
+  output {
+    File truth_vcf = "~{sample_name}.truth.vcf.gz"
+    File truth_vcf_index = "~{sample_name}.truth.vcf.gz.tbi"
+  }
+
+  runtime {
+    docker: "getwilds/bcftools:1.19"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task download_glimpse2_test_gl_vcf {
   meta {
     author: "WILDS Team"
