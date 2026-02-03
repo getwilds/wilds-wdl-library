@@ -1,11 +1,47 @@
 #!/usr/bin/env python3
 import json
+import logging
+import os
+import pandas as pd
 from cirro.helpers.preprocess_dataset import PreprocessDataset
 
 
 def main():
-    # Get the information provided by the user
-    ds = PreprocessDataset.from_running()
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)-8s [PreprocessDataset] %(message)s'
+    )
+    logger = logging.getLogger(__name__)
+
+    # For workflows without input datasets, we can't use from_running()
+    # because it expects a files.csv. Instead, we read params directly.
+    dataset_root = os.getenv("PW_S3_DATASET")
+    config_dir = os.path.join(dataset_root, "config")
+
+    logger.info(f"Reading params from {config_dir}")
+
+    # Read params from the config directory
+    with open(os.path.join(config_dir, "params.json")) as f:
+        params = json.load(f)
+
+    # Read metadata if it exists
+    metadata_path = os.path.join(config_dir, "metadata.json")
+    if os.path.exists(metadata_path):
+        with open(metadata_path) as f:
+            metadata = json.load(f)
+    else:
+        metadata = {}
+
+    # Create PreprocessDataset with empty files/samplesheet since this
+    # workflow downloads data from SRA rather than using input datasets
+    ds = PreprocessDataset(
+        samplesheet=pd.DataFrame(columns=["sample"]),
+        files=pd.DataFrame(columns=["sample", "file"]),
+        params=params,
+        metadata=metadata,
+        dataset_root=dataset_root
+    )
 
     # Set up the inputs JSON
     setup_inputs(ds)
