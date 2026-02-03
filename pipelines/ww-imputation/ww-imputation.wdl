@@ -14,6 +14,8 @@ struct ImputationSample {
     String sample_id
     File cram
     File cram_index
+    File? truth_vcf
+    File? truth_vcf_index
 }
 
 struct ChromosomeData {
@@ -31,12 +33,13 @@ workflow imputation {
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-imputation/ww-imputation.wdl"
     outputs: {
         imputed_vcfs: "Array of imputed VCF/BCF files, one per sample (all chromosomes ligated together)",
-        imputed_vcf_indices: "Array of index files for imputed VCFs"
+        imputed_vcf_indices: "Array of index files for imputed VCFs",
+        concordance_outputs: "Array of concordance metrics files for samples with truth VCFs (null for samples without)"
     }
   }
 
   parameter_meta {
-    samples: "Array of ImputationSample objects containing sample_id, CRAM file, and CRAM index"
+    samples: "Array of ImputationSample objects containing sample_id, CRAM file, CRAM index, and optional truth VCF for concordance"
     chromosomes: "Array of ChromosomeData objects containing chromosome name, reference panel VCF, index, and genetic map"
     reference_fasta: "Reference genome FASTA file (must match CRAM reference)"
     reference_fasta_index: "Reference genome FASTA index file (.fai)"
@@ -47,12 +50,17 @@ workflow imputation {
     n_burnin: "Number of burn-in Markov chain Monte Carlo iterations (default: 5)"
     n_main: "Number of main Markov chain Monte Carlo iterations (default: 15)"
     effective_population_size: "Effective population size for hidden Markov model (default: 15000)"
+    concordance_allele_frequencies: "Optional file with allele frequencies for concordance binning"
+    concordance_min_val_dp: "Minimum depth in validation/truth data for concordance (default: 0)"
+    concordance_min_val_gq: "Minimum genotype quality in validation/truth data for concordance (default: 0)"
     chunk_cpu_cores: "CPU cores for chunking tasks"
     chunk_memory_gb: "Memory in GB for chunking tasks"
     phase_cpu_cores: "CPU cores for phasing/imputation tasks"
     phase_memory_gb: "Memory in GB for phasing/imputation tasks"
     ligate_cpu_cores: "CPU cores for ligation tasks"
     ligate_memory_gb: "Memory in GB for ligation tasks"
+    concordance_cpu_cores: "CPU cores for concordance tasks"
+    concordance_memory_gb: "Memory in GB for concordance tasks"
   }
 
   input {
@@ -73,6 +81,11 @@ workflow imputation {
     Int n_main = 15
     Int effective_population_size = 15000
 
+    # Concordance parameters (only used when truth VCF provided in sample)
+    File? concordance_allele_frequencies
+    Int concordance_min_val_dp = 0
+    Int concordance_min_val_gq = 0
+
     # Resource allocation
     Int chunk_cpu_cores = 4
     Int chunk_memory_gb = 8
@@ -80,6 +93,8 @@ workflow imputation {
     Int phase_memory_gb = 8
     Int ligate_cpu_cores = 4
     Int ligate_memory_gb = 16
+    Int concordance_cpu_cores = 4
+    Int concordance_memory_gb = 8
   }
 
   # Step 1: Process each chromosome - chunk and split reference
@@ -166,10 +181,28 @@ workflow imputation {
         output_prefix = sample.sample_id + "_imputed_all_chromosomes",
         output_format = output_format
     }
+
+    # Optional: Run concordance if truth VCF is provided for this sample
+    if (defined(sample.truth_vcf) && defined(sample.truth_vcf_index)) {
+      call glimpse2.glimpse2_concordance {
+        input:
+          imputed_vcf = concatenate_chromosomes.concatenated_vcf,
+          imputed_vcf_index = concatenate_chromosomes.concatenated_vcf_index,
+          truth_vcf = select_first([sample.truth_vcf]),
+          truth_vcf_index = select_first([sample.truth_vcf_index]),
+          allele_frequencies = concordance_allele_frequencies,
+          output_prefix = sample.sample_id + "_concordance",
+          min_val_dp = concordance_min_val_dp,
+          min_val_gq = concordance_min_val_gq,
+          cpu_cores = concordance_cpu_cores,
+          memory_gb = concordance_memory_gb
+      }
+    }
   }
 
   output {
     Array[File] imputed_vcfs = concatenate_chromosomes.concatenated_vcf
     Array[File] imputed_vcf_indices = concatenate_chromosomes.concatenated_vcf_index
+    Array[Array[File]?] concordance_outputs = glimpse2_concordance.concordance_output
   }
 }
