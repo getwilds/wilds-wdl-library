@@ -284,6 +284,14 @@ Genetic maps can be downloaded from:
 - [GLIMPSE GitHub repository](https://github.com/odelaneau/GLIMPSE)
 - [Eagle genetic maps](https://alkesgroup.broadinstitute.org/Eagle/)
 
+## Implementation Notes
+
+### File and Index Co-location
+
+GLIMPSE2 (like many bioinformatics tools built on htslib) expects index files to be located in the same directory as their corresponding data files. For example, when given `sample.cram`, it looks for `sample.cram.crai` in the same directory.
+
+This module handles the edge case where input files and their indices may be stored in different directories by creating local symlinks at runtime. This ensures compatibility regardless of how your files are organized, while maintaining the expected file/index co-location that GLIMPSE2 requires.
+
 ## Citation
 
 If you use GLIMPSE2 in your research, please cite:
