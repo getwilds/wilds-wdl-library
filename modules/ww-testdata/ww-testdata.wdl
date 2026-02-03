@@ -1257,9 +1257,9 @@ task download_glimpse2_truth_vcf {
       -r "~{region}" \
       -s "~{sample_name}" \
       --force-samples \
+      -m 2 -M 2 -v snps \
       "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/CCDG_14151_B01_GRM_WGS_2020-08-05_~{chromosome}.filtered.shapeit2-duohmm-phased.vcf.gz" | \
-    bcftools view -m 2 -M 2 -v snps | \
-    bcftools annotate -x ^FORMAT/GT -Oz -o "~{sample_name}.truth.vcf.gz"
+    bcftools annotate -x INFO -Oz -o "~{sample_name}.truth.vcf.gz"
 
     bcftools index -t "~{sample_name}.truth.vcf.gz"
 
