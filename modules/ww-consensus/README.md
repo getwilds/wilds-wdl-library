@@ -25,8 +25,8 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 Generates consensus variant calls by combining annotated variant tables from three different callers.
 
 **Inputs:**
-- `gatk_vars` (File): Annotated variant table from GATK HaplotypeCaller
-- `sam_vars` (File): Annotated variant table from samtools/bcftools
+- `haplo_vars` (File): Annotated variant table from GATK HaplotypeCaller
+- `mpileup_vars` (File): Annotated variant table from mpileup
 - `mutect_vars` (File): Annotated variant table from GATK Mutect2
 - `base_file_name` (String): Base name for output files
 - `cpu_cores` (Int): Number of CPU cores to use (default: 1)
@@ -52,8 +52,8 @@ workflow my_variant_pipeline {
 
   call consensus_tasks.consensus_processing {
     input:
-      gatk_vars = haplotypecaller_annotated,
-      sam_vars = bcftools_annotated,
+      haplo_vars = haplotypecaller_annotated,
+      mpileup_vars = bcftools_annotated,
       mutect_vars = mutect2_annotated,
       base_file_name = sample_name
   }
@@ -105,6 +105,22 @@ The consensus TSV file contains variants that have supporting evidence from mult
 - Annotations from the input tables
 - Caller support indicators
 - Combined quality metrics
+
+## Reproducibility
+
+This module fetches the `consensus-trio.R` script from GitHub at runtime rather than bundling it inside the Docker container. This design simplifies development and customization but introduces a reproducibility consideration: the script and container are tracked separately.
+
+**For production workflows**, we recommend one of the following approaches:
+
+1. **Pin to a specific commit**: Replace the branch reference in the wget URL with a commit hash:
+   ```
+   # Instead of refs/heads/main, use a specific commit:
+   https://raw.githubusercontent.com/getwilds/wilds-wdl-library/<commit-sha>/modules/ww-consensus/consensus-trio.R
+   ```
+
+2. **Fork the repository**: Create your own fork and reference your stable branch or tagged release.
+
+3. **Bundle the script**: For maximum reproducibility, build a custom Docker container that includes the script.
 
 ## Requirements
 

@@ -19,8 +19,8 @@ task consensus_processing {
   }
 
   parameter_meta {
-    gatk_vars: "Annotated variant table from GATK HaplotypeCaller"
-    sam_vars: "Annotated variant table from mpileup"
+    haplo_vars: "Annotated variant table from GATK HaplotypeCaller"
+    mpileup_vars: "Annotated variant table from mpileup"
     mutect_vars: "Annotated variant table from GATK Mutect2"
     base_file_name: "Base name for output files"
     cpu_cores: "Number of CPU cores to use"
@@ -28,8 +28,8 @@ task consensus_processing {
   }
 
   input {
-    File gatk_vars
-    File sam_vars
+    File haplo_vars
+    File mpileup_vars
     File mutect_vars
     String base_file_name
     Int cpu_cores = 1
@@ -40,11 +40,13 @@ task consensus_processing {
     set -eo pipefail
 
     # Pull consensus script from GitHub
+    # NOTE: For reproducibility in production workflows, replace the branch reference
+    # (e.g., "refs/heads/main") with a specific commit hash (e.g., "abc1234...")
     wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/move-consensus/modules/ww-consensus/consensus-trio.R" \
       -O consensus-trio.R
 
     Rscript consensus-trio.R \
-      "~{gatk_vars}" "~{sam_vars}" "~{mutect_vars}" "~{base_file_name}"
+      "~{haplo_vars}" "~{mpileup_vars}" "~{mutect_vars}" "~{base_file_name}"
   >>>
 
   output {
