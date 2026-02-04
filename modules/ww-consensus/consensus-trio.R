@@ -2,11 +2,11 @@
 args = commandArgs(trailingOnly=TRUE)
 
 if (length(args) != 4) {
-  stop("4 arguments must be provided: GATK file, SAMtools file, Mutect file, and base file name.", call.=FALSE)
+  stop("4 arguments must be provided: HaplotypeCaller file, mpileup file, Mutect file, and base file name.", call.=FALSE)
 }
 
-GATKfile <- args[1]
-SAMfile <- args[2]
+HaploFile <- args[1]
+MpileupFile <- args[2]
 MutectFile <- args[3]
 baseName <- args[4]
 
@@ -25,37 +25,37 @@ read_variants <- function(filepath, caller_name) {
   return(df)
 }
 
-print("Reading GATK variants...")
-gatk <- read_variants(GATKfile, "GATK")
-print(paste("  Found", nrow(gatk), "variants"))
+print("Reading HaplotypeCaller variants...")
+haplo <- read_variants(HaploFile, "HaplotypeCaller")
+print(paste("  Found", nrow(haplo), "variants"))
 
-print("Reading SAMtools variants...")
-sam <- read_variants(SAMfile, "SAMtools")
-print(paste("  Found", nrow(sam), "variants"))
+print("Reading mpileup variants...")
+mpileup <- read_variants(MpileupFile, "mpileup")
+print(paste("  Found", nrow(mpileup), "variants"))
 
 print("Reading Mutect variants...")
 mutect <- read_variants(MutectFile, "Mutect")
 print(paste("  Found", nrow(mutect), "variants"))
 
 # Get unique variant IDs from each caller
-gatk_ids <- unique(gatk$VariantID)
-sam_ids <- unique(sam$VariantID)
+haplo_ids <- unique(haplo$VariantID)
+mpileup_ids <- unique(mpileup$VariantID)
 mutect_ids <- unique(mutect$VariantID)
 
 # Find all unique variants across all callers
-all_ids <- unique(c(gatk_ids, sam_ids, mutect_ids))
+all_ids <- unique(c(haplo_ids, mpileup_ids, mutect_ids))
 print(paste("Total unique variants across all callers:", length(all_ids)))
 
 # Build consensus table
 consensus <- data.frame(VariantID = all_ids, stringsAsFactors = FALSE)
 
 # Add caller detection flags
-consensus$InGATK <- consensus$VariantID %in% gatk_ids
-consensus$InSAMtools <- consensus$VariantID %in% sam_ids
+consensus$InHaplotypeCaller <- consensus$VariantID %in% haplo_ids
+consensus$InMpileup <- consensus$VariantID %in% mpileup_ids
 consensus$InMutect <- consensus$VariantID %in% mutect_ids
 
 # Count how many callers detected each variant
-consensus$CallerCount <- rowSums(consensus[, c("InGATK", "InSAMtools", "InMutect")])
+consensus$CallerCount <- rowSums(consensus[, c("InHaplotypeCaller", "InMpileup", "InMutect")])
 
 # Assign confidence tiers based on caller agreement
 consensus$Confidence <- case_when(
@@ -72,16 +72,16 @@ consensus <- consensus %>%
 # Determine variant type
 consensus$Type <- ifelse(nchar(consensus$Ref) == nchar(consensus$Alt), "SNV", "INDEL")
 
-# Add annotation data from first available caller (prefer GATK > SAMtools > Mutect)
+# Add annotation data from first available caller (prefer HaplotypeCaller > mpileup > Mutect)
 # Only include columns that exist in the source data
-get_annotations <- function(variant_id, gatk_df, sam_df, mutect_df) {
-  # Try GATK first
-  gatk_row <- gatk_df[gatk_df$VariantID == variant_id, ]
-  if (nrow(gatk_row) > 0) return(gatk_row[1, ])
+get_annotations <- function(variant_id, haplo_df, mpileup_df, mutect_df) {
+  # Try HaplotypeCaller first
+  haplo_row <- haplo_df[haplo_df$VariantID == variant_id, ]
+  if (nrow(haplo_row) > 0) return(haplo_row[1, ])
 
-  # Then SAMtools
-  sam_row <- sam_df[sam_df$VariantID == variant_id, ]
-  if (nrow(sam_row) > 0) return(sam_row[1, ])
+  # Then mpileup
+  mpileup_row <- mpileup_df[mpileup_df$VariantID == variant_id, ]
+  if (nrow(mpileup_row) > 0) return(mpileup_row[1, ])
 
   # Finally Mutect
   mutect_row <- mutect_df[mutect_df$VariantID == variant_id, ]
@@ -95,13 +95,13 @@ annovar_cols <- c("Func.refGene", "Gene.refGene", "GeneDetail.refGene",
                   "ExonicFunc.refGene", "AAChange.refGene")
 
 # Find which annotation columns actually exist
-available_cols <- annovar_cols[annovar_cols %in% colnames(gatk)]
+available_cols <- annovar_cols[annovar_cols %in% colnames(haplo)]
 
 if (length(available_cols) > 0) {
-  # Create annotation lookup from GATK (or fall back to others)
+  # Create annotation lookup from HaplotypeCaller (or fall back to others)
   all_variants <- bind_rows(
-    gatk %>% select(VariantID, all_of(available_cols)),
-    sam %>% select(VariantID, all_of(available_cols)),
+    haplo %>% select(VariantID, all_of(available_cols)),
+    mpileup %>% select(VariantID, all_of(available_cols)),
     mutect %>% select(VariantID, all_of(available_cols))
   ) %>%
     distinct(VariantID, .keep_all = TRUE)
@@ -111,7 +111,7 @@ if (length(available_cols) > 0) {
 
 # Reorder columns for cleaner output
 output_cols <- c("VariantID", "Chr", "Start", "End", "Ref", "Alt", "Type",
-                 "InGATK", "InSAMtools", "InMutect", "CallerCount", "Confidence")
+                 "InHaplotypeCaller", "InMpileup", "InMutect", "CallerCount", "Confidence")
 if (length(available_cols) > 0) {
   output_cols <- c(output_cols, available_cols)
 }
