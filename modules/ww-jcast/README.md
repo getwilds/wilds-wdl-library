@@ -176,13 +176,6 @@ If you use JCAST in your research, please cite:
 > Lau E, Lam MPY. JCAST: A Tool to Create Custom Protein Databases from RNA-seq Data for Proteomics Analysis.
 > bioRxiv 2022.10.31.514609; doi: https://doi.org/10.1101/2022.10.31.514609
 
-## About JCAST
-
-- **Purpose**: Create custom protein databases from alternative splicing events
-- **Input**: rMATS output files, GTF annotation, genome FASTA
-- **Output**: FASTA file with translated protein sequences
-- **Documentation**: https://ed-lau.github.io/jcast/
-- **Source Code**: https://github.com/ed-lau/jcast
 
 ## Support and Feedback
 
