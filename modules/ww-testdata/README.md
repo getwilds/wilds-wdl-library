@@ -396,7 +396,7 @@ Downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
-- `test_vcf` (File): Example VCF file for testing
+- `test_vcf` (File): Example VCF file for testing structural variant annotation
 
 ### generate_pasilla_counts
 
@@ -632,8 +632,8 @@ All reference data is downloaded from authoritative public repositories:
 - **ichorCNA Repository**: Copy number analysis references
 - **AnnotSV Repository**: Structural variant test data
 - **NCBI dbSNP**: Latest dbSNP variant database
-- **1000 Genomes EBI FTP**: Mills and 1000G gold standard indels (GRCh38)
-- **GATK Best Practices**: gnomAD population frequencies
+- **EBI 1000 Genomes FTP**: Mills and 1000G gold standard known indels
+- **GATK Resource Bundle**: gnomAD population frequencies
 - **GLIMPSE Repository**: Genetic maps for imputation (https://github.com/odelaneau/GLIMPSE)
 - **1000 Genomes High-Coverage**: Phased reference panels for GLIMPSE2 imputation
 - **1000 Genomes Phase 3**: Low-coverage sequencing data with genotype likelihoods for imputation testing
@@ -669,7 +669,9 @@ This module is specifically designed to support other WILDS modules:
 - **ww-shapemapper**: RNA structure analysis (uses TPP riboswitch example data from `download_shapemapper_data`)
 - **ww-cellranger**: Single-cell RNA-seq analysis (uses minimal reference from `download_test_cellranger_ref`)
 - **ww-diamond**: Protein sequence alignment (uses E. coli proteome from `download_diamond_data`)
+- **ww-annovar**: Variant annotation (uses gnomAD VCF from `download_gnomad_vcf`)
 - **ww-glimpse2**: Genotype imputation (uses genetic maps, reference panels, and GL VCFs from GLIMPSE2 tasks)
+- **ww-consensus**: Consensus variant calling (uses gnomAD VCF from `download_gnomad_vcf`)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:
