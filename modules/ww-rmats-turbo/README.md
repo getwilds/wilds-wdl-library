@@ -291,13 +291,6 @@ If you use rMATS-turbo in your research, please cite:
 
 > Shen S, Park JW, Lu ZX, et al. rMATS: robust and flexible detection of differential alternative splicing from replicate RNA-Seq data. Proc Natl Acad Sci U S A. 2014;111(51):E5593-E5601. doi:10.1073/pnas.1419161111
 
-## About rMATS-turbo
-
-- **Purpose**: Detect differential alternative splicing between conditions
-- **Input**: Aligned RNA-seq BAM files and GTF annotation
-- **Output**: Tables of alternative splicing events with statistical significance
-- **Documentation**: https://github.com/Xinglab/rmats-turbo
-- **Source Code**: https://github.com/Xinglab/rmats-turbo
 
 ## Support and Feedback
 
