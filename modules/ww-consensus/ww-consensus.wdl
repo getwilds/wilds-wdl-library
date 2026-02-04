@@ -9,8 +9,8 @@ version 1.0
 
 task consensus_processing {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Generate consensus variant calls by combining results from multiple variant callers (HaplotypeCaller, Mutect2, bcftools)"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-consensus/ww-consensus.wdl"
     outputs: {
