@@ -269,8 +269,8 @@ workflow ww_leukemia {
 
       # Use consensus module for multi-caller variant integration
       call consensus_tasks.consensus_processing { input:
-          gatk_vars = annotateHaplotype.annotated_table,
-          sam_vars = annotateSAM.annotated_table,
+          haplo_vars = annotateHaplotype.annotated_table,
+          mpileup_vars = annotateSAM.annotated_table,
           mutect_vars = annotateMutect.annotated_table,
           base_file_name = base_file_name
       }

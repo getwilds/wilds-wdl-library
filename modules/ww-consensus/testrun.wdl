@@ -36,8 +36,8 @@ workflow consensus_example {
 
   # Run consensus processing on the three annotated tables
   call ww_consensus.consensus_processing { input:
-      gatk_vars = annotate_gatk.annotated_table,
-      sam_vars = annotate_bcftools.annotated_table,
+      haplo_vars = annotate_gatk.annotated_table,
+      mpileup_vars = annotate_bcftools.annotated_table,
       mutect_vars = annotate_mutect.annotated_table,
       base_file_name = "test_sample"
   }
