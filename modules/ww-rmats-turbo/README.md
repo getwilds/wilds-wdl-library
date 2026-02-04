@@ -29,7 +29,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 ### `rmats`
 
-Main task that performs complete differential alternative splicing analysis between two sample groups (combines prep and post steps).
+Main task that performs complete differential alternative splicing analysis between two sample groups (default rMATS command).
 
 **Inputs:**
 
@@ -60,7 +60,7 @@ Main task that performs complete differential alternative splicing analysis betw
 
 ### `rmats_prep`
 
-Preprocesses BAM files and generates .rmats intermediate files. Useful for distributed processing of large datasets.
+Preprocesses BAM files and generates .rmats intermediate files (runs rMATS `--task prep`). Useful for distributed processing of large datasets.
 
 **Inputs:**
 
@@ -84,7 +84,7 @@ Preprocesses BAM files and generates .rmats intermediate files. Useful for distr
 
 ### `rmats_post`
 
-Loads .rmats files and performs alternative splicing event detection and statistical analysis.
+Loads .rmats files and performs alternative splicing event detection and statistical analysis. (runs rMATS `--task post`)
 
 **Inputs:**
 
@@ -107,7 +107,7 @@ Loads .rmats files and performs alternative splicing event detection and statist
 
 ### `rmats_stat`
 
-Runs statistical analysis on existing rMATS output files.
+Runs statistical analysis on existing rMATS output files. (runs rMATS `--task stat`)
 
 **Inputs:**
 
@@ -215,6 +215,10 @@ call rmats_tasks.rmats_post {
     read_length = read_length
 }
 ```
+### Integration Examples
+
+This module integrates seamlessly with other WILDS components:
+- **ww-jcast**: Translates rMATS output to protein sequences
 
 ## Testing the Module
 
@@ -245,7 +249,7 @@ The test workflow automatically:
 
 This module uses the `getwilds/rmats-turbo:latest` container image from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library), which includes:
 - rMATS-turbo
-- Python 3.9+
+- Python 3.9
 - All required dependencies
 
 ## Input Requirements

@@ -247,7 +247,7 @@ The test workflow automatically:
 
 **Test Dataset Details:**
 - Uses 4 samples from SRA (SRR1039508, SRR1039509, SRR1039512, SRR1039513)
-- Real paired-end RNA-seq from human airway smooth muscle cells
+- Real paired-end RNA-seq from human airway smooth muscle cells ( a subset of 500,000 reads per sample)
 - 2 untreated samples (group1) + 2 dexamethasone-treated samples (group2)
 - Aligns to Ensembl chr15 for efficiency
 
@@ -278,7 +278,7 @@ For questions, bugs, and/or feature requests, reach out to the Fred Hutch Data S
 
 ## Contributing
 
-If you would like to contribute to this WILDS WDL pipeline, please see our [WILDS Contributor Guide](https://getwilds.org/guide/) and the [WILDS WDL Library contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
+If you would like to contribute to this WILDS WDL pipeline, please see our [WILDS WDL Library contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
 
 ## License
 

@@ -19,7 +19,7 @@ task jcast {
   }
 
   parameter_meta {
-    rmats_directory: "Directory containing rMATS output files (e.g., SE.MATS.JC.txt, MXE.MATS.JC.txt, etc.)"
+    rmats_directory: "Directory containing rMATS output files (can be uncompressed or a .tar, .tar.gz, or .zip)"
     gtf_file: "Ensembl GTF annotation file for the reference genome"
     genome_fasta: "Reference genome FASTA file (should be unmasked - no N characters)"
     output_name: "Prefix for output file names (default: jcast_output)"
