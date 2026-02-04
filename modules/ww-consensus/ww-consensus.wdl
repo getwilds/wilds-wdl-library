@@ -42,7 +42,7 @@ task consensus_processing {
     # Pull consensus script from GitHub
     # NOTE: For reproducibility in production workflows, replace the branch reference
     # (e.g., "refs/heads/main") with a specific commit hash (e.g., "abc1234...")
-    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/move-consensus/modules/ww-consensus/consensus-trio.R" \
+    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-consensus/consensus-trio.R" \
       -O consensus-trio.R
 
     Rscript consensus-trio.R \
