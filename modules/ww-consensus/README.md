@@ -2,11 +2,11 @@
 [![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL module for consensus variant calling from multiple variant callers.
+A WILDS WDL module for consensus variant calling using annotated variants from multiple callers.
 
 ## Overview
 
-This module provides a reusable WDL task for generating consensus variant calls by combining results from multiple variant callers (GATK HaplotypeCaller, GATK Mutect2, and bcftools/samtools mpileup). The consensus approach increases confidence in variant calls by requiring agreement across different calling algorithms.
+This module provides a reusable WDL task for generating consensus variant calls by combining results from multiple variant callers (GATK HaplotypeCaller, GATK Mutect2, and bcftools/samtools mpileup) that have been annotated with Annovar. The consensus approach increases confidence in variant calls by requiring agreement across different calling algorithms.
 
 The module is designed to be a foundational component within the WILDS ecosystem, suitable for use in larger variant analysis pipelines such as the ww-leukemia pipeline.
 

@@ -1,6 +1,6 @@
 ## WILDS WDL module for consensus variant calling.
-## Combines results from multiple variant callers (HaplotypeCaller, Mutect2, bcftools)
-## to generate high-confidence consensus variant calls.
+## Combines results from multiple variant callers (HaplotypeCaller, Mutect2, mpileup)
+## that have been annotated with Annovar to generate high-confidence consensus variant calls.
 ##
 ## Designed to be a modular component within the WILDS ecosystem that can be used
 ## independently or integrated with other WILDS workflows.
@@ -11,7 +11,7 @@ task consensus_processing {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Generate consensus variant calls by combining results from multiple variant callers (HaplotypeCaller, Mutect2, bcftools)"
+    description: "Generate consensus variant calls by combining annotated results from multiple variant callers (HaplotypeCaller, Mutect2, mpileup)"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-consensus/ww-consensus.wdl"
     outputs: {
         consensus_tsv: "Tab-separated file containing consensus variant calls with evidence from all callers"
@@ -20,7 +20,7 @@ task consensus_processing {
 
   parameter_meta {
     gatk_vars: "Annotated variant table from GATK HaplotypeCaller"
-    sam_vars: "Annotated variant table from samtools/bcftools"
+    sam_vars: "Annotated variant table from mpileup"
     mutect_vars: "Annotated variant table from GATK Mutect2"
     base_file_name: "Base name for output files"
     cpu_cores: "Number of CPU cores to use"
