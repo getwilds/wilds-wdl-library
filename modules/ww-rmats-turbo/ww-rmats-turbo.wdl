@@ -118,6 +118,9 @@ task rmats {
 
     # Create output tarball of all results
     tar -czf "~{output_name}.tar.gz" "~{output_name}"
+
+    # Clean up temp directory
+    rm -rf rmats_tmp
   >>>
 
   output {
@@ -215,6 +218,9 @@ task rmats_prep {
 
     # Create output tarball of prep results
     tar -czf "~{output_name}.tar.gz" rmats_tmp
+
+    # Clean up temp directory
+    rm -rf rmats_tmp
   >>>
 
   output {
@@ -310,6 +316,9 @@ task rmats_post {
 
     # Create output tarball of all results
     tar -czf "~{output_name}.tar.gz" "~{output_name}"
+
+    # Clean up temp directory
+    rm -rf rmats_tmp
   >>>
 
   output {
@@ -400,6 +409,9 @@ task rmats_stat {
 
     # Create output tarball of all results
     tar -czf "~{output_name}.tar.gz" "${EXISTING_DIR}"
+
+    # Clean up temp directory
+    rm -rf rmats_tmp
   >>>
 
   output {
