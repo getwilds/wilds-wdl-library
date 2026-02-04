@@ -8,7 +8,7 @@
         "type": "string",
         "multiple": false,
         "pathType": "dataset",
-        "file": "**/*.vcf"
+        "file": "**/*"
       },
       "known_indels_vcf": {
         "title": "Known Indels (VCF)",
@@ -16,7 +16,7 @@
         "type": "string",
         "multiple": true,
         "pathType": "dataset",
-        "file": "**/*.vcf"
+        "file": "**/*"
       },
       "cpu_cores": {
         "title": "CPUs",
