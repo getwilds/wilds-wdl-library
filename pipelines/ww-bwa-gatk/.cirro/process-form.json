@@ -12,7 +12,7 @@
       },
       "known_indels_vcf": {
         "title": "Known Indels (VCF)",
-        "description": "Array of VCF files with known indel sites",
+        "description": "VCF file(s) with known indel sites",
         "type": "string",
         "multiple": true,
         "pathType": "dataset",

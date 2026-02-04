@@ -36,11 +36,16 @@ def setup_inputs(ds: PreprocessDataset):
         "bwa_gatk.reference_fasta": ds.params["reference_fasta"],
         "bwa_gatk.reference_fasta_index": ds.params["reference_fasta_index"],
         "bwa_gatk.dbsnp_vcf": ds.params["dbsnp_vcf"],
-        "bwa_gatk.known_indels_vcf": ds.params["known_indels_vcf"],
+        "bwa_gatk.known_indels_vcf": format_known_indels(ds.params["known_indels_vcf"]),
         "bwa_gatk.cpu_cores": ds.params["cpu_cores"],
         "bwa_gatk.memory_gb": ds.params["memory_gb"]
     }
     write_json("inputs.0.json", inputs)
+
+
+def format_known_indels(known_indels_vcf: str) -> list:
+    """Parse a comma-separated string of known indels VCF paths into a list."""
+    return [v.strip() for v in known_indels_vcf.split(",")]
 
 
 def format_inputs_samples(ds: PreprocessDataset):
