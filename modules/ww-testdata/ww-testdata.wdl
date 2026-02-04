@@ -1222,7 +1222,7 @@ task download_glimpse2_truth_vcf {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Downloads high-coverage truth genotypes from 1000 Genomes for GLIMPSE2 concordance validation. Uses the same high-coverage phased dataset as the reference panel but extracts only the validation sample."
+    description: "Downloads truth genotypes from 1000 Genomes for GLIMPSE2 validation sample."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         truth_vcf: "Truth VCF file with high-confidence genotypes for concordance evaluation",
