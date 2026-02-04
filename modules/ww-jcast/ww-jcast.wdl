@@ -28,9 +28,9 @@ task jcast {
     write_canonical: "Write canonical protein sequences even if splice variants are untranslatable (default: false)"
     qvalue_min: "Minimum rMATS FDR q-value threshold (default: 0)"
     qvalue_max: "Maximum rMATS FDR q-value threshold (default: 1)"
-    splice_types: "Comma-separated list of splice types to process (MXE,RI,SE,A3SS,A5SS). If empty, process all types."
-    cpu_cores: "Number of CPU cores allocated for the task"
-    memory_gb: "Memory allocated for the task in GB"
+    splice_types: 'Comma-separated list of splice types to process (MXE,RI,SE,A3SS,A5SS). If empty, process all types (default: "")'
+    cpu_cores: "Number of CPU cores allocated for the task (default: 2)"
+    memory_gb: "Memory allocated for the task in GB (default: 8)"
   }
 
   input {
