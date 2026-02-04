@@ -50,6 +50,7 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-manta/ww-manta.wdl" as manta_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl" as samtools_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-smoove/ww-smoove.wdl" as smoove_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/move-consensus/modules/ww-consensus/ww-consensus.wdl" as consensus_tasks
 
 struct SampleDetails {
     String name
@@ -266,10 +267,10 @@ workflow ww_leukemia {
           memory_gb = standard_memory_gb
       }
 
-      # Keep custom consensus processing task
-      call consensus_processing { input:
-          gatk_vars = annotateHaplotype.annotated_table,
-          sam_vars = annotateSAM.annotated_table,
+      # Use consensus module for multi-caller variant integration
+      call consensus_tasks.consensus_processing { input:
+          haplo_vars = annotateHaplotype.annotated_table,
+          mpileup_vars = annotateSAM.annotated_table,
           mutect_vars = annotateMutect.annotated_table,
           base_file_name = base_file_name
       }
@@ -389,47 +390,5 @@ workflow ww_leukemia {
     Array[File] ichorcna_correct_pdf = ichorcna_call.correct_pdf
     Array[File] ichorcna_rdata = ichorcna_call.rdata
     Array[File] ichorcna_wig = readcounter_wig.wig_file
-  }
-}
-
-#### CUSTOM TASK DEFINITIONS (Tasks not available in WILDS modules)
-
-# Keep custom consensus processing task (specialized R script)
-task consensus_processing {
-  meta {
-    description: "Generate consensus variant calls by combining results from multiple variant callers"
-    outputs: {
-        consensus_tsv: "Tab-separated file containing consensus variant calls with evidence from all callers"
-    }
-  }
-
-  parameter_meta {
-    gatk_vars: "Annotated variant table from GATK HaplotypeCaller"
-    sam_vars: "Annotated variant table from samtools/bcftools"
-    mutect_vars: "Annotated variant table from GATK Mutect2"
-    base_file_name: "Base name for output files"
-  }
-
-  input {
-    File gatk_vars
-    File sam_vars
-    File mutect_vars
-    String base_file_name
-  }
-
-  command <<<
-    set -eo pipefail
-    Rscript /consensus-trio-unpaired.R \
-      "~{gatk_vars}" "~{sam_vars}" "~{mutect_vars}" "~{base_file_name}"
-  >>>
-
-  output {
-    File consensus_tsv = "~{base_file_name}.consensus.tsv"
-  }
-
-  runtime {
-    cpu: 1
-    memory: "8 GB"
-    docker: "getwilds/consensus:0.1.1"
   }
 }
