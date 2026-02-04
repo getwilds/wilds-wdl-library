@@ -36,8 +36,8 @@ task rmats {
     allow_clipping: "Allow alignments with soft or hard clipping (default: false)"
     min_intron_length: "Minimum intron length for novel splice site detection (default: 50)"
     max_exon_length: "Maximum exon length for novel splice site detection (default: 500)"
-    cpu_cores: "Number of CPU cores allocated for the task"
-    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
+    memory_gb: "Memory allocated for the task in GB (default: 16)"
   }
 
   input {
@@ -135,7 +135,7 @@ task rmats_prep {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Preprocesses BAM files and generates .rmats intermediate files (prep step only)"
+    description: "Preprocesses BAM files and generates .rmats intermediate files (rMATS '--task prep')"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rmats-turbo/ww-rmats-turbo.wdl"
     outputs: {
         prep_output: "Tarball containing .rmats intermediate files from preprocessing"
@@ -153,8 +153,8 @@ task rmats_prep {
     anchor_length: "Minimum number of nucleotides mapped to each end of a splice junction (default: 1)"
     novel_splice_sites: "Enable detection of unannotated splice sites (default: false)"
     allow_clipping: "Allow alignments with soft or hard clipping (default: false)"
-    cpu_cores: "Number of CPU cores allocated for the task"
-    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
+    memory_gb: "Memory allocated for the task in GB (default: 16)"
   }
 
   input {
@@ -232,7 +232,7 @@ task rmats_post {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Loads .rmats files and performs alternative splicing event detection and statistical analysis (post step)"
+    description: "Loads .rmats files and performs alternative splicing event detection and statistical analysis (rMATS '--task post')"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rmats-turbo/ww-rmats-turbo.wdl"
     outputs: {
         output_directory: "Tarball containing all rMATS output files including splice event tables and summary statistics"
@@ -249,8 +249,8 @@ task rmats_post {
     paired_stats: "Use the paired statistical model (default: false)"
     cstat: "Cutoff splicing difference for null hypothesis test (default: 0.0001)"
     individual_counts: "Output individual count files for each sample (default: false)"
-    cpu_cores: "Number of CPU cores allocated for the task"
-    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
+    memory_gb: "Memory allocated for the task in GB (default: 16)"
   }
 
   input {
@@ -327,7 +327,7 @@ task rmats_stat {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Runs statistical analysis on existing rMATS output files"
+    description: "Runs statistical analysis on existing rMATS output files (rMATS '--task stat')"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rmats-turbo/ww-rmats-turbo.wdl"
     outputs: {
         output_directory: "Tarball containing rMATS output files with updated statistical results"
@@ -342,8 +342,8 @@ task rmats_stat {
     output_name: "Prefix for output directory name (default: rmats_output)"
     paired_stats: "Use the paired statistical model (default: false)"
     cstat: "Cutoff splicing difference for null hypothesis test (default: 0.0001)"
-    cpu_cores: "Number of CPU cores allocated for the task"
-    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
+    memory_gb: "Memory allocated for the task in GB (default: 16)"
   }
 
   input {
