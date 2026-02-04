@@ -21,7 +21,7 @@ The pipeline is designed for whole genome sequencing and clinical diagnostics, p
 - **Quality control**: GATK best practices including base quality recalibration and comprehensive QC metrics
 
 ### Modular Architecture
-- **Built with 10 WILDS modules**: Maximum reusability and maintainability through modular design
+- **Built with 11 WILDS modules**: Maximum reusability and maintainability through modular design
 - **GATK best practices**: Complete preprocessing pipeline with duplicate marking and base recalibration
 - **Flexible reference support**: Compatible with hg19 and hg38 reference genomes (hg38 preferred)
 - **CRAM input support**: Directly processes CRAM files with automatic FASTQ conversion
@@ -65,6 +65,7 @@ This pipeline integrates the following WILDS WDL modules:
 | `ww-annovar` | Variant annotation | `getwilds/annovar` |
 | `ww-bcftools` | Variant calling and processing | `getwilds/bcftools` |
 | `ww-bwa` | Read alignment and indexing | `getwilds/bwa` |
+| `ww-consensus` | Multi-caller consensus variant integration | `getwilds/consensus` |
 | `ww-delly` | Structural variant detection | `getwilds/delly` |
 | `ww-gatk` | Variant calling and preprocessing | `getwilds/gatk` |
 | `ww-ichorcna` | Tumor fraction estimation | `getwilds/ichorcna` |
@@ -342,7 +343,7 @@ The pipeline is automatically tested as part of the WILDS WDL Library CI/CD pipe
 **Current Status**: The pipeline is production-ready and actively maintained as part of the WILDS WDL Library.
 
 **Recent Achievements**:
-- **Complete modularization**: Built using 10 WILDS WDL modules for maximum reusability
+- **Complete modularization**: Built using 11 WILDS WDL modules for maximum reusability
 - **Structural variant detection**: Integrated Manta, Smoove, and Delly with AnnotSV annotation
 - **Tumor fraction analysis**: Complete ichorCNA integration for cfDNA analysis
 - **Advanced parallelization**: Scatter-gather optimization with interval-based processing

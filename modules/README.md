@@ -57,6 +57,7 @@ modules/module-name/
 | `ww-bcftools` | Utilities for Variant Calls | `getwilds/bcftools:1.19` | Call and analyze variants with BCFtools |
 | `ww-bedtools` | Utilities for Genomic Intervals | `getwilds/bedtools:2.31.1` | Work with genomic intervals |
 | `ww-bwa` | BWA Aligner | `getwilds/bwa:0.7.17` | Alignment with the Burrows-Wheeler Aligner |
+| `ww-consensus` | Consensus Variant Caller | `getwilds/consensus:0.1.1` | Multi-caller consensus variant integration |
 | `ww-delly` | Structural Variant Caller | `getwilds/delly:1.2.9` | Call structural variants with Delly |
 | `ww-gatk` | GATK Variant Calling | `getwilds/gatk:4.6.1.0` | Variant calling and processing with GATK |
 | `ww-ichorcna` | Tumor Fraction Estimator | `getwilds/ichorcna:0.2.0` | Estimate tumor fraction with ichorCNA |
