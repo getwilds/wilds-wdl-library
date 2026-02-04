@@ -305,4 +305,3 @@ For questions about this module or to report issues:
 - **[WILDS Documentation](https://getwilds.org/)**: Comprehensive guides and best practices
 - **[WDL Specification](https://openwdl.org/)**: Official WDL language documentation
 - **[rMATS Documentation](https://github.com/Xinglab/rmats-turbo)**: Official rMATS-turbo documentation
-- **[ww-jcast](../ww-jcast/)**: JCAST module for translating rMATS output to protein sequences
