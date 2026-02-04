@@ -191,6 +191,15 @@ Note: Samples must be assigned to either "group1" or "group2" for differential s
 | `jcast_protein_fasta` | Combined FASTA file with translated splice variant proteins | ww-jcast |
 | `jcast_output` | Tarball containing all JCAST output files | ww-jcast |
 
+### STAR Output Contents
+
+For each sample, STAR produces:
+- **BAM file**: Coordinate-sorted alignments ready for downstream analysis
+- **BAI file**: Index for rapid BAM access
+- **Gene counts**: Tab-delimited file with read counts per gene (unstranded, stranded, reverse-stranded columns)
+- **Log final**: Alignment statistics including mapping rate, mismatch rate, and splice junction counts
+- **SJ.out.tab**: Splice junction coordinates with read support counts
+
 ### rMATS Output Contents
 
 The `rmats_output` tarball contains:
@@ -268,9 +277,9 @@ This pipeline is designed for:
 
 ## References
 
-- STAR: Dobin et al. (2013) Bioinformatics
-- rMATS: Shen et al. (2014) PNAS
-- JCAST: Lau et al. (2019) J Proteome Res
+- Dobin A, Davis CA, Schlesinger F, et al. STAR: ultrafast universal RNA-seq aligner. Bioinformatics. 2013;29(1):15-21.
+- Shen S, Park JW, Lu ZX, et al. rMATS: robust and flexible detection of differential alternative splicing from replicate RNA-Seq data. Proc Natl Acad Sci U S A. 2014;111(51):E5593-E5601. doi:10.1073/pnas.1419161111
+- Ludwig RW, Lau E. JCAST: Sample-Specific Protein Isoform Databases for Mass Spectrometry-based Proteomics Experiments. *Software Impacts*. 2021;10:100163.
 
 ## Support
 

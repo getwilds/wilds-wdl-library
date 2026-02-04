@@ -44,6 +44,14 @@ Translates alternative splicing events from rMATS output into protein sequences 
 - `output_fasta` (File): Combined FASTA file containing all translated protein sequences from alternative splicing events
 - `output_directory` (File): Tarball containing all JCAST output files, including tier-specific FASTA files (T1, T2, T3, T4, canonical, orphan)
 
+### Output Contents
+
+The `output_directory` tarball contains tiered FASTA files:
+- **T1**: High-confidence splice variants
+- **T2-T4**: Lower confidence tiers
+- **canonical**: Canonical protein sequences
+- **orphan**: Untranslatable variants
+
 ## Usage as a Module
 
 ### Importing into Your Workflow
@@ -173,8 +181,7 @@ The input can be provided as:
 
 If you use JCAST in your research, please cite:
 
-> Lau E, Lam MPY. JCAST: A Tool to Create Custom Protein Databases from RNA-seq Data for Proteomics Analysis.
-> bioRxiv 2022.10.31.514609; doi: https://doi.org/10.1101/2022.10.31.514609
+> Ludwig RW, Lau E. JCAST: Sample-Specific Protein Isoform Databases for Mass Spectrometry-based Proteomics Experiments. *Software Impacts*. 2021;10:100163.
 
 
 ## Support and Feedback
