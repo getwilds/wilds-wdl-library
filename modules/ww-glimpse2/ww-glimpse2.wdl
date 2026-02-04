@@ -45,9 +45,13 @@ task glimpse2_chunk {
   command <<<
     set -eo pipefail
 
+    # Create local symlinks to ensure VCF and index are co-located
+    ln -s "~{reference_vcf}" "~{basename(reference_vcf)}"
+    ln -s "~{reference_vcf_index}" "~{basename(reference_vcf_index)}"
+
     # Use --recursive algorithm which may be more stable for small regions
     GLIMPSE2_chunk \
-      --input "~{reference_vcf}" \
+      --input "~{basename(reference_vcf)}" \
       --region "~{region}" \
       --map "~{genetic_map}" \
       --window-cm ~{window_size_cm} \
@@ -107,8 +111,12 @@ task glimpse2_split_reference {
   command <<<
     set -eo pipefail
 
+    # Create local symlinks to ensure VCF and index are co-located
+    ln -s "~{reference_vcf}" "~{basename(reference_vcf)}"
+    ln -s "~{reference_vcf_index}" "~{basename(reference_vcf_index)}"
+
     GLIMPSE2_split_reference \
-      --reference "~{reference_vcf}" \
+      --reference "~{basename(reference_vcf)}" \
       --map "~{genetic_map}" \
       --input-region "~{input_region}" \
       --output-region "~{output_region}" \
@@ -171,8 +179,12 @@ task glimpse2_phase {
   command <<<
     set -eo pipefail
 
+    # Create local symlinks to ensure VCF and index are co-located
+    ln -s "~{input_vcf}" "~{basename(input_vcf)}"
+    ln -s "~{input_vcf_index}" "~{basename(input_vcf_index)}"
+
     GLIMPSE2_phase \
-      --input-gl "~{input_vcf}" \
+      --input-gl "~{basename(input_vcf)}" \
       --reference "~{reference_chunk}" \
       --burnin ~{n_burnin} \
       --main ~{n_main} \
@@ -242,9 +254,17 @@ task glimpse2_phase_cram {
   command <<<
     set -eo pipefail
 
+    # Create local symlinks to ensure CRAM/BAM and index are co-located
+    ln -s "~{input_cram}" "~{basename(input_cram)}"
+    ln -s "~{input_cram_index}" "~{basename(input_cram_index)}"
+
+    # Create local symlinks for reference FASTA and index
+    ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
+    ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
+
     GLIMPSE2_phase \
-      --bam-file "~{input_cram}" \
-      --fasta "~{reference_fasta}" \
+      --bam-file "~{basename(input_cram)}" \
+      --fasta "~{basename(reference_fasta)}" \
       --reference "~{reference_chunk}" \
       --burnin ~{n_burnin} \
       --main ~{n_main} \
@@ -310,8 +330,15 @@ task glimpse2_ligate {
       index_type="tbi"
     fi
 
-    # Create input file list from localized paths
-    echo "~{sep='\n' imputed_chunks}" > input_chunks.txt
+    # Create local symlinks to ensure chunk files and indices are co-located
+    chunks_array=(~{sep=' ' imputed_chunks})
+    indices_array=(~{sep=' ' imputed_chunks_indices})
+
+    for i in "${!chunks_array[@]}"; do
+      ln -s "${chunks_array[$i]}" "$(basename "${chunks_array[$i]}")"
+      ln -s "${indices_array[$i]}" "$(basename "${indices_array[$i]}")"
+      echo "$(basename "${chunks_array[$i]}")" >> input_chunks.txt
+    done
 
     GLIMPSE2_ligate \
       --input input_chunks.txt \
@@ -379,9 +406,15 @@ task glimpse2_concordance {
   command <<<
     set -eo pipefail
 
+    # Create local symlinks to ensure VCFs and indices are co-located
+    ln -s "~{imputed_vcf}" "~{basename(imputed_vcf)}"
+    ln -s "~{imputed_vcf_index}" "~{basename(imputed_vcf_index)}"
+    ln -s "~{truth_vcf}" "~{basename(truth_vcf)}"
+    ln -s "~{truth_vcf_index}" "~{basename(truth_vcf_index)}"
+
     GLIMPSE2_concordance \
-      --input "~{imputed_vcf}" \
-      --truth "~{truth_vcf}" \
+      --input "~{basename(imputed_vcf)}" \
+      --truth "~{basename(truth_vcf)}" \
       ~{if defined(allele_frequencies) then "--allele-frequencies " + allele_frequencies else ""} \
       ~{if defined(region) then "--region " + region else ""} \
       --min-val-dp ~{min_val_dp} \

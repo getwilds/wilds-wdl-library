@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl" as ww_glimpse2
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/imputation-update/modules/ww-glimpse2/ww-glimpse2.wdl" as ww_glimpse2
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/imputation-update/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow glimpse2_example {
   # Test region on chr1 - small enough for CI/CD but large enough for meaningful testing
@@ -35,6 +35,14 @@ workflow glimpse2_example {
 
   # Step 4: Download test VCF with genotype likelihoods (NA12878 from 1000 Genomes low-coverage)
   call ww_testdata.download_glimpse2_test_gl_vcf as download_gl_vcf {
+    input:
+      chromosome = test_chromosome,
+      region = test_region,
+      sample_name = "NA12878"
+  }
+
+  # Step 4b: Download truth VCF for concordance evaluation (NA12878 high-coverage genotypes)
+  call ww_testdata.download_glimpse2_truth_vcf as download_truth_vcf {
     input:
       chromosome = test_chromosome,
       region = test_region,
@@ -88,12 +96,23 @@ workflow glimpse2_example {
       output_prefix = "~{output_prefix}_final"
   }
 
+  # Step 9: Evaluate imputation accuracy with concordance
+  call ww_glimpse2.glimpse2_concordance {
+    input:
+      imputed_vcf = glimpse2_ligate.ligated_vcf,
+      imputed_vcf_index = glimpse2_ligate.ligated_vcf_index,
+      truth_vcf = download_truth_vcf.truth_vcf,
+      truth_vcf_index = download_truth_vcf.truth_vcf_index,
+      output_prefix = "~{output_prefix}_concordance"
+  }
+
   output {
     # Test data outputs
     File reference_fasta = download_reference.fasta
     File genetic_map = download_genetic_map.genetic_map
     File reference_panel = download_reference_panel.reference_vcf
     File input_gl_vcf = download_gl_vcf.gl_vcf
+    File truth_vcf = download_truth_vcf.truth_vcf
 
     # GLIMPSE2 intermediate outputs
     File chunks_file = glimpse2_chunk.chunks_file
@@ -103,5 +122,8 @@ workflow glimpse2_example {
     # Final imputed output
     File final_imputed_vcf = glimpse2_ligate.ligated_vcf
     File final_imputed_vcf_index = glimpse2_ligate.ligated_vcf_index
+
+    # Concordance output
+    Array[File] concordance_results = glimpse2_concordance.concordance_output
   }
 }
