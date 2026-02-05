@@ -8,7 +8,7 @@
         "type": "string",
         "multiple": false,
         "pathType": "dataset",
-        "file": "**/*"
+        "file": "**/*.vcf*"
       },
       "known_indels_vcf": {
         "title": "Known Indels (VCF)",
@@ -16,7 +16,7 @@
         "type": "string",
         "multiple": true,
         "pathType": "dataset",
-        "file": "**/*"
+        "file": "**/*.vcf*"
       },
       "cpu_cores": {
         "title": "CPUs",
@@ -36,7 +36,7 @@
         "type": "string",
         "multiple": false,
         "pathType": "dataset",
-        "file": "**/*"
+        "file": "**/*.f*"
       },
       "reference_fasta_index": {
         "title": "Reference Genome Index (FAI)",
