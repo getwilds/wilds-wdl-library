@@ -318,7 +318,7 @@ task markdup_recal_metrics {
     set -eo pipefail
 
     # Mark duplicates in the aligned BAM file
-    gatk --java-options "-Dsamjdk.compression_level=5 -Xms16g -Xmx16g" \
+    gatk --java-options "-Dsamjdk.compression_level=5 -Xms16g -Xmx~{memory_gb - 2}g" \
       MarkDuplicates \
       --INPUT "~{bam}" \
       --OUTPUT "~{base_file_name}.markdup.bam" \
@@ -874,7 +874,7 @@ task haplotype_caller_parallel {
     reference_dict: "Reference genome sequence dictionary"
     dbsnp_vcf: "dbSNP VCF file for variant annotation"
     base_file_name: "Base name for output files"
-    memory_gb: "Memory allocation in GB"
+    memory_gb: "Memory allocation in GB (minimum: 8)"
     cpu_cores: "Number of CPU cores to use (should match number of intervals)"
   }
 
@@ -988,7 +988,7 @@ task mutect2_parallel {
     gnomad_vcf: "gnomAD population allele frequency VCF for germline resource"
     base_file_name: "Base name for output files"
     max_mnp_distance: "Distance at which to merge MNPs (default: 1)"
-    memory_gb: "Memory allocation in GB"
+    memory_gb: "Memory allocation in GB (minimum: 8)"
     cpu_cores: "Number of CPU cores to use"
   }
 
