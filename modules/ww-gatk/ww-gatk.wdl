@@ -82,7 +82,7 @@ task mark_duplicates {
   command <<<
     set -eo pipefail
 
-    gatk --java-options "-Dsamjdk.compression_level=5 -Xms16g -Xmx16g" \
+    gatk --java-options "-Dsamjdk.compression_level=5 -Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       MarkDuplicates \
       --INPUT "~{bam}" \
       --OUTPUT "~{base_file_name}.markdup.bam" \
@@ -318,7 +318,7 @@ task markdup_recal_metrics {
     set -eo pipefail
 
     # Mark duplicates in the aligned BAM file
-    gatk --java-options "-Dsamjdk.compression_level=5 -Xms16g -Xmx~{memory_gb - 2}g" \
+    gatk --java-options "-Dsamjdk.compression_level=5 -Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
       MarkDuplicates \
       --INPUT "~{bam}" \
       --OUTPUT "~{base_file_name}.markdup.bam" \
