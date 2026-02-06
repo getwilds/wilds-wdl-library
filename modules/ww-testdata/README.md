@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_jcast_test_data`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `download_jcast_test_data`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -611,6 +611,45 @@ call jcast_tasks.jcast {
     rmats_directory = download_jcast_test_data.rmats_output,
     gtf_file = download_jcast_test_data.gtf_file,
     genome_fasta = download_jcast_test_data.genome_fasta
+}
+```
+
+### download_glimpse2_truth_vcf
+
+Downloads high-coverage truth genotypes from 1000 Genomes for GLIMPSE2 concordance validation. Uses the same high-coverage phased dataset as the reference panel but extracts only the validation sample.
+
+**Use Case**: After imputation, you often want to evaluate accuracy by comparing imputed genotypes against high-confidence "truth" genotypes. This task downloads truth genotypes for a specific sample from the 1000 Genomes high-coverage dataset, which can be used with `glimpse2_concordance` to compute imputation accuracy metrics.
+
+**Inputs**:
+- `chromosome` (String): Chromosome to download (default: "chr1")
+- `region` (String): Genomic region to extract (default: "chr1:1-10000000"). Must match the chromosome parameter.
+- `sample_name` (String): Sample to extract as truth (default: "NA12878"). Must be in the high-coverage dataset.
+- `cpu_cores` (Int): CPU allocation (default: 2)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `truth_vcf` (File): Truth VCF file with high-confidence genotypes for concordance evaluation
+- `truth_vcf_index` (File): Index file for the truth VCF
+
+**Data Source**: 1000 Genomes high-coverage phased data (http://ftp.1000genomes.ebi.ac.uk/)
+
+**Example Usage**:
+```wdl
+# For evaluating imputation accuracy
+call testdata.download_glimpse2_truth_vcf {
+  input:
+    chromosome = "chr1",
+    region = "chr1:1-10000000",
+    sample_name = "NA12878"
+}
+
+call glimpse2_tasks.glimpse2_concordance {
+  input:
+    imputed_vcf = my_imputed_vcf,
+    imputed_vcf_index = my_imputed_vcf_index,
+    truth_vcf = download_glimpse2_truth_vcf.truth_vcf,
+    truth_vcf_index = download_glimpse2_truth_vcf.truth_vcf_index,
+    output_prefix = "imputation_accuracy"
 }
 ```
 

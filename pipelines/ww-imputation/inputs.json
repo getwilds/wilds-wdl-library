@@ -3,7 +3,9 @@
     {
       "sample_id": "SAMPLE001",
       "cram": "/path/to/sample001.cram",
-      "cram_index": "/path/to/sample001.cram.crai"
+      "cram_index": "/path/to/sample001.cram.crai",
+      "truth_vcf": "/path/to/sample001.truth.vcf.gz",
+      "truth_vcf_index": "/path/to/sample001.truth.vcf.gz.tbi"
     },
     {
       "sample_id": "SAMPLE002",
@@ -33,5 +35,7 @@
   "imputation.phase_cpu_cores": 4,
   "imputation.phase_memory_gb": 8,
   "imputation.ligate_cpu_cores": 4,
-  "imputation.ligate_memory_gb": 16
+  "imputation.ligate_memory_gb": 16,
+  "imputation.concordance_cpu_cores": 4,
+  "imputation.concordance_memory_gb": 8
 }

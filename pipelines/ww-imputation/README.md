@@ -34,6 +34,10 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
 4. **Concatenation** (per sample):
    - Merge all chromosomes into a single output file (`bcftools.concat`)
 
+5. **Concordance** (optional, per sample):
+   - Evaluate imputation accuracy against truth genotypes (`glimpse2_concordance`)
+   - Only runs when `truth_vcf` is provided in the sample
+
 ## Module Dependencies
 
 This pipeline imports and uses:
@@ -59,7 +63,9 @@ Create an inputs JSON file with your samples and reference data:
     {
       "sample_id": "SAMPLE001",
       "cram": "/path/to/sample001.cram",
-      "cram_index": "/path/to/sample001.cram.crai"
+      "cram_index": "/path/to/sample001.cram.crai",
+      "truth_vcf": "/path/to/sample001.truth.vcf.gz",
+      "truth_vcf_index": "/path/to/sample001.truth.vcf.gz.tbi"
     }
   ],
   "imputation.chromosomes": [
@@ -130,6 +136,11 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 | `phase_memory_gb` | Memory (GB) for phasing tasks | Int | 8 |
 | `ligate_cpu_cores` | CPU cores for ligation tasks | Int | 4 |
 | `ligate_memory_gb` | Memory (GB) for ligation tasks | Int | 16 |
+| `concordance_allele_frequencies` | Allele frequencies file for concordance binning | File | (optional) |
+| `concordance_min_val_dp` | Minimum depth in validation/truth data | Int | 0 |
+| `concordance_min_val_gq` | Minimum genotype quality in validation/truth data | Int | 0 |
+| `concordance_cpu_cores` | CPU cores for concordance tasks | Int | 4 |
+| `concordance_memory_gb` | Memory (GB) for concordance tasks | Int | 8 |
 
 ### Data Structures
 
@@ -138,9 +149,13 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 {
   "sample_id": "SAMPLE001",
   "cram": "/path/to/sample.cram",
-  "cram_index": "/path/to/sample.cram.crai"
+  "cram_index": "/path/to/sample.cram.crai",
+  "truth_vcf": "/path/to/sample.truth.vcf.gz",
+  "truth_vcf_index": "/path/to/sample.truth.vcf.gz.tbi"
 }
 ```
+
+Note: `truth_vcf` and `truth_vcf_index` are optional. When provided, the pipeline will compute concordance metrics comparing imputed genotypes against the truth data. This is useful for validation studies where high-confidence genotypes are available (e.g., from high-coverage sequencing or genotyping arrays).
 
 **ChromosomeData:**
 ```json
@@ -158,6 +173,7 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 |--------|-------------|
 | `imputed_vcfs` | Array of imputed VCF/BCF files (one per sample, all chromosomes combined) |
 | `imputed_vcf_indices` | Array of index files for imputed VCFs |
+| `concordance_outputs` | Array of concordance metrics files (null for samples without truth VCFs) |
 
 ## Reference Data
 

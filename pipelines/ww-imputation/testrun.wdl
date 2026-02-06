@@ -43,14 +43,24 @@ workflow imputation_testrun {
       ref_fasta = download_reference.fasta
   }
 
-  # Step 5: Run the imputation pipeline
+  # Step 4b: Download truth VCF for concordance evaluation (NA12878 high-coverage genotypes)
+  call ww_testdata.download_glimpse2_truth_vcf as download_truth_vcf {
+    input:
+      chromosome = test_chromosome,
+      region = test_region,
+      sample_name = "NA12878"
+  }
+
+  # Step 5: Run the imputation pipeline (with concordance enabled via truth VCF)
   call ww_imputation.imputation {
     input:
       samples = [
         {
           "sample_id": "NA12878",
           "cram": download_cram.cram,
-          "cram_index": download_cram.crai
+          "cram_index": download_cram.crai,
+          "truth_vcf": download_truth_vcf.truth_vcf,
+          "truth_vcf_index": download_truth_vcf.truth_vcf_index
         }
       ],
       chromosomes = [
@@ -70,7 +80,9 @@ workflow imputation_testrun {
       phase_cpu_cores = 2,
       phase_memory_gb = 4,
       ligate_cpu_cores = 2,
-      ligate_memory_gb = 4
+      ligate_memory_gb = 4,
+      concordance_cpu_cores = 2,
+      concordance_memory_gb = 4
   }
 
   output {
@@ -79,9 +91,13 @@ workflow imputation_testrun {
     File genetic_map = download_genetic_map.genetic_map
     File reference_panel = download_reference_panel.reference_vcf
     File input_cram = download_cram.cram
+    File truth_vcf = download_truth_vcf.truth_vcf
 
     # Final imputed outputs
     Array[File] imputed_vcfs = imputation.imputed_vcfs
     Array[File] imputed_vcf_indices = imputation.imputed_vcf_indices
+
+    # Concordance outputs
+    Array[Array[File]?] concordance_outputs = imputation.concordance_outputs
   }
 }
