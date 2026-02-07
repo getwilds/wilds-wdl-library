@@ -88,7 +88,11 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 
 ### Running on Cirro
 
-This pipeline includes [Cirro](https://cirro.bio/) platform configuration files in the [.cirro/](.cirro/) directory for cloud execution. To run this pipeline on Cirro:
+This pipeline includes [Cirro](https://cirro.bio/) platform configuration files in the [.cirro/](.cirro/) directory for cloud execution.
+
+**Note:** Unlike most Cirro pipelines, this workflow does not require uploading input datasets. Since the pipeline downloads sequencing data directly from SRA, you only need to provide SRA accession IDs and reference genome files via the submission form.
+
+To run this pipeline on Cirro:
 
 1. Ensure you have access to a Cirro instance
 2. Follow the [Cirro pipeline documentation](https://docs.cirro.bio/pipelines/adding-pipelines/) to add this workflow to your Cirro instance
