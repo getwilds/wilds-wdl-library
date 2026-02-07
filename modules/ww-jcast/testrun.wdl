@@ -1,0 +1,29 @@
+version 1.0
+
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-jcast/ww-jcast.wdl" as ww_jcast
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
+workflow jcast_example {
+  # Download rMATS test data, Ensembl GTF, and genome FASTA from the JCAST repository
+  # Note: JCAST requires Ensembl-format GTF files (with transcript_type attribute)
+  call ww_testdata.download_jcast_test_data { }
+
+  # Run JCAST with test data
+  call ww_jcast.jcast {
+    input:
+      rmats_directory = download_jcast_test_data.rmats_output,
+      gtf_file = download_jcast_test_data.gtf_file,
+      genome_fasta = download_jcast_test_data.genome_fasta,
+      output_name = "test_jcast",
+      min_read_count = 1,
+      qvalue_min = 0,
+      qvalue_max = 1,
+      cpu_cores = 2,
+      memory_gb = 8
+  }
+
+  output {
+    File protein_fasta = jcast.output_fasta
+    File all_results = jcast.output_directory
+  }
+}
