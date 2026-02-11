@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-imputation/ww-imputation.wdl" as ww_imputation
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/glimpse2-phase-together/pipelines/ww-imputation/ww-imputation.wdl" as ww_imputation
 
 #### TEST WORKFLOW DEFINITION ####
 # This workflow demonstrates the ww-imputation pipeline with automatic test data download.
@@ -54,15 +54,8 @@ workflow imputation_testrun {
   # Step 5: Run the imputation pipeline (with concordance enabled via truth VCF)
   call ww_imputation.imputation {
     input:
-      samples = [
-        {
-          "sample_id": "NA12878",
-          "cram": download_cram.cram,
-          "cram_index": download_cram.crai,
-          "truth_vcf": download_truth_vcf.truth_vcf,
-          "truth_vcf_index": download_truth_vcf.truth_vcf_index
-        }
-      ],
+      input_crams = [download_cram.cram],
+      input_cram_indices = [download_cram.crai],
       chromosomes = [
         {
           "chromosome": test_chromosome,
@@ -73,7 +66,10 @@ workflow imputation_testrun {
       ],
       reference_fasta = download_reference.fasta,
       reference_fasta_index = download_reference.fasta_index,
+      output_prefix = "NA12878",
       output_format = "bcf",
+      truth_vcf = download_truth_vcf.truth_vcf,
+      truth_vcf_index = download_truth_vcf.truth_vcf_index,
       # Use smaller resources for testing
       chunk_cpu_cores = 2,
       chunk_memory_gb = 4,
@@ -81,6 +77,8 @@ workflow imputation_testrun {
       phase_memory_gb = 4,
       ligate_cpu_cores = 2,
       ligate_memory_gb = 4,
+      concat_cpu_cores = 2,
+      concat_memory_gb = 4,
       concordance_cpu_cores = 2,
       concordance_memory_gb = 4
   }
@@ -91,13 +89,13 @@ workflow imputation_testrun {
     File genetic_map = download_genetic_map.genetic_map
     File reference_panel = download_reference_panel.reference_vcf
     File input_cram = download_cram.cram
-    File truth_vcf = download_truth_vcf.truth_vcf
+    File truth_vcf_output = download_truth_vcf.truth_vcf
 
     # Final imputed outputs
-    Array[File] imputed_vcfs = imputation.imputed_vcfs
-    Array[File] imputed_vcf_indices = imputation.imputed_vcf_indices
+    File imputed_vcf = imputation.imputed_vcf
+    File imputed_vcf_index = imputation.imputed_vcf_index
 
     # Concordance outputs
-    Array[Array[File]?] concordance_outputs = imputation.concordance_outputs
+    Array[File]? concordance_outputs = imputation.concordance_outputs
   }
 }
