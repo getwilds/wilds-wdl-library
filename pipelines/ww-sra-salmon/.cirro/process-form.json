@@ -11,8 +11,8 @@
         "title": "Reference Transcriptome (FASTA)",
         "description": "Reference transcriptome to use for Salmon indexing and quantification",
         "type": "string",
-        "pathType": "references",
-        "file": "*.fasta"
+        "pathType": "dataset",
+        "file": "**/*.f*"
       },
       "ncpu": {
         "title": "Number of CPUs",
