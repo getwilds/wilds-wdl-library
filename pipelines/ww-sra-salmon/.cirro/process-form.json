@@ -9,14 +9,14 @@
       },
       "transcriptome_fasta": {
         "title": "Reference Transcriptome (FASTA)",
-        "description": "Nucleotide sequence of the reference transcriptome used for Salmon indexing and quantification",
+        "description": "Reference transcriptome to use for Salmon indexing and quantification",
         "type": "string",
         "pathType": "references",
         "file": "*.fasta"
       },
       "ncpu": {
         "title": "Number of CPUs",
-        "description": "Number of CPUs to use for SRA download and Salmon quantification",
+        "description": "Number of CPUs to use for SRA download and for Salmon quantification",
         "type": "integer",
         "default": 8
       },
@@ -28,7 +28,7 @@
       },
       "max_reads": {
         "title": "Maximum Reads (Optional)",
-        "description": "Optional max number of reads to download (for testing/downsampling). Leave blank to download all reads.",
+        "description": "Maximum number of reads to download (such as for testing or downsampling). Leave blank to download all reads.",
         "type": "integer"
       },
       "workflow_failure_mode": {
