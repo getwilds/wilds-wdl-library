@@ -10,9 +10,9 @@ This pipeline provides a unified workflow for genotype imputation, combining the
 
 **Key Features:**
 - Single unified workflow (vs. 9 separate workflows in the Broad implementation)
-- Direct CRAM/BAM input support
-- Parallel processing across samples and chromosomes
-- One output file per sample (all chromosomes concatenated)
+- Direct CRAM/BAM input support with joint multi-sample phasing
+- Parallel processing across chromosomes and chunks
+- Single multi-sample output file (all samples and chromosomes combined)
 - Configurable imputation parameters
 
 ## Pipeline Structure
@@ -25,18 +25,18 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
    - Chunk genomic regions for parallel processing (`glimpse2_chunk`)
    - Convert reference panel to binary format (`glimpse2_split_reference`)
 
-2. **Imputation** (per sample × chromosome × chunk):
-   - Phase and impute genotypes from CRAM/BAM (`glimpse2_phase_cram`)
+2. **Imputation** (per chromosome × chunk, all samples jointly):
+   - Phase and impute genotypes from all CRAM/BAM files simultaneously (`glimpse2_phase_cram`)
 
-3. **Ligation** (per sample × chromosome):
-   - Combine imputed chunks into chromosome-level files (`glimpse2_ligate`)
+3. **Ligation** (per chromosome):
+   - Combine imputed chunks into chromosome-level multi-sample files (`glimpse2_ligate`)
 
-4. **Concatenation** (per sample):
-   - Merge all chromosomes into a single output file (`bcftools.concat`)
+4. **Concatenation** (single call):
+   - Merge all chromosomes into a single multi-sample output file (`bcftools.concat`)
 
-5. **Concordance** (optional, per sample):
+5. **Concordance** (optional, single call):
    - Evaluate imputation accuracy against truth genotypes (`glimpse2_concordance`)
-   - Only runs when `truth_vcf` is provided in the sample
+   - Only runs when `truth_vcf` is provided at the workflow level
 
 ## Module Dependencies
 
@@ -59,14 +59,13 @@ Create an inputs JSON file with your samples and reference data:
 
 ```json
 {
-  "imputation.samples": [
-    {
-      "sample_id": "SAMPLE001",
-      "cram": "/path/to/sample001.cram",
-      "cram_index": "/path/to/sample001.cram.crai",
-      "truth_vcf": "/path/to/sample001.truth.vcf.gz",
-      "truth_vcf_index": "/path/to/sample001.truth.vcf.gz.tbi"
-    }
+  "imputation.input_crams": [
+    "/path/to/sample001.cram",
+    "/path/to/sample002.cram"
+  ],
+  "imputation.input_cram_indices": [
+    "/path/to/sample001.cram.crai",
+    "/path/to/sample002.cram.crai"
   ],
   "imputation.chromosomes": [
     {
@@ -83,7 +82,9 @@ Create an inputs JSON file with your samples and reference data:
     }
   ],
   "imputation.reference_fasta": "/path/to/GRCh38.fa",
-  "imputation.reference_fasta_index": "/path/to/GRCh38.fa.fai"
+  "imputation.reference_fasta_index": "/path/to/GRCh38.fa.fai",
+  "imputation.truth_vcf": "/path/to/truth.vcf.gz",
+  "imputation.truth_vcf_index": "/path/to/truth.vcf.gz.tbi"
 }
 ```
 
@@ -114,15 +115,19 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 
 | Parameter | Description | Type |
 |-----------|-------------|------|
-| `samples` | Array of ImputationSample objects | Array[ImputationSample] |
+| `input_crams` | Array of input CRAM/BAM files for all samples | Array[File] |
+| `input_cram_indices` | Array of index files for input CRAMs/BAMs | Array[File] |
 | `chromosomes` | Array of ChromosomeData objects | Array[ChromosomeData] |
 | `reference_fasta` | Reference genome FASTA file | File |
 | `reference_fasta_index` | Reference genome FASTA index (.fai) | File |
+
+Note: `input_crams` and `input_cram_indices` must be parallel arrays (i.e., `input_cram_indices[i]` is the index for `input_crams[i]`). All samples are phased jointly in each imputation call.
 
 ### Optional Inputs
 
 | Parameter | Description | Type | Default |
 |-----------|-------------|------|---------|
+| `output_prefix` | Prefix for output file names | String | "imputed" |
 | `output_format` | Output format (bcf, vcf, vcf.gz) | String | "bcf" |
 | `impute_reference_only_variants` | Only impute variants in reference panel | Boolean | false |
 | `window_size_cm` | Chunk window size in centiMorgans | Float | 2.0 |
@@ -130,32 +135,23 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 | `n_burnin` | MCMC burn-in iterations | Int | 5 |
 | `n_main` | MCMC main iterations | Int | 15 |
 | `effective_population_size` | Effective population size for HMM | Int | 15000 |
+| `truth_vcf` | Truth VCF file for concordance evaluation | File | (optional) |
+| `truth_vcf_index` | Index file for truth VCF | File | (optional) |
+| `concordance_allele_frequencies` | Allele frequencies file for concordance binning | File | (optional) |
+| `concordance_min_val_dp` | Minimum depth in validation/truth data | Int | 0 |
+| `concordance_min_val_gq` | Minimum genotype quality in validation/truth data | Int | 0 |
 | `chunk_cpu_cores` | CPU cores for chunking tasks | Int | 4 |
 | `chunk_memory_gb` | Memory (GB) for chunking tasks | Int | 8 |
 | `phase_cpu_cores` | CPU cores for phasing tasks | Int | 4 |
 | `phase_memory_gb` | Memory (GB) for phasing tasks | Int | 8 |
 | `ligate_cpu_cores` | CPU cores for ligation tasks | Int | 4 |
 | `ligate_memory_gb` | Memory (GB) for ligation tasks | Int | 16 |
-| `concordance_allele_frequencies` | Allele frequencies file for concordance binning | File | (optional) |
-| `concordance_min_val_dp` | Minimum depth in validation/truth data | Int | 0 |
-| `concordance_min_val_gq` | Minimum genotype quality in validation/truth data | Int | 0 |
+| `concat_cpu_cores` | CPU cores for concatenation tasks | Int | 4 |
+| `concat_memory_gb` | Memory (GB) for concatenation tasks | Int | 8 |
 | `concordance_cpu_cores` | CPU cores for concordance tasks | Int | 4 |
 | `concordance_memory_gb` | Memory (GB) for concordance tasks | Int | 8 |
 
 ### Data Structures
-
-**ImputationSample:**
-```json
-{
-  "sample_id": "SAMPLE001",
-  "cram": "/path/to/sample.cram",
-  "cram_index": "/path/to/sample.cram.crai",
-  "truth_vcf": "/path/to/sample.truth.vcf.gz",
-  "truth_vcf_index": "/path/to/sample.truth.vcf.gz.tbi"
-}
-```
-
-Note: `truth_vcf` and `truth_vcf_index` are optional. When provided, the pipeline will compute concordance metrics comparing imputed genotypes against the truth data. This is useful for validation studies where high-confidence genotypes are available (e.g., from high-coverage sequencing or genotyping arrays).
 
 **ChromosomeData:**
 ```json
@@ -171,9 +167,9 @@ Note: `truth_vcf` and `truth_vcf_index` are optional. When provided, the pipelin
 
 | Output | Description |
 |--------|-------------|
-| `imputed_vcfs` | Array of imputed VCF/BCF files (one per sample, all chromosomes combined) |
-| `imputed_vcf_indices` | Array of index files for imputed VCFs |
-| `concordance_outputs` | Array of concordance metrics files (null for samples without truth VCFs) |
+| `imputed_vcf` | Multi-sample imputed VCF/BCF file (all samples and chromosomes combined) |
+| `imputed_vcf_index` | Index file for the imputed VCF |
+| `concordance_outputs` | Concordance metrics files (null when no truth VCF is provided) |
 
 ## Reference Data
 
@@ -193,15 +189,16 @@ Genetic maps can be downloaded from:
 ## Resource Considerations
 
 ### Compute Requirements
-- **Memory**: 8-16GB per phasing task (scale with reference panel size)
+- **Memory**: 8-16GB per phasing task (scales with reference panel size and number of samples)
 - **CPUs**: 4+ cores recommended for efficient processing
 - **Storage**: Sufficient space for CRAM files and output VCFs
 - **Network**: Stable internet connection for module imports
 
 ### Scaling
-- Samples are processed in parallel
-- Chromosomes within each sample are processed in parallel
+- All samples are phased jointly per chunk (leveraging GLIMPSE2's multi-sample mode)
+- Chromosomes are processed in parallel
 - Chunks within each chromosome are processed in parallel
+- Memory requirements for phasing scale with the number of input samples
 
 ## Pipeline Testing
 

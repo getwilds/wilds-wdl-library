@@ -84,21 +84,21 @@ Perform imputation and phasing from VCF input.
 
 ### `glimpse2_phase_cram`
 
-Perform imputation directly from CRAM/BAM files.
+Perform imputation directly from CRAM/BAM files. Accepts one or more BAM/CRAM files via an array input, which are passed to GLIMPSE2_phase using `--bam-list`.
 
 **Inputs:**
-- `input_cram` (File): Input CRAM or BAM file
-- `input_cram_index` (File): Index file for input CRAM/BAM
+- `input_bams` (Array[File]): Array of input CRAM or BAM files
+- `input_bam_indices` (Array[File]): Array of index files for input CRAM/BAM files
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Reference genome FASTA index
 - `reference_chunk` (File): Binary reference chunk
 - `output_prefix` (String): Prefix for output files
-- impute_reference_only_variants: "Impute variants only present in reference panel"
-- n_burnin: "Number of burn-in iterations (default: 5)"
-- n_main: "Number of main iterations (default: 15)"
-- effective_population_size: "Effective population size (default: 15000)"
-- cpu_cores: "Number of CPU cores allocated for the task"
-- memory_gb: "Memory allocated for the task in GB"
+- `impute_reference_only_variants` (Boolean, default=false): Impute variants only present in reference panel
+- `n_burnin` (Int, default=5): Number of burn-in iterations
+- `n_main` (Int, default=15): Number of main iterations
+- `effective_population_size` (Int, default=15000): Effective population size
+- `cpu_cores` (Int, default=4): Number of CPU cores
+- `memory_gb` (Int, default=8): Memory in GB
 
 **Outputs:**
 - `imputed_chunk` (File): Imputed BCF file
