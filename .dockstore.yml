@@ -1,0 +1,195 @@
+version: 1.2
+
+workflows:
+  # =============================================================================
+  # PIPELINES - Complete analysis workflows combining multiple modules
+  # =============================================================================
+
+  - name: ww-bwa-gatk
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-bwa-gatk/ww-bwa-gatk.wdl
+    readMePath: /pipelines/ww-bwa-gatk/README.md
+    testParameterFiles:
+      - /pipelines/ww-bwa-gatk/inputs.json
+    authors:
+      - name: WILDS Team
+        email: wilds@fredhutch.org
+    description: "WDL workflow to align sequencing data using BWA and perform QC steps with GATK"
+    topic: variant-calling
+    filters:
+      branches:
+        - main
+      tags:
+        - genomics
+        - alignment
+        - variant-calling
+        - bwa
+        - gatk
+
+  - name: ww-ena-star
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-ena-star/ww-ena-star.wdl
+    readMePath: /pipelines/ww-ena-star/README.md
+    testParameterFiles:
+      - /pipelines/ww-ena-star/inputs.json
+    authors:
+      - name: WILDS Team
+        email: wilds@fredhutch.org
+    description: "WDL workflow to download raw sequencing data from ENA and align using STAR two-pass methodology"
+    topic: rna-seq
+    filters:
+      branches:
+        - main
+      tags:
+        - genomics
+        - rna-seq
+        - alignment
+        - star
+        - ena
+
+  - name: ww-fastq-to-cram
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-fastq-to-cram/ww-fastq-to-cram.wdl
+    readMePath: /pipelines/ww-fastq-to-cram/README.md
+    testParameterFiles:
+      - /pipelines/ww-fastq-to-cram/inputs.json
+    authors:
+      - name: WILDS Team
+        email: wilds@fredhutch.org
+    description: "Convert paired FASTQ files to unmapped CRAM format using WILDS WDL modules"
+    topic: alignment
+    filters:
+      branches:
+        - main
+      tags:
+        - genomics
+        - format-conversion
+        - fastq
+        - cram
+        - samtools
+
+  - name: ww-imputation
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-imputation/ww-imputation.wdl
+    readMePath: /pipelines/ww-imputation/README.md
+    testParameterFiles:
+      - /pipelines/ww-imputation/inputs.json
+    authors:
+      - name: WILDS Team
+        email: wilds@fredhutch.org
+    description: "WDL workflow for genotype imputation from low-coverage WGS data using GLIMPSE2. Processes CRAM/BAM files against a reference panel to produce imputed VCF files."
+    topic: imputation
+    filters:
+      branches:
+        - main
+      tags:
+        - genomics
+        - imputation
+        - glimpse2
+        - low-coverage-wgs
+        - genotyping
+
+  - name: ww-leukemia
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-leukemia/ww-leukemia.wdl
+    readMePath: /pipelines/ww-leukemia/README.md
+    testParameterFiles:
+      - /pipelines/ww-leukemia/inputs.json
+    authors:
+      - name: WILDS Team
+        email: wilds@fredhutch.org
+    description: "Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing with focus on leukemia analysis - Refactored with WILDS modules"
+    topic: variant-calling
+    filters:
+      branches:
+        - main
+      tags:
+        - genomics
+        - variant-calling
+        - leukemia
+        - targeted-sequencing
+        - consensus-calling
+
+  - name: ww-saturation
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-saturation/ww-saturation.wdl
+    readMePath: /pipelines/ww-saturation/README.md
+    testParameterFiles:
+      - /pipelines/ww-saturation/inputs.json
+    authors:
+      - name: WILDS Team
+        email: wilds@fredhutch.org
+    description: "WDL workflow to analyze saturation mutagenesis data using BWA alignment and GATK AnalyzeSaturationMutagenesis"
+    topic: saturation-mutagenesis
+    filters:
+      branches:
+        - main
+      tags:
+        - genomics
+        - saturation-mutagenesis
+        - bwa
+        - gatk
+        - functional-genomics
+
+  - name: ww-sra-salmon
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-sra-salmon/ww-sra-salmon.wdl
+    readMePath: /pipelines/ww-sra-salmon/README.md
+    testParameterFiles:
+      - /pipelines/ww-sra-salmon/inputs.json
+    authors:
+      - name: WILDS Team
+        email: wilds@fredhutch.org
+    description: "WDL workflow to download raw sequencing data from SRA and quantify using Salmon quasi-mapping"
+    topic: rna-seq
+    filters:
+      branches:
+        - main
+      tags:
+        - genomics
+        - rna-seq
+        - quantification
+        - salmon
+        - sra
+
+  - name: ww-sra-star
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-sra-star/ww-sra-star.wdl
+    readMePath: /pipelines/ww-sra-star/README.md
+    testParameterFiles:
+      - /pipelines/ww-sra-star/inputs.json
+    authors:
+      - name: WILDS Team
+        email: wilds@fredhutch.org
+    description: "WDL workflow to download raw sequencing data from SRA and align using STAR two-pass methodology"
+    topic: rna-seq
+    filters:
+      branches:
+        - main
+      tags:
+        - genomics
+        - rna-seq
+        - alignment
+        - star
+        - sra
+
+  - name: ww-star-deseq2
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-star-deseq2/ww-star-deseq2.wdl
+    readMePath: /pipelines/ww-star-deseq2/README.md
+    testParameterFiles:
+      - /pipelines/ww-star-deseq2/inputs.json
+    authors:
+      - name: WILDS Team
+        email: wilds@fredhutch.org
+    description: "WDL workflow for RNA-seq alignment via STAR and DESeq2 differential expression analysis"
+    topic: differential-expression
+    filters:
+      branches:
+        - main
+      tags:
+        - genomics
+        - rna-seq
+        - differential-expression
+        - star
+        - deseq2
