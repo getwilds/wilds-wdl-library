@@ -1,0 +1,9 @@
+{
+  "sra_ids": "$.dataset.params.sra_ids",
+  "transcriptome_fasta": "$.dataset.params.transcriptome_fasta",
+  "ncpu": "$.dataset.params.ncpu",
+  "memory_gb": "$.dataset.params.memory_gb",
+  "max_reads": "$.dataset.params.max_reads",
+  "final_workflow_outputs_dir": "$.dataset.dataPath",
+  "workflow_failure_mode": "$.dataset.params.workflow_failure_mode"
+}

@@ -1,0 +1,54 @@
+{
+  "form": {
+    "type": "object",
+    "properties": {
+      "sra_ids": {
+        "title": "SRA Sample IDs (e.g., SRR3589956,SRR3589957)",
+        "description": "Comma-separated list of SRA accession IDs",
+        "type": "string"
+      },
+      "transcriptome_fasta": {
+        "title": "Reference Transcriptome (FASTA)",
+        "description": "Nucleotide sequence of the reference transcriptome used for Salmon indexing and quantification",
+        "type": "string",
+        "pathType": "references",
+        "file": "*.fasta"
+      },
+      "ncpu": {
+        "title": "Number of CPUs",
+        "description": "Number of CPUs to use for SRA download and Salmon quantification",
+        "type": "integer",
+        "default": 8
+      },
+      "memory_gb": {
+        "title": "Memory (GB)",
+        "description": "Memory allocation in GB for Salmon tasks",
+        "type": "integer",
+        "default": 16
+      },
+      "max_reads": {
+        "title": "Maximum Reads (Optional)",
+        "description": "Optional max number of reads to download (for testing/downsampling). Leave blank to download all reads.",
+        "type": "integer"
+      },
+      "workflow_failure_mode": {
+        "title": "Workflow Failure Mode",
+        "description": "Behavior when individual tasks encounter failures",
+        "type": "string",
+        "default": "ContinueWhilePossible",
+        "enum": [
+          "ContinueWhilePossible",
+          "NoNewCalls"
+        ]
+      }
+    },
+    "required": [
+      "sra_ids",
+      "transcriptome_fasta",
+      "ncpu",
+      "memory_gb",
+      "workflow_failure_mode"
+    ]
+  },
+  "ui": {}
+}
