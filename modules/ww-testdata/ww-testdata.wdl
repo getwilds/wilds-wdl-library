@@ -260,8 +260,13 @@ task download_cram_data {
     # Index the new BAM file
     samtools index -@ ~{cpu_cores} NA12878_chr1.bam
 
-    # Convert BAM to CRAM using the provided reference FASTA
-    samtools view -@ ~{cpu_cores} -C -T "~{ref_fasta}" -o NA12878_chr1.cram NA12878_chr1.bam
+    # Copy reference to working directory so samtools can create/read its .fai index
+    # (input files are mounted read-only in Sprocket and other container executors)
+    cp "~{ref_fasta}" ref.fa
+    samtools faidx ref.fa
+
+    # Convert BAM to CRAM using the local reference copy
+    samtools view -@ ~{cpu_cores} -C -T ref.fa -o NA12878_chr1.cram NA12878_chr1.bam
     samtools index -@ ~{cpu_cores} NA12878_chr1.cram
 
     # Clean up intermediate files
