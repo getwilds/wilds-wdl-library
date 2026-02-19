@@ -242,6 +242,7 @@ task download_cram_data {
     aws s3 cp --no-sign-request \
       s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bai \
       NA12878_full.bam.bai
+    touch NA12878_full.bam.bai
 
     # Extract chr1 and subsample to reduce size (using lower subsample rate for CRAM)
     samtools view -@ ~{cpu_cores} -h -b NA12878_full.bam chr1 | \
@@ -315,6 +316,7 @@ task download_bam_data {
     aws s3 cp --no-sign-request \
       s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bai \
       NA12878_full.bam.bai
+    touch NA12878_full.bam.bai
 
     # Extract chr1 and subsample to reduce size
     samtools view -@ ~{cpu_cores} -h -b NA12878_full.bam chr1 | \
