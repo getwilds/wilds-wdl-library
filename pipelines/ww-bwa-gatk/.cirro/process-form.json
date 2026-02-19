@@ -27,7 +27,7 @@
       "memory_gb": {
         "title": "Memory (GB)",
         "description": "Memory allocation in GB",
-        "type": "number",
+        "type": "integer",
         "default": 8
       },
       "reference_fasta": {
