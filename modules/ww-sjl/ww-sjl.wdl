@@ -1,0 +1,69 @@
+## WILDS WDL module for SJL (Solar Jetlag) tile processing.
+## Calculates sunrise/sunset times and sun time differences for geographic tiles
+## using NOAA solar calculator variables, as part of the SJL model pipeline.
+##
+## Designed to be a modular component within the WILDS ecosystem that can be used
+## independently or integrated with other WILDS workflows.
+
+version 1.0
+
+task sjl_tiles {
+  meta {
+    author: "Caroline Nondin"
+    email: "cnondin@fredhutch.org"
+    description: "Calculate sunrise/sunset times and sun time differences for a geographic tile as part of the SJL model pipeline"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sjl/ww-sjl.wdl"
+    outputs: {
+      matched_points: "RDS file containing points with sunrise/sunset difference values",
+      missing_points: "RDS file containing points that could not be matched to border points (may be empty)"
+    }
+  }
+
+  parameter_meta {
+    tile_path: "Path to input tile .rds file"
+    border_points_path: "Path to border points .csv file containing timezone boundary data"
+    tile_num: "Tile identifier (e.g. 0042)"
+    year: "Year for solar calculations (e.g. 2022)"
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    File tile_path
+    File border_points_path
+    String tile_num
+    Int year
+    Int cpu_cores = 1
+    Int memory_gb = 8
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Install required R packages
+    Rscript -e "install.packages(c('optparse', 'lubridate'), repos='https://cloud.r-project.org')"
+
+    # Pull sjl_tiles script from GitHub
+    # NOTE: For reproducibility in production workflows, replace the branch reference
+    # (e.g., "refs/heads/main") with a specific commit hash (e.g., "abc1234...")
+    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jetlag/modules/ww-sjl/sjl_tiles.R" \
+      -O sjl_tiles.R
+
+    Rscript sjl_tiles.R \
+      --tile_path "~{tile_path}" \
+      --border_points_path "~{border_points_path}" \
+      --tile_num "~{tile_num}" \
+      --year ~{year}
+  >>>
+
+  output {
+    File matched_points = "tile_~{tile_num}.rds"
+    File missing_points = "tile_~{tile_num}_missing.rds"
+  }
+
+  runtime {
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+    docker: "rocker/tidyverse:4"
+  }
+}
