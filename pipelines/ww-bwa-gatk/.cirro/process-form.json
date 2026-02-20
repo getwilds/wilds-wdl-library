@@ -36,7 +36,7 @@
         "type": "string",
         "multiple": false,
         "pathType": "dataset",
-        "file": "**/*.{fa,fasta,fa.gz,fasta.gz,fna,fna.gz}"
+        "file": "**/*.{fa,fna}"
       },
       "reference_fasta_index": {
         "title": "Reference Genome Index (FAI)",
