@@ -12,7 +12,7 @@
         "description": "Reference transcriptome to use for Salmon indexing and quantification",
         "type": "string",
         "pathType": "dataset",
-        "file": "**/*.f*"
+        "file": "**/*.{fa,fasta,fa.gz,fasta.gz,fna,fna.gz}"
       },
       "ncpu": {
         "title": "Number of CPUs",
