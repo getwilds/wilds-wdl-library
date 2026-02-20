@@ -132,4 +132,4 @@ jobs:
         # Extract entrypoint from the WDL file
         entrypoint=$(wdlparse parse --format json "$wdl_file" | jq -r '.wdl.workflows[].name')
         echo "Running ${{ inputs.item_type }}/${{ matrix.item }} with Sprocket using entrypoint: $entrypoint"
-        sprocket run "$wdl_file" --entrypoint "$entrypoint"
+        sprocket run "$wdl_file" --target "$entrypoint"
