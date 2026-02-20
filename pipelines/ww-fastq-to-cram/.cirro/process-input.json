@@ -1,0 +1,8 @@
+{
+  "out_dir": "$.dataset.dataPath",
+  "cpu_cores": "$.dataset.params.cpu_cores",
+  "memory_gb": "$.dataset.params.memory_gb",
+  "library_name": "$.dataset.params.library_name",
+  "sequencing_center": "$.dataset.params.sequencing_center",
+  "workflow_failure_mode": "$.dataset.params.workflow_failure_mode"
+}
