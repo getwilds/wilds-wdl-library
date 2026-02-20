@@ -56,7 +56,7 @@ jobs:
       name: Install miniwdl
       run: |
         python -m pip install --upgrade pip
-        pip3 install miniwdl
+        pip3 install miniwdl==1.13.0
     -
       name: Run workflow with miniwdl
       run: |
@@ -85,18 +85,18 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '21'
+        java-version: '25'
     -
       name: Download Cromwell
       run: |
-        wget -q https://github.com/broadinstitute/cromwell/releases/download/86/cromwell-86.jar
+        wget -q https://github.com/broadinstitute/cromwell/releases/download/92/cromwell-92.jar
     -
       name: Run workflow with Cromwell
       run: |
         item_dir="${{ inputs.item_type }}/${{ matrix.item }}"
         wdl_file="$item_dir/testrun.wdl"
         echo "Running ${{ inputs.item_type }}/${{ matrix.item }} with Cromwell..."
-        java -jar cromwell-86.jar run "$wdl_file"
+        java -jar cromwell-92.jar run "$wdl_file"
 
   sprocket-test:
     needs: [discover]
@@ -122,7 +122,7 @@ jobs:
     -
       name: Install Sprocket
       run: |
-        cargo-binstall sprocket --version 0.15.0 -y
+        cargo-binstall sprocket --version 0.21.1 -y
         cargo install --git https://github.com/getwilds/wdlparse --tag v0.0.5
     -
       name: Run workflow with Sprocket
