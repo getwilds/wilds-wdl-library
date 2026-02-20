@@ -17,12 +17,14 @@
       "library_name": {
         "title": "Library Name",
         "description": "Library name for the read group LB tag. Applied to all samples. If not provided, defaults to the sample name.",
-        "type": "string"
+        "type": "string",
+        "default": ""
       },
       "sequencing_center": {
         "title": "Sequencing Center",
         "description": "Sequencing center for the read group CN tag. Applied to all samples. If not provided, defaults to '.'",
-        "type": "string"
+        "type": "string",
+        "default": ""
       },
       "workflow_failure_mode": {
         "title": "Workflow Failure Mode",

@@ -96,9 +96,10 @@ def format_inputs_batch(ds: PreprocessDataset):
                 }
             ]
         }
-        if library_name:
+        # If the user provided these values, use them
+        if library_name is not "":
             sample["library_name"] = library_name
-        if sequencing_center:
+        if sequencing_center is not "":
             sample["sequencing_center"] = sequencing_center
         batch_info.append(sample)
 
