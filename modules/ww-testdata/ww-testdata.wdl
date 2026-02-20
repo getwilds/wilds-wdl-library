@@ -242,6 +242,7 @@ task download_cram_data {
     aws s3 cp --no-sign-request \
       s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bai \
       NA12878_full.bam.bai
+    touch NA12878_full.bam.bai
 
     # Extract chr1 and subsample to reduce size (using lower subsample rate for CRAM)
     samtools view -@ ~{cpu_cores} -h -b NA12878_full.bam chr1 | \
@@ -259,8 +260,13 @@ task download_cram_data {
     # Index the new BAM file
     samtools index -@ ~{cpu_cores} NA12878_chr1.bam
 
-    # Convert BAM to CRAM using the provided reference FASTA
-    samtools view -@ ~{cpu_cores} -C -T "~{ref_fasta}" -o NA12878_chr1.cram NA12878_chr1.bam
+    # Copy reference to working directory so samtools can create/read its .fai index
+    # (input files are mounted read-only in Sprocket and other container executors)
+    cp "~{ref_fasta}" ref.fa
+    samtools faidx ref.fa
+
+    # Convert BAM to CRAM using the local reference copy
+    samtools view -@ ~{cpu_cores} -C -T ref.fa -o NA12878_chr1.cram NA12878_chr1.bam
     samtools index -@ ~{cpu_cores} NA12878_chr1.cram
 
     # Clean up intermediate files
@@ -315,6 +321,7 @@ task download_bam_data {
     aws s3 cp --no-sign-request \
       s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bai \
       NA12878_full.bam.bai
+    touch NA12878_full.bam.bai
 
     # Extract chr1 and subsample to reduce size
     samtools view -@ ~{cpu_cores} -h -b NA12878_full.bam chr1 | \
