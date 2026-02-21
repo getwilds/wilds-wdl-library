@@ -42,7 +42,7 @@ task sjl_tiles {
 
     # Install required R packages to a user-writable location
     mkdir -p /tmp/R_libs
-    export R_LIBS_USER=/tmp/R_libs
+    echo "R_LIBS_USER=/tmp/R_libs" > ~/.Renviron
     Rscript -e "install.packages(c('optparse', 'lubridate'), repos='https://cloud.r-project.org')"
 
     # Pull sjl_tiles script from GitHub
