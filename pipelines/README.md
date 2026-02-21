@@ -64,6 +64,7 @@ pipelines/pipeline-name/
 | `ww-sra-salmon` | Basic | `ww-sra`, `ww-salmon` | SRA download and transcript quantification |
 | `ww-sra-star` | Basic | `ww-sra`, `ww-star` | SRA download and RNA-seq alignment |
 | `ww-star-deseq2` | Intermediate | `ww-star`, `ww-deseq2` | RNA-seq alignment and differential expression |
+| `ww-jetlag` | Basic | `ww-sjl` | Solar Jetlag tile processing across an array of geographic tiles |
 | `ww-leukemia` | Advanced | Multiple | Complete leukemia analysis pipeline |
 
 ## Using Pipelines
