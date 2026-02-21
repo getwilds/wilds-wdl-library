@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jetlag/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow testdata_example {
   # Pull down reference genome and index files for chr1
@@ -69,6 +69,8 @@ workflow testdata_example {
 
   call ww_testdata.download_glimpse2_truth_vcf { }
 
+  call ww_testdata.generate_sjl_data { }
+
   call validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
@@ -116,7 +118,9 @@ workflow testdata_example {
     glimpse2_gl_vcf = download_glimpse2_test_gl_vcf.gl_vcf,
     glimpse2_gl_vcf_index = download_glimpse2_test_gl_vcf.gl_vcf_index,
     glimpse2_truth_vcf = download_glimpse2_truth_vcf.truth_vcf,
-    glimpse2_truth_vcf_index = download_glimpse2_truth_vcf.truth_vcf_index
+    glimpse2_truth_vcf_index = download_glimpse2_truth_vcf.truth_vcf_index,
+    sjl_tile_rds = generate_sjl_data.tile_rds,
+    sjl_border_points_csv = generate_sjl_data.border_points_csv
   }
 
   output {
@@ -180,6 +184,9 @@ workflow testdata_example {
     File glimpse2_gl_vcf_index = download_glimpse2_test_gl_vcf.gl_vcf_index
     File glimpse2_truth_vcf = download_glimpse2_truth_vcf.truth_vcf
     File glimpse2_truth_vcf_index = download_glimpse2_truth_vcf.truth_vcf_index
+    # Outputs from SJL synthetic data generation
+    File sjl_tile_rds = generate_sjl_data.tile_rds
+    File sjl_border_points_csv = generate_sjl_data.border_points_csv
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
   }
@@ -241,6 +248,8 @@ task validate_outputs {
     glimpse2_gl_vcf_index: "GLIMPSE2 genotype likelihoods VCF index to validate"
     glimpse2_truth_vcf: "GLIMPSE2 truth VCF file to validate"
     glimpse2_truth_vcf_index: "GLIMPSE2 truth VCF index to validate"
+    sjl_tile_rds: "Synthetic SJL tile RDS file to validate"
+    sjl_border_points_csv: "Synthetic SJL border points CSV file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -293,6 +302,8 @@ task validate_outputs {
     File glimpse2_gl_vcf_index
     File glimpse2_truth_vcf
     File glimpse2_truth_vcf_index
+    File sjl_tile_rds
+    File sjl_border_points_csv
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -373,6 +384,8 @@ task validate_outputs {
     validate_file "~{glimpse2_gl_vcf_index}" "GLIMPSE2 genotype likelihoods VCF index" || validation_passed=false
     validate_file "~{glimpse2_truth_vcf}" "GLIMPSE2 truth VCF" || validation_passed=false
     validate_file "~{glimpse2_truth_vcf_index}" "GLIMPSE2 truth VCF index" || validation_passed=false
+    validate_file "~{sjl_tile_rds}" "SJL synthetic tile RDS" || validation_passed=false
+    validate_file "~{sjl_border_points_csv}" "SJL synthetic border points CSV" || validation_passed=false
 
     # Additional check: Verify no N bases in clean amplicon
     echo "" >> validation_report.txt
@@ -388,7 +401,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 45"
+      echo "Total files validated: 47"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

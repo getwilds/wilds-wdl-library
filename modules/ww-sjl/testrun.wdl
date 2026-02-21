@@ -4,13 +4,13 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jetlag/modules/ww-sjl/ww-sjl.wdl" as ww_sjl
 
 workflow sjl_example {
-  # Download test tile and border points data
-  call ww_testdata.download_sjl_data { }
+  # Generate synthetic test tile and border points data
+  call ww_testdata.generate_sjl_data { }
 
   # Run SJL tile processing
   call ww_sjl.sjl_tiles { input:
-      tile_path = download_sjl_data.tile_rds,
-      border_points_path = download_sjl_data.border_points_csv,
+      tile_path = generate_sjl_data.tile_rds,
+      border_points_path = generate_sjl_data.border_points_csv,
       tile_num = "0001",
       year = 2022
   }
