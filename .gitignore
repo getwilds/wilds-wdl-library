@@ -6,6 +6,7 @@
 # sprocket run outputs (runs, output - old sprocket versions)
 runs
 output
+out
 
 # .sprocketignore is generated in CI for docs, don't commit it
 .sprocketignore
