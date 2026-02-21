@@ -80,7 +80,7 @@ task download_files {
   >>>
 
   output {
-    Array[File] downloaded_files = read_lines("downloaded_files.txt")
+    Array[File] downloaded_files = glob("~{output_dir_name}/**")
     File download_log = "download.log"
     File download_summary = "download_summary.txt"
     String accessions_used = select_first([accessions, "from_file"])
@@ -161,7 +161,7 @@ task download_by_query {
   >>>
 
   output {
-    Array[File] downloaded_files = read_lines("downloaded_files.txt")
+    Array[File] downloaded_files = glob("~{output_dir_name}/**")
     File download_log = "download.log"
     File download_summary = "download_summary.txt"
   }
