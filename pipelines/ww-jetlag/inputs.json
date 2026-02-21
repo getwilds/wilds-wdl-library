@@ -1,0 +1,8 @@
+{
+  "jetlag.tile_paths": ["/path/to/tile_0001.rds", "/path/to/tile_0002.rds"],
+  "jetlag.tile_nums": ["0001", "0002"],
+  "jetlag.border_points_path": "/path/to/border_points.csv",
+  "jetlag.year": 2022,
+  "jetlag.cpu_cores": 1,
+  "jetlag.memory_gb": 8
+}
