@@ -40,11 +40,6 @@ task sjl_tiles {
   command <<<
     set -eo pipefail
 
-    # Install required R packages to a user-writable location
-    mkdir -p /tmp/R_libs
-    echo "R_LIBS_USER=/tmp/R_libs" > ~/.Renviron
-    Rscript -e "install.packages(c('optparse', 'lubridate'), repos='https://cloud.r-project.org')"
-
     # Pull sjl_tiles script from GitHub
     # NOTE: For reproducibility in production workflows, replace the branch reference
     # (e.g., "refs/heads/main") with a specific commit hash (e.g., "abc1234...")
@@ -66,6 +61,6 @@ task sjl_tiles {
   runtime {
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    docker: "rocker/tidyverse:4"
+    docker: "getwilds/r-utils:0.1.0"
   }
 }
