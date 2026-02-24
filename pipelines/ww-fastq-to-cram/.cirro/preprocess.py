@@ -108,7 +108,7 @@ def format_inputs_batch(ds: PreprocessDataset):
 
 def setup_options(ds: PreprocessDataset):
     options = {
-        "workflow_failure_mode": "ContinueWhilePossible",
+        "workflow_failure_mode": ds.params["workflow_failure_mode"],
         "write_to_cache": True,
         "read_from_cache": True,
         "default_runtime_attributes": {
