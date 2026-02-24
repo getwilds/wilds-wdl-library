@@ -43,7 +43,7 @@ def format_inputs_batch(ds: PreprocessDataset):
     """
     Format the inputs using the SampleData FastqGroup structs. Note that 
     library_name and sequencing_center, if provided, will be the same for
-    all FastqGroups. This is because those in puts are provided via the 
+    all FastqGroups. This is because those inputs are provided via the 
     web form and cannot be sample-specific.
 
     [
