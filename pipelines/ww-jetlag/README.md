@@ -31,16 +31,18 @@ This pipeline imports and uses:
 
 ### Input Configuration
 
-Create a text file listing your tile RDS files (one path per line):
+Tile files can be provided in two ways. Provide **one or the other**, not both.
 
+**Option A: Manifest file** (recommended for large numbers of tiles)
+
+Create a text file listing your tile RDS file paths, one per line:
 ```
 /path/to/tile_0001.rds
 /path/to/tile_0002.rds
 /path/to/my_custom_tile.rds
 ```
 
-Then edit `inputs.json` with the path to your manifest and settings:
-
+Then reference it in `inputs.json`:
 ```json
 {
   "jetlag.tile_manifest": "/path/to/tile_manifest.txt",
@@ -52,6 +54,18 @@ Then edit `inputs.json` with the path to your manifest and settings:
 ```
 
 **Tip**: Generate a manifest from a directory of tiles with `ls /path/to/tiles/*.rds > tile_manifest.txt`.
+
+**Option B: Direct array** (convenient for smaller numbers of tiles)
+
+```json
+{
+  "jetlag.tile_paths": ["/path/to/tile_0001.rds", "/path/to/tile_0002.rds"],
+  "jetlag.border_points_path": "/path/to/border_points.csv",
+  "jetlag.year": 2022,
+  "jetlag.cpu_cores": 1,
+  "jetlag.memory_gb": 8
+}
+```
 
 ### Running the Pipeline
 
@@ -74,7 +88,8 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 
 | Parameter | Description | Type | Required? | Default |
 |-----------|-------------|------|-----------|---------|
-| `tile_manifest` | Text file listing input tile RDS file paths, one per line | File | Yes | - |
+| `tile_paths` | Array of input tile RDS files (provide this OR `tile_manifest`) | Array[File]? | No | - |
+| `tile_manifest` | Text file listing tile paths, one per line (provide this OR `tile_paths`) | File? | No | - |
 | `border_points_path` | Border points CSV file shared across all tiles | File | Yes | - |
 | `year` | Year for solar calculations | Int | Yes | - |
 | `cpu_cores` | Number of CPU cores per tile task | Int | No | 1 |

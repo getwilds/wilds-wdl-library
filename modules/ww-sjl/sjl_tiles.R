@@ -34,9 +34,6 @@ if (length(missing_cols) > 0) {
 
 #Upload tile
 cat("\n Uploading tile:", tile_name, "\n")
-if (!file.exists(tile_path)) {
-  stop("Tile '", tile_name, "': File not found")
-}
 tzpoints_time <- readRDS(tile_path)
 
 ## calculating sunrise and sunset time
