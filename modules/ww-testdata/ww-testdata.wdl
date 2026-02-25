@@ -1294,8 +1294,7 @@ task generate_sjl_data {
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
       tile_rds: "Synthetic tile RDS file with geographic point data",
-      border_points_csv: "Synthetic border points CSV file with timezone sunrise/sunset averages",
-      tile_manifest: "Text file listing tile RDS file paths, one per line"
+      border_points_csv: "Synthetic border points CSV file with timezone sunrise/sunset averages"
     }
   }
 
@@ -1339,15 +1338,11 @@ task generate_sjl_data {
       )
       write.csv(border_points, 'border_points.csv', row.names = FALSE)
     "
-
-    # Create manifest file listing the tile path (absolute path required)
-    echo "$(pwd)/test_tile.rds" > tile_manifest.txt
   >>>
 
   output {
     File tile_rds          = "test_tile.rds"
     File border_points_csv = "border_points.csv"
-    File tile_manifest     = "tile_manifest.txt"
   }
 
   runtime {

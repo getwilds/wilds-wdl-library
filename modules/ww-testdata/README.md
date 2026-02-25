@@ -634,7 +634,6 @@ Generates synthetic tile and border points data for testing the `ww-sjl` module 
 **Outputs**:
 - `tile_rds` (File): Synthetic tile RDS file with 5 geographic points across two timezones
 - `border_points_csv` (File): Synthetic border points CSV with matching timezone/latitude entries and sunrise/sunset averages in seconds from midnight
-- `tile_manifest` (File): Text file listing tile RDS file paths, one per line (for use with `ww-jetlag` pipeline)
 
 ## Data Sources
 
