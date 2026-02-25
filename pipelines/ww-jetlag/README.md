@@ -123,7 +123,7 @@ For questions, bugs, and/or feature requests, reach out to the Fred Hutch Data S
 
 ## Contributing
 
-If you would like to contribute to this WILDS WDL pipeline, please see our [WILDS Contributor Guide](https://getwilds.org/guide/) and the [WILDS WDL Library contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
+If you would like to contribute to this WILDS WDL pipeline, please see our [WILDS WDL Library contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
 
 ## License
 
