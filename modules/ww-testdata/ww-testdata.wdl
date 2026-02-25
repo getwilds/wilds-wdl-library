@@ -1340,8 +1340,8 @@ task generate_sjl_data {
       write.csv(border_points, 'border_points.csv', row.names = FALSE)
     "
 
-    # Create manifest file listing the tile path
-    echo "test_tile.rds" > tile_manifest.txt
+    # Create manifest file listing the tile path (absolute path required)
+    echo "$(pwd)/test_tile.rds" > tile_manifest.txt
   >>>
 
   output {
