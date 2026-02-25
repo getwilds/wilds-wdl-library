@@ -100,4 +100,4 @@ This module fetches the `sjl_tiles.R` script from GitHub at runtime rather than 
 For questions about this module:
 - Open an issue in the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library/issues)
 - Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
-- See the [WILDS Contributor Guide](https://getwilds.org/guide/) for detailed guidelines
+- See the library's [Contributor Guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for detailed guidelines
