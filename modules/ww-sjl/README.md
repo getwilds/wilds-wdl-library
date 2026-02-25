@@ -81,19 +81,10 @@ sprocket run testrun.wdl --entrypoint sjl_example
 
 ## Reproducibility
 
-This module fetches the `sjl_tiles.R` script from GitHub at runtime rather than bundling it inside the Docker container. This design simplifies development and customization but introduces a reproducibility consideration: the script and container are tracked separately.
+This module uses the latest version of `sjl_tiles.R` at runtime. This script is not bundled inside the Docker container. For maximum reproducibility, we recommend one of the following approaches:
 
-**For production workflows**, we recommend one of the following approaches:
-
-1. **Pin to a specific commit**: Replace the branch reference in the wget URL with a commit hash:
-   ```
-   # Instead of refs/heads/main, use a specific commit:
-   https://raw.githubusercontent.com/getwilds/wilds-wdl-library/<commit-sha>/modules/ww-sjl/sjl_tiles.R
-   ```
-
-2. **Fork the repository**: Create your own fork and reference your stable branch or tagged release.
-
-3. **Bundle the script**: For maximum reproducibility, build a custom Docker container that includes the script.
+1. Use a commit hash instead of a branch reference in the `wget` command of your own copy of `ww-sjl.wdl`. You can make your own copy by forking the repo or downloading the script. For example: `https://raw.githubusercontent.com/getwilds/wilds-wdl-library/<COMMIT HASH HERE>/modules/ww-sjl/sjl_tiles.R`
+2. Build a custom Docker container that includes the script inside.
 
 ## Support and Documentation
 
