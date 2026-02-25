@@ -11,7 +11,6 @@ library(optparse)
 option_list <- list(
   make_option("--tile_path",          type = "character", help = "Path to input tile .rds file"),
   make_option("--border_points_path", type = "character", help = "Path to border points .csv file"),
-  make_option("--tile_num",           type = "character", help = "Tile identifier (e.g. 0042)"),
   make_option("--year",               type = "integer",   help = "Year for solar calculations (e.g. 2022)")
 )
 
@@ -19,8 +18,10 @@ opt <- parse_args(OptionParser(option_list = option_list))
 
 tile_path          <- opt$tile_path
 border_points_path <- opt$border_points_path
-tile_num           <- opt$tile_num
 year               <- opt$year
+
+# Derive tile name from input filename for flexible naming
+tile_name <- tools::file_path_sans_ext(basename(tile_path))
 
 #grabbing datasets we need
 #border points
@@ -32,9 +33,9 @@ if (length(missing_cols) > 0) {
 }
 
 #Upload tile
-cat("\n Uploading tile", tile_num, "\n")
+cat("\n Uploading tile:", tile_name, "\n")
 if (!file.exists(tile_path)) {
-  stop("Tile ", tile_num, ": File not found")
+  stop("Tile '", tile_name, "': File not found")
 }
 tzpoints_time <- readRDS(tile_path)
 
@@ -311,10 +312,10 @@ all_matched_points <- all_matched_points %>%
 # Save final results
 cat("\n Saving final datasets \n")
 
-export_complete_path <- paste0("tile_", tile_num, ".rds")
-export_missing_path <- paste0("tile_", tile_num, "_missing.rds")
+export_complete_path <- paste0("matched_", tile_name, ".rds")
+export_missing_path <- paste0("missing_", tile_name, ".rds")
 
 saveRDS(all_matched_points, export_complete_path)
 saveRDS(pts_still_no_match, export_missing_path)
 
-cat("\n Tile ", tile_num, "complete! \n")
+cat("\n Tile '", tile_name, "' complete! \n")

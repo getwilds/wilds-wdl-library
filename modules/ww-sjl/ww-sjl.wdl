@@ -22,7 +22,6 @@ task sjl_tiles {
   parameter_meta {
     tile_path: "Path to input tile .rds file"
     border_points_path: "Path to border points .csv file containing timezone boundary data"
-    tile_num: "Tile identifier (e.g. 0042)"
     year: "Year for solar calculations (e.g. 2022)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
@@ -31,11 +30,12 @@ task sjl_tiles {
   input {
     File tile_path
     File border_points_path
-    String tile_num
     Int year
     Int cpu_cores = 1
     Int memory_gb = 8
   }
+
+  String tile_basename = basename(tile_path, ".rds")
 
   command <<<
     set -eo pipefail
@@ -43,19 +43,18 @@ task sjl_tiles {
     # Pull sjl_tiles script from GitHub
     # NOTE: For reproducibility in production workflows, replace the branch reference
     # (e.g., "refs/heads/main") with a specific commit hash (e.g., "abc1234...")
-    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jetlag/modules/ww-sjl/sjl_tiles.R" \
+    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/jetlag-manifest/modules/ww-sjl/sjl_tiles.R" \
       -O sjl_tiles.R
 
     Rscript sjl_tiles.R \
       --tile_path "~{tile_path}" \
       --border_points_path "~{border_points_path}" \
-      --tile_num "~{tile_num}" \
       --year ~{year}
   >>>
 
   output {
-    File matched_points = "tile_~{tile_num}.rds"
-    File missing_points = "tile_~{tile_num}_missing.rds"
+    File matched_points = "matched_~{tile_basename}.rds"
+    File missing_points = "missing_~{tile_basename}.rds"
   }
 
   runtime {

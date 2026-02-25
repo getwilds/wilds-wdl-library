@@ -23,16 +23,15 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 Calculates sunrise/sunset times and sun time differences for a single geographic tile.
 
 **Inputs:**
-- `tile_path` (File): Input tile RDS file
+- `tile_path` (File): Input tile RDS file (any filename is accepted)
 - `border_points_path` (File): Border points CSV file containing timezone boundary data
-- `tile_num` (String): Tile identifier (e.g. `0042`)
 - `year` (Int): Year for solar calculations (e.g. `2022`)
 - `cpu_cores` (Int, default: 1): Number of CPU cores to use
 - `memory_gb` (Int, default: 8): Memory allocation in GB
 
 **Outputs:**
-- `matched_points` (File): RDS file containing points with sunrise/sunset difference values
-- `missing_points` (File): RDS file containing points that could not be matched to border points (may be empty)
+- `matched_points` (File): RDS file containing points with sunrise/sunset difference values (named `matched_<input_filename>.rds`)
+- `missing_points` (File): RDS file containing points that could not be matched to border points, may be empty (named `missing_<input_filename>.rds`)
 
 ## Usage as a Module
 
@@ -45,7 +44,6 @@ workflow my_sjl_pipeline {
   input {
     File tile_path
     File border_points_path
-    String tile_num
     Int year
   }
 
@@ -53,7 +51,6 @@ workflow my_sjl_pipeline {
     input:
       tile_path = tile_path,
       border_points_path = border_points_path,
-      tile_num = tile_num,
       year = year
   }
 
