@@ -100,6 +100,20 @@ miniwdl run ww-leukemia.wdl -i inputs.json
 sprocket run ww-leukemia.wdl inputs.json
 ```
 
+### Running on Cirro
+
+This pipeline includes [Cirro](https://cirro.bio/) platform configuration files in the [.cirro/](.cirro/) directory for cloud execution. To run this pipeline on Cirro:
+
+1. Ensure you have access to a Cirro instance
+2. Follow the [Cirro pipeline documentation](https://docs.cirro.bio/pipelines/adding-pipelines/) to add this workflow to your Cirro instance
+3. The configuration files in `.cirro/` define:
+   - Input form fields for the Cirro web interface
+   - Compute resource requirements
+   - Output file handling and organization
+   - Data preprocessing steps
+
+For detailed information on configuring and using Cirro pipelines, see the [official Cirro documentation](https://docs.cirro.bio/).
+
 ### Input Parameters
 
 | Parameter | Description | Type | Required? |
