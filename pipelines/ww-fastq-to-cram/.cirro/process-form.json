@@ -1,0 +1,46 @@
+{
+  "form": {
+    "type": "object",
+    "properties": {
+      "cpu_cores": {
+        "title": "CPUs",
+        "description": "Number of CPUs to use for processing",
+        "type": "integer",
+        "default": 6
+      },
+      "memory_gb": {
+        "title": "Memory (GB)",
+        "description": "Memory allocation in GB",
+        "type": "integer",
+        "default": 12
+      },
+      "library_name": {
+        "title": "Library Name",
+        "description": "Library name for the read group LB tag. Applied to all samples. If not provided, defaults to the sample name.",
+        "type": "string",
+        "default": ""
+      },
+      "sequencing_center": {
+        "title": "Sequencing Center",
+        "description": "Sequencing center for the read group CN tag. Applied to all samples. If not provided, defaults to '.'",
+        "type": "string",
+        "default": ""
+      },
+      "workflow_failure_mode": {
+        "title": "Workflow Failure Mode",
+        "description": "Behavior when individual tasks encounter failures",
+        "type": "string",
+        "default": "ContinueWhilePossible",
+        "enum": [
+          "ContinueWhilePossible",
+          "NoNewCalls"
+        ]
+      }
+    },
+    "required": [
+      "cpu_cores",
+      "memory_gb"
+    ]
+  },
+  "ui": {}
+}
