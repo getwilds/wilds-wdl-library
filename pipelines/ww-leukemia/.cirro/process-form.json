@@ -87,7 +87,7 @@
         "type": "string",
         "multiple": false,
         "pathType": "dataset",
-        "file": "**/*.{txt}"
+        "file": "**/*.txt"
       },
       "ichorcna_chromosomes": {
         "title": "ichorCNA Chromosomes",
