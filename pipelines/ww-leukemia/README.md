@@ -100,6 +100,14 @@ miniwdl run ww-leukemia.wdl -i inputs.json
 sprocket run ww-leukemia.wdl inputs.json
 ```
 
+### For Fred Hutch Users
+
+Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/) to submit this pipeline directly to the on-premise HPC cluster:
+
+1. Ensure your input files are accessible by the cluster
+2. Update the inputs JSON
+3. Submit through the PROOF interface
+
 ### Running on Cirro
 
 This pipeline includes [Cirro](https://cirro.bio/) platform configuration files in the [.cirro/](.cirro/) directory for cloud execution. To run this pipeline on Cirro:
