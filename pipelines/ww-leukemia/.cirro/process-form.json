@@ -1,0 +1,179 @@
+{
+  "form": {
+    "type": "object",
+    "properties": {
+      "ref_fasta": {
+        "title": "Reference Genome (FASTA)",
+        "description": "Reference genome FASTA file",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.{fa,fasta,fa.gz,fasta.gz,fna,fna.gz}"
+      },
+      "ref_fasta_index": {
+        "title": "Reference Genome Index (.fai)",
+        "description": "Index file for the reference FASTA",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.fai"
+      },
+      "ref_dict": {
+        "title": "Reference Genome Dictionary (.dict)",
+        "description": "Sequence dictionary for the reference FASTA",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.dict"
+      },
+      "ref_name": {
+        "title": "Reference Genome Build",
+        "description": "Reference build name used for Annovar (hg38 or hg19) ",
+        "type": "string",
+        "default": "hg38",
+        "enum": ["hg38", "hg19"]
+      },
+      "dbsnp_vcf": {
+        "title": "dbSNP Variants (VCF)",
+        "description": "dbSNP VCF file for BQSR and variant annotation",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.vcf*"
+      },
+      "af_only_gnomad": {
+        "title": "gnomAD Allele Frequencies (VCF)",
+        "description": "gnomAD allele frequency VCF file for Mutect2",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.vcf*"
+      },
+      "known_indels_sites_vcfs": {
+        "title": "Known Indels (VCF)",
+        "description": "VCF file(s) with known indel sites for BQSR",
+        "type": "string",
+        "multiple": true,
+        "pathType": "dataset",
+        "file": "**/*.vcf*"
+      },
+      "wig_gc": {
+        "title": "GC Content (.wig)",
+        "description": "GC content WIG file for ichorCNA",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.wig"
+      },
+      "wig_map": {
+        "title": "Mappability Score (.wig)",
+        "description": "Mappability score WIG file for ichorCNA",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.wig"
+      },
+      "panel_of_norm_rds": {
+        "title": "Panel of Normals (.rds)",
+        "description": "RDS file of median corrected depth from panel of normals for ichorCNA",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.rds"
+      },
+      "centromeres": {
+        "title": "Centromere Locations (.txt)",
+        "description": "Text file containing centromere locations for ichorCNA",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.{txt}"
+      },
+      "ichorcna_chromosomes": {
+        "title": "ichorCNA Chromosomes",
+        "description": "Array of chromosomes for ichorCNA read counting. Default: All chromosomes.",
+        "type": "string",
+        "default": "[chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY]"
+      },
+      "ichorcna_chrs_string": {
+        "title": "ichorCNA Chromosomes (R vector)",
+        "description": "R vector style string of chromosomes for ichorCNA analysis",
+        "type": "string",
+        "default": "c(1:22, \"X\", \"Y\")"
+      },
+      "annovar_protocols": {
+        "title": "Annovar Protocols",
+        "description": "Comma-separated list of Annovar protocols to use (e.g., refGene)",
+        "type": "string"
+      },
+      "annovar_operation": {
+        "title": "Annovar Operations",
+        "description": "Comma-separated list of Annovar operations corresponding to the protocols (e.g., g)",
+        "type": "string"
+      },
+      "scatter_count": {
+        "title": "Scatter Count",
+        "description": "Number of intervals to scatter across for parallel processing",
+        "type": "integer",
+        "default": 32
+      },
+      "high_intensity_cpus": {
+        "title": "High-Intensity CPUs",
+        "description": "Number of cores to use for high-intensity tasks (alignment, variant calling, etc.)",
+        "type": "integer",
+        "default": 8
+      },
+      "high_intensity_memory_gb": {
+        "title": "High-Intensity Memory (GB)",
+        "description": "Amount of memory to use for high-intensity tasks (alignment, variant calling, etc.)",
+        "type": "integer",
+        "default": 16
+      },
+      "standard_cpus": {
+        "title": "Standard CPUs",
+        "description": "Number of cores to use for standard-intensity tasks (annotation, indexing, etc.)",
+        "type": "integer",
+        "default": 4
+      },
+      "standard_memory_gb": {
+        "title": "Standard Memory (GB)",
+        "description": "Amount of memory to use for standard-intensity tasks (annotation, indexing, etc.)",
+        "type": "integer",
+        "default": 8
+      },
+      "workflow_failure_mode": {
+        "title": "Workflow Failure Mode",
+        "description": "Behavior when individual tasks encounter failures",
+        "type": "string",
+        "default": "ContinueWhilePossible",
+        "enum": [
+          "ContinueWhilePossible",
+          "NoNewCalls"
+        ]
+      }
+    },
+    "required": [
+      "ref_fasta",
+      "ref_fasta_index",
+      "ref_dict",
+      "ref_name",
+      "dbsnp_vcf",
+      "af_only_gnomad",
+      "known_indels_sites_vcfs",
+      "wig_gc",
+      "wig_map",
+      "panel_of_norm_rds",
+      "centromeres",
+      "ichorcna_chromosomes",
+      "ichorcna_chrs_string",
+      "annovar_protocols",
+      "annovar_operation",
+      "scatter_count",
+      "high_intensity_cpus",
+      "high_intensity_memory_gb",
+      "standard_cpus",
+      "standard_memory_gb"
+    ]
+  },
+  "ui": {}
+}
