@@ -4,7 +4,7 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jetlag/modules/ww-sjl/ww-sjl.wdl" as ww_sjl
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/jetlag-manifest/modules/ww-sjl/ww-sjl.wdl" as ww_sjl
 
 workflow jetlag {
   meta {
@@ -19,8 +19,8 @@ workflow jetlag {
   }
 
   parameter_meta {
-    tile_paths: "array of input tile RDS files to process"
-    tile_nums: "array of tile identifiers corresponding to each tile_path (e.g. ['0001', '0002'])"
+    tile_paths: "array of input tile RDS files to process (provide this OR tile_manifest, not both)"
+    tile_manifest: "text file listing input tile RDS file paths, one per line (provide this OR tile_paths, not both)"
     border_points_path: "border points CSV file containing timezone boundary data, shared across all tiles"
     year: "year for solar calculations (e.g. 2022)"
     cpu_cores: "number of CPU cores to use per tile task"
@@ -28,19 +28,21 @@ workflow jetlag {
   }
 
   input {
-    Array[File] tile_paths
-    Array[String] tile_nums
+    Array[File]? tile_paths
+    File? tile_manifest
     File border_points_path
     Int year
     Int cpu_cores = 1
     Int memory_gb = 8
   }
 
-  scatter (i in range(length(tile_paths))) {
+  # Resolve tile files from whichever input was provided
+  Array[File] resolved_tile_paths = if defined(tile_paths) then select_first([tile_paths]) else read_lines(select_first([tile_manifest]))
+
+  scatter (tile_path in resolved_tile_paths) {
     call ww_sjl.sjl_tiles { input:
-      tile_path          = tile_paths[i],
+      tile_path          = tile_path,
       border_points_path = border_points_path,
-      tile_num           = tile_nums[i],
       year               = year,
       cpu_cores          = cpu_cores,
       memory_gb          = memory_gb

@@ -1299,14 +1299,12 @@ task generate_sjl_data {
   }
 
   parameter_meta {
-    tile_num: "Tile identifier for the output file name (e.g. 0001)"
     year: "Year to embed in the synthetic data"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
   }
 
   input {
-    String tile_num = "0001"
     Int year = 2022
     Int cpu_cores = 1
     Int memory_gb = 4
@@ -1323,9 +1321,9 @@ task generate_sjl_data {
         Longitude   = c(-77.50, -77.60, -77.55, -122.40, -122.45),
         Latitude    = c(37.50, 37.60, 37.55, 47.60, 47.65),
         year        = ~{year}L,
-        source_tile = 'TEST_~{tile_num}'
+        source_tile = 'TEST_0001'
       )
-      saveRDS(tile, 'tile_~{tile_num}.rds')
+      saveRDS(tile, 'test_tile.rds')
 
       # Synthetic border points: matching timezone/lat_rounded values
       # sunrise_avg_tz and sunset_avg_tz are in seconds from midnight
@@ -1343,7 +1341,7 @@ task generate_sjl_data {
   >>>
 
   output {
-    File tile_rds         = "tile_~{tile_num}.rds"
+    File tile_rds          = "test_tile.rds"
     File border_points_csv = "border_points.csv"
   }
 

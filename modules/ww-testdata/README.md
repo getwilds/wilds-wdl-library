@@ -627,7 +627,6 @@ call glimpse2_tasks.glimpse2_concordance {
 Generates synthetic tile and border points data for testing the `ww-sjl` module and `ww-jetlag` pipeline. Rather than downloading real data, this task uses an inline R script to create small, well-formed data frames with matching timezone and latitude values that exercise the full SJL matching logic.
 
 **Inputs**:
-- `tile_num` (String): Tile identifier for the output file name (default: "0001")
 - `year` (Int): Year to embed in the synthetic data (default: 2022)
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)

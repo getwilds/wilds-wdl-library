@@ -31,12 +31,21 @@ This pipeline imports and uses:
 
 ### Input Configuration
 
-Edit `inputs.json` with your tile files and settings:
+Tile files can be provided in two ways. Provide **one or the other**, not both.
 
+**Option A: Manifest file** (recommended for large numbers of tiles)
+
+Create a text file listing your tile RDS file paths, one per line:
+```
+/path/to/tile_0001.rds
+/path/to/tile_0002.rds
+/path/to/my_custom_tile.rds
+```
+
+Then reference it in `inputs.json`:
 ```json
 {
-  "jetlag.tile_paths": ["/path/to/tile_0001.rds", "/path/to/tile_0002.rds"],
-  "jetlag.tile_nums": ["0001", "0002"],
+  "jetlag.tile_manifest": "/path/to/tile_manifest.txt",
   "jetlag.border_points_path": "/path/to/border_points.csv",
   "jetlag.year": 2022,
   "jetlag.cpu_cores": 1,
@@ -44,7 +53,19 @@ Edit `inputs.json` with your tile files and settings:
 }
 ```
 
-**Note**: `tile_paths` and `tile_nums` must be the same length and in the same order — each `tile_nums[i]` must correspond to `tile_paths[i]`.
+**Tip**: Generate a manifest from a directory of tiles with `ls /path/to/tiles/*.rds > tile_manifest.txt`.
+
+**Option B: Direct array** (convenient for smaller numbers of tiles)
+
+```json
+{
+  "jetlag.tile_paths": ["/path/to/tile_0001.rds", "/path/to/tile_0002.rds"],
+  "jetlag.border_points_path": "/path/to/border_points.csv",
+  "jetlag.year": 2022,
+  "jetlag.cpu_cores": 1,
+  "jetlag.memory_gb": 8
+}
+```
 
 ### Running the Pipeline
 
@@ -67,8 +88,8 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 
 | Parameter | Description | Type | Required? | Default |
 |-----------|-------------|------|-----------|---------|
-| `tile_paths` | Array of input tile RDS files | Array[File] | Yes | - |
-| `tile_nums` | Array of tile identifiers corresponding to each tile_path | Array[String] | Yes | - |
+| `tile_paths` | Array of input tile RDS files (provide this OR `tile_manifest`) | Array[File]? | No | - |
+| `tile_manifest` | Text file listing tile paths, one per line (provide this OR `tile_paths`) | File? | No | - |
 | `border_points_path` | Border points CSV file shared across all tiles | File | Yes | - |
 | `year` | Year for solar calculations | Int | Yes | - |
 | `cpu_cores` | Number of CPU cores per tile task | Int | No | 1 |
@@ -78,8 +99,8 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 
 | Output | Description |
 |--------|-------------|
-| `matched_points` | Array of RDS files containing points with sunrise/sunset difference values, one per input tile |
-| `missing_points` | Array of RDS files containing points that could not be matched to border points, one per input tile |
+| `matched_points` | Array of RDS files containing points with sunrise/sunset difference values, one per input tile (named `matched_<input_filename>.rds`) |
+| `missing_points` | Array of RDS files containing points that could not be matched to border points, one per input tile (named `missing_<input_filename>.rds`) |
 
 ## Testing the Pipeline
 
