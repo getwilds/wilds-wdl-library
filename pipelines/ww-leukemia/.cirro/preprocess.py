@@ -79,12 +79,12 @@ def format_inputs_samples(ds: PreprocessDataset):
     """
 
     # Get the samplesheet with CRAM files.
-    # Expected columns: sample, cram
+    # Expected columns: sample, file_1
     df = ds.samplesheet
 
     samples = []
     for sample_name, group in df.groupby("sample"):
-        cram_files = group["cram"].tolist()
+        cram_files = group["file_1"].tolist()
         samples.append({
             "name": sample_name,
             "cramfiles": cram_files
