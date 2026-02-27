@@ -26,12 +26,14 @@ Calculates sunrise/sunset times and sun time differences for a single geographic
 - `tile_path` (File): Input tile RDS file (any filename is accepted)
 - `border_points_path` (File): Border points CSV file containing timezone boundary data
 - `year` (Int): Year for solar calculations (e.g. `2022`)
+- `matched_prefix` (String, default: `"matched_"`): Filename prefix for matched results output. Set to `""` to keep the original input filename.
+- `missing_prefix` (String, default: `"missing_"`): Filename prefix for missing results output. Set to `""` to keep the original input filename.
 - `cpu_cores` (Int, default: 1): Number of CPU cores to use
 - `memory_gb` (Int, default: 8): Memory allocation in GB
 
 **Outputs:**
-- `matched_points` (File): RDS file containing points with sunrise/sunset difference values (named `matched_<input_filename>.rds`)
-- `missing_points` (File): RDS file containing points that could not be matched to border points, may be empty (named `missing_<input_filename>.rds`)
+- `matched_points` (File): RDS file containing points with sunrise/sunset difference values (named `<matched_prefix><input_filename>.rds`)
+- `missing_points` (File): RDS file containing points that could not be matched to border points, may be empty (named `<missing_prefix><input_filename>.rds`)
 
 ## Usage as a Module
 

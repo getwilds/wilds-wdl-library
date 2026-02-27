@@ -23,6 +23,8 @@ task sjl_tiles {
     tile_path: "Path to input tile .rds file"
     border_points_path: "Path to border points .csv file containing timezone boundary data"
     year: "Year for solar calculations (e.g. 2022)"
+    matched_prefix: "Filename prefix for matched results output (default: 'matched_')"
+    missing_prefix: "Filename prefix for missing results output (default: 'missing_')"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
   }
@@ -31,6 +33,8 @@ task sjl_tiles {
     File tile_path
     File border_points_path
     Int year
+    String matched_prefix = "matched_"
+    String missing_prefix = "missing_"
     Int cpu_cores = 1
     Int memory_gb = 8
   }
@@ -49,12 +53,14 @@ task sjl_tiles {
     Rscript sjl_tiles.R \
       --tile_path "~{tile_path}" \
       --border_points_path "~{border_points_path}" \
-      --year ~{year}
+      --year ~{year} \
+      --matched_prefix "~{matched_prefix}" \
+      --missing_prefix "~{missing_prefix}"
   >>>
 
   output {
-    File matched_points = "matched_~{tile_basename}.rds"
-    File missing_points = "missing_~{tile_basename}.rds"
+    File matched_points = "~{matched_prefix}~{tile_basename}.rds"
+    File missing_points = "~{missing_prefix}~{tile_basename}.rds"
   }
 
   runtime {

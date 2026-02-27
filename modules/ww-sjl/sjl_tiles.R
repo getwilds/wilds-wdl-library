@@ -11,7 +11,9 @@ library(optparse)
 option_list <- list(
   make_option("--tile_path",          type = "character", help = "Path to input tile .rds file"),
   make_option("--border_points_path", type = "character", help = "Path to border points .csv file"),
-  make_option("--year",               type = "integer",   help = "Year for solar calculations (e.g. 2022)")
+  make_option("--year",               type = "integer",   help = "Year for solar calculations (e.g. 2022)"),
+  make_option("--matched_prefix",     type = "character",  default = "matched_", help = "Filename prefix for matched results (default: 'matched_')"),
+  make_option("--missing_prefix",     type = "character",  default = "missing_", help = "Filename prefix for missing results (default: 'missing_')")
 )
 
 opt <- parse_args(OptionParser(option_list = option_list))
@@ -19,6 +21,8 @@ opt <- parse_args(OptionParser(option_list = option_list))
 tile_path          <- opt$tile_path
 border_points_path <- opt$border_points_path
 year               <- opt$year
+matched_prefix     <- opt$matched_prefix
+missing_prefix     <- opt$missing_prefix
 
 # Derive tile name from input filename for flexible naming
 tile_name <- tools::file_path_sans_ext(basename(tile_path))
@@ -309,8 +313,8 @@ all_matched_points <- all_matched_points %>%
 # Save final results
 cat("\n Saving final datasets \n")
 
-export_complete_path <- paste0("matched_", tile_name, ".rds")
-export_missing_path <- paste0("missing_", tile_name, ".rds")
+export_complete_path <- paste0(matched_prefix, tile_name, ".rds")
+export_missing_path <- paste0(missing_prefix, tile_name, ".rds")
 
 saveRDS(all_matched_points, export_complete_path)
 saveRDS(pts_still_no_match, export_missing_path)
