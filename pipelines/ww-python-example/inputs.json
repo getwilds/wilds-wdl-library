@@ -1,0 +1,6 @@
+{
+  "run_python_script.python_script": "/path/to/example_script.py",
+  "run_python_script.sample_name": "sample1",
+  "run_python_script.num_iterations": 10,
+  "run_python_script.input_file": "/path/to/input_data.txt"
+}
