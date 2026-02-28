@@ -23,6 +23,8 @@ workflow jetlag {
     tile_manifest: "text file listing input tile RDS file paths, one per line (provide this OR tile_paths, not both)"
     border_points_path: "border points CSV file containing timezone boundary data, shared across all tiles"
     year: "year for solar calculations (e.g. 2022)"
+    matched_prefix: "filename prefix for matched results output (default: 'matched_')"
+    missing_prefix: "filename prefix for missing results output (default: 'missing_')"
     cpu_cores: "number of CPU cores to use per tile task"
     memory_gb: "memory allocation in GB per tile task"
   }
@@ -32,6 +34,8 @@ workflow jetlag {
     File? tile_manifest
     File border_points_path
     Int year
+    String matched_prefix = "matched_"
+    String missing_prefix = "missing_"
     Int cpu_cores = 1
     Int memory_gb = 8
   }
@@ -44,6 +48,8 @@ workflow jetlag {
       tile_path          = tile_path,
       border_points_path = border_points_path,
       year               = year,
+      matched_prefix     = matched_prefix,
+      missing_prefix     = missing_prefix,
       cpu_cores          = cpu_cores,
       memory_gb          = memory_gb
     }

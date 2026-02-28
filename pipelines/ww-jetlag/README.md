@@ -48,6 +48,8 @@ Then reference it in `inputs.json`:
   "jetlag.tile_manifest": "/path/to/tile_manifest.txt",
   "jetlag.border_points_path": "/path/to/border_points.csv",
   "jetlag.year": 2022,
+  "jetlag.matched_prefix": "matched_",
+  "jetlag.missing_prefix": "missing_",
   "jetlag.cpu_cores": 1,
   "jetlag.memory_gb": 8
 }
@@ -62,6 +64,8 @@ Then reference it in `inputs.json`:
   "jetlag.tile_paths": ["/path/to/tile_0001.rds", "/path/to/tile_0002.rds"],
   "jetlag.border_points_path": "/path/to/border_points.csv",
   "jetlag.year": 2022,
+  "jetlag.matched_prefix": "matched_",
+  "jetlag.missing_prefix": "missing_",
   "jetlag.cpu_cores": 1,
   "jetlag.memory_gb": 8
 }
@@ -92,6 +96,8 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 | `tile_manifest` | Text file listing tile paths, one per line (provide this OR `tile_paths`) | File? | No | - |
 | `border_points_path` | Border points CSV file shared across all tiles | File | Yes | - |
 | `year` | Year for solar calculations | Int | Yes | - |
+| `matched_prefix` | Filename prefix for matched results output. Set to `""` to keep the original input filename. | String | No | `"matched_"` |
+| `missing_prefix` | Filename prefix for missing results output. Set to `""` to keep the original input filename. | String | No | `"missing_"` |
 | `cpu_cores` | Number of CPU cores per tile task | Int | No | 1 |
 | `memory_gb` | Memory allocation in GB per tile task | Int | No | 8 |
 
@@ -99,8 +105,8 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 
 | Output | Description |
 |--------|-------------|
-| `matched_points` | Array of RDS files containing points with sunrise/sunset difference values, one per input tile (named `matched_<input_filename>.rds`) |
-| `missing_points` | Array of RDS files containing points that could not be matched to border points, one per input tile (named `missing_<input_filename>.rds`) |
+| `matched_points` | Array of RDS files containing points with sunrise/sunset difference values, one per input tile (named `<matched_prefix><input_filename>.rds`) |
+| `missing_points` | Array of RDS files containing points that could not be matched to border points, one per input tile (named `<missing_prefix><input_filename>.rds`) |
 
 ## Testing the Pipeline
 
