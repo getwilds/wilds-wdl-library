@@ -1,0 +1,9 @@
+{
+  "out_dir": "$.dataset.dataPath",
+  "dbsnp_vcf": "$.dataset.params.dbsnp_vcf",
+  "known_indels_vcf": "$.dataset.params.known_indels_vcf",
+  "cpu_cores": "$.dataset.params.cpu_cores",
+  "memory_gb": "$.dataset.params.memory_gb",
+  "reference_fasta": "$.dataset.params.reference_fasta",
+  "reference_fasta_index": "$.dataset.params.reference_fasta_index"
+}

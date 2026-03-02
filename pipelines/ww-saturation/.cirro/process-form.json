@@ -1,0 +1,67 @@
+{
+  "form": {
+    "type": "object",
+    "properties": {
+      "reference_fasta": {
+        "title": "Reference Genome (FASTA)",
+        "description": "Reference genome FASTA file",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.{fa,fasta,fa.gz,fasta.gz,fna,fna.gz}"
+      },
+      "reference_fasta_index": {
+        "title": "Reference Genome Index (.fai)",
+        "description": "Index for reference genome FASTA file",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.fai"
+      },
+      "reference_dict": {
+        "title": "Reference Sequence Dictionary (.dict)",
+        "description": "Reference genome sequence dictionary",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.dict"
+      },
+      "orf_range": {
+        "title": "ORF Range",
+        "description": "Open reading frame range to analyze (e.g., '1-100')",
+        "type": "string"
+      },
+      "cpu_cores": {
+        "title": "CPUs",
+        "description": "Number of CPUs to use for BWA alignment and GATK processing",
+        "type": "integer",
+        "default": 4
+      },
+      "memory_gb": {
+        "title": "Memory (GB)",
+        "description": "Memory allocation in GB",
+        "type": "integer",
+        "default": 16
+      },
+      "workflow_failure_mode": {
+        "title": "Workflow Failure Mode",
+        "description": "Behavior when individual tasks encounter failures",
+        "type": "string",
+        "default": "ContinueWhilePossible",
+        "enum": [
+          "ContinueWhilePossible",
+          "NoNewCalls"
+        ]
+      }
+    },
+    "required": [
+      "reference_fasta",
+      "reference_fasta_index",
+      "reference_dict",
+      "orf_range",
+      "cpu_cores",
+      "memory_gb"
+    ]
+  },
+  "ui": {}
+}

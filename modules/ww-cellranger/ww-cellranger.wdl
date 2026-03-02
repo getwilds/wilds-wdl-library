@@ -109,6 +109,10 @@ task run_count {
     # Move output files to working directory for outputting
     mv "~{sample_id}/outs/web_summary.html" .
     mv "~{sample_id}/outs/metrics_summary.csv" .
+
+    # Clean up Cell Ranger output directory for housekeeping
+    # (and to avoid Sprocket symlink validation errors)
+    rm -rf "~{sample_id}"
   >>>
 
   output {

@@ -1,17 +1,11 @@
 {
-  "imputation.samples": [
-    {
-      "sample_id": "SAMPLE001",
-      "cram": "/path/to/sample001.cram",
-      "cram_index": "/path/to/sample001.cram.crai",
-      "truth_vcf": "/path/to/sample001.truth.vcf.gz",
-      "truth_vcf_index": "/path/to/sample001.truth.vcf.gz.tbi"
-    },
-    {
-      "sample_id": "SAMPLE002",
-      "cram": "/path/to/sample002.cram",
-      "cram_index": "/path/to/sample002.cram.crai"
-    }
+  "imputation.input_crams": [
+    "/path/to/sample001.cram",
+    "/path/to/sample002.cram"
+  ],
+  "imputation.input_cram_indices": [
+    "/path/to/sample001.cram.crai",
+    "/path/to/sample002.cram.crai"
   ],
   "imputation.chromosomes": [
     {
@@ -23,6 +17,7 @@
   ],
   "imputation.reference_fasta": "/path/to/GRCh38.fa",
   "imputation.reference_fasta_index": "/path/to/GRCh38.fa.fai",
+  "imputation.output_prefix": "imputed",
   "imputation.output_format": "bcf",
   "imputation.impute_reference_only_variants": false,
   "imputation.window_size_cm": 2.0,
@@ -30,12 +25,16 @@
   "imputation.n_burnin": 5,
   "imputation.n_main": 15,
   "imputation.effective_population_size": 15000,
+  "imputation.truth_vcf": "/path/to/truth.vcf.gz",
+  "imputation.truth_vcf_index": "/path/to/truth.vcf.gz.tbi",
   "imputation.chunk_cpu_cores": 4,
   "imputation.chunk_memory_gb": 8,
   "imputation.phase_cpu_cores": 4,
   "imputation.phase_memory_gb": 8,
   "imputation.ligate_cpu_cores": 4,
   "imputation.ligate_memory_gb": 16,
+  "imputation.concat_cpu_cores": 4,
+  "imputation.concat_memory_gb": 8,
   "imputation.concordance_cpu_cores": 4,
   "imputation.concordance_memory_gb": 8
 }

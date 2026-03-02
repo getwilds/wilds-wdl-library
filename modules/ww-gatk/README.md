@@ -126,7 +126,7 @@ Calls germline variants using GATK HaplotypeCaller with internal parallelization
 - `reference_dict` (File): Reference genome sequence dictionary
 - `dbsnp_vcf` (File): dbSNP VCF file for variant annotation
 - `base_file_name` (String): Base name for output files
-- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `memory_gb` (Int): Memory allocation in GB, minimum 8 (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (should match number of intervals) (default: 2)
 
 **Outputs:**
@@ -170,7 +170,7 @@ Calls somatic variants using GATK Mutect2 with internal parallelization for redu
 - `gnomad_vcf` (File): gnomAD population allele frequency VCF for germline resource
 - `base_file_name` (String): Base name for output files
 - `max_mnp_distance` (Int): Distance at which to merge MNPs (default: 1, use 0 for PON creation)
-- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `memory_gb` (Int): Memory allocation in GB, minimum 8 (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 
 **Outputs:**

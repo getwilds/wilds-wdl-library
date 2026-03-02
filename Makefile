@@ -3,10 +3,12 @@
 # default values if not provided
 VERBOSE ?= 0
 NAME ?= *
-WOMTOOL ?= 86
+WOMTOOL ?= 92
 WOMTOOL_JAR ?= womtool-$(WOMTOOL).jar
-CROMWELL ?= 86
+CROMWELL ?= 92
 CROMWELL_JAR ?= cromwell-$(CROMWELL).jar
+MINIWDL ?= 1.13.0
+SPROCKET_MIN ?= 0.21.1
 
 .PHONY: help
 help: ## Show this help message
@@ -17,12 +19,19 @@ help: ## Show this help message
 
 
 check_sprocket:
-	@echo "Checking if sprocket is available..."
+	@echo "Checking your sprocket version..."
 	@if ! command -v sprocket >/dev/null 2>&1; then \
 		echo >&2 "Error: sprocket is not installed or not in PATH. Install sprocket (https://sprocket.bio/installation.html)"; \
 		exit 1; \
 	else \
-	  echo "sprocket version $$(sprocket --version | awk '{print $$2}')"; \
+		sprocket_version=$$(sprocket --version | awk '{print $$2}'); \
+		if printf '%s\n%s\n' "$(SPROCKET_MIN)" "$$sprocket_version" | sort -V -C; then \
+			echo "sprocket $$sprocket_version is installed and compatible"; \
+		else \
+			echo >&2 "Error: sprocket $$sprocket_version is older than the required minimum $(SPROCKET_MIN)."; \
+			echo >&2 "Please upgrade sprocket: https://sprocket.bio/installation.html"; \
+			exit 1; \
+		fi; \
 	fi;
 
 check_uv:
@@ -31,8 +40,8 @@ check_uv:
 		echo >&2 "Error: uv is not installed or not in PATH. Install uv (https://docs.astral.sh/uv/getting-started/installation/)"; \
 		exit 1; \
 	else \
-	  echo "uv version $$(uv --version | awk '{print $$2}')"; \
-		uv run --python 3.13 --with miniwdl python -c "from importlib.metadata import version; print(f'miniwdl v{version(\"miniwdl\")}')"; \
+		echo "uv version $$(uv --version | awk '{print $$2}')"; \
+		uv run --python 3.13 --with miniwdl==$(MINIWDL) python -c "from importlib.metadata import version; print(f'miniwdl v{version(\"miniwdl\")}')"; \
 	fi;
 
 check_wdlparse:
@@ -120,9 +129,9 @@ lint_miniwdl: check_uv check_name ## Run miniwdl lint on modules and pipelines (
 		if [ -f "$$file" ]; then \
 			echo "Linting $$file"; \
 			if [ "$(VERBOSE)" = "1" ]; then \
-				uv run --python 3.13 --with miniwdl miniwdl check "$$file"; \
+				uv run --python 3.13 --with miniwdl==$(MINIWDL) miniwdl check "$$file"; \
 			else \
-				uv run --python 3.13 --with miniwdl miniwdl check "$$file" >/dev/null; \
+				uv run --python 3.13 --with miniwdl==$(MINIWDL) miniwdl check "$$file" >/dev/null; \
 			fi; \
 		fi; \
 	done
@@ -148,7 +157,7 @@ run_sprocket: check_sprocket check_name check_wdlparse ## Run sprocket on testru
 			echo "... Running $$(basename $$dir)"; \
 			entrypoint=$$(wdlparse parse --format json "$$dir/testrun.wdl" | jq -r '.wdl.workflows[].name'); \
 			echo "... Using entrypoint: $$entrypoint"; \
-			sprocket run "$$dir/testrun.wdl" --entrypoint $$entrypoint; \
+			sprocket run "$$dir/testrun.wdl" --target $$entrypoint; \
 		fi; \
 	done
 
@@ -157,7 +166,7 @@ run_miniwdl: check_uv check_name ## Run miniwdl on testrun.wdl files (use NAME=f
 	@set -e; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			echo "... Running $$(basename $$dir)"; \
-			uv run --python 3.13 --with miniwdl miniwdl run "$$dir/testrun.wdl"; \
+			uv run --python 3.13 --with miniwdl==$(MINIWDL) miniwdl run "$$dir/testrun.wdl"; \
 		fi; \
 	done
 

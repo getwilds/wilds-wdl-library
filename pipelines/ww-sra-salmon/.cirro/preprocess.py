@@ -68,30 +68,17 @@ def setup_inputs(ds: PreprocessDataset):
     ds.logger.info(f"Processing {len(sra_ids)} SRA samples: {sra_ids}")
 
     inputs = {
-        "sra_star.sra_id_list": sra_ids,
-        "sra_star.ref_genome": format_inputs_reference_genome(ds),
-        "sra_star.sjdb_overhang": ds.params["sjdb_overhang"],
-        "sra_star.genome_sa_index_nbases": ds.params["genome_sa_index_nbases"],
-        "sra_star.ncpu": ds.params["ncpu"],
-        "sra_star.memory_gb": ds.params["memory_gb"]
+        "sra_salmon.sra_id_list": sra_ids,
+        "sra_salmon.transcriptome_fasta": ds.params["transcriptome_fasta"],
+        "sra_salmon.ncpu": ds.params["ncpu"],
+        "sra_salmon.memory_gb": ds.params["memory_gb"]
     }
 
     # Add max_reads only if it was specified (not None or empty)
     if ds.params.get("max_reads"):
-        inputs["sra_star.max_reads"] = ds.params["max_reads"]
+        inputs["sra_salmon.max_reads"] = ds.params["max_reads"]
 
     write_json("inputs.0.json", inputs)
-
-
-def format_inputs_reference_genome(ds: PreprocessDataset):
-    """
-    Using the selection of the user, fill in the reference genome information
-    """
-    return {
-        "name": "ref_genome",
-        "fasta": ds.params["fasta"],
-        "gtf": ds.params["gtf"]
-    }
 
 
 def setup_options(ds: PreprocessDataset):

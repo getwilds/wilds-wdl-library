@@ -69,6 +69,8 @@ workflow testdata_example {
 
   call ww_testdata.download_glimpse2_truth_vcf { }
 
+  call ww_testdata.generate_sjl_data { }
+
   call ww_testdata.download_jcast_test_data { }
 
   call validate_outputs { input:
@@ -119,6 +121,8 @@ workflow testdata_example {
     glimpse2_gl_vcf_index = download_glimpse2_test_gl_vcf.gl_vcf_index,
     glimpse2_truth_vcf = download_glimpse2_truth_vcf.truth_vcf,
     glimpse2_truth_vcf_index = download_glimpse2_truth_vcf.truth_vcf_index,
+    sjl_tile_rds = generate_sjl_data.tile_rds,
+    sjl_border_points_csv = generate_sjl_data.border_points_csv
     jcast_rmats_output = download_jcast_test_data.rmats_output,
     jcast_gtf_file = download_jcast_test_data.gtf_file,
     jcast_genome_fasta = download_jcast_test_data.genome_fasta
@@ -185,6 +189,9 @@ workflow testdata_example {
     File glimpse2_gl_vcf_index = download_glimpse2_test_gl_vcf.gl_vcf_index
     File glimpse2_truth_vcf = download_glimpse2_truth_vcf.truth_vcf
     File glimpse2_truth_vcf_index = download_glimpse2_truth_vcf.truth_vcf_index
+    # Outputs from SJL synthetic data generation
+    File sjl_tile_rds = generate_sjl_data.tile_rds
+    File sjl_border_points_csv = generate_sjl_data.border_points_csv
     # Output from JCAST test data download
     File jcast_rmats_output = download_jcast_test_data.rmats_output
     File jcast_gtf_file = download_jcast_test_data.gtf_file
@@ -250,6 +257,8 @@ task validate_outputs {
     glimpse2_gl_vcf_index: "GLIMPSE2 genotype likelihoods VCF index to validate"
     glimpse2_truth_vcf: "GLIMPSE2 truth VCF file to validate"
     glimpse2_truth_vcf_index: "GLIMPSE2 truth VCF index to validate"
+    sjl_tile_rds: "Synthetic SJL tile RDS file to validate"
+    sjl_border_points_csv: "Synthetic SJL border points CSV file to validate"
     jcast_rmats_output: "JCAST rMATS output tarball to validate"
     jcast_gtf_file: "JCAST Ensembl GTF annotation file to validate"
     jcast_genome_fasta: "JCAST Ensembl genome FASTA file to validate"
@@ -305,6 +314,8 @@ task validate_outputs {
     File glimpse2_gl_vcf_index
     File glimpse2_truth_vcf
     File glimpse2_truth_vcf_index
+    File sjl_tile_rds
+    File sjl_border_points_csv
     File jcast_rmats_output
     File jcast_gtf_file
     File jcast_genome_fasta
@@ -388,6 +399,8 @@ task validate_outputs {
     validate_file "~{glimpse2_gl_vcf_index}" "GLIMPSE2 genotype likelihoods VCF index" || validation_passed=false
     validate_file "~{glimpse2_truth_vcf}" "GLIMPSE2 truth VCF" || validation_passed=false
     validate_file "~{glimpse2_truth_vcf_index}" "GLIMPSE2 truth VCF index" || validation_passed=false
+    validate_file "~{sjl_tile_rds}" "SJL synthetic tile RDS" || validation_passed=false
+    validate_file "~{sjl_border_points_csv}" "SJL synthetic border points CSV" || validation_passed=false
     validate_file "~{jcast_rmats_output}" "JCAST rMATS output tarball" || validation_passed=false
     validate_file "~{jcast_gtf_file}" "JCAST Ensembl GTF file" || validation_passed=false
     validate_file "~{jcast_genome_fasta}" "JCAST Ensembl genome FASTA" || validation_passed=false
@@ -406,7 +419,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 48"
+      echo "Total files validated: 50"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then
@@ -429,3 +442,4 @@ task validate_outputs {
     memory: "~{memory_gb} GB"
   }
 }
+

@@ -1,0 +1,10 @@
+{
+  "out_dir": "$.dataset.dataPath",
+  "reference_fasta": "$.dataset.params.reference_fasta",
+  "reference_fasta_index": "$.dataset.params.reference_fasta_index",
+  "reference_dict": "$.dataset.params.reference_dict",
+  "orf_range": "$.dataset.params.orf_range",
+  "cpu_cores": "$.dataset.params.cpu_cores",
+  "memory_gb": "$.dataset.params.memory_gb",
+  "workflow_failure_mode": "$.dataset.params.workflow_failure_mode"
+}

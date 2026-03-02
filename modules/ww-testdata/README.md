@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `download_jcast_test_data`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -653,6 +653,19 @@ call glimpse2_tasks.glimpse2_concordance {
 }
 ```
 
+### generate_sjl_data
+
+Generates synthetic tile and border points data for testing the `ww-sjl` module and `ww-jetlag` pipeline. Rather than downloading real data, this task uses an inline R script to create small, well-formed data frames with matching timezone and latitude values that exercise the full SJL matching logic.
+
+**Inputs**:
+- `year` (Int): Year to embed in the synthetic data (default: 2022)
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `tile_rds` (File): Synthetic tile RDS file with 5 geographic points across two timezones
+- `border_points_csv` (File): Synthetic border points CSV with matching timezone/latitude entries and sunrise/sunset averages in seconds from midnight
+
 ## Data Sources
 
 All reference data is downloaded from authoritative public repositories:
@@ -679,7 +692,7 @@ Data integrity is maintained through the use of stable URLs and version-pinned r
 ## Requirements
 
 ### Runtime Dependencies
-- **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`, `getwilds/bcftools:1.19`, `getwilds/deseq2:1.40.2`
+- **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`, `getwilds/bcftools:1.19`, `getwilds/deseq2:1.40.2`, `getwilds/r-utils:0.1.0`
 - **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), curl, aws CLI, R with DESeq2 and pasilla packages
 - **Network**: Internet access required for data downloads
 
@@ -704,6 +717,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-annovar**: Variant annotation (uses gnomAD VCF from `download_gnomad_vcf`)
 - **ww-glimpse2**: Genotype imputation (uses genetic maps, reference panels, and GL VCFs from GLIMPSE2 tasks)
 - **ww-consensus**: Consensus variant calling (uses gnomAD VCF from `download_gnomad_vcf`)
+- **ww-sjl / ww-jetlag**: Solar Jetlag tile processing (uses synthetic tile and border points from `generate_sjl_data`)
 - **ww-jcast**: Alternative splicing proteomics (uses rMATS test data from `download_jcast_test_data`)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 

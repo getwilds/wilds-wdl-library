@@ -136,7 +136,8 @@ workflow gatk_example {
         reference_fasta_index = download_ref_data.fasta_index,
         reference_dict = create_sequence_dictionary.sequence_dict,
         dbsnp_vcf = download_dbsnp_vcf.dbsnp_vcf,
-        base_file_name = sample.name + "." + basename(split_intervals.interval_files[i], ".interval_list")
+        base_file_name = sample.name + "." + basename(split_intervals.interval_files[i], ".interval_list"),
+        memory_gb = 4
       }
 
       call ww_gatk.mutect2 { input:
@@ -148,7 +149,8 @@ workflow gatk_example {
         reference_dict = create_sequence_dictionary.sequence_dict,
         gnomad_vcf = download_gnomad_vcf.gnomad_vcf,
         base_file_name = sample.name + "." + basename(split_intervals.interval_files[i], ".interval_list"),
-        max_mnp_distance = 0
+        max_mnp_distance = 0,
+        memory_gb = 4
       }
     }
 
