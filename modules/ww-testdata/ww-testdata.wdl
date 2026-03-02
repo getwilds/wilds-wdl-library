@@ -1286,6 +1286,72 @@ task download_glimpse2_truth_vcf {
   }
 }
 
+task generate_sjl_data {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Generate synthetic SJL tile and border points data for testing the ww-sjl module and ww-jetlag pipeline"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+      tile_rds: "Synthetic tile RDS file with geographic point data",
+      border_points_csv: "Synthetic border points CSV file with timezone sunrise/sunset averages"
+    }
+  }
+
+  parameter_meta {
+    year: "Year to embed in the synthetic data"
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB"
+  }
+
+  input {
+    Int year = 2022
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -eo pipefail
+
+    Rscript -e "
+      # Synthetic tile: a small set of geographic points across two timezones
+      tile <- data.frame(
+        elevation   = c(100L, 200L, 150L, 90L, 180L),
+        timezone    = c(-5, -5, -5, -8, -8),
+        Longitude   = c(-77.50, -77.60, -77.55, -122.40, -122.45),
+        Latitude    = c(37.50, 37.60, 37.55, 47.60, 47.65),
+        year        = ~{year}L,
+        source_tile = 'TEST_0001'
+      )
+      saveRDS(tile, 'test_tile.rds')
+
+      # Synthetic border points: matching timezone/lat_rounded values
+      # sunrise_avg_tz and sunset_avg_tz are in seconds from midnight
+      border_points <- data.frame(
+        year           = ~{year}L,
+        Longitude      = c(-77.50, -77.60, -77.55, -122.40, -122.45),
+        Latitude       = c(37.50, 37.60, 37.55, 47.60, 47.65),
+        timezone       = c(-5, -5, -5, -8, -8),
+        sunrise_avg_tz = c(24120, 24180, 24150, 27000, 27060),
+        sunset_avg_tz  = c(72600, 72540, 72570, 72000, 71940),
+        lat_rounded    = c(37.50, 37.60, 37.55, 47.60, 47.65)
+      )
+      write.csv(border_points, 'border_points.csv', row.names = FALSE)
+    "
+  >>>
+
+  output {
+    File tile_rds          = "test_tile.rds"
+    File border_points_csv = "border_points.csv"
+  }
+
+  runtime {
+    docker: "getwilds/r-utils:0.1.0"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task download_glimpse2_test_gl_vcf {
   meta {
     author: "WILDS Team"
