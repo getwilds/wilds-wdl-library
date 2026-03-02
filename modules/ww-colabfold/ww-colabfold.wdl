@@ -7,6 +7,51 @@ version 1.0
 
 #### TASK DEFINITIONS ####
 
+task download_weights {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Download AlphaFold2 model weights for use with ColabFold predictions"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-colabfold/ww-colabfold.wdl"
+    outputs: {
+        weights_tarball: "Compressed tarball containing AlphaFold2 model weights (~15-20 GB)"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+  }
+
+  input {
+    Int cpu_cores = 2
+    Int memory_gb = 8
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Force CPU-only mode for weight download (no GPU needed)
+    export JAX_PLATFORMS=cpu
+
+    # Download AlphaFold2 model weights to the default cache location
+    python -m colabfold.download
+
+    # Package the weights cache into a tarball for reuse across predictions
+    tar -czf colabfold_weights.tar.gz -C /cache .
+  >>>
+
+  output {
+    File weights_tarball = "colabfold_weights.tar.gz"
+  }
+
+  runtime {
+    docker: "ghcr.io/sokrypton/colabfold:1.5.5-cuda12.2.2"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task colabfold_predict {
   meta {
     author: "Taylor Firman"
@@ -20,6 +65,7 @@ task colabfold_predict {
 
   parameter_meta {
     fasta_file: "Input FASTA file containing one or more protein sequences to predict"
+    weights_tarball: "Compressed tarball of AlphaFold2 model weights from the download_weights task"
     output_prefix: "Prefix for naming the output tarball"
     num_recycle: "Number of prediction recycles (higher values may improve accuracy)"
     num_models: "Number of models to generate per sequence"
@@ -32,11 +78,12 @@ task colabfold_predict {
     extra_flags: "Additional command-line flags to pass to colabfold_batch"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
-    gpu_enabled: "Whether GPU is available for prediction (required for production use)"
+    gpu_enabled: "Enable GPU for prediction (controls JAX CPU/GPU mode and PROOF GPU allocation)"
   }
 
   input {
     File fasta_file
+    File weights_tarball
     String output_prefix
     Int num_recycle = 3
     Int num_models = 5
@@ -60,10 +107,11 @@ task colabfold_predict {
       export JAX_PLATFORMS=cpu
     fi
 
-    # Download AlphaFold2 model weights if not already cached
-    python -m colabfold.download
+    # Extract pre-downloaded model weights into the cache directory
+    mkdir -p /cache
+    tar -xzf ~{weights_tarball} -C /cache
 
-    # Build the colabfold_batch command
+    # Run colabfold_batch prediction
     colabfold_batch \
       ~{fasta_file} \
       results/ \
@@ -89,6 +137,6 @@ task colabfold_predict {
     docker: "ghcr.io/sokrypton/colabfold:1.5.5-cuda12.2.2"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    gpu: gpu_enabled
+    gpus: if gpu_enabled then "1" else "0"
   }
 }

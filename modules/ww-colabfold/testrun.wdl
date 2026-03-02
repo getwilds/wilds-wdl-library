@@ -11,9 +11,16 @@ workflow colabfold_example {
   # Create a minimal test FASTA with a short peptide sequence
   call create_test_fasta { }
 
+  # Download AlphaFold2 model weights (download once, reuse across predictions)
+  call ww_colabfold.download_weights { input:
+      cpu_cores = 2,
+      memory_gb = 8
+  }
+
   # Run ColabFold prediction with minimal settings for CI testing
   call ww_colabfold.colabfold_predict { input:
       fasta_file = create_test_fasta.test_fasta,
+      weights_tarball = download_weights.weights_tarball,
       output_prefix = "test_protein",
       num_recycle = 1,
       num_models = 1,
@@ -34,6 +41,7 @@ workflow colabfold_example {
   }
 
   output {
+    File colabfold_weights = download_weights.weights_tarball
     File colabfold_results = colabfold_predict.results_tarball
     File validation_report = validate_outputs.report
   }

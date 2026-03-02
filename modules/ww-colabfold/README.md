@@ -26,12 +26,24 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 ## Available Tasks
 
+### `download_weights`
+
+Download AlphaFold2 model weights for use with ColabFold predictions. Weights are ~15-20 GB and only need to be downloaded once, then can be reused across multiple prediction tasks.
+
+**Inputs:**
+- `cpu_cores` (Int, default=2): CPU cores
+- `memory_gb` (Int, default=8): Memory in GB
+
+**Outputs:**
+- `weights_tarball` (File): Compressed tarball containing AlphaFold2 model weights (~15-20 GB)
+
 ### `colabfold_predict`
 
 Predict protein structures from amino acid sequences using ColabFold (AlphaFold2 + MMseqs2).
 
 **Inputs:**
 - `fasta_file` (File): Input FASTA file containing one or more protein sequences
+- `weights_tarball` (File): Model weights from `download_weights` task
 - `output_prefix` (String): Prefix for naming the output tarball
 - `num_recycle` (Int, default=3): Number of prediction recycles
 - `num_models` (Int, default=5): Number of models to generate per sequence
@@ -44,7 +56,7 @@ Predict protein structures from amino acid sequences using ColabFold (AlphaFold2
 - `extra_flags` (String, default=""): Additional colabfold_batch flags
 - `cpu_cores` (Int, default=8): CPU cores
 - `memory_gb` (Int, default=48): Memory in GB
-- `gpu_enabled` (Boolean, default=true): Whether GPU is available
+- `gpu_enabled` (Boolean, default=true): Enable GPU for prediction (controls JAX CPU/GPU mode and PROOF GPU allocation)
 
 **Outputs:**
 - `results_tarball` (File): Compressed tarball containing all ColabFold outputs (PDB files, PAE/pLDDT plots, coverage plots, prediction metrics)
@@ -62,14 +74,46 @@ workflow protein_structure_prediction {
     String sample_name
   }
 
+  # Download weights once
+  call colabfold_tasks.download_weights { }
+
+  # Predict structures
   call colabfold_tasks.colabfold_predict {
     input:
       fasta_file = protein_fasta,
+      weights_tarball = download_weights.weights_tarball,
       output_prefix = sample_name
   }
 
   output {
     File predicted_structures = colabfold_predict.results_tarball
+  }
+}
+```
+
+### Batch Prediction (Multiple Proteins)
+
+```wdl
+workflow batch_structure_prediction {
+  input {
+    Array[File] protein_fastas
+    Array[String] sample_names
+  }
+
+  # Download weights once, reuse for all predictions
+  call colabfold_tasks.download_weights { }
+
+  scatter (idx in range(length(protein_fastas))) {
+    call colabfold_tasks.colabfold_predict {
+      input:
+        fasta_file = protein_fastas[idx],
+        weights_tarball = download_weights.weights_tarball,
+        output_prefix = sample_names[idx]
+    }
+  }
+
+  output {
+    Array[File] predicted_structures = colabfold_predict.results_tarball
   }
 }
 ```
@@ -81,6 +125,7 @@ workflow protein_structure_prediction {
 call colabfold_tasks.colabfold_predict {
   input:
     fasta_file = designed_protein_fasta,
+    weights_tarball = download_weights.weights_tarball,
     output_prefix = "designed_protein",
     msa_mode = "single_sequence",
     num_recycle = 6
@@ -92,6 +137,7 @@ call colabfold_tasks.colabfold_predict {
 call colabfold_tasks.colabfold_predict {
   input:
     fasta_file = complex_fasta,
+    weights_tarball = download_weights.weights_tarball,
     output_prefix = "protein_complex",
     model_type = "alphafold2_multimer_v3"
 }
@@ -102,6 +148,7 @@ call colabfold_tasks.colabfold_predict {
 call colabfold_tasks.colabfold_predict {
   input:
     fasta_file = protein_fasta,
+    weights_tarball = download_weights.weights_tarball,
     output_prefix = "high_accuracy",
     num_recycle = 6,
     num_models = 5,
@@ -119,7 +166,7 @@ This module integrates with other WILDS components:
 
 ## Testing the Module
 
-The module includes a test workflow (`testrun.wdl`) that predicts the structure of a tiny peptide (Trp-cage, 20 residues) using CPU-only mode:
+The module includes a test workflow (`testrun.wdl`) that downloads weights and predicts the structure of a tiny peptide (Trp-cage, 20 residues) using CPU-only mode:
 
 ```bash
 # Using miniWDL
@@ -136,6 +183,21 @@ java -jar cromwell.jar run modules/ww-colabfold/testrun.wdl
 
 The test workflow runs on CPU (`gpu_enabled = false`) with minimal settings for CI compatibility. Production use should always enable GPU for practical performance. A single protein prediction that takes minutes on GPU can take hours on CPU.
 
+## GPU Configuration
+
+The `gpu_enabled` input controls two things:
+1. **JAX execution mode**: When `false`, sets `JAX_PLATFORMS=cpu` to force CPU-only execution
+2. **PROOF GPU allocation**: Translates to the `gpus` runtime attribute (`"1"` or `"0"`), which is specific to PROOF's Cromwell configuration. Other executors like miniWDL and Sprocket silently ignore this attribute.
+
+### For PROOF Users
+GPU allocation works automatically with the default (`gpu_enabled = true`). ColabFold only supports a single GPU for structure prediction.
+
+### For Other Executors
+Configure GPU passthrough at the engine level (e.g., Docker `--gpus` flag). Set `gpu_enabled = true` to ensure ColabFold uses the GPU via JAX.
+
+### CPU-Only Mode
+Set `gpu_enabled = false` to force CPU execution via `JAX_PLATFORMS=cpu`. This is functional but significantly slower and intended primarily for testing.
+
 ## Docker Container
 
 This module uses the official ColabFold Docker image [`ghcr.io/sokrypton/colabfold:1.5.5-cuda12.2.2`](https://github.com/sokrypton/ColabFold/pkgs/container/colabfold), which includes:
@@ -144,23 +206,31 @@ This module uses the official ColabFold Docker image [`ghcr.io/sokrypton/colabfo
 - CUDA 12.2.2 runtime for GPU acceleration
 - MMseqs2 for fast sequence searching
 - AMBER tools for structure relaxation
-- AlphaFold2 model weights are downloaded at runtime
+
+AlphaFold2 model weights (~15-20 GB) are downloaded separately via the `download_weights` task and passed to `colabfold_predict` as input.
 
 ## Citation
 
 If you use this module for published work, please cite ColabFold:
 
-> Mirdita M, Schütze K, Moriwaki Y, Heo L, Ovchinnikov S, Steinegger M.
+> Mirdita M, Schutze K, Moriwaki Y, Heo L, Ovchinnikov S, Steinegger M.
 > ColabFold: making protein folding accessible to all.
-> *Nature Methods* 19, 679–682 (2022).
+> *Nature Methods* 19, 679-682 (2022).
 > DOI: [10.1038/s41592-022-01488-1](https://doi.org/10.1038/s41592-022-01488-1)
 
 ## Parameters and Resource Requirements
 
-### Default Resources
+### `download_weights` Resources
+- **CPU**: 2 cores
+- **Memory**: 8 GB
+- **GPU**: Not required
+- **Network**: Requires internet access to download ~15-20 GB of model weights
+- **Runtime**: 5-15 minutes depending on network speed
+
+### `colabfold_predict` Resources
 - **CPU**: 8 cores
 - **Memory**: 48 GB
-- **GPU**: 1 GPU required (NVIDIA, CUDA 12.2+ compatible)
+- **GPU**: 1 GPU required for production use (NVIDIA, CUDA 12.2+ compatible)
 - **Runtime**: Minutes per protein on GPU; hours on CPU
 
 ### Resource Scaling
