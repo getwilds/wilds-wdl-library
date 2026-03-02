@@ -34,11 +34,17 @@ task download_weights {
     # Force CPU-only mode for weight download (no GPU needed)
     export JAX_PLATFORMS=cpu
 
-    # Download AlphaFold2 model weights to the default cache location
+    # The Docker image expects /cache as an external volume mount (XDG_CACHE_HOME).
+    # In WDL there is no mount, so redirect to a writable local directory.
+    mkdir -p colabfold_cache
+    export XDG_CACHE_HOME="$(pwd)/colabfold_cache"
+    export MPLCONFIGDIR="$(pwd)/colabfold_cache"
+
+    # Download AlphaFold2 model weights
     python -m colabfold.download
 
     # Package the weights cache into a tarball for reuse across predictions
-    tar -czf colabfold_weights.tar.gz -C /cache .
+    tar -czf colabfold_weights.tar.gz -C colabfold_cache .
   >>>
 
   output {
@@ -107,9 +113,14 @@ task colabfold_predict {
       export JAX_PLATFORMS=cpu
     fi
 
+    # The Docker image expects /cache as an external volume mount (XDG_CACHE_HOME).
+    # In WDL there is no mount, so redirect to a writable local directory.
+    mkdir -p colabfold_cache
+    export XDG_CACHE_HOME="$(pwd)/colabfold_cache"
+    export MPLCONFIGDIR="$(pwd)/colabfold_cache"
+
     # Extract pre-downloaded model weights into the cache directory
-    mkdir -p /cache
-    tar -xzf ~{weights_tarball} -C /cache
+    tar -xzf ~{weights_tarball} -C colabfold_cache
 
     # Run colabfold_batch prediction
     colabfold_batch \
