@@ -122,7 +122,7 @@ workflow testdata_example {
     glimpse2_truth_vcf = download_glimpse2_truth_vcf.truth_vcf,
     glimpse2_truth_vcf_index = download_glimpse2_truth_vcf.truth_vcf_index,
     sjl_tile_rds = generate_sjl_data.tile_rds,
-    sjl_border_points_csv = generate_sjl_data.border_points_csv
+    sjl_border_points_csv = generate_sjl_data.border_points_csv,
     jcast_rmats_output = download_jcast_test_data.rmats_output,
     jcast_gtf_file = download_jcast_test_data.gtf_file,
     jcast_genome_fasta = download_jcast_test_data.genome_fasta
