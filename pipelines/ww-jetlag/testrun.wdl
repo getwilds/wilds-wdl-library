@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jetlag/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jetlag/pipelines/ww-jetlag/ww-jetlag.wdl" as ww_jetlag
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-jetlag/ww-jetlag.wdl" as ww_jetlag
 
 workflow jetlag_example {
   # Generate synthetic test tile and border points data
