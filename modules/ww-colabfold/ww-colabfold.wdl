@@ -52,7 +52,7 @@ task download_weights {
   }
 
   runtime {
-    docker: "ghcr.io/sokrypton/colabfold:1.5.5-cuda12.2.2"
+    docker: "getwilds/colabfold:1.5.5"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -145,7 +145,7 @@ task colabfold_predict {
   }
 
   runtime {
-    docker: "ghcr.io/sokrypton/colabfold:1.5.5-cuda12.2.2"
+    docker: "getwilds/colabfold:1.5.5"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
     gpus: if gpu_enabled then "1" else "0"
