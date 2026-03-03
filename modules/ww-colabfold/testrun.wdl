@@ -1,6 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-colabfold/modules/ww-colabfold/ww-colabfold.wdl" as ww_colabfold
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-colabfold/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
 # Tests ColabFold prediction with a tiny protein sequence on CPU.
@@ -9,7 +10,7 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow colabfold_example {
   # Create a minimal test FASTA with a short peptide sequence
-  call create_test_fasta { }
+  call ww_testdata.create_test_protein_fasta { }
 
   # Download AlphaFold2 model weights (download once, reuse across predictions)
   call ww_colabfold.download_weights { input:
@@ -19,7 +20,7 @@ workflow colabfold_example {
 
   # Run ColabFold prediction with minimal settings for CI testing
   call ww_colabfold.colabfold_predict { input:
-      fasta_file = create_test_fasta.test_fasta,
+      fasta_file = create_test_protein_fasta.test_fasta,
       weights_tarball = download_weights.weights_tarball,
       output_prefix = "test_protein",
       num_recycle = 1,
@@ -44,35 +45,6 @@ workflow colabfold_example {
     File colabfold_weights = download_weights.weights_tarball
     File colabfold_results = colabfold_predict.results_tarball
     File validation_report = validate_outputs.report
-  }
-}
-
-task create_test_fasta {
-  meta {
-    description: "Create a minimal FASTA file with a short peptide for testing"
-    outputs: {
-        test_fasta: "FASTA file containing a short test protein sequence"
-    }
-  }
-
-  command <<<
-    set -eo pipefail
-
-    # Trp-cage miniprotein (20 residues) - one of the smallest known folding proteins
-    cat > test_protein.fasta <<'FASTA'
->test_trpcage
-NLYIQWLKDGGPSSGRPPPS
-FASTA
-  >>>
-
-  output {
-    File test_fasta = "test_protein.fasta"
-  }
-
-  runtime {
-    docker: "ubuntu:22.04"
-    cpu: 1
-    memory: "2 GB"
   }
 }
 
