@@ -200,12 +200,13 @@ Set `gpu_enabled = false` to force CPU execution via `JAX_PLATFORMS=cpu`. This i
 
 ## Docker Container
 
-This module uses the official ColabFold Docker image [`ghcr.io/sokrypton/colabfold:1.5.5-cuda12.2.2`](https://github.com/sokrypton/ColabFold/pkgs/container/colabfold), which includes:
+This module uses the custom WILDS Docker image [`getwilds/colabfold:1.5.5`](https://github.com/getwilds/wilds-docker-library), built on `nvidia/cuda:11.8.0-base-ubuntu22.04` with Miniforge/mamba. It includes:
 - ColabFold 1.5.5 (compatible with AlphaFold 2.3.2)
 - `colabfold_batch` and `colabfold_search` CLI tools
-- CUDA 12.2.2 runtime for GPU acceleration
+- JAX 0.4.x with CUDA 11.8 support for GPU acceleration
 - MMseqs2 for fast sequence searching
 - AMBER tools for structure relaxation
+- dm-haiku 0.0.12 (pinned for JAX 0.4.x compatibility)
 
 AlphaFold2 model weights (~15-20 GB) are downloaded separately via the `download_weights` task and passed to `colabfold_predict` as input.
 
@@ -230,7 +231,7 @@ If you use this module for published work, please cite ColabFold:
 ### `colabfold_predict` Resources
 - **CPU**: 8 cores
 - **Memory**: 48 GB
-- **GPU**: 1 GPU required for production use (NVIDIA, CUDA 12.2+ compatible)
+- **GPU**: 1 GPU required for production use (NVIDIA, CUDA 11.8+ compatible)
 - **Runtime**: Minutes per protein on GPU; hours on CPU
 
 ### Resource Scaling
