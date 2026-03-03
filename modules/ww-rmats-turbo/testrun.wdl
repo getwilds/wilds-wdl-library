@@ -6,8 +6,8 @@ version 1.0
 ## results will not be biologically meaningful but serve to validate the module
 ## executes correctly.
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-rmats-turbo/ww-rmats-turbo.wdl" as ww_rmats_turbo
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rmats-turbo/ww-rmats-turbo.wdl" as ww_rmats_turbo
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow rmats_turbo_example {
   # Download reference GTF annotation
