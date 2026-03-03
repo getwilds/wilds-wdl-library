@@ -17,6 +17,9 @@ docs/
 # personal notes/documentation
 notes/
 
+# Claude Code project instructions
+CLAUDE.md
+
 # cromwell/womtool files
 cromwell*.jar
 womtool*.jar
