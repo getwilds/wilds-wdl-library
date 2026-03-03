@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`, `create_test_protein_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`, `create_test_protein_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -57,7 +57,7 @@ The `testrun.wdl` workflow requires no input parameters and automatically downlo
 
 - **Chromosome**: chr1 only (for efficient testing)
 - **Reference version**: hg38 (latest standard)
-- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), Pasilla counts, ShapeMapper data, Cell Ranger reference, DIAMOND data, test protein FASTA, and GLIMPSE2 imputation data
+- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), Pasilla counts, ShapeMapper data, Cell Ranger reference, DIAMOND data, test protein FASTA, GLIMPSE2 imputation data, and JCAST rMATS test data
 
 ### Running the Test Workflow
 
@@ -618,6 +618,37 @@ call glimpse2_tasks.glimpse2_phase {
 }
 ```
 
+### download_jcast_test_data
+
+Downloads example rMATS output files and Ensembl reference data for JCAST alternative splicing proteomics testing. These files are downloaded from the official JCAST repository.
+
+**Use Case**: When testing the ww-jcast module for alternative splicing proteomics, you need rMATS output files containing splice junction information, along with Ensembl-format GTF and genome FASTA files. JCAST specifically requires Ensembl GTF format (with `transcript_type` attribute), which differs from UCSC/RefSeq formats.
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+
+**Outputs**:
+- `rmats_output` (File): Tarball containing rMATS output files (SE.MATS.JC.txt, MXE.MATS.JC.txt, RI.MATS.JC.txt, A3SS.MATS.JC.txt, A5SS.MATS.JC.txt)
+- `gtf_file` (File): Ensembl GTF annotation file (human chromosome 15, GRCh38.89)
+- `genome_fasta` (File): Ensembl genome FASTA file (human chromosome 15, GRCh38)
+
+**Data Source**: https://github.com/ed-lau/jcast/tree/master/tests/data
+
+**Example Usage**:
+```wdl
+# For testing JCAST alternative splicing proteomics
+# Note: Use the Ensembl GTF and FASTA from this task, not from download_ref_data
+call testdata.download_jcast_test_data { }
+
+call jcast_tasks.jcast {
+  input:
+    rmats_directory = download_jcast_test_data.rmats_output,
+    gtf_file = download_jcast_test_data.gtf_file,
+    genome_fasta = download_jcast_test_data.genome_fasta
+}
+```
+
 ### download_glimpse2_truth_vcf
 
 Downloads high-coverage truth genotypes from 1000 Genomes for GLIMPSE2 concordance validation. Uses the same high-coverage phased dataset as the reference panel but extracts only the validation sample.
@@ -657,6 +688,19 @@ call glimpse2_tasks.glimpse2_concordance {
 }
 ```
 
+### generate_sjl_data
+
+Generates synthetic tile and border points data for testing the `ww-sjl` module and `ww-jetlag` pipeline. Rather than downloading real data, this task uses an inline R script to create small, well-formed data frames with matching timezone and latitude values that exercise the full SJL matching logic.
+
+**Inputs**:
+- `year` (Int): Year to embed in the synthetic data (default: 2022)
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `tile_rds` (File): Synthetic tile RDS file with 5 geographic points across two timezones
+- `border_points_csv` (File): Synthetic border points CSV with matching timezone/latitude entries and sunrise/sunset averages in seconds from midnight
+
 ## Data Sources
 
 All reference data is downloaded from authoritative public repositories:
@@ -676,13 +720,14 @@ All reference data is downloaded from authoritative public repositories:
 - **ShapeMapper Repository**: TPP riboswitch RNA structure probing example data
 - **Swiss Institute of Bioinformatics**: Minimal Cell Ranger reference (chr21/22) for single-cell testing
 - **UniProt**: E. coli K-12 reference proteome for DIAMOND protein alignment testing
+- **JCAST Repository**: rMATS output test files for alternative splicing proteomics testing
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
 
 ## Requirements
 
 ### Runtime Dependencies
-- **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`, `getwilds/bcftools:1.19`, `getwilds/deseq2:1.40.2`
+- **Containers**: `getwilds/samtools:1.11`, `getwilds/awscli:2.27.49`, `getwilds/bcftools:1.19`, `getwilds/deseq2:1.40.2`, `getwilds/r-utils:0.1.0`
 - **Tools**: samtools (for FASTA indexing and BAM processing), bcftools (for VCF processing), curl, aws CLI, R with DESeq2 and pasilla packages
 - **Network**: Internet access required for data downloads
 
@@ -708,6 +753,8 @@ This module is specifically designed to support other WILDS modules:
 - **ww-annovar**: Variant annotation (uses gnomAD VCF from `download_gnomad_vcf`)
 - **ww-glimpse2**: Genotype imputation (uses genetic maps, reference panels, and GL VCFs from GLIMPSE2 tasks)
 - **ww-consensus**: Consensus variant calling (uses gnomAD VCF from `download_gnomad_vcf`)
+- **ww-sjl / ww-jetlag**: Solar Jetlag tile processing (uses synthetic tile and border points from `generate_sjl_data`)
+- **ww-jcast**: Alternative splicing proteomics (uses rMATS test data from `download_jcast_test_data`)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:

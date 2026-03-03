@@ -1,0 +1,7 @@
+{
+  "jetlag.tile_manifest": "/path/to/tile_manifest.txt",
+  "jetlag.border_points_path": "/path/to/border_points.csv",
+  "jetlag.year": 2022,
+  "jetlag.cpu_cores": 1,
+  "jetlag.memory_gb": 8
+}

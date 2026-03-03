@@ -67,6 +67,7 @@ modules/module-name/
 | `ww-smoove` | Structural Variant Caller | `brentp/smoove:latest` | Call structural variants with Smoove |
 | `ww-sra` | SRA Toolkit | `getwilds/sra-tools:3.1.1` | Download sequencing data from NCBI SRA |
 | `ww-star` | STAR Aligner | `getwilds/star:2.7.6a` | RNA-seq alignment with two-pass methodology |
+| `ww-sjl` | Solar Jetlag Tile Processor | `getwilds/r-utils:0.1.0` | Calculate sunrise/sunset times for geographic tiles as part of the SJL model pipeline |
 | `ww-testdata` | Test Data Downloader | `getwilds/awscli:2.27.49` | Download reference genomes and test datasets |
 
 ## Using Modules
