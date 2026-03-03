@@ -1,8 +1,8 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/modules/ww-sra/ww-sra.wdl" as ww_sra
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-jcast/pipelines/ww-splicing-proteomics/ww-splicing-proteomics.wdl" as splicing_proteomics_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-splicing-proteomics/ww-splicing-proteomics.wdl" as splicing_proteomics_workflow
 
 struct SampleInfo {
     String name
