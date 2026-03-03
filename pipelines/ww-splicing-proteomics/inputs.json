@@ -1,0 +1,53 @@
+{
+  "splicing_proteomics.samples": [
+    {
+      "name": "control_rep1",
+      "r1": "/path/to/control_rep1_R1.fastq.gz",
+      "r2": "/path/to/control_rep1_R2.fastq.gz",
+      "group": "group1"
+    },
+    {
+      "name": "control_rep2",
+      "r1": "/path/to/control_rep2_R1.fastq.gz",
+      "r2": "/path/to/control_rep2_R2.fastq.gz",
+      "group": "group1"
+    },
+    {
+      "name": "treatment_rep1",
+      "r1": "/path/to/treatment_rep1_R1.fastq.gz",
+      "r2": "/path/to/treatment_rep1_R2.fastq.gz",
+      "group": "group2"
+    },
+    {
+      "name": "treatment_rep2",
+      "r1": "/path/to/treatment_rep2_R1.fastq.gz",
+      "r2": "/path/to/treatment_rep2_R2.fastq.gz",
+      "group": "group2"
+    }
+  ],
+  "splicing_proteomics.reference_genome": {
+    "name": "GRCh38",
+    "fasta": "/path/to/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+    "gtf": "/path/to/Homo_sapiens.GRCh38.110.gtf"
+  },
+  "splicing_proteomics.ensembl_gtf": "/path/to/Homo_sapiens.GRCh38.110.gtf",
+  "splicing_proteomics.read_length": 150,
+  "splicing_proteomics.read_type": "paired",
+  "splicing_proteomics.library_type": "fr-unstranded",
+  "splicing_proteomics.output_prefix": "splicing_proteomics",
+  "splicing_proteomics.sjdb_overhang": 100,
+  "splicing_proteomics.genome_sa_index_nbases": 14,
+  "splicing_proteomics.rmats_anchor_length": 1,
+  "splicing_proteomics.rmats_novel_splice_sites": false,
+  "splicing_proteomics.rmats_cstat": 0.0001,
+  "splicing_proteomics.jcast_min_read_count": 1,
+  "splicing_proteomics.jcast_qvalue_min": 0,
+  "splicing_proteomics.jcast_qvalue_max": 1,
+  "splicing_proteomics.jcast_splice_types": "",
+  "splicing_proteomics.star_cpu": 8,
+  "splicing_proteomics.star_memory_gb": 64,
+  "splicing_proteomics.rmats_cpu": 4,
+  "splicing_proteomics.rmats_memory_gb": 16,
+  "splicing_proteomics.jcast_cpu": 2,
+  "splicing_proteomics.jcast_memory_gb": 8
+}
