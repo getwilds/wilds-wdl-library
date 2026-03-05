@@ -44,7 +44,7 @@ def setup_inputs(ds: PreprocessDataset):
         "ww_leukemia.wig_map": ds.params["wig_map"],
         "ww_leukemia.panel_of_norm_rds": ds.params["panel_of_norm_rds"],
         "ww_leukemia.centromeres": ds.params["centromeres"],
-        "ww_leukemia.ichorcna_chromosomes": ds.params["ichorcna_chromosomes"],
+        "ww_leukemia.ichorcna_chromosomes": format_list(ds.params["ichorcna_chromosomes"]),
         "ww_leukemia.ichorcna_chrs_string": ds.params["ichorcna_chrs_string"],
         "ww_leukemia.annovar_protocols": ds.params["annovar_protocols"],
         "ww_leukemia.annovar_operation": ds.params["annovar_operation"],
