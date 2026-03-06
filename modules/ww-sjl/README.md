@@ -2,11 +2,11 @@
 [![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL module for Solar Jetlag (SJL) tile processing.
+A WILDS WDL module for calculating sunrise and sunset time differences across an array of geographic tiles as part of the Solar Jetlag (SJL) project.
 
 ## Overview
 
-This module provides a reusable WDL task for calculating sunrise/sunset times and sun time differences for geographic tiles, as part of the SJL model pipeline. It uses NOAA solar calculator variables to compute solar geometry over a full year, then matches tile points to timezone border points to produce sun time difference values.
+Solar jetlag is a high-resolution geospatial model that measures circadian misalignment from geographic variation in light exposure timing across time zones. This module provides a reusable WDL task for calculating sunrise/sunset times and solar time differences across geographic tiles as part of the SJL model pipeline. Sunrise and sunset times are calculated using NOAA solar calculator variables averaged over a full year; each tile point is then matched to its time zone's easternmost boundary at the corresponding latitude to derive solar time difference values (measured in seconds).
 
 ## Module Structure
 
@@ -20,19 +20,19 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 ## Tasks
 
 ### `sjl_tiles`
-Calculates sunrise/sunset times and sun time differences for a single geographic tile.
+Calculates sunrise/sunset times and sun time differences for each point within a single geographic tile.
 
 **Inputs:**
-- `tile_path` (File): Input tile RDS file (any filename is accepted)
-- `border_points_path` (File): Border points CSV file containing timezone boundary data
-- `year` (Int): Year for solar calculations (e.g. `2022`)
+- `tile_path` (File): Input tile RDS file (any filename is accepted). Input tiles contain points spaced 30 m apart with point location and timezone. 
+- `border_points_path` (File): Border points CSV file containing point location, sunrise/ sunset time, and time zone data.
+- `year` (Int): Year for solar calculations (e.g. `2022`) point 
 - `matched_prefix` (String, default: `"matched_"`): Filename prefix for matched results output. Set to `""` to keep the original input filename.
 - `missing_prefix` (String, default: `"missing_"`): Filename prefix for missing results output. Set to `""` to keep the original input filename.
 - `cpu_cores` (Int, default: 1): Number of CPU cores to use
 - `memory_gb` (Int, default: 8): Memory allocation in GB
 
 **Outputs:**
-- `matched_points` (File): RDS file containing points with sunrise/sunset difference values (named `<matched_prefix><input_filename>.rds`)
+- `matched_points` (File): RDS file containing points with sunrise/sunset difference values (in seconds) (named `<matched_prefix><input_filename>.rds`)
 - `missing_points` (File): RDS file containing points that could not be matched to border points, may be empty (named `<missing_prefix><input_filename>.rds`)
 
 ## Usage as a Module
@@ -91,3 +91,6 @@ For questions about this module:
 - Open an issue in the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library/issues)
 - Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
 - See the library's [Contributor Guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for detailed guidelines
+For questions about the SJL model, please contact:
+- Caroline Nondin, MS: cnondin@fredhutch.org
+- Trang VoPham, PhD, MS: trang@fredhutch.org
