@@ -23,7 +23,7 @@ task download_files {
     accessions: "Comma-separated list of ENA accession numbers (e.g., 'ERR2208926,ERR2208890') or a single accession"
     accessions_file: "Optional file containing accession numbers (one per line or tab-separated with accessions in first column)"
     file_format: "Format of files to download: READS_FASTQ, READS_SUBMITTED, READS_BAM, ANALYSIS_SUBMITTED, or ANALYSIS_GENERATED"
-    protocol: "Transfer protocol to use: FTP or ASPERA (requires aspera_location if ASPERA is selected)"
+    protocol: "Transfer protocol to use: FTP, ASPERA (requires aspera_location), or HTTP (requires accessions)"
     aspera_location: "Path to Aspera Connect/CLI installation (required if protocol is ASPERA)"
     output_dir_name: "Name for the output directory where files will be downloaded"
     cpu_cores: "Number of CPU cores allocated for the task"
@@ -54,13 +54,37 @@ task download_files {
   command <<<
     set -eo pipefail
 
-    # Execute download with ena-file-downloader
-    java -jar /usr/local/bin/ena-file-downloader.jar \
-      --accessions=~{accessions_arg} \
-      --format=~{file_format} \
-      --protocol=~{protocol} \
-      ~{if defined(aspera_location) then "--asperaLocation=" + aspera_location else ""} \
-      --location=~{output_dir_name}
+    if [ "~{protocol}" = "HTTP" ]; then
+      # Download files via HTTP using wget and the ENA portal API
+      mkdir -p ~{output_dir_name}
+      cd ~{output_dir_name}
+
+      # User must provide 'accessions' input string
+      IFS=',' read -ra acc_array <<< "~{accessions}"
+      for acc in "${acc_array[@]}"; do
+        acc=$(echo "$acc" | tr -d '[:space:]')
+
+        # Get FTP paths for accession from ENA portal API
+        paths=$(wget -qO- "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=${acc}&result=read_run&fields=fastq_ftp" | tail -n +2 | cut -f2)
+
+        IFS=';' read -ra urls <<< "$paths"
+        for path in "${urls[@]}"; do
+          if [ -n "$path" ]; then
+            wget "http://$path"
+          fi
+        done
+      done
+
+      cd ..
+    else
+      # Execute download with ena-file-downloader
+      java -jar /usr/local/bin/ena-file-downloader.jar \
+        --accessions=~{accessions_arg} \
+        --format=~{file_format} \
+        --protocol=~{protocol} \
+        ~{if defined(aspera_location) then "--asperaLocation=" + aspera_location else ""} \
+        --location=~{output_dir_name}
+    fi
 
     # Find all downloaded files
     find ~{output_dir_name} -type f > downloaded_files.txt
