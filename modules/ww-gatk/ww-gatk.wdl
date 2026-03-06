@@ -485,12 +485,10 @@ task split_intervals {
       -O scattered_intervals/ \
       --verbosity WARNING
 
-    # List all created files for output
-    find scattered_intervals/ -name "*.interval_list" | sort -V > interval_files.txt
   >>>
 
   output {
-    Array[File] interval_files = read_lines("interval_files.txt")
+    Array[File] interval_files = glob("scattered_intervals/*.interval_list")
   }
 
   runtime {
