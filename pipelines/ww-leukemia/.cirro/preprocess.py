@@ -80,7 +80,7 @@ def format_inputs_samples(ds: PreprocessDataset):
 
     # Get the samplesheet with CRAM files.
     # Expected columns: sample, file
-    df = ds.samplesheet
+    df = ds.files
 
     samples = []
     for sample_name, group in df.groupby("sample"):
