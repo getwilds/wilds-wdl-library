@@ -91,6 +91,4 @@ For questions about this module:
 - Open an issue in the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library/issues)
 - Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
 - See the library's [Contributor Guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for detailed guidelines
-For questions about the SJL model, please contact:
-- Caroline Nondin, MS: cnondin@fredhutch.org
-- Trang VoPham, PhD, MS: trang@fredhutch.org
+- For questions about the SJL model, please contact Caroline Nondin, MS at cnondin@fredhutch.org, or Trang VoPham, PhD, MS at trang@fredhutch.org
