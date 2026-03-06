@@ -3,11 +3,11 @@
 [![Project Status: Prototype – Useable, some support, open to feedback, unstable API.](https://getwilds.org/badges/badges/prototype.svg)](https://getwilds.org/badges/#prototype)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL module for downloading sequencing data files from the European Nucleotide Archive (ENA) using the [ena-file-downloader tool](https://github.com/enasequence/ena-ftp-downloader). This module enables automated retrieval of FASTQ, BAM, and other sequencing data formats directly from ENA using accession numbers or search queries.
+A WILDS WDL module for downloading sequencing data files from the European Nucleotide Archive (ENA) using the [ENA File Downloader tool](https://github.com/enasequence/ena-ftp-downloader). This module enables automated retrieval of FASTQ, BAM, and other sequencing data formats directly from ENA using accession numbers or search queries.
 
 ## Overview
 
-The European Nucleotide Archive (ENA) is one of the world's largest repositories of nucleotide sequence data. This module wraps the ena-file-downloader tool to provide seamless integration of ENA data downloads into WDL workflows, supporting both FTP and Aspera transfer protocols.
+The European Nucleotide Archive (ENA) is one of the world's largest repositories of nucleotide sequence data. This module wraps the ENA File Downloader tool to provide seamless integration of ENA data downloads into WDL workflows, supporting FTP, Aspera, and HTTP transfer protocols.
 
 ## Module Structure
 
@@ -32,13 +32,13 @@ Downloads sequencing data files from ENA using accession numbers. Supports singl
   - `READS_BAM`: BAM format alignments
   - `ANALYSIS_SUBMITTED`: Submitted analysis files
   - `ANALYSIS_GENERATED`: Generated analysis files
-- `protocol` (String, default="FTP"): Transfer protocol (`FTP` or `ASPERA`)
+- `protocol` (String, default="FTP"): Transfer protocol (`FTP`, `ASPERA`, or `HTTP`)
 - `aspera_location` (String, optional): Path to Aspera Connect/CLI installation (required if protocol is ASPERA)
 - `output_dir_name` (String, default="ena_downloads"): Name for the output directory
 - `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
-**Note:** Either `accessions` or `accessions_file` must be provided.
+**Note:** Either `accessions` or `accessions_file` must be provided. When using `protocol = "HTTP"`, the `accessions` string input is required (accessions_file is not supported). The HTTP option uses `wget` to fetch files via the ENA portal API rather than the ENA File Downloader tool.
 
 **Outputs:**
 - `downloaded_files` (Array[File]): Array of downloaded files from ENA
@@ -126,6 +126,30 @@ workflow download_from_file {
   output {
     Array[File] fastq_files = download_files.downloaded_files
     File summary = download_files.download_summary
+  }
+}
+```
+
+### Download via HTTP
+
+```wdl
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ena/ww-ena.wdl" as ena_tasks
+
+workflow download_via_http {
+  input {
+    Array[String] sample_accessions
+  }
+
+  scatter (accession in sample_accessions) {
+    call ena_tasks.download_files {
+      input:
+        accessions = accession,
+        protocol = "HTTP"
+    }
+  }
+
+  output {
+    Array[Array[File]] all_downloads = download_files.downloaded_files
   }
 }
 ```
@@ -251,6 +275,7 @@ For information on finding accession numbers, file formats, and querying ENA dat
 
 - **FTP (default)**: Reliable, works almost everywhere, moderate speed
 - **ASPERA**: Much faster for large files, requires Aspera Connect/CLI installation
+- **HTTP**: Uses `wget` and the ENA portal API to download files; requires the `accessions` string input; does not use the ENA File Downloader tool
 
 ### Resource Requirements
 
@@ -270,6 +295,7 @@ Download times depend on:
 Typical download speeds:
 - **FTP**: 10-50 MB/s
 - **ASPERA**: 100-500 MB/s (with good network connection)
+- **HTTP**: Comparable to FTP; useful in environments where FTP is blocked
 
 ## Citation
 
@@ -348,7 +374,7 @@ For questions about this module or to report issues:
 ## Related Resources
 
 - **[ENA Documentation](https://www.ebi.ac.uk/ena/browser/about)**: Official ENA documentation
-- **[ena-file-downloader GitHub](https://github.com/enasequence/ena-ftp-downloader)**: Source code and documentation for the downloader tool
+- **[ENA File Downloader GitHub](https://github.com/enasequence/ena-ftp-downloader)**: Source code and documentation for the downloader tool
 - **[WILDS Docker Library](https://github.com/getwilds/wilds-docker-library)**: Container images used by WDL workflows
 - **[WILDS Documentation](https://getwilds.org/)**: Comprehensive guides and best practices
 - **[WDL Specification](https://openwdl.org/)**: Official WDL language documentation
