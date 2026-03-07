@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bowtie/ww-bowtie.wdl" as ww_bowtie
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-bowtie/modules/ww-bowtie/ww-bowtie.wdl" as ww_bowtie
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-bowtie/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct BowtieSample {
     String name
