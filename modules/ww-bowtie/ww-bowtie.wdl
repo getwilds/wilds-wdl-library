@@ -102,7 +102,7 @@ task bowtie_align {
         --threads ~{cpu_cores} \
         --sam \
         --best \
-        --strata \
+        -k 1 \
         -q \
         "bowtie_index/~{index_prefix}" \
         "~{reads}" \
@@ -113,7 +113,7 @@ task bowtie_align {
         --threads ~{cpu_cores} \
         --sam \
         --best \
-        --strata \
+        -k 1 \
         -q \
         "bowtie_index/~{index_prefix}" \
         -1 "~{reads}" \
