@@ -37,3 +37,7 @@ authors:
   - family-names: Lo
     given-names: Chris
     affiliation: "Fred Hutch Cancer Center"
+  - family-names: Nondin
+    given-names: Caroline
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0009-0009-0955-5954"
