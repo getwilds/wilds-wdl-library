@@ -24,7 +24,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 ### `run_deepvariant`
 
-Runs DeepVariant to call germline variants from aligned reads, producing a VCF file.
+Runs DeepVariant to call germline variants from aligned reads. Optionally produces a gVCF file for downstream joint genotyping.
 
 **Inputs:**
 - `sample_name` (String): Name identifier for the sample
@@ -33,6 +33,7 @@ Runs DeepVariant to call germline variants from aligned reads, producing a VCF f
 - `ref_fasta` (File): Reference genome FASTA file
 - `ref_fasta_index` (File): Index file for the reference FASTA
 - `model_type` (String, default="WGS"): Sequencing model type (WGS, WES, PACBIO, ONT_R104, HYBRID_PACBIO_ILLUMINA, MASSEQ)
+- `output_gvcf_enabled` (Boolean, default=false): Whether to also produce a gVCF file for downstream joint genotyping
 - `regions` (String?, optional): Genomic regions to restrict variant calling
 - `cpu_cores` (Int, default=8): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=32): Memory allocated for the task in GB
@@ -40,19 +41,8 @@ Runs DeepVariant to call germline variants from aligned reads, producing a VCF f
 **Outputs:**
 - `output_vcf` (File): VCF file containing variant calls
 - `output_vcf_index` (File): Index file for the output VCF
-
-### `run_deepvariant_gvcf`
-
-Runs DeepVariant to call germline variants and produce both VCF and gVCF output for downstream joint genotyping.
-
-**Inputs:**
-- Same as `run_deepvariant`
-
-**Outputs:**
-- `output_vcf` (File): VCF file containing variant calls
-- `output_vcf_index` (File): Index file for the output VCF
-- `output_gvcf` (File): gVCF file for downstream joint genotyping
-- `output_gvcf_index` (File): Index file for the output gVCF
+- `output_gvcf` (Array[File]): gVCF file for downstream joint genotyping (empty when `output_gvcf_enabled` is false)
+- `output_gvcf_index` (Array[File]): Index file for the gVCF (empty when `output_gvcf_enabled` is false)
 
 ## Usage as a Module
 
@@ -110,14 +100,15 @@ call deepvariant_tasks.run_deepvariant {
 
 **PacBio HiFi mode with gVCF output:**
 ```wdl
-call deepvariant_tasks.run_deepvariant_gvcf {
+call deepvariant_tasks.run_deepvariant {
   input:
     sample_name = "pacbio_sample",
     input_bam = hifi_bam,
     input_bam_index = hifi_bai,
     ref_fasta = ref_fasta,
     ref_fasta_index = ref_fasta_index,
-    model_type = "PACBIO"
+    model_type = "PACBIO",
+    output_gvcf_enabled = true
 }
 ```
 
@@ -146,14 +137,14 @@ java -jar cromwell.jar run testrun.wdl
 ### Automatic Demo Mode
 
 The test workflow automatically:
-1. Downloads a reference genome (chr1, first 5Mb) using `ww-testdata`
+1. Downloads a reference genome (chr1) using `ww-testdata`
 2. Downloads test BAM files using `ww-testdata`
-3. Calls variants on each sample using DeepVariant
-4. Demonstrates the module's tasks in a realistic workflow context
+3. Calls variants on each sample using DeepVariant (VCF only)
+4. Runs an additional call with `output_gvcf_enabled = true` to test gVCF output
 
 ## Docker Container
 
-This module uses the `getwilds/deepvariant:1.10.0` container image, which includes:
+This module uses the `google/deepvariant:1.10.0` container image, which includes:
 - DeepVariant variant caller (v1.10.0)
 - Pre-trained CNN models for WGS, WES, PacBio, and ONT
 - All necessary dependencies for variant calling

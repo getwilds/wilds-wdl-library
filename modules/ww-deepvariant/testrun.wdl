@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-deepvariant/modules/ww-deepvariant/ww-deepvariant.wdl" as ww_deepvariant
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-deepvariant/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "ww-deepvariant.wdl" as ww_deepvariant
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct DeepVariantSample {
     String name
@@ -37,7 +37,7 @@ workflow deepvariant_example {
     }
   ]
 
-  # Call DeepVariant on each sample
+  # Call DeepVariant on each sample (VCF only)
   scatter (sample in samples) {
     call ww_deepvariant.run_deepvariant { input:
       sample_name = sample.name,
@@ -52,8 +52,24 @@ workflow deepvariant_example {
     }
   }
 
+  # Call DeepVariant with gVCF output enabled (using first sample)
+  call ww_deepvariant.run_deepvariant as run_deepvariant_gvcf { input:
+    sample_name = "sample1_gvcf",
+    input_bam = download_bam_1.bam,
+    input_bam_index = download_bam_1.bai,
+    ref_fasta = download_reference.fasta,
+    ref_fasta_index = download_reference.fasta_index,
+    model_type = "WGS",
+    output_gvcf_enabled = true,
+    regions = "chr1",
+    cpu_cores = 2,
+    memory_gb = 8
+  }
+
   output {
     Array[File] output_vcfs = run_deepvariant.output_vcf
     Array[File] output_vcf_indices = run_deepvariant.output_vcf_index
+    File output_gvcf_vcf = run_deepvariant_gvcf.output_vcf
+    Array[File] output_gvcfs = run_deepvariant_gvcf.output_gvcf
   }
 }
