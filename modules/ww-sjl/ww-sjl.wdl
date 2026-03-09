@@ -47,7 +47,7 @@ task sjl_tiles {
     # Pull sjl_tiles script from GitHub
     # NOTE: For reproducibility in production workflows, replace the branch reference
     # (e.g., "refs/heads/main") with a specific commit hash (e.g., "abc1234...")
-    wget -q "https://raw.githubusercontent.com/caronondin22/wilds-wdl-library/refs/heads/main/modules/ww-sjl/sjl_tiles.R" \
+    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sjl/sjl_tiles.R" \
       -O sjl_tiles.R
 
     Rscript sjl_tiles.R \
