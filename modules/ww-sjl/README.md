@@ -85,10 +85,14 @@ This module uses the latest version of `sjl_tiles.R` at runtime. This script is 
 1. Use a commit hash instead of a branch reference in the `wget` command of your own copy of `ww-sjl.wdl`. You can make your own copy by forking the repo or downloading the script. For example: `https://raw.githubusercontent.com/getwilds/wilds-wdl-library/<COMMIT HASH HERE>/modules/ww-sjl/sjl_tiles.R`
 2. Build a custom Docker container that includes the script inside.
 
+## Acknowledgments
+
+This module was developed in collaboration with [@cnondin](https://github.com/cnondin) and the [VoPham Lab](https://www.geoexlab.com/) at Fred Hutch through the [WILDS WDL Development Program](https://sciwiki.fredhutch.org/datascience/wilds_workflow_dev/). For questions about the underlying science, please reach out to the VoPham Lab through their website. Thank you to the VoPham Lab for their contributions and domain expertise!
+
 ## Support and Documentation
 
 For questions about this module:
 - Open an issue in the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library/issues)
 - Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
 - See the library's [Contributor Guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for detailed guidelines
-- For questions about the SJL model, please contact Caroline Nondin, MS at cnondin@fredhutch.org, or Trang VoPham, PhD, MS at trang@fredhutch.org
+- For questions about the SJL model, please contact Caroline Nondin, MS at [cnondin@fredhutch.org](mailto:cnondin@fredhutch.org), or Trang VoPham, PhD, MS at [trang@fredhutch.org](mailto:trang@fredhutch.org)

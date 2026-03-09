@@ -123,6 +123,10 @@ miniwdl run testrun.wdl --entrypoint jetlag_example
 sprocket run testrun.wdl --entrypoint jetlag_example
 ```
 
+## Acknowledgments
+
+This pipeline was developed in collaboration with [@cnondin](https://github.com/cnondin) and the [VoPham Lab](https://www.geoexlab.com/) at Fred Hutch through the [WILDS WDL Development Program](https://sciwiki.fredhutch.org/datascience/wilds_workflow_dev/). For questions about the underlying science, please reach out to the VoPham Lab through their website. Thank you to the VoPham Lab for their contributions and domain expertise!
+
 ## Support
 
 For questions, bugs, and/or feature requests, reach out to the Fred Hutch Data Science Lab (DaSL) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
