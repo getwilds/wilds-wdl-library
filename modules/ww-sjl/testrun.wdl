@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/caronondin22/wilds-wdl-library/refs/heads/main/modules/ww-sjl/ww-sjl.wdl" as ww_sjl
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sjl/ww-sjl.wdl" as ww_sjl
 
 workflow sjl_example {
   # Generate synthetic test tile and border points data
