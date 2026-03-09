@@ -1,0 +1,43 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "WILDS WDL Library"
+abstract: "A centralized collection of bioinformatics WDL infrastructure providing reusable, well-tested components that can be combined to create powerful computational pipelines for genomics research."
+version: 0.1.0
+date-released: "2026-01-09"
+license: MIT
+repository-code: "https://github.com/getwilds/wilds-wdl-library"
+url: "https://getwilds.org/wilds-wdl-library/"
+contact:
+  - email: wilds@fredhutch.org
+    name: "Fred Hutch Data Science Lab WILDS"
+keywords:
+  - bioinformatics
+  - wdl
+  - genomics
+  - workflows
+  - pipelines
+authors:
+  - family-names: Firman
+    given-names: Taylor
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0009-0002-2052-1084"
+  - family-names: Bishop
+    given-names: Emma
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0000-0003-4484-3336"
+  - family-names: Chamberlain
+    given-names: Scott
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0000-0003-1444-9135"
+  - family-names: Minot
+    given-names: Sam
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0000-0003-1639-3905"
+  - family-names: Lo
+    given-names: Chris
+    affiliation: "Fred Hutch Cancer Center"
+  - family-names: Nondin
+    given-names: Caroline
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0009-0009-0955-5954"
