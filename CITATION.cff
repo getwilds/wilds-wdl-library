@@ -7,7 +7,7 @@ version: 0.1.0
 date-released: "2026-01-09"
 license: MIT
 repository-code: "https://github.com/getwilds/wilds-wdl-library"
-url: "https://getwilds.org/"
+url: "https://getwilds.org/wilds-wdl-library/"
 contact:
   - email: wilds@fredhutch.org
     name: "Fred Hutch Data Science Lab WILDS"
