@@ -239,10 +239,6 @@ If you use this module for published work, please cite ColabFold:
 - `gpu_enabled`: Must be `true` for production use; `false` only for testing/debugging
 - Protein length significantly impacts memory and runtime requirements
 
-### Recommended GPU Hardware
-- NVIDIA A100 (preferred for large proteins)
-- NVIDIA V100 or T4 (suitable for most predictions)
-- Minimum 16 GB GPU memory
 
 ## Contributing
 
