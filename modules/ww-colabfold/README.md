@@ -9,12 +9,9 @@ A WILDS WDL module for predicting protein 3D structures from amino acid sequence
 
 This module wraps the `colabfold_batch` command-line tool for protein structure prediction. ColabFold provides a 40-60x speedup over standard AlphaFold2 by replacing the homology search step with MMseqs2, while matching AlphaFold2's prediction accuracy on CASP14 benchmarks. It supports monomeric proteins, multimers/complexes, and single-sequence predictions.
 
-**Key features:**
-- Fast MSA generation via MMseqs2 server (no local database required by default)
-- AlphaFold2-quality structure predictions
-- AMBER force field relaxation for refined structures
-- Batch processing of multiple sequences
-- Support for protein complexes via multimer mode
+**Key benefits over using ColabFold in a Google Colab notebook:**
+- Potentially higher throughput
+- Files can be loaded from and saved to your own filesystem
 
 ## Module Structure
 
@@ -162,7 +159,9 @@ call colabfold_tasks.colabfold_predict {
 
 This module integrates with other WILDS components:
 - **ww-diamond**: Use DIAMOND for sequence homology searches before structure prediction
-- **Other WILDS modules**: Can be used downstream of sequence analysis workflows
+- **ww-sra**: Download protein FASTAs from the Sequence Read Archive (SRA)
+- **ww-ena**: Download protein FASTAs from the European Nucleotide Archive (ENA)
+- **ww-aws-sso**: Interact with AWS S3 buckets
 
 ## Testing the Module
 
