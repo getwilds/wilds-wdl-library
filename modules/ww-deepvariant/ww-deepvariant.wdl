@@ -8,8 +8,8 @@ version 1.0
 
 task run_deepvariant {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Runs DeepVariant to call germline variants from aligned reads"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deepvariant/ww-deepvariant.wdl"
     outputs: {
