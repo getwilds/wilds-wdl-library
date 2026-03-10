@@ -194,7 +194,7 @@ To improve this template or report issues:
 
 For questions about this template or to report issues:
 - Open an issue in the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library/issues)
-- Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
+- Contact the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org
 - See the library's [Contributor Guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for detailed guidelines
 
 ## Related Resources

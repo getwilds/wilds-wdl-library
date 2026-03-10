@@ -10,7 +10,7 @@ repository-code: "https://github.com/getwilds/wilds-wdl-library"
 url: "https://getwilds.org/wilds-wdl-library/"
 contact:
   - email: wilds@fredhutch.org
-    name: "Fred Hutch Data Science Lab WILDS"
+    name: "Fred Hutch OCDO WILDS"
 keywords:
   - bioinformatics
   - wdl

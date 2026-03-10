@@ -359,8 +359,8 @@ The pipeline is automatically tested as part of the WILDS WDL Library CI/CD pipe
 
 For questions, bugs, and feature requests:
 - **Issues**: [GitHub Issues](https://github.com/getwilds/wilds-wdl-library/issues)
-- **General Questions**: Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
-- **Documentation**: [WILDS Guide](https://getwilds.org/guide/)
+- **General Questions**: Contact the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org
+- **Documentation**: [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md)
 
 ## Contributing
 
@@ -370,7 +370,7 @@ We welcome contributions to improve the pipeline:
 - Documentation improvements
 - Testing with additional panel designs
 
-See our [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) and the [WILDS Contributor Guide](https://getwilds.org/guide/) for details.
+See our [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details.
 
 ## Related Resources
 

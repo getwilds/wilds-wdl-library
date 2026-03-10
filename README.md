@@ -146,7 +146,7 @@ We welcome contributions at all levels:
 - Improve inline code documentation
 - Contribute to the [WILDS documentation site](https://getwilds.org/)
 
-See our [Contributing Guidelines](.github/CONTRIBUTING.md) and the [WILDS Contributor Guide](https://getwilds.org/guide/) for detailed information.
+See our [Contributing Guidelines](.github/CONTRIBUTING.md) for detailed information.
 
 ## Development Roadmap
 
@@ -164,8 +164,8 @@ See our [Contributing Guidelines](.github/CONTRIBUTING.md) and the [WILDS Contri
 ## Support
 
 - **Issues and Bug Reports**: [GitHub Issues](https://github.com/getwilds/wilds-wdl-library/issues)
-- **General Questions**: Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
-- **Documentation**: [WILDS Guide](https://getwilds.org/guide/)
+- **General Questions**: Contact the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org
+- **Documentation**: [Contributing Guidelines](.github/CONTRIBUTING.md)
 - **Fred Hutch Users**: [Scientific Computing Wiki](https://sciwiki.fredhutch.org/)
 
 ## Related Resources

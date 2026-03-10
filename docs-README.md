@@ -131,9 +131,9 @@ All tasks use versioned, tested Docker images from the [WILDS Docker Library](ht
 ## Getting Help
 
 - **Documentation Issues**: Found something unclear or incorrect? [Report an issue](https://github.com/getwilds/wilds-wdl-library/issues)
-- **General Questions**: Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
+- **General Questions**: Contact the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org
 - **Additional Resources**:
-  - [WILDS Guide](https://getwilds.org/guide/) - Comprehensive guides and best practices
+  - [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) - Comprehensive guides and best practices
   - [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) - How to contribute
   - [GitHub Repository](https://github.com/getwilds/wilds-wdl-library) - Source code and development
 

@@ -369,7 +369,7 @@ New contributors are welcome! If you're new to WDL or bioinformatics workflows:
 - Don't hesitate to ask questions in issues or via email. If you have a `uw.edu` or `fredhutch.org` email you can also ask questions in our `fh-data` [slack workspace]([https://hutchdatascience.org/joinslack/)
 - Consider starting with documentation contributions
 
-For more questions you can contact the Fred Hutch Data Science Lab at [wilds@fredhutch.org](mailto:wilds@fredhutch.org)
+For more questions you can contact the Fred Hutch Office of the Chief Data Officer (OCDO) at [wilds@fredhutch.org](mailto:wilds@fredhutch.org)
 
 
 ## Code of Conduct

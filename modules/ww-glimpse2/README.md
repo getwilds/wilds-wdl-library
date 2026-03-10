@@ -311,5 +311,5 @@ If you use GLIMPSE2 in your research, please cite:
 
 For questions or issues:
 - Open an issue in the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library/issues)
-- Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
-- See the [WILDS Contributor Guide](https://getwilds.org/guide/) for detailed guidelines
+- Contact the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org
+- See the [contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for detailed guidelines
