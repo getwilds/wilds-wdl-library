@@ -155,7 +155,7 @@ AnnotSV generates tab-delimited files with comprehensive annotations including:
 For questions about this module:
 - Open an issue in the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library/issues)
 - Contact the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org
-- See the [WILDS Contributor Guide](https://getwilds.org/guide/) for detailed guidelines
+- See the [contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for detailed guidelines
 
 For AnnotSV-specific questions:
 - [AnnotSV Documentation](https://lbgi.fr/AnnotSV/)

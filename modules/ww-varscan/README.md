@@ -264,7 +264,7 @@ Koboldt, D., Zhang, Q., Larson, D. et al. VarScan 2: somatic mutation and copy n
 
 ## Contributing
 
-If you would like to contribute to this WILDS WDL module, please see our [WILDS Contributor Guide](https://getwilds.org/guide/) and the [WILDS WDL Library contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
+If you would like to contribute to this WILDS WDL module, please see our [contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
 
 ## License
 

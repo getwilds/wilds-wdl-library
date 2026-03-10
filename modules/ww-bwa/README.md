@@ -181,7 +181,7 @@ For questions, bugs, and/or feature requests, contact the Fred Hutch Office of t
 
 ## Contributing
 
-To contribute to this module, please review the [WILDS Contributor Guide](https://getwilds.org/guide/) and the [contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md).
+To contribute to this module, please review the [contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md).
 
 ## License
 
