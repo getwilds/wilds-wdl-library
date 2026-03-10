@@ -1,0 +1,75 @@
+version 1.0
+
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-deepvariant/modules/ww-deepvariant/ww-deepvariant.wdl" as ww_deepvariant
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-deepvariant/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
+struct DeepVariantSample {
+    String name
+    File bam
+    File bai
+}
+
+workflow deepvariant_example {
+  # Download reference genome and BAM test data
+  call ww_testdata.download_ref_data as download_reference { input:
+    chromo = "chr1"
+  }
+
+  call ww_testdata.download_bam_data as download_bam_1 { input:
+    filename = "sample1.bam"
+  }
+
+  call ww_testdata.download_bam_data as download_bam_2 { input:
+    filename = "sample2.bam"
+  }
+
+  # Create samples array using test data
+  Array[DeepVariantSample] samples = [
+    {
+      "name": "sample1",
+      "bam": download_bam_1.bam,
+      "bai": download_bam_1.bai
+    },
+    {
+      "name": "sample2",
+      "bam": download_bam_2.bam,
+      "bai": download_bam_2.bai
+    }
+  ]
+
+  # Call DeepVariant on each sample (VCF only)
+  scatter (sample in samples) {
+    call ww_deepvariant.run_deepvariant { input:
+      sample_name = sample.name,
+      input_bam = sample.bam,
+      input_bam_index = sample.bai,
+      ref_fasta = download_reference.fasta,
+      ref_fasta_index = download_reference.fasta_index,
+      model_type = "WGS",
+      regions = "chr1",
+      cpu_cores = 2,
+      memory_gb = 8
+    }
+  }
+
+  # Call DeepVariant with gVCF output enabled (using first sample)
+  call ww_deepvariant.run_deepvariant as run_deepvariant_gvcf { input:
+    sample_name = "sample1_gvcf",
+    input_bam = download_bam_1.bam,
+    input_bam_index = download_bam_1.bai,
+    ref_fasta = download_reference.fasta,
+    ref_fasta_index = download_reference.fasta_index,
+    model_type = "WGS",
+    output_gvcf_enabled = true,
+    regions = "chr1",
+    cpu_cores = 2,
+    memory_gb = 8
+  }
+
+  output {
+    Array[File] output_vcfs = run_deepvariant.output_vcf
+    Array[File] output_vcf_indices = run_deepvariant.output_vcf_index
+    File output_gvcf_vcf = run_deepvariant_gvcf.output_vcf
+    Array[File] output_gvcfs = run_deepvariant_gvcf.output_gvcf
+  }
+}
