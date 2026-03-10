@@ -6,8 +6,8 @@ version 1.0
 
 task bowtie2_build {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Task for building Bowtie 2 index files from a reference FASTA"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bowtie2/ww-bowtie2.wdl"
     outputs: {
@@ -59,8 +59,8 @@ task bowtie2_build {
 
 task bowtie2_align {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Task for aligning sequence reads to a reference genome using Bowtie 2"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bowtie2/ww-bowtie2.wdl"
     outputs: {

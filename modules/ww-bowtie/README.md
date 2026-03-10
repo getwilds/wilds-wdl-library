@@ -41,7 +41,7 @@ Aligns short reads to a reference genome using Bowtie.
 - `index_prefix` (String, default="bowtie_index"): Prefix used when building the Bowtie index
 - `reads` (File): FASTQ file for forward (R1) reads
 - `name` (String): Sample name for output file naming and read group information
-- `mates` (File?, optional): FASTQ file for reverse (R2) reads for paired-end alignment
+- `mates` (File, optional): FASTQ file for reverse (R2) reads for paired-end alignment
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
