@@ -1,7 +1,7 @@
-#SJL model step 5: tiles 1-480
-#Author: Caroline Nondin
+#SJL model step 5
+#Author: Caroline Nondin (cnondin@fredhutch.org)
 #date created: 2/2/26
-#date last modified: 2/2/26
+#date last modified: 3/3/26
 
 #Libraries
 library(dplyr)
@@ -55,6 +55,7 @@ tzpoints_time$date_end_clean <- as.numeric(as.Date(paste0(year, "-12-31")) - as.
 tzpoints_time$time_clean <- as.numeric(lubridate::hms(tzpoints_time$time))
 tzpoints_time$sunrise_sum <- 0 #sunrise sum for the year
 tzpoints_time$sunset_sum <- 0 #sunset sum for the year
+tzpoints_time$valid_days <- 0 #counter for nb of valid days (has sunset/ sunrise values) per year 
 
 #########################################################
 ## Step 2: calculating NOAA Solar Calculator variables ##
@@ -122,10 +123,20 @@ for (i in 1:unique(tzpoints_time$loopnum)) {
   tzpoints_time$solar_noon <- (720 - 4 * tzpoints_time$Longitude - tzpoints_time$eq_time + tzpoints_time$timezone*60)/1440
   tzpoints_time$solar_noon_sas <- tzpoints_time$solar_noon*86400 ################################################ double check
 
-  ### accumulate sunrise/sunset times
-  tzpoints_time$sunrise_sum <- tzpoints_time$sunrise_sum + ((tzpoints_time$solar_noon*1440 - tzpoints_time$ha_sunrise*4)/1440)*86400
-  tzpoints_time$sunset_sum  <- tzpoints_time$sunset_sum  + ((tzpoints_time$solar_noon*1440 + tzpoints_time$ha_sunrise*4)/1440)*86400
-
+  ### accumulate sunrise/sunset times (removing NA values)
+  daily_sunrise <- ((tzpoints_time$solar_noon*1440 - tzpoints_time$ha_sunrise*4)/1440)*86400
+  daily_sunset  <- ((tzpoints_time$solar_noon*1440 + tzpoints_time$ha_sunrise*4)/1440)*86400
+  
+  is_valid <- !is.nan(daily_sunrise)
+  
+  tzpoints_time$sunrise_sum <- ifelse(is_valid,
+                                      tzpoints_time$sunrise_sum + daily_sunrise,
+                                      tzpoints_time$sunrise_sum)
+  tzpoints_time$sunset_sum <- ifelse(is_valid,
+                                     tzpoints_time$sunset_sum + daily_sunset,
+                                     tzpoints_time$sunset_sum)
+  tzpoints_time$valid_days <- tzpoints_time$valid_days + as.integer(is_valid)
+  
   ### sunlight duration (minutes)
   tzpoints_time$sunlight_duration <- 8*tzpoints_time$ha_sunrise
 
@@ -166,8 +177,8 @@ for (i in 1:unique(tzpoints_time$loopnum)) {
 ## compute averages from accumulators and keep only what's needed
 tzpoints_suntime <- tzpoints_time %>%
   mutate(
-    sunrise_avg_tz = sunrise_sum / 365,
-    sunset_avg_tz  = sunset_sum  / 365
+    sunrise_avg_tz = sunrise_sum / valid_days,
+    sunset_avg_tz  = sunset_sum  / valid_days
   ) %>%
   dplyr::select(Longitude, Latitude, timezone, sunrise_avg_tz, sunset_avg_tz, elevation)
 
@@ -320,3 +331,4 @@ saveRDS(all_matched_points, export_complete_path)
 saveRDS(pts_still_no_match, export_missing_path)
 
 cat("\n Tile '", tile_name, "' complete! \n")
+

@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_diamond_data`, `create_test_protein_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -57,7 +57,7 @@ The `testrun.wdl` workflow requires no input parameters and automatically downlo
 
 - **Chromosome**: chr1 only (for efficient testing)
 - **Reference version**: hg38 (latest standard)
-- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), Pasilla counts, ShapeMapper data, Cell Ranger reference, DIAMOND data, GLIMPSE2 imputation data, and JCAST rMATS test data
+- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), Pasilla counts, ShapeMapper data, Cell Ranger reference, DIAMOND data, test protein FASTA, GLIMPSE2 imputation data, and JCAST rMATS test data
 
 ### Running the Test Workflow
 
@@ -223,6 +223,17 @@ call diamond_tasks.diamond_blastp {
   input:
     db = make_database.db,
     query = download_diamond_data.query
+}
+```
+
+**Protein structure prediction with ColabFold**:
+```wdl
+call testdata.create_test_protein_fasta { }
+call colabfold_tasks.colabfold_predict {
+  input:
+    fasta_file = create_test_protein_fasta.test_fasta,
+    weights_tarball = download_weights.weights_tarball,
+    output_prefix = "test_protein"
 }
 ```
 
@@ -510,6 +521,30 @@ call diamond_tasks.diamond_blastp {
 }
 ```
 
+### create_test_protein_fasta
+
+Creates a minimal protein FASTA file with a short peptide for testing structure prediction tools. Uses the Trp-cage miniprotein, one of the smallest known folding proteins at just 20 amino acid residues.
+
+**Use Case**: When testing protein structure prediction workflows (e.g., ColabFold), you need a small protein sequence that can fold quickly on CPU. The Trp-cage miniprotein is ideal for CI testing because it produces valid structure predictions in minimal time.
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+
+**Outputs**:
+- `test_fasta` (File): FASTA file containing a short test protein sequence (Trp-cage miniprotein, 20 residues)
+
+**Example Usage**:
+```wdl
+call testdata.create_test_protein_fasta { }
+call colabfold_tasks.colabfold_predict {
+  input:
+    fasta_file = create_test_protein_fasta.test_fasta,
+    weights_tarball = download_weights.weights_tarball,
+    output_prefix = "test_protein"
+}
+```
+
 ### download_glimpse2_genetic_map
 
 Downloads genetic map files for GLIMPSE2 imputation from the official GLIMPSE repository.
@@ -714,6 +749,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-shapemapper**: RNA structure analysis (uses TPP riboswitch example data from `download_shapemapper_data`)
 - **ww-cellranger**: Single-cell RNA-seq analysis (uses minimal reference from `download_test_cellranger_ref`)
 - **ww-diamond**: Protein sequence alignment (uses E. coli proteome from `download_diamond_data`)
+- **ww-colabfold**: Protein structure prediction (uses Trp-cage miniprotein from `create_test_protein_fasta`)
 - **ww-annovar**: Variant annotation (uses gnomAD VCF from `download_gnomad_vcf`)
 - **ww-glimpse2**: Genotype imputation (uses genetic maps, reference panels, and GL VCFs from GLIMPSE2 tasks)
 - **ww-consensus**: Consensus variant calling (uses gnomAD VCF from `download_gnomad_vcf`)
