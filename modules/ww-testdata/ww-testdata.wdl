@@ -1091,6 +1091,48 @@ task download_diamond_data {
   }
 }
 
+task create_test_protein_fasta {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Create a minimal protein FASTA file with a short peptide for testing structure prediction tools"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        test_fasta: "FASTA file containing a short test protein sequence (Trp-cage miniprotein, 20 residues)"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Trp-cage miniprotein (20 residues) - one of the smallest known folding proteins
+    cat > test_protein.fasta <<'FASTA'
+>test_trpcage
+NLYIQWLKDGGPSSGRPPPS
+FASTA
+  >>>
+
+  output {
+    File test_fasta = "test_protein.fasta"
+  }
+
+  runtime {
+    docker: "ubuntu:22.04"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task download_glimpse2_genetic_map {
   meta {
     author: "WILDS Team"
