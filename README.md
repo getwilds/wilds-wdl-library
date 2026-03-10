@@ -164,7 +164,7 @@ See our [Contributing Guidelines](.github/CONTRIBUTING.md) and the [WILDS Contri
 ## Support
 
 - **Issues and Bug Reports**: [GitHub Issues](https://github.com/getwilds/wilds-wdl-library/issues)
-- **General Questions**: Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
+- **General Questions**: Contact the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org
 - **Documentation**: [WILDS Guide](https://getwilds.org/guide/)
 - **Fred Hutch Users**: [Scientific Computing Wiki](https://sciwiki.fredhutch.org/)
 

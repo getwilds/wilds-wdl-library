@@ -177,7 +177,7 @@ For questions specific to this module or to contribute improvements, please see 
 
 ## Support
 
-For questions, bugs, and/or feature requests, contact the Fred Hutch Data Science Lab (DaSL) at [wilds@fredhutch.org](mailto:wilds@fredhutch.org) or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
+For questions, bugs, and/or feature requests, contact the Fred Hutch Office of the Chief Data Officer (OCDO) at [wilds@fredhutch.org](mailto:wilds@fredhutch.org) or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
 
 ## Contributing
 

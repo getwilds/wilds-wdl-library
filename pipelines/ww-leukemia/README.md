@@ -359,7 +359,7 @@ The pipeline is automatically tested as part of the WILDS WDL Library CI/CD pipe
 
 For questions, bugs, and feature requests:
 - **Issues**: [GitHub Issues](https://github.com/getwilds/wilds-wdl-library/issues)
-- **General Questions**: Contact the Fred Hutch Data Science Lab at wilds@fredhutch.org
+- **General Questions**: Contact the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org
 - **Documentation**: [WILDS Guide](https://getwilds.org/guide/)
 
 ## Contributing

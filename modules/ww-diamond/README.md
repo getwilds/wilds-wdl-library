@@ -192,7 +192,7 @@ For questions specific to this module or to contribute improvements, please see 
 
 ## Support
 
-For questions, bugs, and/or feature requests, reach out to the Fred Hutch Data Science Lab (DaSL) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
+For questions, bugs, and/or feature requests, reach out to the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
 
 For questions specific to DIAMOND usage or configuration, please refer to the [DIAMOND documentation](https://github.com/bbuchfink/diamond). Please make sure to cite their work if you use DIAMOND in your analyses:
 
