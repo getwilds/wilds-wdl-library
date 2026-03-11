@@ -16,7 +16,7 @@ workflows:
         email: ebishop@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0000-0003-4484-3336
+        orcid: 0000-0003-4484-3336
     description: "WDL workflow to align sequencing data using BWA and perform QC steps with GATK"
     topic: variant-calling
     filters:
@@ -40,7 +40,7 @@ workflows:
         email: tfirman@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0009-0002-2052-1084
+        orcid: 0009-0002-2052-1084
     description: "WDL workflow to download raw sequencing data from ENA and align using STAR two-pass methodology"
     topic: rna-seq
     filters:
@@ -64,12 +64,12 @@ workflows:
         email: tfirman@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0009-0002-2052-1084
+        orcid: 0009-0002-2052-1084
       - name: Emma Bishop
         email: ebishop@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0000-0003-4484-3336
+        orcid: 0000-0003-4484-3336
     description: "Convert paired FASTQ files to unmapped CRAM format using WILDS WDL modules"
     topic: alignment
     filters:
@@ -93,17 +93,17 @@ workflows:
         email: tfirman@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0009-0002-2052-1084
+        orcid: 0009-0002-2052-1084
       - name: Emma Bishop
         email: ebishop@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0000-0003-4484-3336
+        orcid: 0000-0003-4484-3336
       - name: Louisa Goss
         email: lgoss2@fredhutch.org
         role: Research Associate
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0009-0005-2936-2405
+        orcid: 0009-0005-2936-2405
     description: "WDL workflow for genotype imputation from low-coverage WGS data using GLIMPSE2. Processes CRAM/BAM files against a reference panel to produce imputed VCF files."
     topic: imputation
     filters:
@@ -127,17 +127,17 @@ workflows:
         email: tfirman@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0009-0002-2052-1084
+        orcid: 0009-0002-2052-1084
       - name: Emma Bishop
         email: ebishop@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0000-0003-4484-3336
+        orcid: 0000-0003-4484-3336
       - name: Caroline Nondin
         email: cnondin@fredhutch.org
         role: Research Assistant
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0009-0009-0955-5954
+        orcid: 0009-0009-0955-5954
     description: "WDL pipeline to calculate sunrise/sunset times and sun time differences across an array of geographic tiles as part of the SJL model pipeline"
     topic: geospatial
     filters:
@@ -160,17 +160,17 @@ workflows:
         email: tfirman@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0009-0002-2052-1084
+        orcid: 0009-0002-2052-1084
       - name: Emma Bishop
         email: ebishop@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0000-0003-4484-3336
+        orcid: 0000-0003-4484-3336
       - name: Sitapriya Moorthi
         email: smoorthi@fredhutch.org
         role: Staff Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0000-0001-6372-5170
+        orcid: 0000-0001-6372-5170
     description: "Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing with focus on leukemia analysis - Refactored with WILDS modules"
     topic: variant-calling
     filters:
@@ -194,12 +194,12 @@ workflows:
         email: tfirman@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0009-0002-2052-1084
+        orcid: 0009-0002-2052-1084
       - name: Sitapriya Moorthi
         email: smoorthi@fredhutch.org
         role: Staff Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0000-0001-6372-5170
+        orcid: 0000-0001-6372-5170
       - name: Siobhan O'Brien
         email: sobrien2@fredhutch.org
         role: Post-Doctoral Research Fellow
@@ -227,12 +227,12 @@ workflows:
         email: tfirman@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0009-0002-2052-1084
+        orcid: 0009-0002-2052-1084
       - name: Emma Bishop
         email: ebishop@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0000-0003-4484-3336
+        orcid: 0000-0003-4484-3336
     description: "WDL workflow to download raw sequencing data from SRA and quantify using Salmon quasi-mapping"
     topic: rna-seq
     filters:
@@ -256,7 +256,7 @@ workflows:
         email: tfirman@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0009-0002-2052-1084
+        orcid: 0009-0002-2052-1084
     description: "WDL workflow to download raw sequencing data from SRA and align using STAR two-pass methodology"
     topic: rna-seq
     filters:
@@ -280,12 +280,12 @@ workflows:
         email: tfirman@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0009-0002-2052-1084
+        orcid: 0009-0002-2052-1084
       - name: Emma Bishop
         email: ebishop@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0000-0003-4484-3336
+        orcid: 0000-0003-4484-3336
       - name: Ethan Bouvet
         email: ebouvet@fredhutch.org
         role: Research Technician
@@ -313,7 +313,7 @@ workflows:
         email: tfirman@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
-        orcid: https://orcid.org/0009-0002-2052-1084
+        orcid: 0009-0002-2052-1084
     description: "WDL pipeline for alternative splicing proteomics: STAR alignment, rMATS differential splicing detection, and JCAST protein sequence translation"
     topic: proteogenomics
     filters:
