@@ -175,6 +175,8 @@ Pipelines may include optional platform-specific configuration directories for e
 
 Platform configurations are entirely optional and should not be required to run the pipeline with standard WDL executors (Cromwell, miniWDL, Sprocket).
 
+**Cirro Configuration Validation**: Pipelines with `.cirro/` directories are automatically validated in CI. The validation checks that all required files are present (`preprocess.py`, `process-form.json`, `process-input.json`, `process-output.json`, `process-compute.config`), JSON files are valid, and `preprocess.py` has no syntax errors. You can run this locally with `make lint_cirro`.
+
 ## Testing Requirements
 
 ### Local Tests
@@ -256,6 +258,7 @@ All contributions must pass our automated testing pipeline which executes on a P
 - **Container verification**: All Docker images must be accessible and functional
 - **Syntax validation**: WDL syntax and structure validation
 - **Integration testing**: Cross-module compatibility testing
+- **Cirro validation**: Validates `.cirro/` configurations for pipelines that include them
 
 ## Documentation Website
 
