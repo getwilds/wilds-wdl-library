@@ -77,6 +77,6 @@ jobs:
       run: which shellcheck || sudo apt-get install -y shellcheck
     - 
       name: Sprocket Linting
-      uses: stjude-rust-labs/sprocket-action@main
+      uses: stjude-rust-labs/sprocket-action@v0.10.0
       with:
         action: lint

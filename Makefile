@@ -8,7 +8,7 @@ WOMTOOL_JAR ?= womtool-$(WOMTOOL).jar
 CROMWELL ?= 92
 CROMWELL_JAR ?= cromwell-$(CROMWELL).jar
 MINIWDL ?= 1.13.0
-SPROCKET_MIN ?= 0.21.1
+SPROCKET_MIN ?= 0.22.0
 
 .PHONY: help
 help: ## Show this help message
