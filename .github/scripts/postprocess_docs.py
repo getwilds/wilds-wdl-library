@@ -124,11 +124,12 @@ def add_github_link(html_content: str) -> str:
 
     # Wrap the theme toggle button and add GitHub icon before it, in a flex container
     # This keeps both buttons together as a single flex item
-    # Use a more flexible regex that handles varying whitespace
+    # Match the theme toggle button by its id or classList.toggle content
     html_content = re.sub(
-        r'''(<button x-on:click="[^"]*classList\.toggle\('light'\)[^"]*"[^>]*>☀︎</button>)''',
+        r'''(<button\s[^>]*id="theme-toggle"[^>]*>.*?</button>)''',
         rf'<div style="display: flex; align-items: center;">{github_icon}\1</div>',
-        html_content
+        html_content,
+        flags=re.DOTALL
     )
 
     return html_content
