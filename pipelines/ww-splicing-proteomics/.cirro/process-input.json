@@ -1,7 +1,6 @@
 {
   "fasta": "$.dataset.params.fasta",
   "gtf": "$.dataset.params.gtf",
-  "ensembl_gtf": "$.dataset.params.ensembl_gtf",
   "group_column": "$.dataset.params.group_column",
   "read_length": "$.dataset.params.read_length",
   "read_type": "$.dataset.params.read_type",

@@ -44,7 +44,6 @@ workflow splicing_proteomics {
   parameter_meta {
     samples: "List of sample objects, each containing name, r1/r2 fastq files, and group assignment (group1 or group2)"
     reference_genome: "Reference genome object containing name, fasta, and gtf files"
-    ensembl_gtf: "Ensembl-format GTF file required for JCAST (must have transcript_type attribute)"
     read_length: "RNA-seq read length for rMATS analysis (required)"
     read_type: "Type of reads: 'paired' or 'single' (default: paired)"
     library_type: "Library type for rMATS: 'fr-unstranded', 'fr-firststrand', or 'fr-secondstrand' (default: 'fr-unstranded')"
@@ -63,13 +62,12 @@ workflow splicing_proteomics {
     rmats_cpu: "Number of CPU cores for rMATS task (default: 4)"
     rmats_memory_gb: "Memory allocation in GB for rMATS task (default: 16)"
     jcast_cpu: "Number of CPU cores for JCAST task (default: 2)"
-    jcast_memory_gb: "Memory allocation in GB for JCAST task (default: 8)"
+    jcast_memory_gb: "Memory allocation in GB for JCAST task (default: 16)"
   }
 
   input {
     Array[SampleInfo] samples
     RefGenome reference_genome
-    File ensembl_gtf
     Int read_length
     String read_type = "paired"
     String library_type = "fr-unstranded"
@@ -88,7 +86,7 @@ workflow splicing_proteomics {
     Int rmats_cpu = 4
     Int rmats_memory_gb = 16
     Int jcast_cpu = 2
-    Int jcast_memory_gb = 8
+    Int jcast_memory_gb = 16
   }
 
   # Step 1: Build STAR genome index
@@ -152,7 +150,7 @@ workflow splicing_proteomics {
   # Step 4: Run JCAST to translate splice junctions to protein sequences
   call jcast_tasks.jcast { input:
       rmats_directory = rmats.output_directory,
-      gtf_file = ensembl_gtf,
+      gtf_file = reference_genome.gtf,
       genome_fasta = reference_genome.fasta,
       output_name = output_prefix + "_jcast",
       min_read_count = jcast_min_read_count,

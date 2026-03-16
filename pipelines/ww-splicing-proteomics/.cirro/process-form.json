@@ -11,17 +11,10 @@
       },
       "gtf": {
         "title": "Reference Genome (GTF)",
-        "description": "Gene annotations for the reference genome in GTF format",
+        "description": "Ensembl-format gene annotations for the reference genome in GTF format (must have transcript_type attribute for JCAST compatibility)",
         "type": "string",
         "pathType": "references",
         "file": "**/genome_gtf/**/genome.gtf"
-      },
-      "ensembl_gtf": {
-        "title": "Ensembl GTF (for JCAST)",
-        "description": "Ensembl-format GTF file required for JCAST protein translation (must have transcript_type attribute)",
-        "type": "string",
-        "pathType": "references",
-        "file": "**/genome_gtf/**/*.gtf"
       },
       "group_column": {
         "title": "Metadata Group Column",
@@ -147,7 +140,7 @@
         "title": "JCAST - Memory (GB)",
         "description": "Amount of RAM for JCAST task",
         "type": "integer",
-        "default": 8
+        "default": 16
       },
       "workflow_failure_mode": {
         "title": "Workflow Failure Mode",
@@ -163,7 +156,6 @@
     "required": [
       "fasta",
       "gtf",
-      "ensembl_gtf",
       "group_column",
       "read_length",
       "read_type",

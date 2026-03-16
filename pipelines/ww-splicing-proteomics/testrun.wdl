@@ -72,7 +72,6 @@ workflow splicing_proteomics_example {
     input:
       samples = [sample1, sample2, sample3, sample4],
       reference_genome = reference,
-      ensembl_gtf = download_jcast_test_data.gtf_file,
       read_length = 63,  # Airway dataset read length
       read_type = "paired",
       library_type = "fr-unstranded",

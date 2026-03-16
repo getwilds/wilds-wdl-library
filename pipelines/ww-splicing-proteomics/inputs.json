@@ -30,7 +30,6 @@
     "fasta": "/path/to/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
     "gtf": "/path/to/Homo_sapiens.GRCh38.110.gtf"
   },
-  "splicing_proteomics.ensembl_gtf": "/path/to/Homo_sapiens.GRCh38.110.gtf",
   "splicing_proteomics.read_length": 150,
   "splicing_proteomics.read_type": "paired",
   "splicing_proteomics.library_type": "fr-unstranded",
@@ -49,5 +48,5 @@
   "splicing_proteomics.rmats_cpu": 4,
   "splicing_proteomics.rmats_memory_gb": 16,
   "splicing_proteomics.jcast_cpu": 2,
-  "splicing_proteomics.jcast_memory_gb": 8
+  "splicing_proteomics.jcast_memory_gb": 16
 }

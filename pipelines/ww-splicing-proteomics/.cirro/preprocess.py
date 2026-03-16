@@ -36,7 +36,6 @@ def setup_inputs(ds: PreprocessDataset):
     inputs = {
         "splicing_proteomics.samples": format_inputs_samples(ds, group_vals),
         "splicing_proteomics.reference_genome": format_inputs_reference_genome(ds),
-        "splicing_proteomics.ensembl_gtf": ds.params["ensembl_gtf"],
         "splicing_proteomics.read_length": ds.params["read_length"],
         "splicing_proteomics.read_type": ds.params["read_type"],
         "splicing_proteomics.library_type": ds.params["library_type"],
