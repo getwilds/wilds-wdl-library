@@ -1,0 +1,17 @@
+{
+  "out_dir": "$.dataset.dataPath",
+  "input_crams": "$.dataset.params.input_crams",
+  "input_cram_indices": "$.dataset.params.input_cram_indices",
+  "reference_fasta": "$.dataset.params.reference_fasta",
+  "reference_fasta_index": "$.dataset.params.reference_fasta_index",
+  "output_prefix": "$.dataset.params.output_prefix",
+  "output_format": "$.dataset.params.output_format",
+  "chunk_cpu_cores": "$.dataset.params.chunk_cpu_cores",
+  "chunk_memory_gb": "$.dataset.params.chunk_memory_gb",
+  "phase_cpu_cores": "$.dataset.params.phase_cpu_cores",
+  "phase_memory_gb": "$.dataset.params.phase_memory_gb",
+  "ligate_cpu_cores": "$.dataset.params.ligate_cpu_cores",
+  "ligate_memory_gb": "$.dataset.params.ligate_memory_gb",
+  "concat_cpu_cores": "$.dataset.params.concat_cpu_cores",
+  "concat_memory_gb": "$.dataset.params.concat_memory_gb"
+}

@@ -1,0 +1,117 @@
+{
+  "form": {
+    "type": "object",
+    "properties": {
+      "input_crams": {
+        "title": "Input CRAM/BAM Files",
+        "description": "CRAM or BAM files for all samples to impute (comma-separated paths)",
+        "type": "string",
+        "multiple": true,
+        "pathType": "dataset",
+        "file": "**/*.{cram,bam}"
+      },
+      "input_cram_indices": {
+        "title": "Input CRAM/BAM Index Files",
+        "description": "Index files corresponding to input CRAMs/BAMs (comma-separated paths, must match order of CRAM files)",
+        "type": "string",
+        "multiple": true,
+        "pathType": "dataset",
+        "file": "**/*.{crai,bai}"
+      },
+      "reference_fasta": {
+        "title": "Reference Genome (FASTA)",
+        "description": "Reference genome FASTA file (must match CRAM reference)",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.{fa,fasta,fa.gz,fasta.gz,fna,fna.gz}"
+      },
+      "reference_fasta_index": {
+        "title": "Reference Genome Index (FAI)",
+        "description": "Index for reference genome FASTA file",
+        "type": "string",
+        "multiple": false,
+        "pathType": "dataset",
+        "file": "**/*.fai"
+      },
+      "output_prefix": {
+        "title": "Output Prefix",
+        "description": "Prefix for output file names",
+        "type": "string",
+        "default": "imputed"
+      },
+      "output_format": {
+        "title": "Output Format",
+        "description": "Output format for imputed files",
+        "type": "string",
+        "enum": ["bcf", "vcf", "vcf.gz"],
+        "default": "bcf"
+      },
+      "chunk_cpu_cores": {
+        "title": "Chunk CPUs",
+        "description": "CPU cores for chunking tasks",
+        "type": "integer",
+        "default": 4
+      },
+      "chunk_memory_gb": {
+        "title": "Chunk Memory (GB)",
+        "description": "Memory in GB for chunking tasks",
+        "type": "integer",
+        "default": 8
+      },
+      "phase_cpu_cores": {
+        "title": "Phase CPUs",
+        "description": "CPU cores for phasing/imputation tasks",
+        "type": "integer",
+        "default": 4
+      },
+      "phase_memory_gb": {
+        "title": "Phase Memory (GB)",
+        "description": "Memory in GB for phasing/imputation tasks",
+        "type": "integer",
+        "default": 8
+      },
+      "ligate_cpu_cores": {
+        "title": "Ligate CPUs",
+        "description": "CPU cores for ligation tasks",
+        "type": "integer",
+        "default": 4
+      },
+      "ligate_memory_gb": {
+        "title": "Ligate Memory (GB)",
+        "description": "Memory in GB for ligation tasks",
+        "type": "integer",
+        "default": 16
+      },
+      "concat_cpu_cores": {
+        "title": "Concatenation CPUs",
+        "description": "CPU cores for concatenation tasks",
+        "type": "integer",
+        "default": 4
+      },
+      "concat_memory_gb": {
+        "title": "Concatenation Memory (GB)",
+        "description": "Memory in GB for concatenation tasks",
+        "type": "integer",
+        "default": 8
+      }
+    },
+    "required": [
+      "input_crams",
+      "input_cram_indices",
+      "reference_fasta",
+      "reference_fasta_index",
+      "output_prefix",
+      "output_format",
+      "chunk_cpu_cores",
+      "chunk_memory_gb",
+      "phase_cpu_cores",
+      "phase_memory_gb",
+      "ligate_cpu_cores",
+      "ligate_memory_gb",
+      "concat_cpu_cores",
+      "concat_memory_gb"
+    ]
+  },
+  "ui": {}
+}
