@@ -68,7 +68,7 @@ def format_chromosomes(ds: PreprocessDataset):
 
     # Use the ds.files internal samplesheet, since file order isn't maintained
     # from the user uplaoded sample sheet and we have to identify files by extension.
-    df = ds.files()
+    df = ds.files
 
     chromosomes = []
     for sample, grp in df.groupby("sample"):
