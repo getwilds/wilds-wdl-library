@@ -66,17 +66,18 @@ def format_chromosomes(ds: PreprocessDataset):
     ]
     """
 
-    # Get a table listing the reference panel files selected by the user.
-    # This DataFrame has columns: sample, file_1, file_2, file_3
+    # The internal samplesheet is long format: one row per file.
+    # Identify each file by extension.
     df = ds.samplesheet
 
     chromosomes = []
-    for _, r in df.iterrows():
+    for sample, grp in df.groupby("sample"):
+        files = grp["file"].tolist()
         chromosomes.append({
-            "chromosome": r["sample"],
-            "reference_vcf": r["file_1"],
-            "reference_vcf_index": r["file_2"],
-            "genetic_map": r["file_3"],
+            "chromosome": sample,
+            "reference_vcf": next(f for f in files if f.endswith(".bcf") and not f.endswith(".bcf.csi")),
+            "reference_vcf_index": next(f for f in files if f.endswith(".bcf.csi")),
+            "genetic_map": next(f for f in files if f.endswith(".gmap.gz")),
         })
 
     return chromosomes
