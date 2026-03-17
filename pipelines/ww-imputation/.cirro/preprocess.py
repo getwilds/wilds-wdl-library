@@ -66,14 +66,9 @@ def format_chromosomes(ds: PreprocessDataset):
     ]
     """
 
-    # The internal samplesheet is long format: one row per file.
-    # Identify each file by extension.
-    df = ds.samplesheet
-
-    ds.logger.info(f"Samplesheet shape: {df.shape}")
-    ds.logger.info(f"Samplesheet columns: {df.columns.tolist()}")
-    ds.logger.info(f"Samplesheet dtypes:\n{df.dtypes}")
-    ds.logger.info(f"Samplesheet head:\n{df.head(10).to_string()}")
+    # Use the ds.files internal samplesheet, since file order isn't maintained
+    # from the user uplaoded sample sheet and we have to identify files by extension.
+    df = ds.files()
 
     chromosomes = []
     for sample, grp in df.groupby("sample"):
