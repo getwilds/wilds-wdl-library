@@ -127,6 +127,22 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 2. Update the inputs JSON with sample information and group assignments
 3. Submit through the PROOF interface
 
+### Running on Cirro
+
+This pipeline includes [Cirro](https://cirro.bio/) platform configuration files in the [.cirro/](.cirro/) directory for cloud execution. To run this pipeline on Cirro:
+
+1. Ensure you have access to a Cirro instance
+2. Follow the [Cirro pipeline documentation](https://docs.cirro.bio/pipelines/adding-pipelines/) to add this workflow to your Cirro instance
+3. The configuration files in `.cirro/` define:
+   - Input form fields for the Cirro web interface
+   - Compute resource requirements
+   - Output file handling and organization
+   - Data preprocessing steps
+
+**Note:** This pipeline requires sample group assignments for differential splicing analysis. When uploading your dataset to Cirro, ensure your sample metadata includes a column with `group1` and `group2` values indicating which comparison group each sample belongs to. You will then specify the name of that column via the "Metadata Group Column" field in the submission form.
+
+For detailed information on configuring and using Cirro pipelines, see the [official Cirro documentation](https://docs.cirro.bio/).
+
 ## Input Parameters
 
 | Parameter | Description | Type | Required? | Default |
