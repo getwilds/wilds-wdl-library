@@ -146,7 +146,11 @@ lint_womtool: check_java check_womtool check_name ## Run WOMtool validate on mod
 	done
 
 
-lint: lint_sprocket lint_miniwdl lint_womtool ## Run all linting checks
+lint_cirro: ## Validate .cirro configurations in pipelines
+	@echo "Validating Cirro configurations..."
+	@python3 .github/scripts/validate_cirro.py
+
+lint: lint_sprocket lint_miniwdl lint_womtool lint_cirro ## Run all linting checks
 
 ##@ Run
 
