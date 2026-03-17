@@ -68,7 +68,7 @@ def format_chromosomes(ds: PreprocessDataset):
 
     # Get a table listing the reference panel files selected by the user.
     # This DataFrame has columns: sample, file_1, file_2, file_3
-    df = ds.pivot_samplesheet()
+    df = ds.samplesheet
 
     chromosomes = []
     for _, r in df.iterrows():
