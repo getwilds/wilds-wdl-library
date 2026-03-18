@@ -52,7 +52,7 @@ task download_files {
   String accessions_arg = select_first([accessions, accessions_file])
 
   command <<<
-    set -eo pipefail
+    set -o pipefail
 
     if [ "~{protocol}" = "HTTP" ]; then
       # Download files via HTTP using wget and the ENA portal API
