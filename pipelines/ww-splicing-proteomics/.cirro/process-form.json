@@ -1,0 +1,176 @@
+{
+  "form": {
+    "type": "object",
+    "properties": {
+      "fasta": {
+        "title": "Reference Genome (FASTA)",
+        "description": "Nucleotide sequence of the reference genome used for alignment",
+        "type": "string",
+        "pathType": "references",
+        "file": "**/genome_fasta/**/genome.fasta"
+      },
+      "gtf": {
+        "title": "Reference Genome (GTF)",
+        "description": "Ensembl-format gene annotations for the reference genome in GTF format (must have transcript_type attribute for JCAST compatibility)",
+        "type": "string",
+        "pathType": "references",
+        "file": "**/genome_gtf/**/genome.gtf"
+      },
+      "group_column": {
+        "title": "Metadata Group Column",
+        "description": "Column from metadata containing group assignments ('group1' or 'group2') for differential splicing analysis",
+        "type": "string"
+      },
+      "read_length": {
+        "title": "Read Length",
+        "description": "RNA-seq read length for rMATS analysis",
+        "type": "integer"
+      },
+      "read_type": {
+        "title": "Read Type",
+        "description": "Type of sequencing reads",
+        "type": "string",
+        "default": "paired",
+        "enum": [
+          "paired",
+          "single"
+        ]
+      },
+      "library_type": {
+        "title": "Library Type",
+        "description": "Library strandedness for rMATS analysis",
+        "type": "string",
+        "default": "fr-unstranded",
+        "enum": [
+          "fr-unstranded",
+          "fr-firststrand",
+          "fr-secondstrand"
+        ]
+      },
+      "output_prefix": {
+        "title": "Output Prefix",
+        "description": "Prefix for output file names",
+        "type": "string",
+        "default": "splicing_proteomics"
+      },
+      "sjdb_overhang": {
+        "title": "STAR - sjdbOverhang",
+        "description": "Length of genomic sequence around annotated junction for splice junction database (typically read_length - 1)",
+        "type": "integer",
+        "default": 100
+      },
+      "genome_sa_index_nbases": {
+        "title": "STAR - genomeSAindexNbases",
+        "description": "Length of SA pre-indexing string (typically 10-15, scales with genome size)",
+        "type": "integer",
+        "default": 14
+      },
+      "rmats_anchor_length": {
+        "title": "rMATS - Anchor Length",
+        "description": "Minimum number of nucleotides at junction ends for rMATS",
+        "type": "integer",
+        "default": 1
+      },
+      "rmats_novel_splice_sites": {
+        "title": "rMATS - Novel Splice Sites",
+        "description": "Enable detection of unannotated splice sites",
+        "type": "boolean",
+        "default": false
+      },
+      "rmats_cstat": {
+        "title": "rMATS - cstat Cutoff",
+        "description": "Cutoff splicing difference for statistical testing",
+        "type": "number",
+        "default": 0.0001
+      },
+      "jcast_min_read_count": {
+        "title": "JCAST - Min Read Count",
+        "description": "Minimum junction read count for JCAST translation",
+        "type": "integer",
+        "default": 1
+      },
+      "jcast_qvalue_min": {
+        "title": "JCAST - Min Q-value",
+        "description": "Minimum FDR q-value threshold for JCAST filtering",
+        "type": "number",
+        "default": 0
+      },
+      "jcast_qvalue_max": {
+        "title": "JCAST - Max Q-value",
+        "description": "Maximum FDR q-value threshold for JCAST filtering",
+        "type": "number",
+        "default": 1
+      },
+      "jcast_splice_types": {
+        "title": "JCAST - Splice Types (Optional)",
+        "description": "Comma-separated splice types to include (MXE,RI,SE,A3SS,A5SS). Leave blank for all types.",
+        "type": "string"
+      },
+      "star_cpu": {
+        "title": "STAR - CPUs",
+        "description": "Number of CPUs for STAR alignment tasks",
+        "type": "integer",
+        "default": 8
+      },
+      "star_memory_gb": {
+        "title": "STAR - Memory (GB)",
+        "description": "Amount of RAM for STAR alignment tasks",
+        "type": "integer",
+        "default": 64
+      },
+      "rmats_cpu": {
+        "title": "rMATS - CPUs",
+        "description": "Number of CPUs for rMATS task",
+        "type": "integer",
+        "default": 4
+      },
+      "rmats_memory_gb": {
+        "title": "rMATS - Memory (GB)",
+        "description": "Amount of RAM for rMATS task",
+        "type": "integer",
+        "default": 16
+      },
+      "jcast_cpu": {
+        "title": "JCAST - CPUs",
+        "description": "Number of CPUs for JCAST task",
+        "type": "integer",
+        "default": 2
+      },
+      "jcast_memory_gb": {
+        "title": "JCAST - Memory (GB)",
+        "description": "Amount of RAM for JCAST task",
+        "type": "integer",
+        "default": 16
+      },
+      "workflow_failure_mode": {
+        "title": "Workflow Failure Mode",
+        "description": "Behavior when individual tasks encounter failures",
+        "type": "string",
+        "default": "ContinueWhilePossible",
+        "enum": [
+          "ContinueWhilePossible",
+          "NoNewCalls"
+        ]
+      }
+    },
+    "required": [
+      "fasta",
+      "gtf",
+      "group_column",
+      "read_length",
+      "read_type",
+      "library_type",
+      "output_prefix",
+      "sjdb_overhang",
+      "genome_sa_index_nbases",
+      "star_cpu",
+      "star_memory_gb",
+      "rmats_cpu",
+      "rmats_memory_gb",
+      "jcast_cpu",
+      "jcast_memory_gb",
+      "workflow_failure_mode"
+    ]
+  },
+  "ui": {}
+}

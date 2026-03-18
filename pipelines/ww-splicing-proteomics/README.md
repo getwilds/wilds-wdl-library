@@ -59,7 +59,7 @@ This pipeline imports and uses:
 
 ### Important Notes
 
-- **JCAST requires Ensembl-format GTF files** with `transcript_type` attributes. Standard UCSC or NCBI RefSeq GTF files will not work with JCAST.
+- **JCAST requires Ensembl-format GTF files** with `transcript_type` attributes. The GTF provided in `reference_genome` must be in Ensembl format for JCAST to work correctly. Standard UCSC or NCBI RefSeq GTF files will not work.
 - The pipeline requires two sample groups for differential splicing analysis (e.g., treatment vs. control)
 - BAM files must be coordinate-sorted (STAR produces this by default)
 
@@ -100,7 +100,6 @@ Create an inputs JSON file with your samples and reference genome:
     "fasta": "/path/to/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
     "gtf": "/path/to/Homo_sapiens.GRCh38.gtf"
   },
-  "splicing_proteomics.ensembl_gtf": "/path/to/Homo_sapiens.GRCh38.gtf",
   "splicing_proteomics.read_length": 150,
   "splicing_proteomics.star_cpu": 8,
   "splicing_proteomics.star_memory_gb": 64
@@ -128,13 +127,28 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 2. Update the inputs JSON with sample information and group assignments
 3. Submit through the PROOF interface
 
+### Running on Cirro
+
+This pipeline includes [Cirro](https://cirro.bio/) platform configuration files in the [.cirro/](.cirro/) directory for cloud execution. To run this pipeline on Cirro:
+
+1. Ensure you have access to a Cirro instance
+2. Follow the [Cirro pipeline documentation](https://docs.cirro.bio/pipelines/adding-pipelines/) to add this workflow to your Cirro instance
+3. The configuration files in `.cirro/` define:
+   - Input form fields for the Cirro web interface
+   - Compute resource requirements
+   - Output file handling and organization
+   - Data preprocessing steps
+
+**Note:** This pipeline requires sample group assignments for differential splicing analysis. When uploading your dataset to Cirro, ensure your sample metadata includes a column with `group1` and `group2` values indicating which comparison group each sample belongs to. You will then specify the name of that column via the "Metadata Group Column" field in the submission form.
+
+For detailed information on configuring and using Cirro pipelines, see the [official Cirro documentation](https://docs.cirro.bio/).
+
 ## Input Parameters
 
 | Parameter | Description | Type | Required? | Default |
 |-----------|-------------|------|-----------|---------|
 | `samples` | List of SampleInfo objects with paired FASTQ files and group assignments | Array[SampleInfo] | Yes | - |
 | `reference_genome` | Reference genome information (name, fasta, gtf) | RefGenome | Yes | - |
-| `ensembl_gtf` | Ensembl-format GTF file required for JCAST | File | Yes | - |
 | `read_length` | RNA-seq read length for rMATS analysis | Int | Yes | - |
 | `read_type` | Type of reads: 'paired' or 'single' | String | No | "paired" |
 | `library_type` | Library type for rMATS | String | No | "fr-unstranded" |
@@ -153,7 +167,7 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 | `rmats_cpu` | CPU cores for rMATS | Int | No | 4 |
 | `rmats_memory_gb` | Memory in GB for rMATS | Int | No | 16 |
 | `jcast_cpu` | CPU cores for JCAST | Int | No | 2 |
-| `jcast_memory_gb` | Memory in GB for JCAST | Int | No | 8 |
+| `jcast_memory_gb` | Memory in GB for JCAST | Int | No | 16 |
 
 ### SampleInfo Structure
 

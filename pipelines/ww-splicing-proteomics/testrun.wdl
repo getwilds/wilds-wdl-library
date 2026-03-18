@@ -2,7 +2,7 @@ version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-splicing-proteomics/ww-splicing-proteomics.wdl" as splicing_proteomics_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/cirro-splicing/pipelines/ww-splicing-proteomics/ww-splicing-proteomics.wdl" as splicing_proteomics_workflow
 
 struct SampleInfo {
     String name
@@ -72,7 +72,6 @@ workflow splicing_proteomics_example {
     input:
       samples = [sample1, sample2, sample3, sample4],
       reference_genome = reference,
-      ensembl_gtf = download_jcast_test_data.gtf_file,
       read_length = 63,  # Airway dataset read length
       read_type = "paired",
       library_type = "fr-unstranded",
