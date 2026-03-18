@@ -109,6 +109,27 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 2. Update the inputs JSON
 3. Submit through the PROOF interface
 
+### Running on Cirro
+
+This pipeline includes [Cirro](https://cirro.bio/) platform configuration files in the [.cirro/](.cirro/) directory for cloud execution. To run this pipeline on Cirro:
+
+1. Ensure you have access to a Cirro instance
+2. Follow the [Cirro pipeline documentation](https://docs.cirro.bio/pipelines/adding-pipelines/) to add this workflow to your Cirro instance
+3. **Upload a [samplesheet](https://docs.cirro.bio/features/samples#adding-a-sample)** listing the files for each chromosome used in the `ChromosomeData` struct. For example, a CSV like this:
+
+```
+sample,file_1,file_2,file_3
+chr1,reference_panel.bcf,reference_panel.bcf.csi,chr1.b38.gmap.gz
+```
+
+The configuration files in `.cirro/` define:
+   - Input form fields for the Cirro web interface
+   - Compute resource requirements
+   - Output file handling and organization
+   - Data preprocessing steps
+
+For detailed information on configuring and using Cirro pipelines, see the [official Cirro documentation](https://docs.cirro.bio/).
+
 ## Input Parameters
 
 ### Required Inputs
