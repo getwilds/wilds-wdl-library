@@ -64,13 +64,13 @@ task download_files {
       for acc in "${acc_array[@]}"; do
         acc=$(echo "$acc" | tr -d '[:space:]')
 
-        # Get FTP paths for accession from ENA portal API
+        # Get FTP paths for accession from ENA portal API and download via HTTPS
         paths=$(wget -qO- "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=${acc}&result=read_run&fields=fastq_ftp" | tail -n +2 | cut -f2)
 
         IFS=';' read -ra urls <<< "$paths"
         for path in "${urls[@]}"; do
           if [ -n "$path" ]; then
-            wget "http://$path"
+            wget "https://${path#ftp.}"
           fi
         done
       done
