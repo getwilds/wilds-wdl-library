@@ -136,7 +136,8 @@ java -jar cromwell.jar run testrun.wdl
 The test workflow automatically:
 1. Downloads paired-end test FASTQ data using `ww-testdata`
 2. Runs fastp paired-end trimming and quality filtering
-3. Produces trimmed FASTQ files and HTML/JSON QC reports
+3. Runs fastp single-end trimming and quality filtering (using R1 as input)
+4. Produces trimmed FASTQ files and HTML/JSON QC reports for both modes
 
 ## Docker Container
 
