@@ -49,6 +49,18 @@ workflow deeptools_example {
     }
   }
 
+  # Compare two BAM files (using sample_1 as treatment, sample_2 as control)
+  call ww_deeptools.bam_compare { input:
+      treatment_bam = download_bam_1.bam,
+      treatment_bai = download_bam_1.bai,
+      control_bam = download_bam_2.bam,
+      control_bai = download_bam_2.bai,
+      sample_name = "test",
+      normalize_using = "CPM",
+      cpu_cores = 2,
+      memory_gb = 8
+  }
+
   # Compute matrix of signal over genomic regions
   call ww_deeptools.compute_matrix { input:
       bigwig_files = bam_coverage.coverage_file,
@@ -110,6 +122,7 @@ workflow deeptools_example {
 
   output {
     Array[File] coverage_files = bam_coverage.coverage_file
+    File comparison = bam_compare.comparison_file
     File matrix = compute_matrix.matrix_gz
     File heatmap = plot_heatmap.heatmap
     File profile = plot_profile.profile
