@@ -9,8 +9,8 @@ version 1.0
 
 task bam_coverage {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Generates a normalized coverage track (bigWig or bedGraph) from a BAM file using deepTools bamCoverage"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deeptools/ww-deeptools.wdl"
     outputs: {
@@ -82,8 +82,8 @@ task bam_coverage {
 
 task bam_compare {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Compares two BAM files and generates a coverage comparison track using deepTools bamCompare"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deeptools/ww-deeptools.wdl"
     outputs: {
@@ -151,8 +151,8 @@ task bam_compare {
 
 task compute_matrix {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Computes a matrix of signal values from bigWig files over genomic regions using deepTools computeMatrix"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deeptools/ww-deeptools.wdl"
     outputs: {
@@ -222,8 +222,8 @@ task compute_matrix {
 
 task plot_heatmap {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Creates a heatmap visualization of signal enrichment over genomic regions using deepTools plotHeatmap"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deeptools/ww-deeptools.wdl"
     outputs: {
@@ -274,8 +274,8 @@ task plot_heatmap {
 
 task plot_profile {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Creates a profile plot of average signal enrichment over genomic regions using deepTools plotProfile"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deeptools/ww-deeptools.wdl"
     outputs: {
@@ -323,8 +323,8 @@ task plot_profile {
 
 task multi_bam_summary {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Computes read coverage summary across multiple BAM files using deepTools multiBamSummary"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deeptools/ww-deeptools.wdl"
     outputs: {
@@ -386,8 +386,8 @@ task multi_bam_summary {
 
 task plot_correlation {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Generates a correlation heatmap or scatterplot from multiBamSummary or multiBigwigSummary output using deepTools plotCorrelation"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deeptools/ww-deeptools.wdl"
     outputs: {
@@ -444,8 +444,8 @@ task plot_correlation {
 
 task plot_pca {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Generates a PCA plot from multiBamSummary or multiBigwigSummary output using deepTools plotPCA"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deeptools/ww-deeptools.wdl"
     outputs: {
@@ -496,8 +496,8 @@ task plot_pca {
 
 task plot_fingerprint {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Generates a fingerprint plot to assess ChIP enrichment quality using deepTools plotFingerprint"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deeptools/ww-deeptools.wdl"
     outputs: {
