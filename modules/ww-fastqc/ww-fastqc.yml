@@ -1,0 +1,67 @@
+# Sprocket unit tests for ww-fastqc.wdl
+# Run with: sprocket dev test modules/ww-fastqc/ww-fastqc.wdl
+#
+# These tests validate the run_fastqc task for quality control analysis.
+# Test fixtures are located in <workspace>/test/fixtures/fastqc/
+
+run_fastqc:
+  # Test single-end mode (R1 only)
+  - name: single_end_fastq
+    tags: [unit, fastqc, fast]
+    inputs:
+      r1_fastq:
+        - fastqc/test_R1.fastq
+    assertions:
+      outputs:
+        html_reports:
+          - Length: 1
+        zip_reports:
+          - Length: 1
+
+  # Test paired-end mode (R1 and R2)
+  - name: paired_end_fastq
+    tags: [unit, fastqc, fast]
+    inputs:
+      $paired_files:
+        r1_fastq:
+          - fastqc/test_R1.fastq
+        r2_fastq:
+          - fastqc/test_R2.fastq
+    assertions:
+      outputs:
+        html_reports:
+          - Length: 2
+        zip_reports:
+          - Length: 2
+
+  # Test with different CPU/memory configurations
+  - name: resource_configurations
+    tags: [unit, fastqc]
+    inputs:
+      r1_fastq:
+        - fastqc/test_R1.fastq
+      cpu_cores:
+        - 1
+        - 2
+        - 4
+      memory_gb:
+        - 2
+    assertions:
+      outputs:
+        html_reports:
+          - Empty: false
+        zip_reports:
+          - Empty: false
+
+  # Test R2 only (single file, alternative read)
+  - name: r2_only
+    tags: [unit, fastqc]
+    inputs:
+      r2_fastq:
+        - fastqc/test_R2.fastq
+    assertions:
+      outputs:
+        html_reports:
+          - Length: 1
+        zip_reports:
+          - Length: 1
