@@ -27,7 +27,7 @@ workflow fastp_example {
     }
   ]
 
-  # Process each sample with fastp paired-end trimming
+  # Process each sample with fastp paired-end and single-end trimming
   scatter (sample in final_samples) {
     call ww_fastp.fastp_paired { input:
         sample_name = sample.name,
@@ -36,12 +36,21 @@ workflow fastp_example {
         cpu_cores = 1,
         memory_gb = 4
     }
+    call ww_fastp.fastp_single { input:
+        sample_name = sample.name,
+        fastq = sample.r1_fastq,
+        cpu_cores = 1,
+        memory_gb = 4
+    }
   }
 
   output {
     Array[File] r1_trimmed = fastp_paired.r1_trimmed
     Array[File] r2_trimmed = fastp_paired.r2_trimmed
-    Array[File] html_reports = fastp_paired.html_report
-    Array[File] json_reports = fastp_paired.json_report
+    Array[File] paired_html_reports = fastp_paired.html_report
+    Array[File] paired_json_reports = fastp_paired.json_report
+    Array[File] single_trimmed = fastp_single.trimmed_fastq
+    Array[File] single_html_reports = fastp_single.html_report
+    Array[File] single_json_reports = fastp_single.json_report
   }
 }
