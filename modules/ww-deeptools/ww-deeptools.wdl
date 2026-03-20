@@ -101,6 +101,7 @@ task bam_compare {
     bin_size: "Length in bases of the output bins (default: 50)"
     operation: "Operation to perform: log2, ratio, subtract, add, mean, reciprocal_ratio, first, second"
     normalize_using: "Normalization method: RPKM, CPM, BPM, RPGC, or None"
+    scale_factors_method: "Method to compute scale factors: None or readCount. Must be None when normalizeUsing is not None"
     extra_args: "Additional arguments to pass to bamCompare"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
@@ -116,6 +117,7 @@ task bam_compare {
     Int bin_size = 50
     String operation = "log2"
     String normalize_using = "RPKM"
+    String scale_factors_method = "None"
     String extra_args = ""
     Int cpu_cores = 4
     Int memory_gb = 8
@@ -134,6 +136,7 @@ task bam_compare {
       --binSize ~{bin_size} \
       --operation ~{operation} \
       --normalizeUsing ~{normalize_using} \
+      --scaleFactorsMethod ~{scale_factors_method} \
       --numberOfProcessors ~{cpu_cores} \
       ~{extra_args}
   >>>

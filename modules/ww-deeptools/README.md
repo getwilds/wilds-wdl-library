@@ -53,6 +53,7 @@ Compares two BAM files (e.g., treatment vs. control) and generates a comparison 
 - `sample_name` (String): Output name identifier
 - `operation` (String, default="log2"): Comparison operation (log2, ratio, subtract, add, mean, etc.)
 - `normalize_using` (String, default="RPKM"): Normalization method
+- `scale_factors_method` (String, default="None"): Scale factors method (None or readCount). Must be None when normalizeUsing is not None
 - `extra_args` (String, default=""): Additional bamCompare arguments
 - `cpu_cores` (Int, default=4): CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
@@ -250,9 +251,10 @@ java -jar cromwell.jar run testrun.wdl
 The test workflow automatically:
 1. Downloads reference data and test BAM files using `ww-testdata`
 2. Generates normalized coverage tracks with `bamCoverage`
-3. Computes a signal matrix over genomic regions with `computeMatrix`
-4. Creates heatmap and profile visualizations
-5. Runs multi-sample QC with `multiBamSummary`, `plotCorrelation`, `plotPCA`, and `plotFingerprint`
+3. Compares two BAM files with `bamCompare`
+4. Computes a signal matrix over genomic regions with `computeMatrix`
+5. Creates heatmap and profile visualizations
+6. Runs multi-sample QC with `multiBamSummary`, `plotCorrelation`, `plotPCA`, and `plotFingerprint`
 
 ## Docker Container
 
