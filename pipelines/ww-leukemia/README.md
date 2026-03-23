@@ -178,7 +178,7 @@ The pipeline produces comprehensive outputs from each analysis step:
 
 ## For Fred Hutch Users
 
-Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/) to submit this pipeline to the on-premise HPC cluster:
+Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-how-to/) to submit this pipeline to the on-premise HPC cluster:
 
 1. Clone or download this repository
 2. Update `inputs.json` with your sample paths and reference files

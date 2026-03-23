@@ -84,7 +84,7 @@ sprocket run ww-ena-star.wdl inputs.json
 
 ### For Fred Hutch Users
 
-Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/) to submit this pipeline directly to the on-premise HPC cluster:
+Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-how-to/) to submit this pipeline directly to the on-premise HPC cluster:
 
 1. Update the inputs JSON with your desired ENA accessions
 2. Ensure reference genome files are accessible to the cluster

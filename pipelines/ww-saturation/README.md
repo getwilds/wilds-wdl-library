@@ -131,7 +131,7 @@ sprocket run testrun.wdl
 
 ### For Fred Hutch Users
 
-Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/) to submit this pipeline directly to the on-premise HPC cluster:
+Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-how-to/) to submit this pipeline directly to the on-premise HPC cluster:
 
 1. Ensure your input files are accessible by the cluster
 2. Update the inputs JSON
