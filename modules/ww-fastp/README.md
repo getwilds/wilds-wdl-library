@@ -112,7 +112,6 @@ call fastp_tasks.fastp_paired {
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
-- **ww-testdata**: Automatic provisioning of test data for demonstrations
 - **ww-fastqc**: Can be used alongside fastp for additional QC checks
 - **ww-bwa / ww-star**: Trimmed reads can be passed directly to alignment modules
 
@@ -174,7 +173,7 @@ To improve this module or report issues:
 
 For questions about this module or to report issues:
 - Open an issue in the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library/issues)
-- Contact the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org
+- Contact us via the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org
 - See the library's [Contributor Guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for detailed guidelines
 
 ## Related Resources
