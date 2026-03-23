@@ -1,8 +1,8 @@
 version 1.0
 
 # Import module in question as well as the testdata module for automatic demo functionality
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-fastp/ww-fastp.wdl" as ww_fastp
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-fastp-module/modules/ww-fastp/ww-fastp.wdl" as ww_fastp
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-fastp-module/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 # Define data structure for paired-end sample inputs
 struct FastpSample {
