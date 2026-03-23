@@ -9,8 +9,8 @@ version 1.0
 
 task generate_ensemble {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Generate a structural ensemble for an intrinsically disordered protein sequence using STARLING"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-starling/ww-starling.wdl"
     outputs: {
@@ -71,8 +71,8 @@ task generate_ensemble {
 
 task generate_ensemble_batch {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Generate structural ensembles for multiple protein sequences from a FASTA file using STARLING"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-starling/ww-starling.wdl"
     outputs: {
@@ -132,8 +132,8 @@ task generate_ensemble_batch {
 
 task split_fasta {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Split a multi-sequence FASTA file into smaller batch files for parallel processing"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-starling/ww-starling.wdl"
     outputs: {
@@ -184,8 +184,8 @@ task split_fasta {
 
 task ensemble_info {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Query metadata and summary information from a STARLING ensemble file"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-starling/ww-starling.wdl"
     outputs: {

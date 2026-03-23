@@ -122,9 +122,9 @@ sprocket run testrun.wdl --entrypoint starling_batch_example
 ```
 
 The test workflow automatically:
-1. Creates a test FASTA with 4 well-known IDP sequences (p53 NTAD, ASH1, NUPR1, p27Kip1)
-2. Splits into batches of 2 sequences each
-3. Generates small ensembles (50 conformations) for each batch in parallel
+1. Creates a test FASTA with 4 well-known IDP sequences (p53 NTAD, ASH1, NUPR1, p27Kip1) using `ww-testdata`
+2. Calls the `starling_batch` pipeline with batches of 2, 50 conformations, and GPU disabled for CI compatibility
+3. The pipeline splits the FASTA and scatters ensemble generation across 2 batches in parallel
 
 ## Citation
 

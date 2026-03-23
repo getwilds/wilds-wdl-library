@@ -4,8 +4,8 @@ import "../../modules/ww-starling/ww-starling.wdl" as starling_tasks
 
 workflow starling_batch {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Batch ensemble generation pipeline that splits a large protein FASTA into chunks and processes them in parallel using STARLING"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-starling-batch/ww-starling-batch.wdl"
     outputs: {

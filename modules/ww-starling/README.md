@@ -146,10 +146,11 @@ java -jar cromwell.jar run testrun.wdl
 
 ### Automatic Demo Mode
 
-The test workflow automatically:
-1. Uses the p53 N-terminal transactivation domain (residues 1-39), a classic intrinsically disordered region
-2. Generates a small structural ensemble (50 conformations) using STARLING
-3. Queries ensemble metadata with `starling2info`
+The test workflow exercises all four module tasks:
+1. Generates a single-sequence ensemble for the p53 N-terminal transactivation domain (residues 1-39) using `generate_ensemble`
+2. Queries ensemble metadata with `ensemble_info`
+3. Creates a multi-sequence IDP FASTA (4 sequences) using `ww-testdata` and processes it with `generate_ensemble_batch`
+4. Splits the multi-sequence FASTA into batches of 2 using `split_fasta`
 
 ## Docker Container
 
