@@ -14,6 +14,7 @@ workflow starling_example {
     sequence = test_sequence,
     sample_name = "test_p53_ntad",
     num_conformations = 50,
+    gpu_enabled = false,
     cpu_cores = 1,
     memory_gb = 4
   }

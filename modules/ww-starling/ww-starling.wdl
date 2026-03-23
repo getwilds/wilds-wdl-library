@@ -24,6 +24,7 @@ task generate_ensemble {
     sequence: "Amino acid sequence string for the disordered protein region"
     sample_name: "Name identifier for the output files"
     num_conformations: "Number of conformations to generate in the ensemble"
+    gpu_enabled: "Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
@@ -32,9 +33,12 @@ task generate_ensemble {
     String sequence
     String sample_name
     Int num_conformations = 400
+    Boolean gpu_enabled = true
     Int cpu_cores = 4
     Int memory_gb = 8
   }
+
+  String device = if gpu_enabled then "cuda" else "cpu"
 
   command <<<
     set -eo pipefail
@@ -43,6 +47,7 @@ task generate_ensemble {
     starling "~{sequence}" \
       -c ~{num_conformations} \
       --outname "~{sample_name}" \
+      -d ~{device} \
       -r
 
     # Convert STARLING output to PDB and XTC formats
@@ -60,6 +65,7 @@ task generate_ensemble {
     docker: "getwilds/starling:2.0.0a3"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
+    gpus: if gpu_enabled then "1" else "0"
   }
 }
 
@@ -79,6 +85,7 @@ task generate_ensemble_batch {
   parameter_meta {
     fasta_file: "FASTA file containing one or more protein sequences"
     num_conformations: "Number of conformations to generate per sequence in the ensemble"
+    gpu_enabled: "Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
@@ -86,9 +93,12 @@ task generate_ensemble_batch {
   input {
     File fasta_file
     Int num_conformations = 400
+    Boolean gpu_enabled = true
     Int cpu_cores = 4
     Int memory_gb = 8
   }
+
+  String device = if gpu_enabled then "cuda" else "cpu"
 
   command <<<
     set -eo pipefail
@@ -96,6 +106,7 @@ task generate_ensemble_batch {
     # Generate structural ensembles for all sequences in the FASTA
     starling "~{fasta_file}" \
       -c ~{num_conformations} \
+      -d ~{device} \
       -r
 
     # Convert all STARLING outputs to PDB and XTC formats
@@ -115,6 +126,7 @@ task generate_ensemble_batch {
     docker: "getwilds/starling:2.0.0a3"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
+    gpus: if gpu_enabled then "1" else "0"
   }
 }
 

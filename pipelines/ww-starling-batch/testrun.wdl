@@ -18,6 +18,7 @@ workflow starling_batch_example {
     call starling_tasks.generate_ensemble_batch { input:
       fasta_file = batch_fasta,
       num_conformations = 50,
+      gpu_enabled = false,
       cpu_cores = 1,
       memory_gb = 4
     }

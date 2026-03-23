@@ -81,6 +81,7 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-h
 | `fasta_file` | Input FASTA file containing protein sequences | File | Yes | - |
 | `sequences_per_batch` | Number of sequences per batch for parallel processing | Int | No | 10 |
 | `num_conformations` | Number of conformations to generate per sequence | Int | No | 400 |
+| `gpu_enabled` | Enable GPU for STARLING inference in each batch task | Boolean | No | true |
 | `cpu_cores` | CPU cores allocated per batch task | Int | No | 4 |
 | `memory_gb` | Memory in GB allocated per batch task | Int | No | 8 |
 

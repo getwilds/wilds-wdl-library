@@ -27,6 +27,7 @@ Generate a structural ensemble for an intrinsically disordered protein sequence.
 - `sequence` (String): Amino acid sequence string for the disordered protein region
 - `sample_name` (String): Name identifier for the output files
 - `num_conformations` (Int, default=400): Number of conformations to generate in the ensemble
+- `gpu_enabled` (Boolean, default=true): Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime)
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
@@ -42,6 +43,7 @@ Generate structural ensembles for multiple protein sequences from a FASTA file.
 **Inputs:**
 - `fasta_file` (File): FASTA file containing one or more protein sequences
 - `num_conformations` (Int, default=400): Number of conformations to generate per sequence in the ensemble
+- `gpu_enabled` (Boolean, default=true): Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime)
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 

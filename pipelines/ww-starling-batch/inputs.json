@@ -2,6 +2,7 @@
   "starling_batch.fasta_file": "/path/to/protein_sequences.fasta",
   "starling_batch.sequences_per_batch": 10,
   "starling_batch.num_conformations": 400,
+  "starling_batch.gpu_enabled": true,
   "starling_batch.cpu_cores": 4,
   "starling_batch.memory_gb": 8
 }

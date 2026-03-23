@@ -19,6 +19,7 @@ workflow starling_batch {
     fasta_file: "Input FASTA file containing protein sequences for ensemble generation"
     sequences_per_batch: "Number of sequences to include in each batch for parallel processing"
     num_conformations: "Number of conformations to generate per sequence"
+    gpu_enabled: "Enable GPU for STARLING inference in each batch task"
     cpu_cores: "Number of CPU cores allocated per batch task"
     memory_gb: "Memory allocated per batch task in GB"
   }
@@ -27,6 +28,7 @@ workflow starling_batch {
     File fasta_file
     Int sequences_per_batch = 10
     Int num_conformations = 400
+    Boolean gpu_enabled = true
     Int cpu_cores = 4
     Int memory_gb = 8
   }
@@ -42,6 +44,7 @@ workflow starling_batch {
     call starling_tasks.generate_ensemble_batch { input:
       fasta_file = batch_fasta,
       num_conformations = num_conformations,
+      gpu_enabled = gpu_enabled,
       cpu_cores = cpu_cores,
       memory_gb = memory_gb
     }
