@@ -238,6 +238,10 @@ If you use GLIMPSE2 in your research, please cite:
 
 > Rubinacci S, Hofmeister RJ, Sousa da Mota B, Delaneau O. Imputation of low-coverage sequencing data from 150,119 UK Biobank genomes. Nat Genet. 2023;55(7):1088-1090. doi:10.1038/s41588-023-01438-3
 
+## Acknowledgments
+
+This module was developed in collaboration with [Louisa Goss](https://github.com/Lbgoss) and the [Darst Lab](https://research.fredhutch.org/darst/en.html) at Fred Hutch through the [WILDS WDL Development Program](https://sciwiki.fredhutch.org/datascience/wilds_workflow_dev/). For questions about the underlying science, please reach out to the Darst Lab through their website. Thank you for your contributions and domain expertise!
+
 ## Support
 
 For questions, bugs, and/or feature requests, reach out to the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
