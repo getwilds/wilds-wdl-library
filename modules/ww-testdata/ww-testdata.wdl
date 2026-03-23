@@ -1531,3 +1531,50 @@ task download_jcast_test_data {
     memory: "~{memory_gb} GB"
   }
 }
+
+task create_test_idp_fasta {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Create a minimal multi-sequence protein FASTA file with well-known intrinsically disordered protein regions for testing ensemble generation tools"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        test_fasta: "FASTA file containing four short intrinsically disordered protein sequences"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    cat > test_idp_sequences.fasta <<'FASTA'
+>p53_ntad|p53 N-terminal transactivation domain (residues 1-39)
+MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQA
+>ash1_idr|ASH1 intrinsically disordered region (residues 420-500)
+TPTSPGSLVPSTAASFSDSQTSPNHSNSNANGSMNAAIGSDSNNQSSASGNTPTSTPLTPQQMNSMNSL
+>nupr1|Nuclear protein 1 (full-length, 82 residues)
+MSQDSILDYDLHQTAASHVQEEALDTFREKFSEYGLKNFSPSQFSESVFNQKNSSESVSSGAKDNEL
+>p27_kd|p27Kip1 kinase inhibitory domain (residues 22-97)
+RNLFGPVDHQLTDTQKIEPVRSPEENGASPYAQEISEMVATKQTAEIDKGATNQVTPQKKKPGLRRR
+FASTA
+  >>>
+
+  output {
+    File test_fasta = "test_idp_sequences.fasta"
+  }
+
+  runtime {
+    docker: "ubuntu:22.04"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
