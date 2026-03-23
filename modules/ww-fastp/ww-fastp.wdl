@@ -29,8 +29,8 @@ task fastp_paired {
     length_required: "Minimum read length after trimming (default: 15)"
     detect_adapter_for_pe: "Enable auto-detection of adapters for paired-end data (default: true)"
     adapter_fasta: "Optional FASTA file with custom adapter sequences"
-    cpu_cores: "Number of CPU cores allocated for the task"
-    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
+    memory_gb: "Memory allocated for the task in GB (default: 8)"
   }
 
   input {
