@@ -8,10 +8,11 @@ workflow sra_star_example {
   call ww_testdata.download_ref_data { }
 
   # Call the actual sra_star workflow with test data outputs
-  # Using SRR3589956: Human (HEK293) RNA-seq for compatibility with reference genome
+  # Using SRR3589956: Human (HEK293) paired-end RNA-seq for compatibility with reference genome
+  # Using ERR2588371: Human single-end RNA-seq for testing single-end alignment
   # Limiting to 100k reads for fast testing
   call sra_star_workflow.sra_star { input:
-    sra_id_list = ["SRR3589956"],
+    sra_id_list = ["SRR3589956", "ERR2588371"],
     ref_genome = {
       "name": "chr1",
       "fasta": download_ref_data.fasta,
