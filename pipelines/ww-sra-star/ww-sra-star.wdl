@@ -62,11 +62,16 @@ workflow sra_star {
         max_reads = max_reads
     }
 
+    # Only define r2 if the sample is paired-end
+    if (fastqdump.is_paired_end) {
+      File paired_r2 = fastqdump.r2_end
+    }
+
     call star_tasks.align_two_pass { input:
         star_genome_tar = build_index.star_index_tar,
         name = id,
         r1 = fastqdump.r1_end,
-        r2 = fastqdump.r2_end,
+        r2 = paired_r2,
         sjdb_overhang = sjdb_overhang,
         memory_gb = memory_gb,
         cpu_cores = ncpu,

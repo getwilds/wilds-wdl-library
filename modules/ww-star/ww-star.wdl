@@ -86,7 +86,7 @@ task align_two_pass {
   parameter_meta {
     star_genome_tar: "Compressed tarball containing STAR genome index"
     r1: "FASTQ file for read 1"
-    r2: "FASTQ file for read 2"
+    r2: "Optional FASTQ file for read 2 (omit for single-end data)"
     name: "Sample name to include in output filenames"
     sjdb_overhang: "Length of the genomic sequence around the annotated junction"
     memory_gb: "Memory allocated for the task in GB"
@@ -97,7 +97,7 @@ task align_two_pass {
   input {
     File star_genome_tar
     File r1
-    File r2
+    File? r2
     String name
     Int sjdb_overhang = 100
     Int memory_gb = 62
@@ -119,7 +119,7 @@ task align_two_pass {
     echo "Starting STAR alignment..."
     STAR \
       --genomeDir star_index \
-      --readFilesIn "~{r1}" "~{r2}" \
+      --readFilesIn "~{r1}" ~{if defined(r2) then '"' + r2 + '"' else ""} \
       --runThreadN ~{star_threads} \
       --readFilesCommand zcat \
       --sjdbOverhang ~{sjdb_overhang} \
