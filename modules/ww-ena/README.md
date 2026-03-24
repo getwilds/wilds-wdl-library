@@ -42,7 +42,6 @@ Downloads sequencing data files from ENA using accession numbers. Supports singl
 
 **Outputs:**
 - `downloaded_files` (Array[File]): Array of downloaded files from ENA
-- `download_log` (File): Log file containing download status and details
 - `download_summary` (File): Summary report of the download operation
 - `accessions_used` (String): The accession numbers that were processed
 

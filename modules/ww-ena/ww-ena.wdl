@@ -13,7 +13,6 @@ task download_files {
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ena/ww-ena.wdl"
     outputs: {
         downloaded_files: "Array of downloaded files from ENA",
-        download_log: "Log file containing download status and details",
         download_summary: "Summary report of the download operation",
         accessions_used: "The accession numbers that were processed"
     }
@@ -96,18 +95,10 @@ task download_files {
     echo "Number of files downloaded: $(cat downloaded_files.txt | wc -l)" >> download_summary.txt
     echo "Files:" >> download_summary.txt
     cat downloaded_files.txt >> download_summary.txt
-
-    # Copy log file if it exists
-    if [ -f "logs/app.log" ]; then
-      cp logs/app.log download.log
-    else
-      echo "No log file generated" > download.log
-    fi
   >>>
 
   output {
     Array[File] downloaded_files = read_lines("downloaded_files.txt")
-    File download_log = "download.log"
     File download_summary = "download_summary.txt"
     String accessions_used = select_first([accessions, "from_file"])
   }
