@@ -55,27 +55,29 @@ task download_files {
     set -o pipefail
 
     if [ "~{protocol}" = "HTTP" ]; then
-      # Download files via HTTP using wget and the ENA portal API
+
+      # Manually make output folder
       mkdir -p ~{output_dir_name}
-      cd ~{output_dir_name}
 
-      # User must provide 'accessions' input string
-      IFS=',' read -ra acc_array <<< "~{accessions}"
+      # Make an array of the accessions - from file (first column) or comma-separated string
+      if [ -n "~{default='' accessions_file}" ]; then
+        mapfile -t acc_array < <(cut -f1 "~{default='' accessions_file}")
+      else
+        IFS=',' read -ra acc_array <<< "~{default='' accessions}"
+      fi
       for acc in "${acc_array[@]}"; do
-        acc=$(echo "$acc" | tr -d '[:space:]')
 
-        # Get FTP paths for accession from ENA portal API and download via HTTPS
+        # Get ENA portal FTP path(s) (will be two for paired FASTQs)
+        # We need to trim off part of the wget output because it returns a table
         paths=$(wget -qO- "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=${acc}&result=read_run&fields=fastq_ftp" | tail -n +2 | cut -f2)
 
+        # Make an array of the FASTQ path(s) and loop over them
         IFS=';' read -ra urls <<< "$paths"
         for path in "${urls[@]}"; do
-          if [ -n "$path" ]; then
-            wget "https://${path#ftp.}"
-          fi
+          wget -P ~{output_dir_name} "https://${path}"
         done
       done
 
-      cd ..
     else
       # Execute download with ena-file-downloader
       java -jar /usr/local/bin/ena-file-downloader.jar \
