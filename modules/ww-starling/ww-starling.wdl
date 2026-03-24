@@ -43,6 +43,9 @@ task generate_ensemble {
   command <<<
     set -eo pipefail
 
+    # Check GPU/CUDA availability for diagnostics
+    python3 -c "import torch; print('CUDA available:', torch.cuda.is_available()); print('CUDA version:', torch.version.cuda); print('PyTorch device will be:', 'cuda' if torch.cuda.is_available() else 'cpu')"
+
     # Generate the structural ensemble
     starling "~{sequence}" \
       -c ~{num_conformations} \
@@ -102,6 +105,9 @@ task generate_ensemble_batch {
 
   command <<<
     set -eo pipefail
+
+    # Check GPU/CUDA availability for diagnostics
+    python3 -c "import torch; print('CUDA available:', torch.cuda.is_available()); print('CUDA version:', torch.version.cuda); print('PyTorch device will be:', 'cuda' if torch.cuda.is_available() else 'cpu')"
 
     # Generate structural ensembles for all sequences in the FASTA
     starling "~{fasta_file}" \
