@@ -99,11 +99,19 @@ task quantify {
     mkdir -p salmon_index
     tar -xzf ~{salmon_index_dir} -C ./
 
+    # Build read arguments based on paired-end or single-end data
+    R2_FILE="~{if defined(fastq_r2) then select_first([fastq_r2]) else ""}"
+    if [ -n "$R2_FILE" ]; then
+      READ_ARGS="-1 ~{fastq_r1} -2 $R2_FILE"
+    else
+      READ_ARGS="-r ~{fastq_r1}"
+    fi
+
     # Quantification with best practice parameters
     salmon quant \
         -i salmon_index \
         --libType A \
-        ~{if defined(fastq_r2) then "-1 " + fastq_r1 + " -2 " + fastq_r2 else "-r " + fastq_r1} \
+        $READ_ARGS \
         -o ~{sample_name}_quant \
         -p ~{cpu_cores} \
         --validateMappings \
