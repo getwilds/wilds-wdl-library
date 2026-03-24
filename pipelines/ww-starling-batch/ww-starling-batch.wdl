@@ -1,6 +1,6 @@
 version 1.0
 
-import "../../modules/ww-starling/ww-starling.wdl" as starling_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-starling/modules/ww-starling/ww-starling.wdl" as ww_starling
 
 workflow starling_batch {
   meta {
