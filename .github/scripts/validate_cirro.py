@@ -124,10 +124,45 @@ def validate_cirro_dir(cirro_dir):
 
 
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Validate .cirro configurations in WILDS pipelines.")
+    parser.add_argument("name", nargs="?", default=None,
+                        help="Specific pipeline name to validate (e.g., ww-star-salmon). "
+                             "If omitted, validates all pipelines.")
+    args = parser.parse_args()
+
     pipelines_dir = Path("pipelines")
     if not pipelines_dir.exists():
         print("No pipelines directory found")
         return 0
+
+    # If a specific name is given, only validate that pipeline
+    if args.name:
+        pipeline_dir = pipelines_dir / args.name
+        if not pipeline_dir.is_dir():
+            # Could be a module — modules don't have .cirro dirs, so skip silently
+            print(f"Skipping {args.name} (not a pipeline or no pipeline directory found)")
+            return 0
+
+        cirro_dir = pipeline_dir / ".cirro"
+        if not cirro_dir.is_dir():
+            print(f"Skipping {args.name} (no .cirro directory)")
+            return 0
+
+        print(f"Validating {args.name}/.cirro/ ...")
+        errors = validate_cirro_dir(cirro_dir)
+        if errors:
+            print(f"  FAIL ({len(errors)} issue(s))")
+            print(f"\n{'='*50}")
+            print(f"Cirro validation failed for {args.name}:\n")
+            for error in errors:
+                print(error)
+            return 1
+        else:
+            print(f"  OK")
+            print(f"\nAll Cirro configurations valid!")
+            return 0
 
     found_any = False
     all_errors = {}
