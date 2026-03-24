@@ -1,5 +1,5 @@
 # ww-bwa
-[![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
+[![Project Status: Stable – Useable, full support, open to feedback, stable API.](https://getwilds.org/badges/badges/stable.svg)](https://getwilds.org/badges/#stable)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A WILDS WDL module for sequence alignment using the Burrows-Wheeler Aligner (BWA).

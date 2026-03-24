@@ -1,5 +1,7 @@
 # ww-annovar
 
+[![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
+
 A WILDS WDL module for variant annotation using Annovar. This module provides comprehensive annotation of genetic variants with customizable protocols and operations.
 
 ## Overview

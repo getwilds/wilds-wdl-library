@@ -1,5 +1,5 @@
 # ww-bwa-gatk Pipeline
-[![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
+[![Project Status: Stable – Useable, full support, open to feedback, stable API.](https://getwilds.org/badges/badges/stable.svg)](https://getwilds.org/badges/#stable)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A WILDS WDL pipeline demonstrating read alignment and initial quality control using modular WILDS components.
@@ -80,7 +80,7 @@ sprocket run ww-bwa-gatk.wdl inputs.json
 
 ### For Fred Hutch Users
 
-Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/) to submit this pipeline directly to the on-premise HPC cluster:
+Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-how-to/) to submit this pipeline directly to the on-premise HPC cluster:
 
 1. Ensure your input files are accessible by the cluster
 2. Update the inputs JSON

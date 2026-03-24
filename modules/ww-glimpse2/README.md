@@ -307,6 +307,10 @@ If you use GLIMPSE2 in your research, please cite:
 - **[Broad Institute GLIMPSE Pipeline](https://github.com/broadinstitute/palantir-workflows/tree/main/GlimpseImputationPipeline)**: Reference implementation
 - **[WILDS Documentation](https://getwilds.org/)**: Comprehensive guides and best practices
 
+## Acknowledgments
+
+This module was developed in collaboration with [Louisa Goss](https://github.com/Lbgoss) and the [Darst Lab](https://research.fredhutch.org/darst/en.html) at Fred Hutch through the [WILDS WDL Development Program](https://sciwiki.fredhutch.org/datascience/wilds_workflow_dev/). For questions about the underlying science, please reach out to the Darst Lab through their website. Thank you for your contributions and domain expertise!
+
 ## Support and Feedback
 
 For questions or issues:

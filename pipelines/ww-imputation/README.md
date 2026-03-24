@@ -103,7 +103,7 @@ sprocket run ww-imputation.wdl inputs.json
 
 ### For Fred Hutch Users
 
-Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/) to submit this pipeline directly to the cluster:
+Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-how-to/) to submit this pipeline directly to the cluster:
 
 1. Ensure your input files are accessible by the cluster
 2. Update the inputs JSON
@@ -237,6 +237,10 @@ If you use GLIMPSE2 in your research, please cite:
 > Rubinacci S, Ribeiro DM, Hofmeister RJ, Delaneau O. Efficient phasing and imputation of low-coverage sequencing data using large reference panels. Nat Genet. 2021;53(1):120-126. doi:10.1038/s41588-020-00756-0
 
 > Rubinacci S, Hofmeister RJ, Sousa da Mota B, Delaneau O. Imputation of low-coverage sequencing data from 150,119 UK Biobank genomes. Nat Genet. 2023;55(7):1088-1090. doi:10.1038/s41588-023-01438-3
+
+## Acknowledgments
+
+This module was developed in collaboration with [Louisa Goss](https://github.com/Lbgoss) and the [Darst Lab](https://research.fredhutch.org/darst/en.html) at Fred Hutch through the [WILDS WDL Development Program](https://sciwiki.fredhutch.org/datascience/wilds_workflow_dev/). For questions about the underlying science, please reach out to the Darst Lab through their website. Thank you for your contributions and domain expertise!
 
 ## Support
 

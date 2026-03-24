@@ -9,7 +9,7 @@
 </table>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Project Status: Prototype – Useable, some support, open to feedback, unstable API.](https://getwilds.org/badges/badges/prototype.svg)](https://getwilds.org/badges/#prototype)
+[![Project Status: Stable – Useable, full support, open to feedback, stable API.](https://getwilds.org/badges/badges/stable.svg)](https://getwilds.org/badges/#stable)
 [![WDL Executors](https://img.shields.io/badge/WDL-Cromwell%20%7C%20miniWDL%20%7C%20Sprocket-blue.svg)](https://github.com/getwilds/wilds-wdl-library)
 [![WDL](https://img.shields.io/badge/WDL-1.0-orange.svg)](https://openwdl.org/)<br>
 [![Module Tests](https://github.com/getwilds/wilds-wdl-library/actions/workflows/modules-testrun.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/modules-testrun.yml)
@@ -104,7 +104,7 @@ All components are tested with multiple WDL executors:
 
 ## For Fred Hutch Users
 
-Fred Hutch researchers can use [PROOF](https://sciwiki.fredhutch.org/dasldemos/proof-how-to/) to submit workflows directly to the on-premise HPC cluster. This provides a user-friendly interface for researchers unfamiliar with command-line tools while leveraging the power of the institutional computing resources.
+Fred Hutch researchers can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-how-to/) to submit workflows directly to the on-premise HPC cluster. This provides a user-friendly interface for researchers unfamiliar with command-line tools while leveraging the power of the institutional computing resources.
 
 **Cromwell Configuration**: PROOF users can customize workflow execution using Cromwell options. See [cromwell-options.json](cromwell-options.json) for example configurations including call caching, output directories, and more. For detailed information, refer to the [Cromwell workflow options documentation](https://cromwell.readthedocs.io/en/stable/wf_options/Overview/).
 
