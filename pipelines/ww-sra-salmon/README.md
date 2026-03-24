@@ -218,6 +218,10 @@ The pipeline is automatically tested as part of the WILDS WDL Library CI/CD pipe
 - Comprehensive output validation
 - Performance benchmarking
 
+## Acknowledgments
+
+This pipeline was made possible by the contributions of [Alice Berger](https://github.com/ahberger), who helped with initial testing and scaling to large numbers of samples, and [Janet Young](https://github.com/jayoung), who helped troubleshoot and improve single-end sequencing support. Thank you both for your contributions!
+
 ## Support
 
 For questions, bugs, and/or feature requests, reach out to the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
