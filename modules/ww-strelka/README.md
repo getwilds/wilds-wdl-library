@@ -1,5 +1,7 @@
 # ww-strelka
 
+[![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
+
 A WILDS WDL module for germline and somatic variant calling using Strelka, a fast and accurate small variant caller optimized for analysis of germline variation in small cohorts and somatic variation in tumor/normal sample pairs.
 
 ## Overview

@@ -146,9 +146,13 @@ lint_womtool: check_java check_womtool check_name ## Run WOMtool validate on mod
 	done
 
 
-lint_cirro: ## Validate .cirro configurations in pipelines
+lint_cirro: check_name ## Validate .cirro configurations in pipelines (use NAME=foo for specific item)
 	@echo "Validating Cirro configurations..."
-	@python3 .github/scripts/validate_cirro.py
+	@if [ "$(NAME)" != "*" ]; then \
+		python3 .github/scripts/validate_cirro.py $(NAME); \
+	else \
+		python3 .github/scripts/validate_cirro.py; \
+	fi
 
 lint: lint_sprocket lint_miniwdl lint_womtool lint_cirro ## Run all linting checks
 
