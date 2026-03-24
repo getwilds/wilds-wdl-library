@@ -177,12 +177,13 @@ task extract_fastq_pairs {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Extract R1 and R2 FASTQ file pairs from ENA downloads for downstream processing."
+    description: "Extract FASTQ files from ENA downloads for downstream processing. Supports both paired-end and single-end data."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ena/ww-ena.wdl"
     outputs: {
-        r1_files: "Array of Read 1 FASTQ files, parallel with r2_files and accessions",
-        r2_files: "Array of Read 2 FASTQ files, parallel with r1_files and accessions",
-        accessions: "Array of ENA accession IDs extracted from filenames, parallel with r1_files and r2_files"
+        r1_files: "Array of Read 1 FASTQ files, parallel with accessions",
+        r2_files: "Array of Read 2 FASTQ files (empty file for single-end samples), parallel with r1_files and accessions",
+        accessions: "Array of ENA accession IDs extracted from filenames, parallel with r1_files and r2_files",
+        is_paired_end_list: "Array of booleans indicating whether each sample is paired-end"
     }
   }
 
@@ -208,55 +209,67 @@ task extract_fastq_pairs {
     # Look for patterns: *_1.fastq.gz, *_R1.fastq.gz, *_1.fq.gz, *_R1.fq.gz, etc.
     R1_FILES=$(ls ~{sep=' ' downloaded_files} | grep -E "(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq)" | sort || echo "")
 
-    if [ -z "$R1_FILES" ]; then
-      echo "ERROR: Could not identify any R1 FASTQ files"
-      echo "Looking for files matching pattern *_1.fastq.gz or *_R1.fastq.gz"
-      echo "Available files:"
-      ls -lh ~{sep=' ' downloaded_files}
-      exit 1
-    fi
-
     # Initialize output files
     > r1_files.txt
     > r2_files.txt
     > accessions.txt
+    > is_paired_end.txt
 
-    # Process each R1 file and find its matching R2
-    echo "$R1_FILES" | while read R1_FILE; do
-      echo "Processing R1: $R1_FILE"
+    if [ -n "$R1_FILES" ]; then
+      # Paired-end: process each R1 file and find its matching R2
+      echo "$R1_FILES" | while read R1_FILE; do
+        echo "Processing R1: $R1_FILE"
 
-      # Extract accession ID from filename (everything before _1 or _R1)
-      BASENAME=$(basename "$R1_FILE")
-      ACCESSION=$(echo "$BASENAME" | sed -E 's/(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq).*//')
-      echo "Extracted accession: $ACCESSION"
+        # Extract accession ID from filename (everything before _1 or _R1)
+        BASENAME=$(basename "$R1_FILE")
+        ACCESSION=$(echo "$BASENAME" | sed -E 's/(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq).*//')
+        echo "Extracted accession: $ACCESSION"
 
-      # Find matching R2 file
-      R2_FILE=$(ls ~{sep=' ' downloaded_files} | grep -E "^.*${ACCESSION}(_2\.fastq|_R2\.fastq|_2\.fq|_R2\.fq)" | head -1 || echo "")
+        # Find matching R2 file
+        R2_FILE=$(ls ~{sep=' ' downloaded_files} | grep -E "^.*${ACCESSION}(_2\.fastq|_R2\.fastq|_2\.fq|_R2\.fq)" | head -1 || echo "")
 
-      if [ -z "$R2_FILE" ]; then
-        echo "ERROR: Could not find matching R2 file for accession: $ACCESSION"
-        exit 1
-      fi
+        if [ -z "$R2_FILE" ]; then
+          echo "WARNING: No matching R2 file for accession: $ACCESSION, treating as single-end"
+          cp "$R1_FILE" "fastq_pairs/${ACCESSION}_r1.fastq.gz"
+          touch "fastq_pairs/${ACCESSION}_r2.fastq.gz"
+          echo "false" >> is_paired_end.txt
+        else
+          echo "Matched R2: $R2_FILE"
+          cp "$R1_FILE" "fastq_pairs/${ACCESSION}_r1.fastq.gz"
+          cp "$R2_FILE" "fastq_pairs/${ACCESSION}_r2.fastq.gz"
+          echo "true" >> is_paired_end.txt
+        fi
 
-      echo "Matched R2: $R2_FILE"
+        echo "fastq_pairs/${ACCESSION}_r1.fastq.gz" >> r1_files.txt
+        echo "fastq_pairs/${ACCESSION}_r2.fastq.gz" >> r2_files.txt
+        echo "$ACCESSION" >> accessions.txt
+      done
+    else
+      # Single-end: no R1 pattern found, treat all FASTQ files as single-end reads
+      echo "No paired-end naming pattern found, treating files as single-end"
+      for FASTQ_FILE in $(ls ~{sep=' ' downloaded_files} | grep -E "\.(fastq|fq)" | sort); do
+        BASENAME=$(basename "$FASTQ_FILE")
+        ACCESSION=$(echo "$BASENAME" | sed -E 's/\.(fastq|fq).*//')
+        echo "Processing single-end: $ACCESSION"
 
-      # Copy files with accession-prefixed names to maintain uniqueness
-      cp "$R1_FILE" "fastq_pairs/${ACCESSION}_r1.fastq.gz"
-      cp "$R2_FILE" "fastq_pairs/${ACCESSION}_r2.fastq.gz"
+        cp "$FASTQ_FILE" "fastq_pairs/${ACCESSION}_r1.fastq.gz"
+        touch "fastq_pairs/${ACCESSION}_r2.fastq.gz"
 
-      # Append to output lists
-      echo "fastq_pairs/${ACCESSION}_r1.fastq.gz" >> r1_files.txt
-      echo "fastq_pairs/${ACCESSION}_r2.fastq.gz" >> r2_files.txt
-      echo "$ACCESSION" >> accessions.txt
-    done
+        echo "fastq_pairs/${ACCESSION}_r1.fastq.gz" >> r1_files.txt
+        echo "fastq_pairs/${ACCESSION}_r2.fastq.gz" >> r2_files.txt
+        echo "$ACCESSION" >> accessions.txt
+        echo "false" >> is_paired_end.txt
+      done
+    fi
 
-    echo "Successfully processed $(wc -l < accessions.txt) FASTQ pairs"
+    echo "Successfully processed $(wc -l < accessions.txt) FASTQ sample(s)"
   >>>
 
   output {
     Array[File] r1_files = read_lines("r1_files.txt")
     Array[File] r2_files = read_lines("r2_files.txt")
     Array[String] accessions = read_lines("accessions.txt")
+    Array[String] is_paired_end_list = read_lines("is_paired_end.txt")
   }
 
   runtime {

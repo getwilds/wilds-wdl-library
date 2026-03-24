@@ -38,7 +38,7 @@ Performs RNA-seq alignment using STAR's two-pass methodology.
 **Inputs:**
 - `star_genome_tar` (File): STAR genome index from `build_index`
 - `r1` (File): R1 FASTQ file
-- `r2` (File): R2 FASTQ file
+- `r2` (File?, optional): R2 FASTQ file (omit for single-end data)
 - `name` (String): Sample name for output files
 - `sjdb_overhang` (Int): Length of genomic sequence around junctions (default: 100)
 - `memory_gb` (Int): Memory allocation in GB (default: 62)
@@ -71,13 +71,13 @@ workflow my_rna_seq_pipeline {
     File reference_fasta
     File reference_gtf
   }
-  
+
   call star_tasks.build_index {
     input:
       reference_fasta = reference_fasta,
       reference_gtf = reference_gtf
   }
-  
+
   scatter (sample in samples) {
     call star_tasks.align_two_pass {
       input:
@@ -87,11 +87,22 @@ workflow my_rna_seq_pipeline {
         name = sample.name
     }
   }
-  
+
   output {
     Array[File] aligned_bams = align_two_pass.bam
     Array[File] gene_counts = align_two_pass.gene_counts
   }
+}
+```
+
+**Single-end data:**
+```wdl
+# Simply omit the r2 parameter for single-end samples
+call star_tasks.align_two_pass {
+  input:
+    star_genome_tar = build_index.star_index_tar,
+    r1 = my_single_end_fastq,
+    name = "my_sample"
 }
 ```
 
@@ -143,8 +154,9 @@ The test workflow (`star_example`) automatically:
 1. Downloads reference genome data using `ww-testdata`
 2. Downloads demonstration FASTQ data using `ww-testdata`
 3. Builds STAR genome index
-4. Performs RNA-seq alignment using STAR two-pass methodology
-5. Validates all outputs
+4. Performs paired-end RNA-seq alignment using STAR two-pass methodology
+5. Performs single-end RNA-seq alignment using STAR two-pass methodology
+6. Validates all outputs (both paired-end and single-end)
 
 ## Configuration Guidelines
 
@@ -177,6 +189,7 @@ The module supports flexible resource configuration:
 ## Features
 
 - **Two-pass methodology**: Optimal splice junction detection using STAR's two-pass approach
+- **Single-end and paired-end support**: Works with both single-end and paired-end sequencing data
 - **Comprehensive outputs**: BAM files, gene counts, splice junctions, and detailed logs
 - **Multi-sample support**: Process multiple samples in parallel
 - **Module integration**: Seamlessly combines with ww-sra and ww-testdata

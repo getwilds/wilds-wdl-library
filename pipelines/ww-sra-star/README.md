@@ -30,6 +30,7 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
    - Optimizes parameters for the reference genome
 
 3. **Two-Pass Alignment** (using `ww-star` module):
+   - Automatically handles both paired-end and single-end samples
    - Performs STAR two-pass alignment for each sample
    - Generates BAM files, gene counts, and QC metrics
 
@@ -169,6 +170,7 @@ This pipeline is automatically tested as part of the WILDS WDL Library CI/CD pip
 This pipeline demonstrates several key WDL patterns:
 - **Module Composition**: How to combine multiple modules effectively
 - **Data Passing**: Seamless transfer of outputs between modules
+- **Conditional Execution**: Handling paired-end vs single-end data with conditional call blocks
 - **Struct Usage**: Efficient organization of complex data types
 - **Resource Management**: Coordinated resource allocation across modules
 

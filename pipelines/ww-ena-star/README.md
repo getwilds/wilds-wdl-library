@@ -24,9 +24,10 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
    - Downloads FASTQ files from ENA accessions using `download_files` task
    - Supports FTP and Aspera transfer protocols
 
-2. **FASTQ Pair Extraction** (using `ww-ena` module):
-   - Extracts paired-end R1 and R2 files using `extract_fastq_pairs` task
-   - Identifies files by common naming patterns (_1/_2, _R1/_R2)
+2. **FASTQ Extraction** (using `ww-ena` module):
+   - Extracts FASTQ files using `extract_fastq_pairs` task
+   - Automatically detects paired-end vs single-end reads
+   - Identifies paired files by common naming patterns (_1/_2, _R1/_R2)
    - Creates standardized outputs for downstream processing
 
 3. **STAR Index Building** (using `ww-star` module):
@@ -34,6 +35,7 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
    - Optimizes parameters for the reference genome
 
 4. **Two-Pass Alignment** (using `ww-star` module):
+   - Automatically handles both paired-end and single-end samples
    - Performs STAR two-pass alignment for each sample
    - Generates BAM files, gene counts, and QC metrics
 
@@ -152,6 +154,7 @@ This pipeline is automatically tested as part of the WILDS WDL Library CI/CD pip
 This pipeline demonstrates several key WDL patterns:
 - **Module Composition**: How to combine multiple modules effectively
 - **Data Passing**: Seamless transfer of outputs between modules
+- **Conditional Execution**: Handling paired-end vs single-end data with conditional call blocks
 - **Struct Usage**: Efficient organization of complex data types
 - **Resource Management**: Coordinated resource allocation across modules
 
