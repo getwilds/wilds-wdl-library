@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as sra_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as star_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/fix-sra-star-jyoung/modules/ww-star/ww-star.wdl" as star_tasks
 
 struct RefGenome {
     String name
@@ -62,31 +62,50 @@ workflow sra_star {
         max_reads = max_reads
     }
 
-    # Only define r2 if the sample is paired-end
+    # Paired-end alignment
     if (fastqdump.is_paired_end) {
-      File paired_r2 = fastqdump.r2_end
+      call star_tasks.align_two_pass as align_paired { input:
+          star_genome_tar = build_index.star_index_tar,
+          name = id,
+          r1 = fastqdump.r1_end,
+          r2 = fastqdump.r2_end,
+          sjdb_overhang = sjdb_overhang,
+          memory_gb = memory_gb,
+          cpu_cores = ncpu,
+          star_threads = ncpu
+      }
     }
 
-    call star_tasks.align_two_pass { input:
-        star_genome_tar = build_index.star_index_tar,
-        name = id,
-        r1 = fastqdump.r1_end,
-        r2 = paired_r2,
-        sjdb_overhang = sjdb_overhang,
-        memory_gb = memory_gb,
-        cpu_cores = ncpu,
-        star_threads = ncpu
+    # Single-end alignment
+    if (!fastqdump.is_paired_end) {
+      call star_tasks.align_two_pass as align_single { input:
+          star_genome_tar = build_index.star_index_tar,
+          name = id,
+          r1 = fastqdump.r1_end,
+          sjdb_overhang = sjdb_overhang,
+          memory_gb = memory_gb,
+          cpu_cores = ncpu,
+          star_threads = ncpu
+      }
     }
+
+    File bam_out = select_first([align_paired.bam, align_single.bam])
+    File bai_out = select_first([align_paired.bai, align_single.bai])
+    File gene_counts_out = select_first([align_paired.gene_counts, align_single.gene_counts])
+    File log_final_out = select_first([align_paired.log_final, align_single.log_final])
+    File log_progress_out = select_first([align_paired.log_progress, align_single.log_progress])
+    File log_out = select_first([align_paired.log, align_single.log])
+    File sj_out = select_first([align_paired.sj_out, align_single.sj_out])
   }
 
   output {
-    Array[File] star_bam = align_two_pass.bam
-    Array[File] star_bai = align_two_pass.bai
-    Array[File] star_gene_counts = align_two_pass.gene_counts
-    Array[File] star_log_final = align_two_pass.log_final
-    Array[File] star_log_progress = align_two_pass.log_progress
-    Array[File] star_log = align_two_pass.log
-    Array[File] star_sj = align_two_pass.sj_out
+    Array[File] star_bam = bam_out
+    Array[File] star_bai = bai_out
+    Array[File] star_gene_counts = gene_counts_out
+    Array[File] star_log_final = log_final_out
+    Array[File] star_log_progress = log_progress_out
+    Array[File] star_log = log_out
+    Array[File] star_sj = sj_out
   }
 }
 
