@@ -1534,8 +1534,8 @@ task download_jcast_test_data {
 
 task create_test_idp_fasta {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Create a minimal multi-sequence protein FASTA file with well-known intrinsically disordered protein regions for testing ensemble generation tools"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
