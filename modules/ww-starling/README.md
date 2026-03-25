@@ -158,8 +158,6 @@ This module uses the `getwilds/starling:2.0.0a3` container image, which should i
 - STARLING (`idptools-starling`) and its dependencies
 - `starling2pdb`, `starling2xtc`, and `starling2info` CLI utilities
 
-**Note:** This Docker image does not yet exist and needs to be created in the [wilds-docker-library](https://github.com/getwilds/wilds-docker-library).
-
 ## Citation
 
 > Lotthammer, J.M., Ginell, G.M., Griffith, D., Emenecker, R.J., & Holehouse, A.S. (2024)
