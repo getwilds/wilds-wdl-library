@@ -1,14 +1,14 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-diamond/ww-diamond.wdl" as ww_diamond
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-starling/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow diamond_example {
-  call ww_testdata.download_diamond_data { }
+  call ww_testdata.create_diamond_data { }
 
   # Build DIAMOND database from reference proteome
   call ww_diamond.make_database { input:
-    fasta = download_diamond_data.reference,
+    fasta = create_diamond_data.reference,
     memory_gb = 4,
     cpu_cores = 2
   }
@@ -16,7 +16,7 @@ workflow diamond_example {
   # Run DIAMOND BLASTP alignment
   call ww_diamond.diamond_blastp { input:
     diamond_db = make_database.diamond_db,
-    query = download_diamond_data.query,
+    query = create_diamond_data.query,
     memory_gb = 4,
     cpu_cores = 2
   }
