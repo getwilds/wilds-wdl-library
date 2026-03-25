@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as ww_star
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/fix-sra-star-jyoung/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/fix-sra-star-jyoung/modules/ww-star/ww-star.wdl" as ww_star
 
 struct StarSample {
     String name
@@ -44,10 +44,23 @@ workflow star_example {
     }
   }
 
+  # Test single-end alignment (r2 omitted)
+  call ww_star.align_two_pass as align_single_end { input:
+      star_genome_tar = build_index.star_index_tar,
+      r1 = download_fastq_data.r1_fastq,
+      name = "demo_sample_se",
+      sjdb_overhang = 100,
+      memory_gb = 8,
+      cpu_cores = 2
+  }
+
   call validate_outputs { input:
     bam_files = align_two_pass.bam,
     bai_files = align_two_pass.bai,
-    gene_count_files = align_two_pass.gene_counts
+    gene_count_files = align_two_pass.gene_counts,
+    se_bam = align_single_end.bam,
+    se_bai = align_single_end.bai,
+    se_gene_counts = align_single_end.gene_counts
   }
 
   output {
@@ -58,6 +71,9 @@ workflow star_example {
     Array[File] star_log_progress = align_two_pass.log_progress
     Array[File] star_log = align_two_pass.log
     Array[File] star_sj = align_two_pass.sj_out
+    File star_se_bam = align_single_end.bam
+    File star_se_bai = align_single_end.bai
+    File star_se_gene_counts = align_single_end.gene_counts
     File validation_report = validate_outputs.report
   }
 }
@@ -71,15 +87,21 @@ task validate_outputs {
   }
 
   parameter_meta {
-    bam_files: "Array of BAM files to validate"
-    bai_files: "Array of BAM index files to validate"
-    gene_count_files: "Array of gene count files to validate"
+    bam_files: "Array of paired-end BAM files to validate"
+    bai_files: "Array of paired-end BAM index files to validate"
+    gene_count_files: "Array of paired-end gene count files to validate"
+    se_bam: "Single-end BAM file to validate"
+    se_bai: "Single-end BAM index file to validate"
+    se_gene_counts: "Single-end gene count file to validate"
   }
 
   input {
     Array[File] bam_files
     Array[File] bai_files
     Array[File] gene_count_files
+    File se_bam
+    File se_bai
+    File se_gene_counts
   }
 
   command <<<
@@ -147,6 +169,43 @@ task validate_outputs {
       echo "" >> validation_report.txt
     done
     
+    # Validate single-end outputs
+    echo "--- Single-end sample: ~{se_bam} ---" >> validation_report.txt
+
+    if [[ -f "~{se_bam}" && -s "~{se_bam}" ]]; then
+      se_bam_size=$(stat -c%s "~{se_bam}")
+      echo "BAM file: ~{se_bam} (${se_bam_size} bytes)" >> validation_report.txt
+
+      if command -v samtools &> /dev/null; then
+        se_mapped=$(samtools view -c -F 4 "~{se_bam}" 2>/dev/null || echo "N/A")
+        se_total=$(samtools view -c "~{se_bam}" 2>/dev/null || echo "N/A")
+        echo "  Total reads: $se_total" >> validation_report.txt
+        echo "  Mapped reads: $se_mapped" >> validation_report.txt
+      fi
+    else
+      echo "BAM file: ~{se_bam} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{se_bai}" ]]; then
+      se_bai_size=$(stat -c%s "~{se_bai}")
+      echo "BAI file: ~{se_bai} (${se_bai_size} bytes)" >> validation_report.txt
+    else
+      echo "BAI file: ~{se_bai} - MISSING" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{se_gene_counts}" && -s "~{se_gene_counts}" ]]; then
+      se_gc_size=$(stat -c%s "~{se_gene_counts}")
+      se_gc_lines=$(wc -l < "~{se_gene_counts}" 2>/dev/null || echo "N/A")
+      echo "Gene counts file: ~{se_gene_counts} (${se_gc_size} bytes, ${se_gc_lines} lines)" >> validation_report.txt
+    else
+      echo "Gene counts file: ~{se_gene_counts} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    echo "" >> validation_report.txt
+
     # Overall summary
     echo "=== Validation Summary ===" >> validation_report.txt
     echo "Total samples processed: ${#bam_files[@]}" >> validation_report.txt

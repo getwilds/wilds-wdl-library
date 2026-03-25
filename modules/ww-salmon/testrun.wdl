@@ -1,15 +1,11 @@
 version 1.0
 
 # Import module in question as well as the testdata module for automatic demo functionality
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl" as ww_salmon
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/fix-sra-star-jyoung/modules/ww-salmon/ww-salmon.wdl" as ww_salmon
+# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "ww-salmon.wdl" as ww_salmon
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
 
-# Define data structure for sample inputs
-struct SalmonSample {
-    String name
-    File r1_fastq
-    File r2_fastq
-}
 
 #### TEST WORKFLOW DEFINITION ####
 # Define test workflow to demonstrate module functionality
@@ -26,45 +22,44 @@ workflow salmon_example {
       memory_gb = 8
   }
 
-  # Create samples array using test data
-  Array[SalmonSample] final_samples = [
-    {
-      "name": "demo_sample",
-      "r1_fastq": download_demo_data.r1_fastq,
-      "r2_fastq": download_demo_data.r2_fastq
-    }
-  ]
+  # Paired-end quantification
+  call ww_salmon.quantify as quantify_paired { input:
+      salmon_index_dir = build_index.salmon_index,
+      sample_name = "demo_paired",
+      fastq_r1 = download_demo_data.r1_fastq,
+      fastq_r2 = download_demo_data.r2_fastq,
+      cpu_cores = 2,
+      memory_gb = 8
+  }
 
-  # Quantify each sample
-  scatter (sample in final_samples) {
-    call ww_salmon.quantify { input:
-        salmon_index_dir = build_index.salmon_index,
-        sample_name = sample.name,
-        fastq_r1 = sample.r1_fastq,
-        fastq_r2 = sample.r2_fastq,
-        cpu_cores = 2,
-        memory_gb = 8
-    }
+  # Single-end quantification (using R1 only)
+  call ww_salmon.quantify as quantify_single { input:
+      salmon_index_dir = build_index.salmon_index,
+      sample_name = "demo_single",
+      fastq_r1 = download_demo_data.r1_fastq,
+      cpu_cores = 2,
+      memory_gb = 8
   }
 
   # Merge results
   call ww_salmon.merge_results { input:
-      salmon_quant_dirs = quantify.salmon_quant_dir,
-      sample_names = quantify.output_sample_name,
+      salmon_quant_dirs = [quantify_paired.salmon_quant_dir, quantify_single.salmon_quant_dir],
+      sample_names = [quantify_paired.output_sample_name, quantify_single.output_sample_name],
       cpu_cores = 1,
       memory_gb = 4
   }
 
   # Validate outputs
   call validate_outputs { input:
-      salmon_quant_dirs = quantify.salmon_quant_dir,
+      salmon_quant_dirs = [quantify_paired.salmon_quant_dir, quantify_single.salmon_quant_dir],
       tpm_matrix = merge_results.tpm_matrix,
       counts_matrix = merge_results.counts_matrix
   }
 
   output {
     File salmon_index_tar = build_index.salmon_index
-    Array[File] salmon_quant_dirs = quantify.salmon_quant_dir
+    File salmon_quant_paired = quantify_paired.salmon_quant_dir
+    File salmon_quant_single = quantify_single.salmon_quant_dir
     File merged_tpm_matrix = merge_results.tpm_matrix
     File merged_counts_matrix = merge_results.counts_matrix
     File sample_list = merge_results.sample_list
