@@ -103,7 +103,7 @@ task glimpse2_split_reference {
     String input_region
     String output_region
     String output_prefix
-    Boolean keep_monomorphic_ref_sites = false
+    Boolean keep_monomorphic_ref_sites = true
     Int cpu_cores = 4
     Int memory_gb = 8
   }
