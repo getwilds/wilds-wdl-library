@@ -49,7 +49,6 @@ task glimpse2_chunk {
     ln -s "~{reference_vcf}" "~{basename(reference_vcf)}"
     ln -s "~{reference_vcf_index}" "~{basename(reference_vcf_index)}"
 
-    # Use --recursive algorithm which may be more stable for small regions
     GLIMPSE2_chunk \
       --input "~{basename(reference_vcf)}" \
       --region "~{region}" \
@@ -57,7 +56,7 @@ task glimpse2_chunk {
       --window-cm ~{window_size_cm} \
       --buffer-cm ~{buffer_size_cm} \
       ~{if uniform_number_variants then "--uniform-number-variants" else ""} \
-      --recursive \
+      --sequential \
       --output "~{output_prefix}.chunks.txt" \
       --threads ~{cpu_cores}
   >>>
@@ -224,6 +223,7 @@ task glimpse2_phase_cram {
   parameter_meta {
     input_bams: "Array of input CRAM or BAM files"
     input_bam_indices: "Array of index files for input CRAM/BAM files"
+    sample_ids: "Array of sample IDs corresponding to each CRAM/BAM file"
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Reference genome FASTA index file"
     reference_chunk: "Binary reference chunk from glimpse2_split_reference"
@@ -239,6 +239,7 @@ task glimpse2_phase_cram {
   input {
     Array[File] input_bams
     Array[File] input_bam_indices
+    Array[String] sample_ids
     File reference_fasta
     File reference_fasta_index
     File reference_chunk
@@ -257,11 +258,12 @@ task glimpse2_phase_cram {
     # Create local symlinks to ensure CRAM/BAM files and indices are co-located
     bams_array=(~{sep=' ' input_bams})
     indices_array=(~{sep=' ' input_bam_indices})
+    sample_ids_array=(~{sep=' ' sample_ids})
 
     for i in "${!bams_array[@]}"; do
       ln -s "${bams_array[$i]}" "$(basename "${bams_array[$i]}")"
       ln -s "${indices_array[$i]}" "$(basename "${indices_array[$i]}")"
-      echo "$(basename "${bams_array[$i]}")" >> bam_list.txt
+      echo "$(basename "${bams_array[$i]}")##idx##$(basename "${indices_array[$i]}") ${sample_ids_array[$i]}" >> bam_list.txt
     done
 
     # Create local symlinks for reference FASTA and index

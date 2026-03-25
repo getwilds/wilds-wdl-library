@@ -56,6 +56,7 @@ workflow imputation_testrun {
     input:
       input_crams = [download_cram.cram],
       input_cram_indices = [download_cram.crai],
+      sample_ids = ["NA12878"],
       chromosomes = [
         {
           "chromosome": test_chromosome,

@@ -2,6 +2,7 @@
   "out_dir": "$.dataset.dataPath",
   "input_crams": "$.dataset.params.input_crams",
   "input_cram_indices": "$.dataset.params.input_cram_indices",
+  "sample_ids": "$.dataset.params.sample_ids",
   "reference_fasta": "$.dataset.params.reference_fasta",
   "reference_fasta_index": "$.dataset.params.reference_fasta_index",
   "output_prefix": "$.dataset.params.output_prefix",
