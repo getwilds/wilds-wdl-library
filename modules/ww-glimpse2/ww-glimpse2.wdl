@@ -313,7 +313,7 @@ task glimpse2_ligate {
     imputed_chunks: "Array of imputed chunk BCF files from glimpse2_phase"
     imputed_chunks_indices: "Array of index files for imputed chunks"
     output_prefix: "Prefix for output files"
-    output_format: "Output format: bcf, vcf, or vcf.gz (default: bcf)"
+    output_format: "Output format: bcf or vcf.gz (default: bcf)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }

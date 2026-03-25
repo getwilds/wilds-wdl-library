@@ -154,7 +154,7 @@ Note: `input_crams`, `input_cram_indices`, and `sample_ids` must be parallel arr
 | Parameter | Description | Type | Default |
 |-----------|-------------|------|---------|
 | `output_prefix` | Prefix for output file names | String | "imputed" |
-| `output_format` | Output format (bcf, vcf, vcf.gz) | String | "bcf" |
+| `output_format` | Output format (`bcf` or `vcf.gz`) | String | "bcf" |
 | `impute_reference_only_variants` | Only impute variants in reference panel | Boolean | false |
 | `window_size_cm` | Chunk window size in centiMorgans | Float | 2.0 |
 | `buffer_size_cm` | Chunk buffer size in centiMorgans | Float | 0.2 |

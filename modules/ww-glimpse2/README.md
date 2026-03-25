@@ -113,7 +113,7 @@ Ligate multiple imputed chunks into a single file.
 - `imputed_chunks` (Array[File]): Array of imputed chunk BCF files
 - `imputed_chunks_indices` (Array[File]): Array of index files
 - `output_prefix` (String): Prefix for output files
-- `output_format` (String, default="bcf"): Output format (bcf, vcf, or vcf.gz)
+- `output_format` (String, default="bcf"): Output format (`bcf` or `vcf.gz`)
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
 
