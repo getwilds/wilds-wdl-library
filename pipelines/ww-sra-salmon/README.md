@@ -220,7 +220,7 @@ The pipeline is automatically tested as part of the WILDS WDL Library CI/CD pipe
 
 ## Acknowledgments
 
-This pipeline was made possible by the contributions of [Alice Berger](https://github.com/ahberger), who helped with initial testing and scaling to large numbers of samples, and [Janet Young](https://github.com/jayoung), who helped troubleshoot and improve single-end sequencing support. Thank you both for your contributions!
+This pipeline was made possible by the contributions of [Alice Berger](https://github.com/ahberger), who helped with initial testing and scaling to large numbers of samples, and [Janet Young](https://github.com/jayoung), who helped troubleshoot and improve single-end sequencing support. Thank you both for your contributions!!
 
 ## Support
 
