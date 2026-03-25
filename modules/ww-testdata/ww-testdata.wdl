@@ -1073,7 +1073,7 @@ task download_diamond_data {
     set -eo pipefail
 
     # Download E. coli Swiss-Prot proteins and save as ecoli_proteins.fasta
-    curl https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/reference_proteomes/Bacteria/UP000000625/UP000000625_83333.fasta.gz | gunzip > ecoli_proteins.fasta
+    curl "https://rest.uniprot.org/uniprotkb/stream?format=fasta&query=proteome:UP000000625" > ecoli_proteins.fasta
 
     # Create subset with first 10 sequences
     awk '/^>/ {n++} n<=10' ecoli_proteins.fasta > ecoli_subset.fasta
