@@ -1,10 +1,10 @@
 version 1.0
 
 # Import module in question as well as the testdata module for automatic demo functionality
-# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/fix-sra-star-jyoung/modules/ww-salmon/ww-salmon.wdl" as ww_salmon
-# import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "ww-salmon.wdl" as ww_salmon
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+
+
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl" as ww_salmon
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 
 #### TEST WORKFLOW DEFINITION ####
