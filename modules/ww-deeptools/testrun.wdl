@@ -1,7 +1,7 @@
 version 1.0
 
-import "ww-deeptools.wdl" as ww_deeptools
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deeptools/ww-deeptools.wdl" as ww_deeptools
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct DeeptoolsSample {
     String name
