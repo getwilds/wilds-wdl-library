@@ -30,7 +30,7 @@ Generates a normalized coverage track (bigWig or bedGraph) from a BAM file.
 - `output_format` (String, default="bigwig"): Output format (bigwig or bedgraph)
 - `bin_size` (Int, default=50): Output bin size in bases
 - `normalize_using` (String, default="RPKM"): Normalization method (RPKM, CPM, BPM, RPGC, None)
-- `effective_genome_size` (Int, optional): Effective genome size for RPGC normalization
+- `effective_genome_size` (Int, optional): Effective genome size for RPGC normalization (e.g., 2913022398 for hg38)
 - `extend_reads` (Int, optional): Fragment length to extend reads to
 - `ignore_duplicates` (Boolean, default=false): Ignore duplicate reads
 - `min_mapping_quality` (Int, default=0): Minimum mapping quality filter
@@ -51,8 +51,10 @@ Compares two BAM files (e.g., treatment vs. control) and generates a comparison 
 - `control_bam` (File): Control/input BAM file
 - `control_bai` (File): Control BAM index
 - `sample_name` (String): Output name identifier
-- `operation` (String, default="log2"): Comparison operation (log2, ratio, subtract, add, mean, etc.)
-- `normalize_using` (String, default="RPKM"): Normalization method
+- `output_format` (String, default="bigwig"): Output file format (bigwig or bedgraph)
+- `bin_size` (Int, default=50): Length in bases of the output bins
+- `operation` (String, default="log2"): Comparison operation (log2, ratio, subtract, add, mean, reciprocal_ratio, first, second)
+- `normalize_using` (String, default="RPKM"): Normalization method (RPKM, CPM, BPM, RPGC, None)
 - `scale_factors_method` (String, default="None"): Scale factors method (None or readCount). Must be None when normalizeUsing is not None
 - `extra_args` (String, default=""): Additional bamCompare arguments
 - `cpu_cores` (Int, default=4): CPU cores
@@ -137,11 +139,11 @@ Computes read coverage summary across multiple BAM files for sample comparison.
 Generates a correlation heatmap or scatterplot from multiBamSummary output.
 
 **Inputs:**
-- `summary_npz` (File): Numpy array from multiBamSummary
+- `summary_npz` (File): Compressed numpy array from multiBamSummary or multiBigwigSummary
 - `sample_name` (String): Output name identifier
-- `correlation_method` (String, default="spearman"): Method (spearman or pearson)
+- `correlation_method` (String, default="spearman"): Correlation method (spearman or pearson)
 - `plot_type` (String, default="heatmap"): Plot type (heatmap or scatterplot)
-- `plot_format` (String, default="png"): Image format
+- `plot_format` (String, default="png"): Image format (png, pdf, svg, or eps)
 - `extra_args` (String, default=""): Additional plotCorrelation arguments
 - `cpu_cores` (Int, default=1): CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
@@ -155,9 +157,9 @@ Generates a correlation heatmap or scatterplot from multiBamSummary output.
 Generates a PCA plot from multiBamSummary output.
 
 **Inputs:**
-- `summary_npz` (File): Numpy array from multiBamSummary
+- `summary_npz` (File): Compressed numpy array from multiBamSummary or multiBigwigSummary
 - `sample_name` (String): Output name identifier
-- `plot_format` (String, default="png"): Image format
+- `plot_format` (String, default="png"): Image format (png, pdf, svg, or eps)
 - `extra_args` (String, default=""): Additional plotPCA arguments
 - `cpu_cores` (Int, default=1): CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
@@ -175,7 +177,7 @@ Generates a fingerprint plot to assess ChIP enrichment quality.
 - `bai_files` (Array[File]): Corresponding BAM index files
 - `sample_name` (String): Output name identifier
 - `labels` (String, optional): Space-separated labels for each BAM file
-- `plot_format` (String, default="png"): Image format
+- `plot_format` (String, default="png"): Image format (png, pdf, svg, or eps)
 - `extra_args` (String, default=""): Additional plotFingerprint arguments
 - `cpu_cores` (Int, default=4): CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
@@ -253,7 +255,7 @@ The test workflow automatically:
 2. Generates normalized coverage tracks with `bamCoverage`
 3. Compares two BAM files with `bamCompare`
 4. Computes a signal matrix over genomic regions with `computeMatrix`
-5. Creates heatmap and profile visualizations
+5. Creates heatmap and profile visualizations with `plotHeatmap` and `plotProfile`
 6. Runs multi-sample QC with `multiBamSummary`, `plotCorrelation`, `plotPCA`, and `plotFingerprint`
 
 ## Docker Container
