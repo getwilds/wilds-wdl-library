@@ -8,10 +8,11 @@ workflow sra_salmon_example {
   call ww_testdata.download_test_transcriptome { }
 
   # Call the actual sra_salmon workflow with test data outputs
-  # Using SRR3589956: Human (HEK293) RNA-seq for compatibility with GENCODE transcriptome
+  # Using SRR3589956: Human (HEK293) paired-end RNA-seq for compatibility with GENCODE transcriptome
+  # Using ERR2588371: Human single-end RNA-seq for testing single-end alignment
   # Limiting to 100k reads for fast testing
   call sra_salmon_workflow.sra_salmon { input:
-    sra_id_list = ["SRR3589956"],
+    sra_id_list = ["SRR3589956", "ERR2588371"],
     transcriptome_fasta = download_test_transcriptome.transcriptome_fasta,
     ncpu = 2,
     memory_gb = 8,

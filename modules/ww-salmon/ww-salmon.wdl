@@ -66,7 +66,7 @@ task quantify {
   meta {
     author: "WILDS Team"
     email: "wilds@fredhutch.org"
-    description: "Quantify transcript expression from paired-end RNA-seq reads using Salmon"
+    description: "Quantify transcript expression from RNA-seq reads using Salmon. Supports both paired-end and single-end data."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl"
     outputs: {
         salmon_quant_dir: "Compressed tarball containing Salmon quantification results including abundance estimates",
@@ -78,7 +78,7 @@ task quantify {
     salmon_index_dir: "Compressed tarball containing Salmon genome index"
     sample_name: "Name identifier for the sample"
     fastq_r1: "FASTQ file for read 1"
-    fastq_r2: "FASTQ file for read 2"
+    fastq_r2: "Optional FASTQ file for read 2 (omit for single-end data)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
@@ -87,7 +87,7 @@ task quantify {
     File salmon_index_dir
     String sample_name
     File fastq_r1
-    File fastq_r2
+    File? fastq_r2
     Int cpu_cores = 8
     Int memory_gb = 16
   }
@@ -99,12 +99,19 @@ task quantify {
     mkdir -p salmon_index
     tar -xzf ~{salmon_index_dir} -C ./
 
-    # Paired-end quantification with best practice parameters
+    # Build read arguments based on paired-end or single-end data
+    R2_FILE="~{if defined(fastq_r2) then select_first([fastq_r2]) else ""}"
+    if [ -n "$R2_FILE" ]; then
+      READ_ARGS="-1 ~{fastq_r1} -2 $R2_FILE"
+    else
+      READ_ARGS="-r ~{fastq_r1}"
+    fi
+
+    # Quantification with best practice parameters
     salmon quant \
         -i salmon_index \
         --libType A \
-        -1 ~{fastq_r1} \
-        -2 ~{fastq_r2} \
+        $READ_ARGS \
         -o ~{sample_name}_quant \
         -p ~{cpu_cores} \
         --validateMappings \

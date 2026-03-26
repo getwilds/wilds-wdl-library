@@ -59,7 +59,7 @@ workflow testdata_example {
 
   call ww_testdata.download_test_cellranger_ref { }
 
-  call ww_testdata.download_diamond_data { }
+  call ww_testdata.create_diamond_data { }
 
   call ww_testdata.create_test_protein_fasta { }
 
@@ -112,8 +112,8 @@ workflow testdata_example {
     shapemapper_untreated_r1 = download_shapemapper_data.untreated_r1,
     shapemapper_untreated_r2 = download_shapemapper_data.untreated_r2,
     cellranger_ref_tar = download_test_cellranger_ref.ref_tar,
-    diamond_reference = download_diamond_data.reference,
-    diamond_query = download_diamond_data.query,
+    diamond_reference = create_diamond_data.reference,
+    diamond_query = create_diamond_data.query,
     test_protein_fasta = create_test_protein_fasta.test_fasta,
     glimpse2_genetic_map = download_glimpse2_genetic_map.genetic_map,
     glimpse2_reference_vcf = download_glimpse2_reference_panel.reference_vcf,
@@ -180,8 +180,8 @@ workflow testdata_example {
     # Output from CellRanger reference download
     File cellranger_ref_tar = download_test_cellranger_ref.ref_tar
     # Outputs from DIAMOND data download
-    File diamond_reference = download_diamond_data.reference
-    File diamond_query = download_diamond_data.query
+    File diamond_reference = create_diamond_data.reference
+    File diamond_query = create_diamond_data.query
     # Output from test protein FASTA creation
     File test_protein_fasta = create_test_protein_fasta.test_fasta
     # Outputs from GLIMPSE2 test data downloads

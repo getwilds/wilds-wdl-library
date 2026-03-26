@@ -73,25 +73,51 @@ workflow ena_star {
 
     # Since we scatter by single accession, each extract_fastq_pairs call returns
     # arrays with one element each - access the first element with [0]
-    call star_tasks.align_two_pass { input:
-        star_genome_tar = build_index.star_index_tar,
-        name = extract_fastq_pairs.accessions[0],
-        r1 = extract_fastq_pairs.r1_files[0],
-        r2 = extract_fastq_pairs.r2_files[0],
-        sjdb_overhang = sjdb_overhang,
-        memory_gb = memory_gb,
-        cpu_cores = ncpu,
-        star_threads = ncpu
+    Boolean sample_is_paired = extract_fastq_pairs.is_paired_end_list[0] == "true"
+
+    # Paired-end alignment
+    if (sample_is_paired) {
+      call star_tasks.align_two_pass as align_paired { input:
+          star_genome_tar = build_index.star_index_tar,
+          name = extract_fastq_pairs.accessions[0],
+          r1 = extract_fastq_pairs.r1_files[0],
+          r2 = extract_fastq_pairs.r2_files[0],
+          sjdb_overhang = sjdb_overhang,
+          memory_gb = memory_gb,
+          cpu_cores = ncpu,
+          star_threads = ncpu
+      }
     }
+
+    # Single-end alignment
+    if (!sample_is_paired) {
+      call star_tasks.align_two_pass as align_single { input:
+          star_genome_tar = build_index.star_index_tar,
+          name = extract_fastq_pairs.accessions[0],
+          r1 = extract_fastq_pairs.r1_files[0],
+          sjdb_overhang = sjdb_overhang,
+          memory_gb = memory_gb,
+          cpu_cores = ncpu,
+          star_threads = ncpu
+      }
+    }
+
+    File bam_out = select_first([align_paired.bam, align_single.bam])
+    File bai_out = select_first([align_paired.bai, align_single.bai])
+    File gene_counts_out = select_first([align_paired.gene_counts, align_single.gene_counts])
+    File log_final_out = select_first([align_paired.log_final, align_single.log_final])
+    File log_progress_out = select_first([align_paired.log_progress, align_single.log_progress])
+    File log_out = select_first([align_paired.log, align_single.log])
+    File sj_out = select_first([align_paired.sj_out, align_single.sj_out])
   }
 
   output {
-    Array[File] star_bam = align_two_pass.bam
-    Array[File] star_bai = align_two_pass.bai
-    Array[File] star_gene_counts = align_two_pass.gene_counts
-    Array[File] star_log_final = align_two_pass.log_final
-    Array[File] star_log_progress = align_two_pass.log_progress
-    Array[File] star_log = align_two_pass.log
-    Array[File] star_sj = align_two_pass.sj_out
+    Array[File] star_bam = bam_out
+    Array[File] star_bai = bai_out
+    Array[File] star_gene_counts = gene_counts_out
+    Array[File] star_log_final = log_final_out
+    Array[File] star_log_progress = log_progress_out
+    Array[File] star_log = log_out
+    Array[File] star_sj = sj_out
   }
 }

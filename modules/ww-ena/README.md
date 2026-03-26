@@ -66,17 +66,18 @@ Downloads sequencing data files from ENA using a search query. Allows filtering 
 
 ### `extract_fastq_pairs`
 
-Extracts R1 and R2 FASTQ files from downloaded ENA files for downstream paired-end processing. This task identifies all paired-end FASTQ files by common naming patterns, creates standardized outputs, and automatically extracts the accession ID from each filename. Supports multiple accessions in a single download.
+Extracts FASTQ files from downloaded ENA files for downstream processing. Supports both paired-end and single-end data. This task identifies FASTQ files by common naming patterns, creates standardized outputs, automatically extracts the accession ID from each filename, and detects whether each sample is paired-end or single-end. Supports multiple accessions in a single download.
 
 **Inputs:**
 - `downloaded_files` (Array[File]): Array of files downloaded from ENA (typically from `download_files` task)
 
 **Outputs:**
-- `r1_files` (Array[File]): Array of Read 1 FASTQ files, parallel with `r2_files` and `accessions`
-- `r2_files` (Array[File]): Array of Read 2 FASTQ files, parallel with `r1_files` and `accessions`
-- `accessions` (Array[String]): Array of ENA accession IDs extracted from filenames, parallel with `r1_files` and `r2_files`
+- `r1_files` (Array[File]): Array of Read 1 FASTQ files, parallel with `r2_files`, `accessions`, and `is_paired_end_list`
+- `r2_files` (Array[File]): Array of Read 2 FASTQ files (empty placeholder for single-end samples), parallel with `r1_files`, `accessions`, and `is_paired_end_list`
+- `accessions` (Array[String]): Array of ENA accession IDs extracted from filenames, parallel with `r1_files`, `r2_files`, and `is_paired_end_list`
+- `is_paired_end_list` (Array[String]): Array of strings ("true"/"false") indicating whether each sample is paired-end, parallel with `r1_files`, `r2_files`, and `accessions`
 
-**Usage Note:** This task is designed for FASTQ workflows requiring separate R1/R2 files. It searches for common paired-end naming patterns including `_1.fastq.gz`/`_2.fastq.gz`, `_R1.fastq.gz`/`_R2.fastq.gz`, and their uncompressed equivalents. The accession ID is automatically extracted from each filename (e.g., `ERR000001_1.fastq.gz` → `ERR000001`). The output arrays are parallel, meaning `r1_files[i]`, `r2_files[i]`, and `accessions[i]` all correspond to the same sample. If you're downloading other file formats (BAM, analysis files), you don't need this task.
+**Usage Note:** This task is designed for FASTQ workflows requiring separate R1/R2 files. It searches for common naming patterns including `_1.fastq.gz`/`_2.fastq.gz`, `_R1.fastq.gz`/`_R2.fastq.gz`, and their uncompressed equivalents. The accession ID is automatically extracted from each filename (e.g., `ERR000001_1.fastq.gz` → `ERR000001`). The output arrays are parallel, meaning `r1_files[i]`, `r2_files[i]`, `accessions[i]`, and `is_paired_end_list[i]` all correspond to the same sample. If you're downloading other file formats (BAM, analysis files), you don't need this task.
 
 ## Usage as a Module
 

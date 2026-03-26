@@ -53,26 +53,43 @@ workflow sra_salmon {
         max_reads = max_reads
     }
 
-    call salmon_tasks.quantify { input:
-        salmon_index_dir = build_index.salmon_index,
-        sample_name = id,
-        fastq_r1 = fastqdump.r1_end,
-        fastq_r2 = fastqdump.r2_end,
-        cpu_cores = ncpu,
-        memory_gb = memory_gb
+    # Paired-end quantification
+    if (fastqdump.is_paired_end) {
+      call salmon_tasks.quantify as quantify_paired { input:
+          salmon_index_dir = build_index.salmon_index,
+          sample_name = id,
+          fastq_r1 = fastqdump.r1_end,
+          fastq_r2 = fastqdump.r2_end,
+          cpu_cores = ncpu,
+          memory_gb = memory_gb
+      }
     }
+
+    # Single-end quantification
+    if (!fastqdump.is_paired_end) {
+      call salmon_tasks.quantify as quantify_single { input:
+          salmon_index_dir = build_index.salmon_index,
+          sample_name = id,
+          fastq_r1 = fastqdump.r1_end,
+          cpu_cores = ncpu,
+          memory_gb = memory_gb
+      }
+    }
+
+    File quant_dir_out = select_first([quantify_paired.salmon_quant_dir, quantify_single.salmon_quant_dir])
+    String sample_name_out = select_first([quantify_paired.output_sample_name, quantify_single.output_sample_name])
   }
 
   # Merge quantification results across all samples
   call salmon_tasks.merge_results { input:
-      salmon_quant_dirs = quantify.salmon_quant_dir,
-      sample_names = quantify.output_sample_name,
+      salmon_quant_dirs = quant_dir_out,
+      sample_names = sample_name_out,
       cpu_cores = 2,
       memory_gb = 8
   }
 
   output {
-    Array[File] salmon_quant_dirs = quantify.salmon_quant_dir
+    Array[File] salmon_quant_dirs = quant_dir_out
     File tpm_matrix = merge_results.tpm_matrix
     File counts_matrix = merge_results.counts_matrix
   }

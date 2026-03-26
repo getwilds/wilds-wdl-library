@@ -32,13 +32,13 @@ Builds Salmon index from a reference transcriptome FASTA file.
 - `salmon_index` (File): Compressed tarball containing the Salmon index for quantification
 
 ### `quantify`
-Quantifies transcript expression from paired-end RNA-seq reads using Salmon.
+Quantifies transcript expression from RNA-seq reads using Salmon. Supports both paired-end and single-end data.
 
 **Inputs:**
 - `salmon_index_dir` (File): Compressed tarball containing Salmon index from `build_index`
 - `sample_name` (String): Sample name identifier for output files
 - `fastq_r1` (File): FASTQ file for read 1
-- `fastq_r2` (File): FASTQ file for read 2
+- `fastq_r2` (File?, optional): FASTQ file for read 2 (omit for single-end data)
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
 
@@ -182,6 +182,7 @@ The module supports flexible resource configuration:
 
 ## Features
 
+- **Single-end and paired-end support**: Works with both single-end and paired-end sequencing data
 - **Multi-sample support**: Process multiple samples in parallel using scatter-gather patterns
 - **Result aggregation**: Automatically merge quantification results across samples into TPM and count matrices
 - **Module integration**: Seamlessly combines with ww-sra, ww-testdata, and ww-deseq2 modules

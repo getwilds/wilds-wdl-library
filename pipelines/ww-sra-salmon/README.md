@@ -22,6 +22,7 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
 
 1. **SRA Download** (using `ww-sra` module):
    - Downloads FASTQ files from SRA accessions
+   - Automatically detects paired-end vs single-end reads
    - Optimizes download for paired-end data by fetching it in parallel
    - Validates successful downloads
 
@@ -30,6 +31,7 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
    - Optimizes k-mer indexing for fast quasi-mapping
 
 3. **Transcript Quantification** (using `ww-salmon` module):
+   - Automatically handles both paired-end and single-end samples
    - Performs Salmon quasi-mapping and quantification for each sample
    - Generates transcript-level abundance estimates (TPM and counts)
    - Produces per-sample quantification directories
@@ -52,7 +54,7 @@ This pipeline imports and uses:
 - Docker/Apptainer support
 - Internet access for SRA downloads
 - Sufficient compute resources for Salmon quantification
-- **Paired-end RNA-seq data**: This workflow is designed for paired-end sequencing data. Ensure your SRA accessions contain paired-end reads (R1 and R2 FASTQ files)
+- **RNA-seq data**: This workflow supports both paired-end and single-end sequencing data. The pipeline automatically detects the read layout for each SRA accession
 
 ### Input Configuration
 
@@ -168,6 +170,7 @@ This pipeline is automatically tested as part of the WILDS WDL Library CI/CD pip
 This pipeline demonstrates several key WDL patterns:
 - **Module Composition**: How to combine multiple modules effectively
 - **Data Passing**: Seamless transfer of outputs between modules
+- **Conditional Execution**: Handling paired-end vs single-end data with conditional call blocks
 - **Scatter-Gather**: Parallel processing of multiple SRA samples
 - **Resource Management**: Coordinated resource allocation across modules
 
@@ -214,6 +217,10 @@ The pipeline is automatically tested as part of the WILDS WDL Library CI/CD pipe
 - Small test datasets (protein-coding transcripts) for efficiency
 - Comprehensive output validation
 - Performance benchmarking
+
+## Acknowledgments
+
+This pipeline was made possible by the contributions of [Alice Berger](https://github.com/ahberger), who helped with initial testing and scaling to large numbers of samples, and [Janet Young](https://github.com/jayoung), who helped troubleshoot and improve single-end sequencing support. Thank you both for your contributions!!
 
 ## Support
 
