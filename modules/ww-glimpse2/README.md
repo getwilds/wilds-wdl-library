@@ -287,6 +287,10 @@ Genetic maps can be downloaded from:
 
 ## Implementation Notes
 
+### Docker Image: `getwilds/glimpse2:2.0.1-infofix`
+
+This module uses a custom Docker image built from GLIMPSE2's `master` branch (commit `5fda8c09`) rather than the official v2.0.1 release tag. This is necessary because GLIMPSE2 v2.0.0/v2.0.1 contains a [bug in the INFO score calculation](https://github.com/odelaneau/GLIMPSE/issues/144) where the denominator incorrectly uses total haplotypes (target + reference) instead of target haplotypes only, inflating INFO scores toward 1.0. The fix ([PR #175](https://github.com/odelaneau/GLIMPSE/pull/175)) has been merged to `master` but has not yet been included in a tagged release. Note that even with this fix, INFO scores are only meaningful with a large number of target samples (see [GLIMPSE issue #69](https://github.com/odelaneau/GLIMPSE/issues/69)); for small cohorts, use `glimpse2_concordance` against truth genotypes instead.
+
 ### File and Index Co-location
 
 GLIMPSE2 (like many bioinformatics tools built on htslib) expects index files to be located in the same directory as their corresponding data files. For example, when given `sample.cram`, it looks for `sample.cram.crai` in the same directory.

@@ -66,7 +66,7 @@ task glimpse2_chunk {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1"
+    docker: "getwilds/glimpse2:2.0.1-infofix"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -131,7 +131,7 @@ task glimpse2_split_reference {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1"
+    docker: "getwilds/glimpse2:2.0.1-infofix"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -202,7 +202,7 @@ task glimpse2_phase {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1"
+    docker: "getwilds/glimpse2:2.0.1-infofix"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -291,7 +291,7 @@ task glimpse2_phase_cram {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1"
+    docker: "getwilds/glimpse2:2.0.1-infofix"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -366,7 +366,7 @@ task glimpse2_ligate {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1"
+    docker: "getwilds/glimpse2:2.0.1-infofix"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -436,7 +436,7 @@ task glimpse2_concordance {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1"
+    docker: "getwilds/glimpse2:2.0.1-infofix"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -481,7 +481,7 @@ task parse_chunks_file {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1"
+    docker: "getwilds/glimpse2:2.0.1-infofix"
     cpu: 1
     memory: "2 GB"
   }
