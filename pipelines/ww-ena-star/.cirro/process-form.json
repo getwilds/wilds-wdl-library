@@ -55,7 +55,7 @@
         "title": "ENA Transfer Protocol",
         "description": "Transfer protocol to use for downloading files from ENA",
         "type": "string",
-        "default": "FTP"
+        "default": "HTTP"
       },
       "workflow_failure_mode": {
         "title": "Workflow Failure Mode",
