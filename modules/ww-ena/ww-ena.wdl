@@ -88,7 +88,7 @@ task download_files {
     fi
 
     # Find all downloaded files (use absolute paths for cloud filesystem compatibility)
-    find "$(pwd)/~{output_dir_name}" -type f > downloaded_files.txt
+    find ~{output_dir_name} -type f > downloaded_files.txt
 
     # Create summary
     echo "Download completed at $(date)" > download_summary.txt
@@ -98,7 +98,7 @@ task download_files {
   >>>
 
   output {
-    Array[File] downloaded_files = read_lines("downloaded_files.txt")
+    Array[File] downloaded_files = glob("~{output_dir_name}/*")
     File download_summary = "download_summary.txt"
     String accessions_used = select_first([accessions, "from_file"])
   }
