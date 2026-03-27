@@ -60,12 +60,15 @@ pipelines/pipeline-name/
 | `ww-bwa-gatk` | Basic | `ww-bwa`, `ww-gatk` | DNA alignment and variant calling |
 | `ww-ena-star` | Basic | `ww-ena`, `ww-star` | ENA download and RNA-seq alignment |
 | `ww-fastq-to-cram` | Basic | `ww-bwa`, `ww-samtools` | FASTQ to CRAM conversion |
+| `ww-imputation` | Intermediate | `ww-glimpse2`, `ww-bcftools` | Genotype imputation from low-coverage WGS data using GLIMPSE2 |
+| `ww-jetlag` | Basic | `ww-sjl` | Solar Jetlag tile processing across an array of geographic tiles |
+| `ww-leukemia` | Advanced | Multiple | Complete leukemia analysis pipeline |
 | `ww-saturation` | Intermediate | Multiple | Sequencing saturation analysis |
+| `ww-splicing-proteomics` | Intermediate | `ww-star`, `ww-rmats-turbo`, `ww-jcast` | Alternative splicing proteomics: STAR alignment, rMATS splicing detection, and JCAST protein translation |
 | `ww-sra-salmon` | Basic | `ww-sra`, `ww-salmon` | SRA download and transcript quantification |
 | `ww-sra-star` | Basic | `ww-sra`, `ww-star` | SRA download and RNA-seq alignment |
 | `ww-star-deseq2` | Intermediate | `ww-star`, `ww-deseq2` | RNA-seq alignment and differential expression |
-| `ww-jetlag` | Basic | `ww-sjl` | Solar Jetlag tile processing across an array of geographic tiles |
-| `ww-leukemia` | Advanced | Multiple | Complete leukemia analysis pipeline |
+| `ww-starling-batch` | Basic | `ww-starling` | Batch ensemble generation for protein FASTA files using STARLING |
 
 ## Using Pipelines
 

@@ -11,7 +11,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Project Status: Stable – Useable, full support, open to feedback, stable API.](https://getwilds.org/badges/badges/stable.svg)](https://getwilds.org/badges/#stable)
 [![WDL Executors](https://img.shields.io/badge/WDL-Cromwell%20%7C%20miniWDL%20%7C%20Sprocket-blue.svg)](https://github.com/getwilds/wilds-wdl-library)
-[![WDL](https://img.shields.io/badge/WDL-1.0-orange.svg)](https://openwdl.org/)<br>
+[![WDL](https://img.shields.io/badge/WDL-1.0-orange.svg)](https://openwdl.org/)
+[![GitHub Release](https://img.shields.io/github/v/release/getwilds/wilds-wdl-library)](https://github.com/getwilds/wilds-wdl-library/releases)<br>
 [![Module Tests](https://github.com/getwilds/wilds-wdl-library/actions/workflows/modules-testrun.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/modules-testrun.yml)
 [![Pipeline Tests](https://github.com/getwilds/wilds-wdl-library/actions/workflows/pipelines-testrun.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/pipelines-testrun.yml)
 [![Linting](https://github.com/getwilds/wilds-wdl-library/actions/workflows/linting.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/linting.yml)
@@ -151,15 +152,14 @@ See our [Contributing Guidelines](.github/CONTRIBUTING.md) for detailed informat
 ## Development Roadmap
 
 ### Current Focus
-- Expanding the module collection with high-priority tools (GATK variant calling, additional alignment tools)
-- Adding new pipelines across all complexity levels
-- Enhancing testing infrastructure and validation
+- Growing the library through the **WILDS WDL Development Program**, a collaborative initiative where Fred Hutch researchers partner with the OCDO Research Informatics team to convert their computational analyses into production-quality WDL workflows
+- Expanding module and pipeline coverage based on researcher needs identified through the development program
+- Enhancing cloud platform integration (e.g., [Cirro](https://cirro.bio/)) for broader execution options
 
 ### Future Plans
+- Continued researcher-driven development of modules and pipelines through the WILDS WDL Development Program
 - Additional advanced pipelines for publication-ready analyses
-- Enhanced integration with Fred Hutch computing infrastructure
-- Community-contributed modules and pipelines
-- Advanced documentation and tutorial content
+- Enhanced documentation, tutorials, and community outreach
 
 ## Support
 

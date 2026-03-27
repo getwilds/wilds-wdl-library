@@ -233,6 +233,16 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
+      - name: Alice Berger
+        email: aberger@fredhutch.org
+        role: Associate Professor
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0002-6538-2658
+      - name: Janet Young
+        email: jyoung@fredhutch.org
+        role: Staff Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0001-8220-8427
     description: "WDL workflow to download raw sequencing data from SRA and quantify using Salmon quasi-mapping"
     topic: rna-seq
     filters:
@@ -257,6 +267,16 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
+      - name: Alice Berger
+        email: aberger@fredhutch.org
+        role: Associate Professor
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0002-6538-2658
+      - name: Janet Young
+        email: jyoung@fredhutch.org
+        role: Staff Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0001-8220-8427
     description: "WDL workflow to download raw sequencing data from SRA and align using STAR two-pass methodology"
     topic: rna-seq
     filters:
@@ -268,6 +288,29 @@ workflows:
         - alignment
         - star
         - sra
+
+  - name: ww-starling-batch
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-starling-batch/ww-starling-batch.wdl
+    readMePath: /pipelines/ww-starling-batch/README.md
+    testParameterFiles:
+      - /pipelines/ww-starling-batch/inputs.json
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    description: "Batch ensemble generation pipeline that splits a large protein FASTA into chunks and processes them in parallel using STARLING"
+    topic: protein-structure
+    filters:
+      branches:
+        - main
+      tags:
+        - protein-structure
+        - ensemble-generation
+        - starling
+        - structural-biology
 
   - name: ww-star-deseq2
     subclass: WDL

@@ -51,24 +51,50 @@ modules/module-name/
 
 | Module | Tool | Container | Description |
 |--------|------|-----------|-------------|
-| `ww-annovar` | Variant Annotator | `getwilds/annovar:GRCh38` | Annotate genetic variants with ANNOVAR |
 | `ww-annotsv` | Structural Variant Annotator | `getwilds/annotsv:3.4.4` | Annotate structural variants with AnnotSV |
+| `ww-annovar` | Variant Annotator | `getwilds/annovar:GRCh38` | Annotate genetic variants with ANNOVAR |
 | `ww-aws-sso` | AWS Operations | `getwilds/awscli:2.27.49` | AWS S3 operations with SSO and temporary credential support |
 | `ww-bcftools` | Utilities for Variant Calls | `getwilds/bcftools:1.19` | Call and analyze variants with BCFtools |
+| `ww-bedparse` | Bedparse Format Converter | `getwilds/bedparse:0.2.3` | Convert GTF annotation file to BED12 format using bedparse |
 | `ww-bedtools` | Utilities for Genomic Intervals | `getwilds/bedtools:2.31.1` | Work with genomic intervals |
+| `ww-bowtie` | Bowtie Short-Read Aligner | `getwilds/bowtie:1.3.1` | Build Bowtie index and align short reads to a reference genome |
+| `ww-bowtie2` | Bowtie 2 Sequence Aligner | `getwilds/bowtie2:2.5.4` | Build Bowtie 2 index and align sequence reads to a reference genome |
 | `ww-bwa` | BWA Aligner | `getwilds/bwa:0.7.17` | Alignment with the Burrows-Wheeler Aligner |
+| `ww-cellranger` | Cell Ranger Gene Expression | `getwilds/cellranger:10.0.0` | Run cellranger count on gene expression reads from one GEM well |
+| `ww-cnvkit` | CNVkit Copy Number Analysis | `getwilds/cnvkit:0.9.10` | Create CNVkit reference and run copy number analysis on tumor samples |
 | `ww-colabfold` | Protein Structure Predictor | `getwilds/colabfold:1.5.5` | Predict protein structures with ColabFold (AlphaFold2 + MMseqs2) |
 | `ww-consensus` | Consensus Variant Caller | `getwilds/consensus:0.1.1` | Multi-caller consensus variant integration |
+| `ww-deeptools` | deepTools Coverage and Visualization | `getwilds/deeptools:3.5.6` | Analyze and visualize high-throughput sequencing data including coverage tracks and heatmaps |
+| `ww-deepvariant` | DeepVariant Variant Caller | `google/deepvariant:1.10.0` | Call germline variants from aligned reads using deep learning |
 | `ww-delly` | Structural Variant Caller | `getwilds/delly:1.2.9` | Call structural variants with Delly |
+| `ww-deseq2` | DESeq2 Differential Expression | `getwilds/deseq2:1.40.2` | Differential expression analysis using DESeq2 |
+| `ww-diamond` | DIAMOND Protein Aligner | `getwilds/diamond:2.1.16` | Create DIAMOND database and align protein sequences using BLASTP |
+| `ww-ena` | ENA Data Downloader | `getwilds/ena-tools:2.1.1` | Download sequencing data from the European Nucleotide Archive (ENA) |
+| `ww-fastp` | Fastp Quality Trimmer | `getwilds/fastp:1.1.0` | Quality filtering, adapter trimming, and QC reporting for FASTQ files |
+| `ww-fastqc` | FastQC Quality Control | `getwilds/fastqc:0.12.1` | Run FastQC quality control analysis on FASTQ files |
 | `ww-gatk` | GATK Variant Calling | `getwilds/gatk:4.6.1.0` | Variant calling and processing with GATK |
+| `ww-gdc` | GDC Data Downloader | `getwilds/gdc-client:2.3.0` | Download files from GDC using manifest files or file UUIDs |
+| `ww-glimpse2` | GLIMPSE2 Imputation | `getwilds/glimpse2:2.0.1` | Low-coverage whole genome sequencing imputation including reference panel preparation and phasing |
 | `ww-ichorcna` | Tumor Fraction Estimator | `getwilds/ichorcna:0.2.0` | Estimate tumor fraction with ichorCNA |
+| `ww-jcast` | JCAST Alternative Splicing | `getwilds/jcast:0.3.5` | Translate alternative splicing events from rMATS output into protein sequences |
 | `ww-manta` | Structural Variant Caller | `getwilds/manta:1.6.0` | Call structural variants with Manta |
+| `ww-megahit` | MEGAHIT Metagenome Assembler | `getwilds/megahit:1.2.9` | De novo metagenome assembly using MEGAHIT |
+| `ww-rmats-turbo` | rMATS-turbo Splicing Analysis | `getwilds/rmats-turbo:latest` | Detect and quantify differential alternative splicing events from RNA-seq data |
+| `ww-rseqc` | RSeQC Quality Control | `getwilds/rseqc:5.0.4` | Run comprehensive quality control metrics on aligned RNA-seq data |
+| `ww-salmon` | Salmon Transcript Quantifier | `getwilds/salmon:1.10.3` | Build Salmon index and quantify transcript expression from RNA-seq reads |
 | `ww-samtools` | Utilities for SAM/BAM/CRAM Files | `getwilds/samtools:1.11` | Work with Sequence Alignment/Map (SAM) format files |
+| `ww-shapemapper` | ShapeMapper RNA Structure | `getwilds/shapemapper:2.3` | Analyze RNA structure probing data and generate reactivity profiles |
+| `ww-sjl` | Solar Jetlag Tile Processor | `getwilds/r-utils:0.1.0` | Calculate sunrise/sunset times for geographic tiles as part of the SJL model pipeline |
 | `ww-smoove` | Structural Variant Caller | `brentp/smoove:latest` | Call structural variants with Smoove |
+| `ww-sourmash` | Sourmash K-mer Sketch | `getwilds/sourmash:4.8.2` | Generate sourmash sketches from BAM or FASTA files for sequence comparison |
+| `ww-spades` | SPAdes Genome Assembler | `getwilds/spades:4.2.0` | De novo metagenomic assembly using metaSPAdes |
 | `ww-sra` | SRA Toolkit | `getwilds/sra-tools:3.1.1` | Download sequencing data from NCBI SRA |
 | `ww-star` | STAR Aligner | `getwilds/star:2.7.6a` | RNA-seq alignment with two-pass methodology |
-| `ww-sjl` | Solar Jetlag Tile Processor | `getwilds/r-utils:0.1.0` | Calculate sunrise/sunset times for geographic tiles as part of the SJL model pipeline |
+| `ww-starling` | STARLING Ensemble Generator | `getwilds/starling:2.0.0a3` | Generate structural ensembles for intrinsically disordered proteins |
+| `ww-strelka` | Strelka Variant Caller | `getwilds/strelka:2.9.10` | Run Strelka germline and somatic variant calling |
 | `ww-testdata` | Test Data Downloader | `getwilds/awscli:2.27.49` | Download reference genomes and test datasets |
+| `ww-tritonnp` | TritonNP Nucleosome Positioning | `python:bullseye` | Nucleosome positioning analysis from cfDNA using FFT-based fragment size analysis |
+| `ww-varscan` | VarScan Variant Caller | `getwilds/varscan:2.4.6` | Run VarScan somatic and germline variant calling |
 
 ## Using Modules
 
