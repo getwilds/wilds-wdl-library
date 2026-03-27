@@ -87,8 +87,8 @@ task download_files {
         --location=~{output_dir_name}
     fi
 
-    # Find all downloaded files
-    find ~{output_dir_name} -type f > downloaded_files.txt
+    # Find all downloaded files (use absolute paths for cloud filesystem compatibility)
+    find "$(pwd)/~{output_dir_name}" -type f > downloaded_files.txt
 
     # Create summary
     echo "Download completed at $(date)" > download_summary.txt
@@ -160,8 +160,8 @@ task download_by_query {
       ~{if defined(aspera_location) then "--asperaLocation=" + aspera_location else ""} \
       --location=~{output_dir_name}
 
-    # Find all downloaded files
-    find ~{output_dir_name} -type f > downloaded_files.txt
+    # Find all downloaded files (use absolute paths for cloud filesystem compatibility)
+    find "$(pwd)/~{output_dir_name}" -type f > downloaded_files.txt
 
     # Create summary
     echo "Download completed at $(date)" > download_summary.txt
