@@ -104,7 +104,7 @@ task download_files {
   }
 
   runtime {
-    docker: "emjbishop/enatools:2.1.1_ubuntu"
+    docker: "getwilds/ena-tools:2.1.1"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -184,7 +184,7 @@ task download_by_query {
   }
 
   runtime {
-    docker: "emjbishop/enatools:2.1.1_ubuntu"
+    docker: "getwilds/ena-tools:2.1.1"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -290,7 +290,7 @@ task extract_fastq_pairs {
   }
 
   runtime {
-    docker: "emjbishop/enatools:2.1.1_ubuntu"
+    docker: "getwilds/ena-tools:2.1.1"
     cpu: 1
     memory: "2 GB"
   }
