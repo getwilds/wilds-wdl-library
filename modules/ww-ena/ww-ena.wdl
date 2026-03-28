@@ -98,7 +98,7 @@ task download_files {
   >>>
 
   output {
-    Array[File] downloaded_files = glob("~{output_dir_name}/*")
+    Array[File] = glob("~{output_dir_name}/*")
     File download_summary = "download_summary.txt"
     String accessions_used = select_first([accessions, "from_file"])
   }
@@ -256,9 +256,6 @@ task extract_fastq_pairs {
           cp "$R2_FILE" "fastq_pairs/${ACCESSION}_r2.fastq.gz"
           echo "true" >> is_paired_end.txt
         fi
-
-        echo "fastq_pairs/${ACCESSION}_r1.fastq.gz" >> r1_files.txt
-        echo "fastq_pairs/${ACCESSION}_r2.fastq.gz" >> r2_files.txt
         echo "$ACCESSION" >> accessions.txt
       done
     else
@@ -272,8 +269,6 @@ task extract_fastq_pairs {
         cp "$FASTQ_FILE" "fastq_pairs/${ACCESSION}_r1.fastq.gz"
         touch "fastq_pairs/${ACCESSION}_r2.fastq.gz"
 
-        echo "fastq_pairs/${ACCESSION}_r1.fastq.gz" >> r1_files.txt
-        echo "fastq_pairs/${ACCESSION}_r2.fastq.gz" >> r2_files.txt
         echo "$ACCESSION" >> accessions.txt
         echo "false" >> is_paired_end.txt
       done
@@ -283,8 +278,8 @@ task extract_fastq_pairs {
   >>>
 
   output {
-    Array[File] r1_files = read_lines("r1_files.txt")
-    Array[File] r2_files = read_lines("r2_files.txt")
+    Array[File] r1_files = glob("fastq_pairs/*_r1.fastq.gz")
+    Array[File] r2_files = glob("fastq_pairs/*_r2.fastq.gz")
     Array[String] accessions = read_lines("accessions.txt")
     Array[String] is_paired_end_list = read_lines("is_paired_end.txt")
   }
