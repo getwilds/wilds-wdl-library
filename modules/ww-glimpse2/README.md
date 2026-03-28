@@ -55,7 +55,7 @@ Convert reference panel VCF to binary format for a specific chunk.
 - `input_region` (String): Input region from chunks file
 - `output_region` (String): Output region from chunks file
 - `output_prefix` (String): Prefix for output files
-- `keep_monomorphic_ref_sites` (Boolean, default=false): Keep monomorphic sites
+- `keep_monomorphic_ref_sites` (Boolean, default=true): Keep monomorphic reference sites in output
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
 
@@ -84,11 +84,12 @@ Perform imputation and phasing from VCF input.
 
 ### `glimpse2_phase_cram`
 
-Perform imputation directly from CRAM/BAM files. Accepts one or more BAM/CRAM files via an array input, which are passed to GLIMPSE2_phase using `--bam-list`.
+Perform imputation directly from CRAM/BAM files. Accepts one or more BAM/CRAM files via an array input, which are passed to GLIMPSE2_phase using `--bam-list`. Sample IDs are explicitly included in the BAM list alongside index paths (matching the Broad Institute's implementation) to ensure correct sample identification by GLIMPSE2.
 
 **Inputs:**
 - `input_bams` (Array[File]): Array of input CRAM or BAM files
 - `input_bam_indices` (Array[File]): Array of index files for input CRAM/BAM files
+- `sample_ids` (Array[String]): Array of sample IDs corresponding to each CRAM/BAM file
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Reference genome FASTA index
 - `reference_chunk` (File): Binary reference chunk
@@ -112,7 +113,7 @@ Ligate multiple imputed chunks into a single file.
 - `imputed_chunks` (Array[File]): Array of imputed chunk BCF files
 - `imputed_chunks_indices` (Array[File]): Array of index files
 - `output_prefix` (String): Prefix for output files
-- `output_format` (String, default="bcf"): Output format (bcf, vcf, or vcf.gz)
+- `output_format` (String, default="bcf"): Output format (`bcf` or `vcf.gz`)
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
 
@@ -238,9 +239,9 @@ The test workflow automatically:
 1. Downloads a reference genome region (chr1:1-10000000) from UCSC
 2. Downloads genetic map files from the GLIMPSE repository
 3. Downloads and prepares a 1000 Genomes reference panel subset
-4. Downloads a VCF with genotype likelihoods (NA12878 from 1000 Genomes Phase 3)
-5. Runs the complete GLIMPSE2 imputation pipeline
-6. Outputs the final imputed VCF
+4. Downloads a NA12878 CRAM file and a VCF with genotype likelihoods (NA12878 from 1000 Genomes Phase 3)
+5. Runs the complete GLIMPSE2 imputation pipeline via both `glimpse2_phase` (VCF input) and `glimpse2_phase_cram` (CRAM input)
+6. Outputs the final imputed VCF and per-chunk CRAM-based imputed chunks
 
 ### Running the Test Workflow
 
@@ -285,6 +286,10 @@ Genetic maps can be downloaded from:
 - [Eagle genetic maps](https://alkesgroup.broadinstitute.org/Eagle/)
 
 ## Implementation Notes
+
+### Docker Image: `getwilds/glimpse2:2.0.1-infofix`
+
+This module uses a custom Docker image built from GLIMPSE2's `master` branch (commit `5fda8c09`) rather than the official v2.0.1 release tag. This is necessary because GLIMPSE2 v2.0.0/v2.0.1 contains a [bug in the INFO score calculation](https://github.com/odelaneau/GLIMPSE/issues/144) where the denominator incorrectly uses total haplotypes (target + reference) instead of target haplotypes only, inflating INFO scores toward 1.0. The fix ([PR #175](https://github.com/odelaneau/GLIMPSE/pull/175)) has been merged to `master` but has not yet been included in a tagged release. Note that even with this fix, INFO scores are only meaningful with a large number of target samples (see [GLIMPSE issue #69](https://github.com/odelaneau/GLIMPSE/issues/69)); for small cohorts, use `glimpse2_concordance` against truth genotypes instead.
 
 ### File and Index Co-location
 

@@ -7,6 +7,10 @@
     "/path/to/sample001.cram.crai",
     "/path/to/sample002.cram.crai"
   ],
+  "imputation.sample_ids": [
+    "sample001",
+    "sample002"
+  ],
   "imputation.chromosomes": [
     {
       "chromosome": "chr22",

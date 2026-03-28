@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-imputation/ww-imputation.wdl" as ww_imputation
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/fix-glimpse2-info-score/pipelines/ww-imputation/ww-imputation.wdl" as ww_imputation
 
 #### TEST WORKFLOW DEFINITION ####
 # This workflow demonstrates the ww-imputation pipeline with automatic test data download.
@@ -56,6 +56,7 @@ workflow imputation_testrun {
     input:
       input_crams = [download_cram.cram],
       input_cram_indices = [download_cram.crai],
+      sample_ids = ["NA12878"],
       chromosomes = [
         {
           "chromosome": test_chromosome,

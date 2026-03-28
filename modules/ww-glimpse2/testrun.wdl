@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl" as ww_glimpse2
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/fix-glimpse2-info-score/modules/ww-glimpse2/ww-glimpse2.wdl" as ww_glimpse2
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow glimpse2_example {
@@ -33,7 +33,13 @@ workflow glimpse2_example {
       exclude_samples = "NA12878"
   }
 
-  # Step 4: Download test VCF with genotype likelihoods (NA12878 from 1000 Genomes low-coverage)
+  # Step 4a: Download test CRAM file (NA12878) for glimpse2_phase_cram test
+  call ww_testdata.download_cram_data as download_cram {
+    input:
+      ref_fasta = download_reference.fasta
+  }
+
+  # Step 4b: Download test VCF with genotype likelihoods (NA12878 from 1000 Genomes low-coverage)
   call ww_testdata.download_glimpse2_test_gl_vcf as download_gl_vcf {
     input:
       chromosome = test_chromosome,
@@ -41,7 +47,7 @@ workflow glimpse2_example {
       sample_name = "NA12878"
   }
 
-  # Step 4b: Download truth VCF for concordance evaluation (NA12878 high-coverage genotypes)
+  # Step 4c: Download truth VCF for concordance evaluation (NA12878 high-coverage genotypes)
   call ww_testdata.download_glimpse2_truth_vcf as download_truth_vcf {
     input:
       chromosome = test_chromosome,
@@ -86,6 +92,17 @@ workflow glimpse2_example {
         reference_chunk = glimpse2_split_reference.reference_chunk,
         output_prefix = "~{output_prefix}_imputed_~{idx}"
     }
+
+    call ww_glimpse2.glimpse2_phase_cram {
+      input:
+        input_bams = [download_cram.cram],
+        input_bam_indices = [download_cram.crai],
+        sample_ids = ["NA12878"],
+        reference_fasta = download_reference.fasta,
+        reference_fasta_index = download_reference.fasta_index,
+        reference_chunk = glimpse2_split_reference.reference_chunk,
+        output_prefix = "~{output_prefix}_cram_imputed_~{idx}"
+    }
   }
 
   # Step 8: Ligate all imputed chunks
@@ -118,6 +135,7 @@ workflow glimpse2_example {
     File chunks_file = glimpse2_chunk.chunks_file
     Array[File] reference_chunks = glimpse2_split_reference.reference_chunk
     Array[File] imputed_chunks = glimpse2_phase.imputed_chunk
+    Array[File] cram_imputed_chunks = glimpse2_phase_cram.imputed_chunk
 
     # Final imputed output
     File final_imputed_vcf = glimpse2_ligate.ligated_vcf

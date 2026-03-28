@@ -67,6 +67,10 @@ Create an inputs JSON file with your samples and reference data:
     "/path/to/sample001.cram.crai",
     "/path/to/sample002.cram.crai"
   ],
+  "imputation.sample_ids": [
+    "sample001",
+    "sample002"
+  ],
   "imputation.chromosomes": [
     {
       "chromosome": "chr1",
@@ -138,18 +142,19 @@ For detailed information on configuring and using Cirro pipelines, see the [offi
 |-----------|-------------|------|
 | `input_crams` | Array of input CRAM/BAM files for all samples | Array[File] |
 | `input_cram_indices` | Array of index files for input CRAMs/BAMs | Array[File] |
+| `sample_ids` | Array of sample IDs corresponding to each CRAM/BAM | Array[String] |
 | `chromosomes` | Array of ChromosomeData objects | Array[ChromosomeData] |
 | `reference_fasta` | Reference genome FASTA file | File |
 | `reference_fasta_index` | Reference genome FASTA index (.fai) | File |
 
-Note: `input_crams` and `input_cram_indices` must be parallel arrays (i.e., `input_cram_indices[i]` is the index for `input_crams[i]`). All samples are phased jointly in each imputation call.
+Note: `input_crams`, `input_cram_indices`, and `sample_ids` must be parallel arrays (i.e., `sample_ids[i]` is the sample ID for `input_crams[i]`). All samples are phased jointly in each imputation call.
 
 ### Optional Inputs
 
 | Parameter | Description | Type | Default |
 |-----------|-------------|------|---------|
 | `output_prefix` | Prefix for output file names | String | "imputed" |
-| `output_format` | Output format (bcf, vcf, vcf.gz) | String | "bcf" |
+| `output_format` | Output format (`bcf` or `vcf.gz`) | String | "bcf" |
 | `impute_reference_only_variants` | Only impute variants in reference panel | Boolean | false |
 | `window_size_cm` | Chunk window size in centiMorgans | Float | 2.0 |
 | `buffer_size_cm` | Chunk buffer size in centiMorgans | Float | 0.2 |

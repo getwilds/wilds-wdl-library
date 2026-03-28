@@ -7,7 +7,7 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl" as glimpse2
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/fix-glimpse2-info-score/modules/ww-glimpse2/ww-glimpse2.wdl" as glimpse2
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bcftools/ww-bcftools.wdl" as bcftools
 
 struct ChromosomeData {
@@ -33,6 +33,7 @@ workflow imputation {
   parameter_meta {
     input_crams: "Array of input CRAM/BAM files for all samples to impute"
     input_cram_indices: "Array of index files corresponding to input CRAMs/BAMs"
+    sample_ids: "Array of sample IDs corresponding to each input CRAM/BAM file"
     chromosomes: "Array of ChromosomeData objects containing chromosome name, reference panel VCF, index, and genetic map"
     reference_fasta: "Reference genome FASTA file (must match CRAM reference)"
     reference_fasta_index: "Reference genome FASTA index file (.fai)"
@@ -65,6 +66,7 @@ workflow imputation {
     # Required inputs
     Array[File] input_crams
     Array[File] input_cram_indices
+    Array[String] sample_ids
     Array[ChromosomeData] chromosomes
     File reference_fasta
     File reference_fasta_index
@@ -150,6 +152,7 @@ workflow imputation {
         input:
           input_bams = input_crams,
           input_bam_indices = input_cram_indices,
+          sample_ids = sample_ids,
           reference_fasta = reference_fasta,
           reference_fasta_index = reference_fasta_index,
           reference_chunk = chrom_reference_chunks[chrom_idx][chunk_idx],

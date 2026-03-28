@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import json
 from cirro.helpers.preprocess_dataset import PreprocessDataset
-import pandas as pd
 
 
 def main():
@@ -35,6 +34,7 @@ def setup_inputs(ds: PreprocessDataset):
         "imputation.chromosomes": format_chromosomes(ds),
         "imputation.input_crams": [v.strip() for v in ds.params["input_crams"].split(",")],
         "imputation.input_cram_indices": [v.strip() for v in ds.params["input_cram_indices"].split(",")],
+        "imputation.sample_ids": [v.strip() for v in ds.params["sample_ids"].split(",")],
         "imputation.reference_fasta": ds.params["reference_fasta"],
         "imputation.reference_fasta_index": ds.params["reference_fasta_index"],
         "imputation.output_prefix": ds.params["output_prefix"],

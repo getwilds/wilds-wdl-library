@@ -18,6 +18,11 @@
         "pathType": "dataset",
         "file": "**/*.{crai,bai}"
       },
+      "sample_ids": {
+        "title": "Sample IDs",
+        "description": "Sample IDs for each input CRAM/BAM file (comma-separated, must match order of CRAM files)",
+        "type": "string"
+      },
       "reference_fasta": {
         "title": "Reference Genome (FASTA)",
         "description": "Reference genome FASTA file (must match CRAM reference)",
@@ -99,6 +104,7 @@
     "required": [
       "input_crams",
       "input_cram_indices",
+      "sample_ids",
       "reference_fasta",
       "reference_fasta_index",
       "output_prefix",
