@@ -9,9 +9,10 @@
 </table>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Project Status: Prototype – Useable, some support, open to feedback, unstable API.](https://getwilds.org/badges/badges/prototype.svg)](https://getwilds.org/badges/#prototype)
+[![Project Status: Stable – Useable, full support, open to feedback, stable API.](https://getwilds.org/badges/badges/stable.svg)](https://getwilds.org/badges/#stable)
 [![WDL Executors](https://img.shields.io/badge/WDL-Cromwell%20%7C%20miniWDL%20%7C%20Sprocket-blue.svg)](https://github.com/getwilds/wilds-wdl-library)
 [![WDL](https://img.shields.io/badge/WDL-1.0-orange.svg)](https://openwdl.org/)
+[![GitHub Release](https://img.shields.io/github/v/release/getwilds/wilds-wdl-library)](https://github.com/getwilds/wilds-wdl-library/releases)
 
 ---
 
@@ -133,9 +134,14 @@ All tasks use versioned, tested Docker images from the [WILDS Docker Library](ht
 - **Documentation Issues**: Found something unclear or incorrect? [Report an issue](https://github.com/getwilds/wilds-wdl-library/issues)
 - **General Questions**: Contact the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org
 - **Additional Resources**:
-  - [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) - Comprehensive guides and best practices
   - [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) - How to contribute
   - [GitHub Repository](https://github.com/getwilds/wilds-wdl-library) - Source code and development
+
+---
+
+## WILDS WDL Development Program
+
+The library is actively growing through the **[WILDS WDL Development Program](https://sciwiki.fredhutch.org/datascience/wilds_workflow_dev/)**, a collaborative initiative where Fred Hutch researchers partner with the [OCDO Research Informatics team](https://ocdo.fredhutch.org/dss.html#research-informatics) to convert their computational analyses into production-quality WDL workflows. If you have a computational analysis you'd like to make scalable and reproducible, [submit a request](https://forms.office.com/r/TXmB0qaTTa) to get started.
 
 ---
 

@@ -3,8 +3,8 @@ message: "If you use this software, please cite it as below."
 type: software
 title: "WILDS WDL Library"
 abstract: "A centralized collection of bioinformatics WDL infrastructure providing reusable, well-tested components that can be combined to create powerful computational pipelines for genomics research."
-version: 0.1.0
-date-released: "2026-01-09"
+version: 0.2.0
+date-released: "2026-03-31"
 license: MIT
 repository-code: "https://github.com/getwilds/wilds-wdl-library"
 url: "https://getwilds.org/wilds-wdl-library/"
@@ -41,3 +41,25 @@ authors:
     given-names: Caroline
     affiliation: "Fred Hutch Cancer Center"
     orcid: "https://orcid.org/0009-0009-0955-5954"
+  - family-names: Goss
+    given-names: Louisa
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0009-0005-2936-2405"
+  - family-names: Berger
+    given-names: Alice
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0000-0002-6538-2658"
+  - family-names: Young
+    given-names: Janet
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0000-0001-8220-8427"
+  - family-names: Moorthi
+    given-names: Sitapriya
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0000-0001-6372-5170"
+  - family-names: O'Brien
+    given-names: Siobhan
+    affiliation: "Fred Hutch Cancer Center"
+  - family-names: Bouvet
+    given-names: Ethan
+    affiliation: "Fred Hutch Cancer Center"
