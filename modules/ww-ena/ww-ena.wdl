@@ -98,7 +98,7 @@ task download_files {
   >>>
 
   output {
-    Array[File] = glob("~{output_dir_name}/*")
+    Array[File] downloaded_files = glob("~{output_dir_name}/*")
     File download_summary = "download_summary.txt"
     String accessions_used = select_first([accessions, "from_file"])
   }
