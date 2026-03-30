@@ -215,10 +215,6 @@ task extract_fastq_pairs {
   command <<<
     set -eo pipefail
 
-    # List all downloaded files (using actual localized paths)
-    echo "Downloaded files:"
-    echo "~{sep="\n" downloaded_files}"
-
     # Create output directory for organized pairs
     mkdir -p fastq_pairs
 
