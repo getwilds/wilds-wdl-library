@@ -217,7 +217,7 @@ task extract_fastq_pairs {
 
     # List all downloaded files (using actual localized paths)
     echo "Downloaded files:"
-    ls -lh ~{sep=" " downloaded_files}
+    echo "~{sep="\n" downloaded_files}"
 
     # Create output directory for organized pairs
     mkdir -p fastq_pairs
