@@ -217,14 +217,14 @@ task extract_fastq_pairs {
 
     # List all downloaded files (using actual localized paths)
     echo "Downloaded files:"
-    ls -lh ~{sep=' ' downloaded_files}
+    ls -lh ~{sep=" " downloaded_files}
 
     # Create output directory for organized pairs
     mkdir -p fastq_pairs
 
     # Find all R1 files (ENA typically names them with _1 and _2 or _R1 and _R2)
     # Look for patterns: *_1.fastq.gz, *_R1.fastq.gz, *_1.fq.gz, *_R1.fq.gz, etc.
-    R1_FILES=$(ls ~{sep=' ' downloaded_files} | grep -E "(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq)" | sort || echo "")
+    R1_FILES=$(ls ~{sep=" " downloaded_files} | grep -E "(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq)" | sort || echo "")
 
     # Initialize output files
     > r1_files.txt
@@ -243,7 +243,7 @@ task extract_fastq_pairs {
         echo "Extracted accession: $ACCESSION"
 
         # Find matching R2 file
-        R2_FILE=$(ls ~{sep=' ' downloaded_files} | grep -E "^.*${ACCESSION}(_2\.fastq|_R2\.fastq|_2\.fq|_R2\.fq)" | head -1 || echo "")
+        R2_FILE=$(ls ~{sep=" " downloaded_files} | grep -E "^.*${ACCESSION}(_2\.fastq|_R2\.fastq|_2\.fq|_R2\.fq)" | head -1 || echo "")
 
         if [ -z "$R2_FILE" ]; then
           echo "WARNING: No matching R2 file for accession: $ACCESSION, treating as single-end"
@@ -261,7 +261,7 @@ task extract_fastq_pairs {
     else
       # Single-end: no R1 pattern found, treat all FASTQ files as single-end reads
       echo "No paired-end naming pattern found, treating files as single-end"
-      for FASTQ_FILE in $(ls ~{sep=' ' downloaded_files} | grep -E "\.(fastq|fq)" | sort); do
+      for FASTQ_FILE in $(ls ~{sep=" " downloaded_files} | grep -E "\.(fastq|fq)" | sort); do
         BASENAME=$(basename "$FASTQ_FILE")
         ACCESSION=$(echo "$BASENAME" | sed -E 's/\.(fastq|fq).*//')
         echo "Processing single-end: $ACCESSION"
