@@ -115,8 +115,8 @@ call trimgalore_tasks.trimgalore_paired {
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
-- **ww-testdata**: Automatic provisioning of test data for demonstrations
-- **ww-star / ww-bwa**: Use trimmed FASTQ output as input to alignment modules
+- **ww-salmon**: Quantify RNA transcripts from trimmed FASTQs
+- **ww-star / ww-bwa / ww-bowtie / ww-bowtie2**: Use trimmed FASTQ output as input to alignment modules
 - **ww-fastqc**: Additional standalone QC if needed beyond Trim Galore's built-in FastQC option
 
 ## Testing the Module
@@ -139,7 +139,6 @@ java -jar cromwell.jar run testrun.wdl
 The test workflow automatically:
 1. Downloads test FASTQ data using `ww-testdata`
 2. Runs both paired-end and single-end trimming on the test data
-3. Demonstrates the module's tasks in a realistic workflow context
 
 ## Docker Container
 
