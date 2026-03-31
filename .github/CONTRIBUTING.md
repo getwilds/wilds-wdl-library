@@ -168,6 +168,7 @@ You may include folders containing configuration files for execution on cloud pl
 - **Naming**: Use dotfile directory names (e.g., `.cirro/`, `.terra/`)
 - **Documentation**: Briefly describe how to use the configurations in the pipeline's README and include links to platform documentation
 
+Platform configurations are entirely optional and should not be required to run the pipeline with standard WDL executors (Cromwell, miniWDL, Sprocket).
 
 **Cirro Configurations**
 
