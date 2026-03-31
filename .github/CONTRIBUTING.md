@@ -160,22 +160,37 @@ Each pipeline should include an `inputs.json` file that serves as an example for
 
 **Note**: GitHub Action tests use the `ww-testdata` module to automatically download test data, so your `inputs.json` does not need to reference actual test files for CI purposes.
 
-**Platform-Specific Configurations (Optional)**
+**Platform-Specific Configuration Files (Optional)**
 
-Pipelines may include optional platform-specific configuration directories for execution on cloud platforms or workflow management systems:
+You may include folders containing configuration files for execution on cloud platforms (e.g., [Cirro](https://cirro.bio/), [Terra](https://terra.bio/)):
 
 - **Location**: Place platform configs in a subdirectory within the pipeline (e.g., `pipelines/ww-example/.cirro/`)
-- **Naming convention**: Use dotfile directory names (`.cirro/`, `.terra/`, etc.) to indicate platform
-- **Standalone principle**: Keep all pipeline-related files (WDL, inputs, platform configs) in the pipeline directory
-- **Documentation**: Document platform configurations in the pipeline's README with links to platform documentation
-- **Examples**:
-  - `.cirro/` for [Cirro](https://cirro.bio/) platform ([config documentation](https://docs.cirro.bio/pipelines/adding-pipelines/))
-  - `.terra/` for [Terra](https://terra.bio/) workspace configurations
-  - Other platform-specific directories as needed
+- **Naming**: Use dotfile directory names (e.g., `.cirro/`, `.terra/`)
+- **Documentation**: Briefly describe how to use the configurations in the pipeline's README and include links to platform documentation
 
 Platform configurations are entirely optional and should not be required to run the pipeline with standard WDL executors (Cromwell, miniWDL, Sprocket).
 
-**Cirro Configuration Validation**: Pipelines with `.cirro/` directories are automatically validated in CI. The validation checks that all required files are present (`preprocess.py`, `process-form.json`, `process-input.json`, `process-output.json`, `process-compute.config`), JSON files are valid, and `preprocess.py` has no syntax errors. You can run this locally with `make lint_cirro`.
+**Cirro Configurations**
+
+If you'd like to make your new pipeline Cirro-compatible:
+
+1. Ensure you have Cirro permissions to add custom pipelines
+2. Create a new branch, add the `.cirro` folder
+3. Look at our existing [pipelines](https://github.com/getwilds/wilds-wdl-library/tree/main/pipelines) and the Cirro [documentation](https://docs.cirro.bio/pipelines/adding-pipelines/) to get started
+4. In Cirro, add a custom pipeline that points to this GitHub repo and your branch
+5. Upload some test data to Cirro and test run your pipeline
+6. If all looks good, submit a pull request, then update the branch in Cirro to `main` once merged
+
+Pipelines with `.cirro/` directories are automatically validated in our CI. The validation checks that all required files are present (`preprocess.py`, `process-form.json`, `process-input.json`, `process-output.json`, `process-compute.config`), JSON files are valid, and `preprocess.py` has no syntax errors. You can run this locally with `make lint_cirro`.
+
+
+Some tips for Cirro integration:
+- Your WDL must be able to handle AWS S3 URIs
+- Your WDL must not use `ftp` for file transfer (`http` is ok)
+- Your WDL must not use a Docker image that is based on Alpine Linux
+
+If you need help or want to make your pipeline available to all Cirro users, reach out to us at wilds@fredhutch.org
+
 
 ## Testing Requirements
 
