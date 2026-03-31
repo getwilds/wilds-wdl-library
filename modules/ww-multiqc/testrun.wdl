@@ -1,9 +1,9 @@
 version 1.0
 
 # Import module under test and dependencies
-import "ww-multiqc.wdl" as ww_multiqc
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
-import "../ww-fastqc/ww-fastqc.wdl" as ww_fastqc
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-multiqc/ww-multiqc.wdl" as ww_multiqc
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-fastqc/ww-fastqc.wdl" as ww_fastqc
 
 #### TEST WORKFLOW DEFINITION ####
 

@@ -1,8 +1,8 @@
 version 1.0
 
 # Import module in question as well as the testdata module for automatic demo functionality
-import "ww-trimgalore.wdl" as ww_trimgalore
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-trimgalore/ww-trimgalore.wdl" as ww_trimgalore
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 # Define data structure for paired-end sample inputs
 struct TrimGaloreSample {
