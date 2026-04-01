@@ -73,7 +73,7 @@ task download_files {
         # Make an array of the FASTQ path(s) and loop over them
         IFS=';' read -ra urls <<< "$paths"
         for path in "${urls[@]}"; do
-          wget -P ~{output_dir_name} "https://${path}"
+          wget -P ~{output_dir_name}/reads_fastq/${acc} "https://${path}"
         done
       done
 
@@ -98,7 +98,7 @@ task download_files {
   >>>
 
   output {
-    Array[File] downloaded_files = glob("~{output_dir_name}/*")
+    Array[File] downloaded_files = glob("~{output_dir_name}/*/*/*")
     File download_summary = "download_summary.txt"
     String accessions_used = select_first([accessions, "from_file"])
   }
@@ -178,7 +178,7 @@ task download_by_query {
   >>>
 
   output {
-    Array[File] downloaded_files = read_lines("downloaded_files.txt")
+    Array[File] downloaded_files = glob("~{output_dir_name}/*/*/*")
     File download_log = "download.log"
     File download_summary = "download_summary.txt"
   }
