@@ -1,0 +1,13 @@
+{
+  "ena_accession_list": "$.dataset.params.ena_accession_list",
+  "fasta": "$.dataset.params.fasta",
+  "gtf": "$.dataset.params.gtf",
+  "sjdb_overhang": "$.dataset.params.sjdb_overhang",
+  "genome_sa_index_nbases": "$.dataset.params.genome_sa_index_nbases",
+  "ncpu": "$.dataset.params.ncpu",
+  "memory_gb": "$.dataset.params.memory_gb",
+  "ena_file_format": "$.dataset.params.ena_file_format",
+  "ena_protocol": "$.dataset.params.ena_protocol",
+  "final_workflow_outputs_dir": "$.dataset.dataPath",
+  "workflow_failure_mode": "$.dataset.params.workflow_failure_mode"
+}

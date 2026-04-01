@@ -13,7 +13,6 @@ task download_files {
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ena/ww-ena.wdl"
     outputs: {
         downloaded_files: "Array of downloaded files from ENA",
-        download_log: "Log file containing download status and details",
         download_summary: "Summary report of the download operation",
         accessions_used: "The accession numbers that were processed"
     }
@@ -23,9 +22,9 @@ task download_files {
     accessions: "Comma-separated list of ENA accession numbers (e.g., 'ERR2208926,ERR2208890') or a single accession"
     accessions_file: "Optional file containing accession numbers (one per line or tab-separated with accessions in first column)"
     file_format: "Format of files to download: READS_FASTQ, READS_SUBMITTED, READS_BAM, ANALYSIS_SUBMITTED, or ANALYSIS_GENERATED"
-    protocol: "Transfer protocol to use: FTP or ASPERA (requires aspera_location if ASPERA is selected)"
+    protocol: "Transfer protocol to use: FTP, HTTP (READS_FASTQ only), or ASPERA (requires aspera_location)"
     aspera_location: "Path to Aspera Connect/CLI installation (required if protocol is ASPERA)"
-    output_dir_name: "Name for the output directory where files will be downloaded"
+    output_dir_name: "Name for the output directory where files will be downloaded (default: ena_downloads)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
@@ -54,15 +53,42 @@ task download_files {
   command <<<
     set -eo pipefail
 
-    # Execute download with ena-file-downloader
-    java -jar /usr/local/bin/ena-file-downloader.jar \
-      --accessions=~{accessions_arg} \
-      --format=~{file_format} \
-      --protocol=~{protocol} \
-      ~{if defined(aspera_location) then "--asperaLocation=" + aspera_location else ""} \
-      --location=~{output_dir_name}
+    if [ "~{protocol}" = "HTTP" ]; then
+
+      # Manually make output folder
+      mkdir -p ~{output_dir_name}
+
+      # Make an array of the accessions - from file (first column) or comma-separated string
+      if [ -n "~{default='' accessions_file}" ]; then
+        mapfile -t acc_array < <(cut -f1 "~{default='' accessions_file}")
+      else
+        IFS=',' read -ra acc_array <<< "~{default='' accessions}"
+      fi
+      for acc in "${acc_array[@]}"; do
+
+        # Get ENA portal FTP path(s) (will be two for paired FASTQs)
+        # We need to trim off part of the wget output because it returns a table
+        paths=$(wget -qO- "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=${acc}&result=read_run&fields=fastq_ftp" | tail -n +2 | cut -f2)
+
+        # Make an array of the FASTQ path(s) and loop over them
+        IFS=';' read -ra urls <<< "$paths"
+        for path in "${urls[@]}"; do
+          wget -P ~{output_dir_name}/reads_fastq/${acc} "https://${path}"
+        done
+      done
+
+    else
+      # Execute download with ena-file-downloader
+      java -jar /usr/local/bin/ena-file-downloader.jar \
+        --accessions=~{accessions_arg} \
+        --format=~{file_format} \
+        --protocol=~{protocol} \
+        ~{if defined(aspera_location) then "--asperaLocation=" + aspera_location else ""} \
+        --location=~{output_dir_name}
+    fi
 
     # Find all downloaded files
+    # The tool saves outputs to <output_dir_name>/<accession>/
     find ~{output_dir_name} -type f > downloaded_files.txt
 
     # Create summary
@@ -70,18 +96,10 @@ task download_files {
     echo "Number of files downloaded: $(cat downloaded_files.txt | wc -l)" >> download_summary.txt
     echo "Files:" >> download_summary.txt
     cat downloaded_files.txt >> download_summary.txt
-
-    # Copy log file if it exists
-    if [ -f "logs/app.log" ]; then
-      cp logs/app.log download.log
-    else
-      echo "No log file generated" > download.log
-    fi
   >>>
 
   output {
-    Array[File] downloaded_files = read_lines("downloaded_files.txt")
-    File download_log = "download.log"
+    Array[File] downloaded_files = glob("~{output_dir_name}/*/*/*")
     File download_summary = "download_summary.txt"
     String accessions_used = select_first([accessions, "from_file"])
   }
@@ -143,7 +161,7 @@ task download_by_query {
       ~{if defined(aspera_location) then "--asperaLocation=" + aspera_location else ""} \
       --location=~{output_dir_name}
 
-    # Find all downloaded files
+    # When using --query the tool saves outputs to <output_dir_name>/<protocol>/<accession>/
     find ~{output_dir_name} -type f > downloaded_files.txt
 
     # Create summary
@@ -161,7 +179,7 @@ task download_by_query {
   >>>
 
   output {
-    Array[File] downloaded_files = read_lines("downloaded_files.txt")
+    Array[File] downloaded_files = glob("~{output_dir_name}/*/*/*")
     File download_log = "download.log"
     File download_summary = "download_summary.txt"
   }
@@ -198,16 +216,12 @@ task extract_fastq_pairs {
   command <<<
     set -eo pipefail
 
-    # List all downloaded files (using actual localized paths)
-    echo "Downloaded files:"
-    ls -lh ~{sep=' ' downloaded_files}
-
     # Create output directory for organized pairs
     mkdir -p fastq_pairs
 
     # Find all R1 files (ENA typically names them with _1 and _2 or _R1 and _R2)
     # Look for patterns: *_1.fastq.gz, *_R1.fastq.gz, *_1.fq.gz, *_R1.fq.gz, etc.
-    R1_FILES=$(ls ~{sep=' ' downloaded_files} | grep -E "(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq)" | sort || echo "")
+    R1_FILES=$(grep -E "(_1\.fastq|_R1\.fastq|_1\.fq|_R1\.fq)" ~{write_lines(downloaded_files)} | sort || echo "")
 
     # Initialize output files
     > r1_files.txt
@@ -226,7 +240,7 @@ task extract_fastq_pairs {
         echo "Extracted accession: $ACCESSION"
 
         # Find matching R2 file
-        R2_FILE=$(ls ~{sep=' ' downloaded_files} | grep -E "^.*${ACCESSION}(_2\.fastq|_R2\.fastq|_2\.fq|_R2\.fq)" | head -1 || echo "")
+        R2_FILE=$(grep -E "^.*${ACCESSION}(_2\.fastq|_R2\.fastq|_2\.fq|_R2\.fq)" ~{write_lines(downloaded_files)} | head -1 || echo "")
 
         if [ -z "$R2_FILE" ]; then
           echo "WARNING: No matching R2 file for accession: $ACCESSION, treating as single-end"
@@ -239,15 +253,12 @@ task extract_fastq_pairs {
           cp "$R2_FILE" "fastq_pairs/${ACCESSION}_r2.fastq.gz"
           echo "true" >> is_paired_end.txt
         fi
-
-        echo "fastq_pairs/${ACCESSION}_r1.fastq.gz" >> r1_files.txt
-        echo "fastq_pairs/${ACCESSION}_r2.fastq.gz" >> r2_files.txt
         echo "$ACCESSION" >> accessions.txt
       done
     else
       # Single-end: no R1 pattern found, treat all FASTQ files as single-end reads
       echo "No paired-end naming pattern found, treating files as single-end"
-      for FASTQ_FILE in $(ls ~{sep=' ' downloaded_files} | grep -E "\.(fastq|fq)" | sort); do
+      while read -r FASTQ_FILE; do
         BASENAME=$(basename "$FASTQ_FILE")
         ACCESSION=$(echo "$BASENAME" | sed -E 's/\.(fastq|fq).*//')
         echo "Processing single-end: $ACCESSION"
@@ -255,19 +266,17 @@ task extract_fastq_pairs {
         cp "$FASTQ_FILE" "fastq_pairs/${ACCESSION}_r1.fastq.gz"
         touch "fastq_pairs/${ACCESSION}_r2.fastq.gz"
 
-        echo "fastq_pairs/${ACCESSION}_r1.fastq.gz" >> r1_files.txt
-        echo "fastq_pairs/${ACCESSION}_r2.fastq.gz" >> r2_files.txt
         echo "$ACCESSION" >> accessions.txt
         echo "false" >> is_paired_end.txt
-      done
+      done < <(grep -E "\.(fastq|fq)" ~{write_lines(downloaded_files)} | sort)
     fi
 
     echo "Successfully processed $(wc -l < accessions.txt) FASTQ sample(s)"
   >>>
 
   output {
-    Array[File] r1_files = read_lines("r1_files.txt")
-    Array[File] r2_files = read_lines("r2_files.txt")
+    Array[File] r1_files = glob("fastq_pairs/*_r1.fastq.gz")
+    Array[File] r2_files = glob("fastq_pairs/*_r2.fastq.gz")
     Array[String] accessions = read_lines("accessions.txt")
     Array[String] is_paired_end_list = read_lines("is_paired_end.txt")
   }

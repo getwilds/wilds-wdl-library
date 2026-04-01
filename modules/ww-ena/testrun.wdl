@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-ena/ww-ena.wdl" as ww_ena
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/cirro-ena-star/modules/ww-ena/ww-ena.wdl" as ww_ena
 
 workflow ena_example {
   meta {
@@ -162,7 +162,7 @@ task validate_download {
     single_num_acc=~{length(single_extracted_accessions)}
     echo "Number of R1 files: $single_num_r1" >> validation_report.txt
     echo "Number of R2 files: $single_num_r2" >> validation_report.txt
-    echo "Extracted accessions: ~{sep=',' single_extracted_accessions}" >> validation_report.txt
+    echo "Extracted accessions: $(paste -sd',' ~{write_lines(single_extracted_accessions)})" >> validation_report.txt
 
     # Verify single accession should produce exactly 1 pair
     if [ "$single_num_r1" -eq 1 ] && [ "$single_num_r2" -eq 1 ]; then
@@ -204,7 +204,7 @@ task validate_download {
     multi_num_acc=~{length(multi_extracted_accessions)}
     echo "Number of R1 files: $multi_num_r1" >> validation_report.txt
     echo "Number of R2 files: $multi_num_r2" >> validation_report.txt
-    echo "Extracted accessions: ~{sep=',' multi_extracted_accessions}" >> validation_report.txt
+    echo "Extracted accessions: $(paste -sd',' ~{write_lines(multi_extracted_accessions)})" >> validation_report.txt
 
     # Verify multiple accessions should produce more than 1 pair
     if [ "$multi_num_r1" -gt 1 ] && [ "$multi_num_r1" -eq "$multi_num_r2" ]; then
@@ -217,14 +217,14 @@ task validate_download {
     # Verify all extracted accessions are in the input string
     echo "" >> validation_report.txt
     echo "--- Verifying extracted accessions match input ---" >> validation_report.txt
-    for acc in ~{sep=' ' multi_extracted_accessions}; do
+    while read -r acc; do
       if [[ "~{multi_accessions_used}" == *"$acc"* ]]; then
         echo "✓ Accession $acc found in input" >> validation_report.txt
       else
         echo "✗ FAILED: Extracted accession $acc not found in input (~{multi_accessions_used})" >> validation_report.txt
         exit 1
       fi
-    done
+    done < ~{write_lines(multi_extracted_accessions)}
 
     #####################################
     # Test 3: Query-Based Download
@@ -247,23 +247,23 @@ task validate_download {
     echo "" >> validation_report.txt
     echo "=== File Integrity Checks ===" >> validation_report.txt
 
-    for r1_file in ~{sep=' ' single_r1_files} ~{sep=' ' multi_r1_files}; do
+    while read -r r1_file; do
       if [ -f "$r1_file" ] && [ -s "$r1_file" ]; then
         echo "✓ R1 file OK: $r1_file" >> validation_report.txt
       else
         echo "✗ FAILED: R1 file missing or empty: $r1_file" >> validation_report.txt
         exit 1
       fi
-    done
+    done < <(cat ~{write_lines(single_r1_files)} ~{write_lines(multi_r1_files)})
 
-    for r2_file in ~{sep=' ' single_r2_files} ~{sep=' ' multi_r2_files}; do
+    while read -r r2_file; do
       if [ -f "$r2_file" ] && [ -s "$r2_file" ]; then
         echo "✓ R2 file OK: $r2_file" >> validation_report.txt
       else
         echo "✗ FAILED: R2 file missing or empty: $r2_file" >> validation_report.txt
         exit 1
       fi
-    done
+    done < <(cat ~{write_lines(single_r2_files)} ~{write_lines(multi_r2_files)})
 
     echo "" >> validation_report.txt
     echo "=== Overall Result ===" >> validation_report.txt

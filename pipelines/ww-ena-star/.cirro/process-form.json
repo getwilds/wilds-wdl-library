@@ -1,0 +1,85 @@
+{
+  "form": {
+    "type": "object",
+    "properties": {
+      "ena_accession_list": {
+        "title": "ENA Accession IDs (e.g., ERR000001,ERR000002)",
+        "description": "Comma-separated list of ENA accession IDs",
+        "type": "string"
+      },
+      "fasta": {
+        "title": "Reference Genome (FASTA)",
+        "description": "Reference genome to use for alignment",
+        "type": "string",
+        "pathType": "dataset",
+        "file": "**/*.f*"
+      },
+      "gtf": {
+        "title": "Reference Genome (GTF)",
+        "description": "Gene annotations for the reference in GTF format",
+        "type": "string",
+        "pathType": "dataset",
+        "file": "**/*.gtf"
+      },
+      "sjdb_overhang": {
+        "title": "STAR - sjdbOverhang",
+        "description": "Length of genomic sequence around annotated junction for splice junction database (typically read_length - 1)",
+        "type": "integer",
+        "default": 100
+      },
+      "genome_sa_index_nbases": {
+        "title": "STAR - genomeSAindexNbases",
+        "description": "Length of SA pre-indexing string (typically 10-15, scales with genome size)",
+        "type": "integer",
+        "default": 14
+      },
+      "ncpu": {
+        "title": "Number of CPUs",
+        "description": "Number of CPUs to use for ENA download and for STAR alignment",
+        "type": "integer",
+        "default": 12
+      },
+      "memory_gb": {
+        "title": "Memory (GB)",
+        "description": "Memory allocation in GB for STAR alignment",
+        "type": "integer",
+        "default": 64
+      },
+      "ena_file_format": {
+        "title": "ENA File Format",
+        "description": "Format of files to download from ENA",
+        "type": "string",
+        "default": "READS_FASTQ"
+      },
+      "ena_protocol": {
+        "title": "ENA Transfer Protocol",
+        "description": "Transfer protocol to use for downloading files from ENA",
+        "type": "string",
+        "default": "HTTP"
+      },
+      "workflow_failure_mode": {
+        "title": "Workflow Failure Mode",
+        "description": "Behavior when individual tasks encounter failures",
+        "type": "string",
+        "default": "ContinueWhilePossible",
+        "enum": [
+          "ContinueWhilePossible",
+          "NoNewCalls"
+        ]
+      }
+    },
+    "required": [
+      "ena_accession_list",
+      "fasta",
+      "gtf",
+      "sjdb_overhang",
+      "genome_sa_index_nbases",
+      "ncpu",
+      "memory_gb",
+      "ena_file_format",
+      "ena_protocol",
+      "workflow_failure_mode"
+    ]
+  },
+  "ui": {}
+}
