@@ -22,7 +22,7 @@ task download_files {
     accessions: "Comma-separated list of ENA accession numbers (e.g., 'ERR2208926,ERR2208890') or a single accession"
     accessions_file: "Optional file containing accession numbers (one per line or tab-separated with accessions in first column)"
     file_format: "Format of files to download: READS_FASTQ, READS_SUBMITTED, READS_BAM, ANALYSIS_SUBMITTED, or ANALYSIS_GENERATED"
-    protocol: "Transfer protocol to use: FTP, HTTP, or ASPERA (requires aspera_location)"
+    protocol: "Transfer protocol to use: FTP, HTTP (READS_FASTQ only), or ASPERA (requires aspera_location)"
     aspera_location: "Path to Aspera Connect/CLI installation (required if protocol is ASPERA)"
     output_dir_name: "Name for the output directory where files will be downloaded (default: ena_downloads)"
     cpu_cores: "Number of CPU cores allocated for the task"
@@ -51,7 +51,7 @@ task download_files {
   String accessions_arg = select_first([accessions, accessions_file])
 
   command <<<
-    set -o pipefail
+    set -eo pipefail
 
     if [ "~{protocol}" = "HTTP" ]; then
 
