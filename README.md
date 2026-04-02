@@ -168,6 +168,10 @@ See our [Contributing Guidelines](.github/CONTRIBUTING.md) for detailed informat
 - **Documentation**: [Contributing Guidelines](.github/CONTRIBUTING.md)
 - **Fred Hutch Users**: [Scientific Computing Wiki](https://sciwiki.fredhutch.org/)
 
+## Dockstore
+
+All modules and pipelines in this library are published on [Dockstore](https://dockstore.org/), enabling discovery, import, and citation of individual workflows. Browse the library on Dockstore to find modules and pipelines with detailed descriptions, author information, and DOIs.
+
 ## Related Resources
 
 - **[WILDS Docker Library](https://github.com/getwilds/wilds-docker-library)**: Container images used by WDL workflows
