@@ -123,8 +123,8 @@ task download_by_manifest {
 
 task download_by_uuids {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Download files from GDC using file UUIDs. Supports both controlled-access (with token) and open-access data."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gdc/ww-gdc.wdl"
     outputs: {

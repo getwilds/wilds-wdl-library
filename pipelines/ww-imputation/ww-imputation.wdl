@@ -19,8 +19,20 @@ struct ChromosomeData {
 
 workflow imputation {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        },
+        {
+            name: "Louisa Goss",
+            email: "lgoss2@fredhutch.org"
+        }
+    ]
     description: "WDL workflow for genotype imputation from low-coverage WGS data using GLIMPSE2. Processes CRAM/BAM files against a reference panel to produce a multi-sample imputed VCF file."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-imputation/ww-imputation.wdl"
     outputs: {

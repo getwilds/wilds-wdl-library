@@ -6,8 +6,8 @@ version 1.0
 
 task annotsv_annotate {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Annotate structural variants using AnnotSV with comprehensive genomic and clinical annotations"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-annotsv/ww-annotsv.wdl"
     outputs: {

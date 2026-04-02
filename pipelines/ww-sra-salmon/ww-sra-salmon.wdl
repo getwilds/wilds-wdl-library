@@ -11,8 +11,24 @@ struct SalmonSample {
 
 workflow sra_salmon {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        },
+        {
+            name: "Alice Berger",
+            email: "aberger@fredhutch.org"
+        },
+        {
+            name: "Janet Young",
+            email: "jyoung@fredhutch.org"
+        }
+    ]
     description: "WDL workflow to download raw sequencing data from SRA and quantify using Salmon quasi-mapping"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-sra-salmon/ww-sra-salmon.wdl"
     outputs: {

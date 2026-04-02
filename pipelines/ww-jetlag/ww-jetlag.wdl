@@ -8,8 +8,20 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow jetlag {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        },
+        {
+            name: "Caroline Nondin",
+            email: "cnondin@fredhutch.org"
+        }
+    ]
     description: "WDL pipeline to calculate sunrise/sunset times and sun time differences across an array of geographic tiles as part of the SJL model pipeline"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-jetlag/ww-jetlag.wdl"
     outputs: {

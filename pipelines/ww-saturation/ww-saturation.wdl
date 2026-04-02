@@ -11,8 +11,20 @@ struct SaturationSample {
 
 workflow saturation_mutagenesis {
     meta {
-        author: "Taylor Firman"
-        email: "tfirman@fredhutch.org"
+        author: [
+            {
+                name: "Taylor Firman",
+                email: "tfirman@fredhutch.org"
+            },
+            {
+                name: "Sitapriya Moorthi",
+                email: "smoorthi@fredhutch.org"
+            },
+            {
+                name: "Siobhan O'Brien",
+                email: "sobrien2@fredhutch.org"
+            }
+        ]
         description: "WDL workflow to analyze saturation mutagenesis data using BWA alignment and GATK AnalyzeSaturationMutagenesis"
         url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-saturation/ww-saturation.wdl"
         outputs: {
