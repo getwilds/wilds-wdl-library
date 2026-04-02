@@ -15,17 +15,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for structural variant annotation using AnnotSV"
-    topic: variant-calling
+    topic: WDL module for structural variant annotation using AnnotSV
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - structural-variants
-        - annotation
-        - annotsv
 
   - name: ww-annovar
     subclass: WDL
@@ -37,16 +31,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for variant annotation using Annovar"
-    topic: variant-calling
+    topic: WDL module for variant annotation using Annovar
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - variant-annotation
-        - annovar
 
   - name: ww-aws-sso
     subclass: WDL
@@ -58,16 +47,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for downloading files from S3 using AWS SSO authentication"
-    topic: data-transfer
+    topic: WDL module for downloading files from S3 using AWS SSO authentication
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - aws
-        - s3
-        - data-transfer
 
   - name: ww-bcftools
     subclass: WDL
@@ -79,16 +63,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for variant calling and VCF manipulation using bcftools"
-    topic: variant-calling
+    topic: WDL module for variant calling and VCF manipulation using bcftools
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - variant-calling
-        - bcftools
 
   - name: ww-bedparse
     subclass: WDL
@@ -100,16 +79,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for converting GTF annotation files to BED12 format using bedparse"
-    topic: genomics
+    topic: WDL module for converting GTF annotation files to BED12 format using bedparse
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - format-conversion
-        - bedparse
 
   - name: ww-bedtools
     subclass: WDL
@@ -121,16 +95,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "WDL module for BAM coverage analysis using BEDTools"
-    topic: genomics
+    topic: WDL module for BAM coverage analysis using BEDTools
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - coverage
-        - bedtools
 
   - name: ww-bowtie
     subclass: WDL
@@ -142,16 +111,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for building Bowtie index files and aligning reads"
-    topic: alignment
+    topic: WDL module for building Bowtie index files and aligning reads
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - alignment
-        - bowtie
 
   - name: ww-bowtie2
     subclass: WDL
@@ -163,16 +127,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for building Bowtie 2 index files and aligning reads"
-    topic: alignment
+    topic: WDL module for building Bowtie 2 index files and aligning reads
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - alignment
-        - bowtie2
 
   - name: ww-bwa
     subclass: WDL
@@ -184,16 +143,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "WDL module for building BWA index files and aligning reads"
-    topic: alignment
+    topic: WDL module for building BWA index files and aligning reads
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - alignment
-        - bwa
 
   - name: ww-cellranger
     subclass: WDL
@@ -205,16 +159,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "WDL module for single-cell gene expression analysis using Cell Ranger"
-    topic: single-cell
+    topic: WDL module for single-cell gene expression analysis using Cell Ranger
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - single-cell
-        - cellranger
 
   - name: ww-cnvkit
     subclass: WDL
@@ -226,16 +175,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for copy number variant detection using CNVkit"
-    topic: variant-calling
+    topic: WDL module for copy number variant detection using CNVkit
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - copy-number
-        - cnvkit
 
   - name: ww-colabfold
     subclass: WDL
@@ -247,16 +191,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for protein structure prediction using ColabFold/AlphaFold2"
-    topic: protein-structure
+    topic: WDL module for protein structure prediction using ColabFold/AlphaFold2
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - protein-structure
-        - alphafold
-        - colabfold
 
   - name: ww-consensus
     subclass: WDL
@@ -268,16 +207,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for generating consensus variant calls from multiple variant callers"
-    topic: variant-calling
+    topic: WDL module for generating consensus variant calls from multiple variant callers
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - variant-calling
-        - consensus
 
   - name: ww-deeptools
     subclass: WDL
@@ -289,16 +223,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for generating normalized coverage tracks using deepTools"
-    topic: genomics
+    topic: WDL module for generating normalized coverage tracks using deepTools
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - coverage
-        - deeptools
 
   - name: ww-deepvariant
     subclass: WDL
@@ -310,16 +239,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for germline variant calling using DeepVariant"
-    topic: variant-calling
+    topic: WDL module for germline variant calling using DeepVariant
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - variant-calling
-        - deepvariant
 
   - name: ww-delly
     subclass: WDL
@@ -331,16 +255,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for structural variant calling using Delly"
-    topic: variant-calling
+    topic: WDL module for structural variant calling using Delly
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - structural-variants
-        - delly
 
   - name: ww-deseq2
     subclass: WDL
@@ -352,17 +271,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for differential expression analysis using DESeq2"
-    topic: differential-expression
+    topic: WDL module for differential expression analysis using DESeq2
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - differential-expression
-        - deseq2
 
   - name: ww-diamond
     subclass: WDL
@@ -374,16 +287,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "WDL module for sequence alignment using DIAMOND"
-    topic: alignment
+    topic: WDL module for sequence alignment using DIAMOND
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - alignment
-        - diamond
 
   - name: ww-ena
     subclass: WDL
@@ -395,16 +303,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for downloading sequencing data from the European Nucleotide Archive"
-    topic: data-transfer
+    topic: WDL module for downloading sequencing data from the European Nucleotide Archive
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - data-transfer
-        - ena
-        - sequencing
 
   - name: ww-fastp
     subclass: WDL
@@ -416,16 +319,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for FASTQ quality filtering and adapter trimming using fastp"
-    topic: quality-control
+    topic: WDL module for FASTQ quality filtering and adapter trimming using fastp
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - quality-control
-        - fastp
 
   - name: ww-fastqc
     subclass: WDL
@@ -437,16 +335,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for FASTQ quality control analysis using FastQC"
-    topic: quality-control
+    topic: WDL module for FASTQ quality control analysis using FastQC
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - quality-control
-        - fastqc
 
   - name: ww-gatk
     subclass: WDL
@@ -463,16 +356,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "WDL module for variant calling and genome preprocessing using GATK"
-    topic: variant-calling
+    topic: WDL module for variant calling and genome preprocessing using GATK
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - variant-calling
-        - gatk
 
   - name: ww-gdc
     subclass: WDL
@@ -484,16 +372,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for downloading files from the Genomic Data Commons"
-    topic: data-transfer
+    topic: WDL module for downloading files from the Genomic Data Commons
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - data-transfer
-        - gdc
-        - genomics
 
   - name: ww-glimpse2
     subclass: WDL
@@ -505,16 +388,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for genotype imputation using GLIMPSE2"
-    topic: imputation
+    topic: WDL module for genotype imputation using GLIMPSE2
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - imputation
-        - glimpse2
 
   - name: ww-ichorcna
     subclass: WDL
@@ -526,17 +404,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "WDL module for tumor fraction estimation using ichorCNA"
-    topic: variant-calling
+    topic: WDL module for tumor fraction estimation using ichorCNA
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - copy-number
-        - ichorcna
-        - tumor-fraction
 
   - name: ww-jcast
     subclass: WDL
@@ -548,16 +420,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for translating alternative splicing events into protein sequences using JCAST"
-    topic: proteogenomics
+    topic: WDL module for translating alternative splicing events into protein sequences using JCAST
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - proteogenomics
-        - alternative-splicing
-        - jcast
 
   - name: ww-manta
     subclass: WDL
@@ -569,16 +436,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for structural variant calling using Manta"
-    topic: variant-calling
+    topic: WDL module for structural variant calling using Manta
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - structural-variants
-        - manta
 
   - name: ww-megahit
     subclass: WDL
@@ -590,16 +452,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "WDL module for de novo metagenome assembly using MEGAHIT"
-    topic: metagenomics
+    topic: WDL module for de novo metagenome assembly using MEGAHIT
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - metagenomics
-        - assembly
-        - megahit
 
   - name: ww-multiqc
     subclass: WDL
@@ -611,16 +468,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for aggregating QC reports using MultiQC"
-    topic: quality-control
+    topic: WDL module for aggregating QC reports using MultiQC
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - quality-control
-        - multiqc
 
   - name: ww-rmats-turbo
     subclass: WDL
@@ -632,17 +484,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for differential alternative splicing analysis using rMATS"
-    topic: rna-seq
+    topic: WDL module for differential alternative splicing analysis using rMATS
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - alternative-splicing
-        - rmats
 
   - name: ww-rseqc
     subclass: WDL
@@ -654,17 +500,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for RNA-seq quality control using RSeQC"
-    topic: quality-control
+    topic: WDL module for RNA-seq quality control using RSeQC
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - quality-control
-        - rseqc
 
   - name: ww-salmon
     subclass: WDL
@@ -676,17 +516,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for RNA-seq quantification using Salmon"
-    topic: rna-seq
+    topic: WDL module for RNA-seq quantification using Salmon
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - quantification
-        - salmon
 
   - name: ww-samtools
     subclass: WDL
@@ -703,16 +537,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for processing genomic files with Samtools"
-    topic: genomics
+    topic: WDL module for processing genomic files with Samtools
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - samtools
-        - alignment
 
   - name: ww-shapemapper
     subclass: WDL
@@ -724,16 +553,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for RNA structure probing analysis using ShapeMapper"
-    topic: rna-seq
+    topic: WDL module for RNA structure probing analysis using ShapeMapper
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-structure
-        - shapemapper
 
   - name: ww-sjl
     subclass: WDL
@@ -745,16 +569,11 @@ tools:
         role: Research Assistant
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0009-0955-5954
-    description: "WDL module for calculating sunrise/sunset times and sun time differences for the SJL model"
-    topic: geospatial
+    topic: WDL module for calculating sunrise/sunset times and sun time differences for the SJL model
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - geospatial
-        - solar-jetlag
-        - environmental-health
 
   - name: ww-smoove
     subclass: WDL
@@ -766,16 +585,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for structural variant calling using Smoove"
-    topic: variant-calling
+    topic: WDL module for structural variant calling using Smoove
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - structural-variants
-        - smoove
 
   - name: ww-sourmash
     subclass: WDL
@@ -787,16 +601,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "WDL module for sequence sketching and comparison using sourmash"
-    topic: metagenomics
+    topic: WDL module for sequence sketching and comparison using sourmash
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - metagenomics
-        - sourmash
-        - sketching
 
   - name: ww-spades
     subclass: WDL
@@ -808,16 +617,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "WDL module for de novo metagenomic assembly using metaSPAdes"
-    topic: metagenomics
+    topic: WDL module for de novo metagenomic assembly using metaSPAdes
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - metagenomics
-        - assembly
-        - spades
 
   - name: ww-sra
     subclass: WDL
@@ -829,16 +633,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for downloading sequencing data from the Sequence Read Archive"
-    topic: data-transfer
+    topic: WDL module for downloading sequencing data from the Sequence Read Archive
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - data-transfer
-        - sra
-        - sequencing
 
   - name: ww-star
     subclass: WDL
@@ -850,17 +649,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for RNA-seq alignment using STAR two-pass methodology"
-    topic: rna-seq
+    topic: WDL module for RNA-seq alignment using STAR two-pass methodology
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - alignment
-        - star
 
   - name: ww-starling
     subclass: WDL
@@ -872,16 +665,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for structural ensemble generation using STARLING"
-    topic: protein-structure
+    topic: WDL module for structural ensemble generation using STARLING
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - protein-structure
-        - ensemble-generation
-        - starling
 
   - name: ww-strelka
     subclass: WDL
@@ -893,16 +681,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for germline variant calling using Strelka"
-    topic: variant-calling
+    topic: WDL module for germline variant calling using Strelka
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - variant-calling
-        - strelka
 
   - name: ww-trimgalore
     subclass: WDL
@@ -914,16 +697,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL module for adapter and quality trimming using Trim Galore"
-    topic: quality-control
+    topic: WDL module for adapter and quality trimming using Trim Galore
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - quality-control
-        - trimgalore
 
   - name: ww-tritonnp
     subclass: WDL
@@ -934,15 +712,11 @@ tools:
         email: clo2@fredhutch.org
         role: Data Science Trainer
         affiliation: Fred Hutch Cancer Center
-    description: "WDL module for running TritonNP analysis"
-    topic: protein-structure
+    topic: WDL module for running TritonNP analysis
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - protein-structure
-        - tritonnp
 
   - name: ww-testdata
     subclass: WDL
@@ -963,15 +737,11 @@ tools:
         email: clo2@fredhutch.org
         role: Data Science Trainer
         affiliation: Fred Hutch Cancer Center
-    description: "WDL module for downloading and provisioning test data used across WILDS WDL module and pipeline test runs"
-    topic: testing
+    topic: WDL module for downloading and provisioning test data used across WILDS WDL module and pipeline test runs
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - testing
-        - test-data
 
   - name: ww-varscan
     subclass: WDL
@@ -983,16 +753,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "WDL module for somatic variant calling using VarScan"
-    topic: variant-calling
+    topic: WDL module for somatic variant calling using VarScan
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - variant-calling
-        - varscan
 
 workflows:
   # =============================================================================
@@ -1011,18 +776,11 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "WDL workflow to align sequencing data using BWA and perform QC steps with GATK"
-    topic: variant-calling
+    topic: WDL workflow to align sequencing data using BWA and perform QC steps with GATK
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - alignment
-        - variant-calling
-        - bwa
-        - gatk
 
   - name: ww-ena-star
     subclass: WDL
@@ -1036,18 +794,11 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL workflow to download raw sequencing data from ENA and align using STAR two-pass methodology"
-    topic: rna-seq
+    topic: WDL workflow to download raw sequencing data from ENA and align using STAR two-pass methodology
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - alignment
-        - star
-        - ena
 
   - name: ww-fastq-to-cram
     subclass: WDL
@@ -1066,18 +817,11 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "Convert paired FASTQ files to unmapped CRAM format using WILDS WDL modules"
-    topic: alignment
+    topic: Convert paired FASTQ files to unmapped CRAM format using WILDS WDL modules
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - format-conversion
-        - fastq
-        - cram
-        - samtools
 
   - name: ww-imputation
     subclass: WDL
@@ -1101,18 +845,11 @@ workflows:
         role: Research Associate
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0005-2936-2405
-    description: "WDL workflow for genotype imputation from low-coverage WGS data using GLIMPSE2. Processes CRAM/BAM files against a reference panel to produce imputed VCF files."
-    topic: imputation
+    topic: WDL workflow for genotype imputation from low-coverage WGS data using GLIMPSE2
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - imputation
-        - glimpse2
-        - low-coverage-wgs
-        - genotyping
 
   - name: ww-jetlag
     subclass: WDL
@@ -1136,17 +873,11 @@ workflows:
         role: Research Assistant
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0009-0955-5954
-    description: "WDL pipeline to calculate sunrise/sunset times and sun time differences across an array of geographic tiles as part of the SJL model pipeline"
-    topic: geospatial
+    topic: WDL pipeline to calculate sunrise/sunset times and sun time differences across geographic tiles
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - geospatial
-        - solar-jetlag
-        - environmental-health
-        - sunrise-sunset
 
   - name: ww-leukemia
     subclass: WDL
@@ -1170,18 +901,11 @@ workflows:
         role: Staff Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0001-6372-5170
-    description: "Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing with focus on leukemia analysis - Refactored with WILDS modules"
-    topic: variant-calling
+    topic: Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing for leukemia
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - variant-calling
-        - leukemia
-        - targeted-sequencing
-        - consensus-calling
 
   - name: ww-saturation
     subclass: WDL
@@ -1204,18 +928,11 @@ workflows:
         email: sobrien2@fredhutch.org
         role: Post-Doctoral Research Fellow
         affiliation: Fred Hutch Cancer Center
-    description: "WDL workflow to analyze saturation mutagenesis data using BWA alignment and GATK AnalyzeSaturationMutagenesis"
-    topic: saturation-mutagenesis
+    topic: WDL workflow to analyze saturation mutagenesis data using BWA alignment and GATK
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - saturation-mutagenesis
-        - bwa
-        - gatk
-        - functional-genomics
 
   - name: ww-sra-salmon
     subclass: WDL
@@ -1244,18 +961,11 @@ workflows:
         role: Staff Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0001-8220-8427
-    description: "WDL workflow to download raw sequencing data from SRA and quantify using Salmon quasi-mapping"
-    topic: rna-seq
+    topic: WDL workflow to download raw sequencing data from SRA and quantify using Salmon quasi-mapping
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - quantification
-        - salmon
-        - sra
 
   - name: ww-sra-star
     subclass: WDL
@@ -1279,18 +989,11 @@ workflows:
         role: Staff Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0001-8220-8427
-    description: "WDL workflow to download raw sequencing data from SRA and align using STAR two-pass methodology"
-    topic: rna-seq
+    topic: WDL workflow to download raw sequencing data from SRA and align using STAR two-pass methodology
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - alignment
-        - star
-        - sra
 
   - name: ww-starling-batch
     subclass: WDL
@@ -1304,17 +1007,11 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "Batch ensemble generation pipeline that splits a large protein FASTA into chunks and processes them in parallel using STARLING"
-    topic: protein-structure
+    topic: Batch ensemble generation pipeline splitting a protein FASTA into chunks for parallel STARLING processing
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - protein-structure
-        - ensemble-generation
-        - starling
-        - structural-biology
 
   - name: ww-star-deseq2
     subclass: WDL
@@ -1337,18 +1034,11 @@ workflows:
         email: ebouvet@fredhutch.org
         role: Research Technician
         affiliation: Fred Hutch Cancer Center
-    description: "WDL workflow for RNA-seq alignment via STAR and DESeq2 differential expression analysis"
-    topic: differential-expression
+    topic: WDL workflow for RNA-seq alignment via STAR and DESeq2 differential expression analysis
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - differential-expression
-        - star
-        - deseq2
 
   - name: ww-splicing-proteomics
     subclass: WDL
@@ -1362,16 +1052,8 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL pipeline for alternative splicing proteomics: STAR alignment, rMATS differential splicing detection, and JCAST protein sequence translation"
-    topic: proteogenomics
+    topic: WDL pipeline for alternative splicing proteomics: STAR alignment, rMATS splicing, and JCAST translation
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - proteogenomics
-        - alternative-splicing
-        - rmats
-        - jcast
-        - star
