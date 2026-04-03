@@ -337,11 +337,12 @@ Downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-
 
 **Inputs**:
 - `ref_fasta` (File): Reference genome FASTA file to use for CRAM conversion
+- `chromosome` (String): Chromosome to extract reads for (default: "chr1")
 - `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 4)
 
 **Outputs**:
-- `cram` (File): Example CRAM alignment file
+- `cram` (File): Example CRAM alignment file filtered to the specified chromosome
 - `crai` (File): CRAM index file
 
 ### download_bam_data
