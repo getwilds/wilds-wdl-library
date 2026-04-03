@@ -167,9 +167,9 @@ Note: `input_crams`, `input_cram_indices`, and `sample_ids` must be parallel arr
 | `concordance_min_val_dp` | Minimum depth in validation/truth data | Int | 0 |
 | `concordance_min_val_gq` | Minimum genotype quality in validation/truth data | Int | 0 |
 | `chunk_cpu_cores` | CPU cores for chunking tasks | Int | 4 |
-| `chunk_memory_gb` | Memory (GB) for chunking tasks | Int | 8 |
+| `chunk_memory_gb` | Memory (GB) for chunking tasks | Int | 16 |
 | `phase_cpu_cores` | CPU cores for phasing tasks | Int | 4 |
-| `phase_memory_gb` | Memory (GB) for phasing tasks | Int | 8 |
+| `phase_memory_gb` | Memory (GB) for phasing tasks | Int | 16 |
 | `ligate_cpu_cores` | CPU cores for ligation tasks | Int | 4 |
 | `ligate_memory_gb` | Memory (GB) for ligation tasks | Int | 16 |
 | `concat_cpu_cores` | CPU cores for concatenation tasks | Int | 4 |
@@ -215,7 +215,7 @@ Genetic maps can be downloaded from:
 ## Resource Considerations
 
 ### Compute Requirements
-- **Memory**: 8-16GB per phasing task (scales with reference panel size and number of samples)
+- **Memory**: 16-32GB per chunking/phasing task (scales with reference panel size and number of samples)
 - **CPUs**: 4+ cores recommended for efficient processing
 - **Storage**: Sufficient space for CRAM files and output VCFs
 - **Network**: Stable internet connection for module imports

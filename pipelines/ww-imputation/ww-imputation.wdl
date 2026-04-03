@@ -92,9 +92,9 @@ workflow imputation {
 
     # Resource allocation
     Int chunk_cpu_cores = 4
-    Int chunk_memory_gb = 8
+    Int chunk_memory_gb = 16
     Int phase_cpu_cores = 4
-    Int phase_memory_gb = 8
+    Int phase_memory_gb = 16
     Int ligate_cpu_cores = 4
     Int ligate_memory_gb = 16
     Int concat_cpu_cores = 4
