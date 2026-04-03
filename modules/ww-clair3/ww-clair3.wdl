@@ -76,8 +76,14 @@ task run_clair3 {
       ~{if gpu_enabled then "--use_gpu" else ""}
 
     # Move final outputs to working directory with sample-specific names
-    cp clair3_output/merge_output.vcf.gz "~{sample_name}.clair3.vcf.gz"
-    cp clair3_output/merge_output.vcf.gz.tbi "~{sample_name}.clair3.vcf.gz.tbi"
+    # pileup_only mode outputs pileup.vcf.gz; full mode outputs merge_output.vcf.gz
+    if [ "~{pileup_only}" = "true" ]; then
+      cp clair3_output/pileup.vcf.gz "~{sample_name}.clair3.vcf.gz"
+      cp clair3_output/pileup.vcf.gz.tbi "~{sample_name}.clair3.vcf.gz.tbi"
+    else
+      cp clair3_output/merge_output.vcf.gz "~{sample_name}.clair3.vcf.gz"
+      cp clair3_output/merge_output.vcf.gz.tbi "~{sample_name}.clair3.vcf.gz.tbi"
+    fi
 
     if [ "~{gvcf_enabled}" = "true" ]; then
       cp clair3_output/merge_output.gvcf.gz "~{sample_name}.clair3.g.vcf.gz"
