@@ -35,6 +35,7 @@ Runs Clair3 to call germline variants from aligned reads using deep learning pil
 - `bed_file` (File?, optional): BED file to restrict variant calling to specific regions
 - `ctg_name` (String?, optional): Contig/chromosome name to restrict calling
 - `include_all_ctgs` (Boolean, default=false): Call on all contigs (required for non-human species)
+- `pileup_only` (Boolean, default=false): Use only the pileup model for faster variant calling (skips full-alignment stage)
 - `gpu_enabled` (Boolean, default=false): Enable GPU acceleration for Clair3 inference
 - `cpu_cores` (Int, default=8): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=32): Memory allocated for the task in GB
@@ -150,7 +151,7 @@ java -jar cromwell.jar run testrun.wdl
 
 The test workflow automatically:
 1. Downloads reference genome (chr1) and BAM test data using `ww-testdata`
-2. Runs Clair3 variant calling on the test sample using the Illumina model
+2. Runs Clair3 variant calling on the test sample using the Illumina model (pileup-only mode for speed)
 3. Outputs a VCF file with germline variant calls
 
 ## Docker Container

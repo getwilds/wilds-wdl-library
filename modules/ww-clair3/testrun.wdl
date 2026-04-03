@@ -26,6 +26,7 @@ workflow clair3_example {
     platform = "ilmn",
     model_path = "/opt/models/ilmn",
     ctg_name = "chr1",
+    pileup_only = true,
     cpu_cores = 2,
     memory_gb = 8
   }

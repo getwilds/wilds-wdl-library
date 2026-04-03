@@ -33,6 +33,7 @@ task run_clair3 {
     bed_file: "Optional BED file to restrict variant calling to specific regions"
     ctg_name: "Optional contig/chromosome name to restrict calling"
     include_all_ctgs: "Call variants on all contigs (required for non-human species, default calls chr1-22,X,Y only)"
+    pileup_only: "Use only the pileup model for faster variant calling (skips full-alignment stage)"
     gpu_enabled: "Enable GPU acceleration for Clair3 inference (requests GPU in runtime)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
@@ -50,6 +51,7 @@ task run_clair3 {
     File? bed_file
     String? ctg_name
     Boolean include_all_ctgs = false
+    Boolean pileup_only = false
     Boolean gpu_enabled = false
     Int cpu_cores = 8
     Int memory_gb = 32
@@ -70,6 +72,7 @@ task run_clair3 {
       ~{if defined(bed_file) then "--bed_fn=~{bed_file}" else ""} \
       ~{if defined(ctg_name) then "--ctg_name=~{ctg_name}" else ""} \
       ~{if include_all_ctgs then "--include_all_ctgs" else ""} \
+      ~{if pileup_only then "--pileup_only" else ""} \
       ~{if gpu_enabled then "--use_gpu" else ""}
 
     # Move final outputs to working directory with sample-specific names
