@@ -1,8 +1,8 @@
 version 1.0
 
 # Import module in question as well as the testdata module for automatic demo functionality
-import "ww-clair3.wdl" as ww_clair3
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-clair3/modules/ww-clair3/ww-clair3.wdl" as ww_clair3
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-clair3/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
 
