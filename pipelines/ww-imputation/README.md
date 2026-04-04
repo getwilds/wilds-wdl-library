@@ -156,8 +156,8 @@ Note: `input_crams`, `input_cram_indices`, and `sample_ids` must be parallel arr
 | `output_prefix` | Prefix for output file names | String | "imputed" |
 | `output_format` | Output format (`bcf` or `vcf.gz`) | String | "bcf" |
 | `impute_reference_only_variants` | Only impute variants in reference panel | Boolean | false |
-| `window_size_cm` | Chunk window size in centiMorgans | Float | 2.0 |
-| `buffer_size_cm` | Chunk buffer size in centiMorgans | Float | 0.2 |
+| `window_size_cm` | Chunk window size in centiMorgans | Float | 4.0 |
+| `buffer_size_cm` | Chunk buffer size in centiMorgans | Float | 0.1 |
 | `n_burnin` | MCMC burn-in iterations | Int | 5 |
 | `n_main` | MCMC main iterations | Int | 15 |
 | `effective_population_size` | Effective population size for HMM | Int | 15000 |

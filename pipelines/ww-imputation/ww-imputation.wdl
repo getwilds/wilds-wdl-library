@@ -40,8 +40,8 @@ workflow imputation {
     output_prefix: "Prefix for output file names (default: imputed)"
     output_format: "Output format for imputed files: bcf, vcf, or vcf.gz (default: bcf)"
     impute_reference_only_variants: "Only impute variants present in reference panel (default: false)"
-    window_size_cm: "Chunk window size in centiMorgans (default: 2.0)"
-    buffer_size_cm: "Chunk buffer size in centiMorgans (default: 0.2)"
+    window_size_cm: "Chunk window size in centiMorgans (default: 4.0)"
+    buffer_size_cm: "Chunk buffer size in centiMorgans (default: 0.1)"
     n_burnin: "Number of burn-in Markov chain Monte Carlo iterations (default: 5)"
     n_main: "Number of main Markov chain Monte Carlo iterations (default: 15)"
     effective_population_size: "Effective population size for hidden Markov model (default: 15000)"
@@ -77,8 +77,8 @@ workflow imputation {
 
     # Imputation parameters
     Boolean impute_reference_only_variants = false
-    Float window_size_cm = 2.0
-    Float buffer_size_cm = 0.2
+    Float window_size_cm = 4.0
+    Float buffer_size_cm = 0.1
     Int n_burnin = 5
     Int n_main = 15
     Int effective_population_size = 15000
