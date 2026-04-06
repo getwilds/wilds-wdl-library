@@ -18,13 +18,8 @@ This pipeline extends the simpler `ww-star-deseq2` pipeline with upstream read Q
 
 ## Pipeline Structure
 
-**Complexity Level: Advanced** (8 steps, 7 distinct modules)
+**Complexity Level: Advanced** (9 steps, 7 distinct modules)
 
-This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and demonstrates:
-
-- **Module Integration**: Combining 7 modules for a complete end-to-end RNA-seq workflow
-- **Data Flow**: Seamless passing of outputs from QC through alignment to differential expression
-- **Best Practices**: Pre/post-trim QC, adapter trimming, two-pass alignment, and aggregated reporting
 
 ## Pipeline Steps
 
@@ -216,13 +211,10 @@ The pipeline produces comprehensive outputs from all modules:
 ### Optimization Tips
 - Use call caching to save intermediate files if the pipeline crashes partway
 - Adjust `star_cpu` and `star_memory_gb` parameters based on available resources
-- For testing on limited hardware (e.g., GitHub Actions runners), use chr1 subset and reduce CPU/memory allocation
-- Ensure adequate replicates per condition (3+ recommended) for robust DESeq2 analysis
-- Trim Galore defaults (quality=20, length=20) work well for most Illumina data
 
 ## Testing the Pipeline
 
-The pipeline includes a test workflow that uses real RNA-seq data from the DESeq2 airway dataset:
+The pipeline includes a test workflow that uses real RNA-seq data referenced in the DESeq2 airway dataset:
 
 ```bash
 # Using Cromwell
@@ -256,37 +248,7 @@ The test workflow automatically:
 - Aligns to chromosome 1 subset for efficiency
 - Resource requirements: 2 CPUs / 6GB RAM (fits GitHub Actions runners)
 
-## Integration Patterns
 
-This pipeline demonstrates several key WDL patterns:
-- **Module Composition**: Combining 7 analysis modules in a coherent workflow
-- **Data Passing**: Seamless transfer of outputs between QC, trimming, alignment, and analysis
-- **Struct Usage**: Efficient organization of complex sample and reference data
-- **Resource Management**: Coordinated resource allocation across modules
-- **Scatter-Gather**: Parallel processing of multiple samples with aggregation
-- **QC Aggregation**: Collecting reports from multiple tools into a single MultiQC summary
-
-## Extending the Pipeline
-
-This pipeline can be extended by:
-- Adding UMI handling for deduplication
-- Including pseudoalignment quantification (e.g., Salmon, Kallisto)
-- Adding gene set enrichment analysis (GSEA)
-- Including contamination screening
-- Adding batch effect correction steps
-- Integrating isoform-level analysis
-
-## Related WILDS Components
-
-- **ww-fastqc module**: Read quality assessment
-- **ww-trimgalore module**: Adapter and quality trimming
-- **ww-star module**: STAR alignment functionality
-- **ww-bedparse module**: Genomic file format conversion
-- **ww-rseqc module**: RNA-seq quality control
-- **ww-deseq2 module**: Differential expression analysis
-- **ww-multiqc module**: Aggregated QC reporting
-- **ww-star-deseq2 pipeline**: Simpler RNA-seq pipeline (alignment + DE only)
-- **ww-sra-star pipeline**: SRA download to alignment pipeline
 
 ## Support
 
