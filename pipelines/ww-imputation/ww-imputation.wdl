@@ -77,7 +77,7 @@ workflow imputation {
 
     # Imputation parameters
     Boolean impute_reference_only_variants = false
-    Float window_size_cm = 4.0
+    Float window_size_cm = 8.0
     Float buffer_size_cm = 0.1
     Int n_burnin = 5
     Int n_main = 15

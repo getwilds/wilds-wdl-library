@@ -24,7 +24,7 @@
   "imputation.output_prefix": "imputed",
   "imputation.output_format": "bcf",
   "imputation.impute_reference_only_variants": false,
-  "imputation.window_size_cm": 4.0,
+  "imputation.window_size_cm": 8.0,
   "imputation.buffer_size_cm": 0.1,
   "imputation.n_burnin": 5,
   "imputation.n_main": 15,

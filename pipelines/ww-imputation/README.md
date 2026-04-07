@@ -156,7 +156,7 @@ Note: `input_crams`, `input_cram_indices`, and `sample_ids` must be parallel arr
 | `output_prefix` | Prefix for output file names | String | "imputed" |
 | `output_format` | Output format (`bcf` or `vcf.gz`) | String | "bcf" |
 | `impute_reference_only_variants` | Only impute variants in reference panel | Boolean | false |
-| `window_size_cm` | Chunk window size in centiMorgans | Float | 4.0 |
+| `window_size_cm` | Chunk window size in centiMorgans | Float | 8.0 |
 | `buffer_size_cm` | Chunk buffer size in centiMorgans | Float | 0.1 |
 | `n_burnin` | MCMC burn-in iterations | Int | 5 |
 | `n_main` | MCMC main iterations | Int | 15 |
@@ -248,6 +248,16 @@ Genetic maps can be downloaded from:
 >   ```
 >   Cromwell will attempt each strategy in order, falling back to copy only if linking
 >   is not possible.
+
+### Apptainer Compatibility
+
+> **Note**: Older versions of Apptainer (specifically 1.1.x) have a known bug where
+> container execution fails with `FATAL: aborting failed to close file descriptor: bad
+> file descriptor` when a large number of input files are bind-mounted into the container.
+> This can affect the ligation step when processing chromosomes that produce many chunks
+> (e.g., chr1 with ~67 chunks at `window_size_cm = 4.0`). The default `window_size_cm`
+> has been increased from 4.0 to 8.0 cM to reduce chunk counts and avoid this issue.
+> Upgrading to Apptainer 1.3+ is recommended if available on your system.
 
 ### Scaling
 - All samples are phased jointly per chunk (leveraging GLIMPSE2's multi-sample mode)
