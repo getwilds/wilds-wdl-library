@@ -220,12 +220,14 @@ task download_cram_data {
 
   parameter_meta {
     ref_fasta: "Reference genome FASTA file to use for CRAM conversion"
+    chromosome: "Chromosome to extract from the BAM file (default: chr1)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
 
   input {
     File ref_fasta
+    String chromosome = "chr1"
     Int cpu_cores = 2
     Int memory_gb = 4
   }
@@ -244,38 +246,41 @@ task download_cram_data {
       NA12878_full.bam.bai
     touch NA12878_full.bam.bai
 
-    # Extract chr1 and subsample to reduce size (using lower subsample rate for CRAM)
-    samtools view -@ ~{cpu_cores} -h -b NA12878_full.bam chr1 | \
+    # Extract specified chromosome and subsample to reduce size (using lower subsample rate for CRAM)
+    samtools view -@ ~{cpu_cores} -h -b NA12878_full.bam ~{chromosome} | \
     samtools view -@ ~{cpu_cores} -s 0.05 -b - > NA12878.bam
     samtools index -@ ~{cpu_cores} NA12878.bam
-
-    # Only keep primary alignments from chr1 (no supplementary alignments)
-    samtools view -@ ~{cpu_cores} -h -f 0x2 NA12878.bam chr1 | \
-      awk '/^@/ || ($7 == "=" || $7 == "chr1")' | \
-      sed 's/\tSA:Z:[^\t]*//' | \
-      sed '/^@SQ/d' | \
-      sed '1a@SQ\tSN:chr1\tLN:248956422' | \
-      samtools view -@ ~{cpu_cores} -b > NA12878_chr1.bam
-
-    # Index the new BAM file
-    samtools index -@ ~{cpu_cores} NA12878_chr1.bam
 
     # Copy reference to working directory so samtools can create/read its .fai index
     # (input files are mounted read-only in Sprocket and other container executors)
     cp "~{ref_fasta}" ref.fa
     samtools faidx ref.fa
 
+    # Look up chromosome length from the FASTA index
+    CHROM_LEN=$(awk -v chr="~{chromosome}" '$1==chr {print $2}' ref.fa.fai)
+
+    # Only keep primary alignments for the specified chromosome (no supplementary alignments)
+    samtools view -@ ~{cpu_cores} -h -f 0x2 NA12878.bam ~{chromosome} | \
+      awk -v chr="~{chromosome}" '/^@/ || ($7 == "=" || $7 == chr)' | \
+      sed 's/\tSA:Z:[^\t]*//' | \
+      sed '/^@SQ/d' | \
+      sed "1a@SQ\tSN:~{chromosome}\tLN:${CHROM_LEN}" | \
+      samtools view -@ ~{cpu_cores} -b > NA12878_~{chromosome}.bam
+
+    # Index the new BAM file
+    samtools index -@ ~{cpu_cores} NA12878_~{chromosome}.bam
+
     # Convert BAM to CRAM using the local reference copy
-    samtools view -@ ~{cpu_cores} -C -T ref.fa -o NA12878_chr1.cram NA12878_chr1.bam
-    samtools index -@ ~{cpu_cores} NA12878_chr1.cram
+    samtools view -@ ~{cpu_cores} -C -T ref.fa -o NA12878_~{chromosome}.cram NA12878_~{chromosome}.bam
+    samtools index -@ ~{cpu_cores} NA12878_~{chromosome}.cram
 
     # Clean up intermediate files
-    rm NA12878_full.bam NA12878_full.bam.bai NA12878.bam NA12878.bam.bai NA12878_chr1.bam NA12878_chr1.bam.bai
+    rm NA12878_full.bam NA12878_full.bam.bai NA12878.bam NA12878.bam.bai NA12878_~{chromosome}.bam NA12878_~{chromosome}.bam.bai
   >>>
 
   output {
-    File cram = "NA12878_chr1.cram"
-    File crai = "NA12878_chr1.cram.crai"
+    File cram = "NA12878_~{chromosome}.cram"
+    File crai = "NA12878_~{chromosome}.cram.crai"
   }
 
   runtime {

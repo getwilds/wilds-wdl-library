@@ -156,8 +156,8 @@ Note: `input_crams`, `input_cram_indices`, and `sample_ids` must be parallel arr
 | `output_prefix` | Prefix for output file names | String | "imputed" |
 | `output_format` | Output format (`bcf` or `vcf.gz`) | String | "bcf" |
 | `impute_reference_only_variants` | Only impute variants in reference panel | Boolean | false |
-| `window_size_cm` | Chunk window size in centiMorgans | Float | 2.0 |
-| `buffer_size_cm` | Chunk buffer size in centiMorgans | Float | 0.2 |
+| `window_size_cm` | Chunk window size in centiMorgans | Float | 4.0 |
+| `buffer_size_cm` | Chunk buffer size in centiMorgans | Float | 0.1 |
 | `n_burnin` | MCMC burn-in iterations | Int | 5 |
 | `n_main` | MCMC main iterations | Int | 15 |
 | `effective_population_size` | Effective population size for HMM | Int | 15000 |
@@ -167,9 +167,9 @@ Note: `input_crams`, `input_cram_indices`, and `sample_ids` must be parallel arr
 | `concordance_min_val_dp` | Minimum depth in validation/truth data | Int | 0 |
 | `concordance_min_val_gq` | Minimum genotype quality in validation/truth data | Int | 0 |
 | `chunk_cpu_cores` | CPU cores for chunking tasks | Int | 4 |
-| `chunk_memory_gb` | Memory (GB) for chunking tasks | Int | 8 |
+| `chunk_memory_gb` | Memory (GB) for chunking tasks | Int | 16 |
 | `phase_cpu_cores` | CPU cores for phasing tasks | Int | 4 |
-| `phase_memory_gb` | Memory (GB) for phasing tasks | Int | 8 |
+| `phase_memory_gb` | Memory (GB) for phasing tasks | Int | 16 |
 | `ligate_cpu_cores` | CPU cores for ligation tasks | Int | 4 |
 | `ligate_memory_gb` | Memory (GB) for ligation tasks | Int | 16 |
 | `concat_cpu_cores` | CPU cores for concatenation tasks | Int | 4 |
@@ -215,10 +215,39 @@ Genetic maps can be downloaded from:
 ## Resource Considerations
 
 ### Compute Requirements
-- **Memory**: 8-16GB per phasing task (scales with reference panel size and number of samples)
+- **Memory**: 16-32GB per chunking/phasing task (scales with reference panel size and number of samples)
 - **CPUs**: 4+ cores recommended for efficient processing
 - **Storage**: Sufficient space for CRAM files and output VCFs
 - **Network**: Stable internet connection for module imports
+
+### Storage Warning for Large Datasets
+
+> **Warning**: This pipeline scatters the **entire set of input CRAM/BAM files** across
+> every genomic chunk for joint phasing. Some WDL executors (notably Cromwell) copy all
+> input files into each task's execution directory by default. For large datasets this
+> causes massive storage duplication — for example, a test run of just 3 samples with
+> ~20GB CRAMs across 2 chromosomes generated ~5TB of intermediate data in ~2 hours.
+> This scales quickly: more samples, more chromosomes, and larger genomic regions all
+> multiply the storage footprint.
+>
+> **Recommendations for large datasets:**
+>
+> - **Use [Sprocket](https://github.com/stjude-rust-labs/sprocket)** — Sprocket uses
+>   symlinks instead of copying inputs, eliminating the duplication problem entirely.
+> - **Focus on smaller genomic regions** — for larger datasets, consider imputing a
+>   subset of chromosomes or a specific genomic region per run to reduce the number of
+>   scatter chunks and therefore the amount of intermediate data.
+> - **If you must use Cromwell**, configure your backend to prefer linking over copying
+>   by setting the localization strategy in your backend config:
+>   ```json
+>   "filesystems": {
+>     "local": {
+>       "localization": ["hard-link", "soft-link", "copy"]
+>     }
+>   }
+>   ```
+>   Cromwell will attempt each strategy in order, falling back to copy only if linking
+>   is not possible.
 
 ### Scaling
 - All samples are phased jointly per chunk (leveraging GLIMPSE2's multi-sample mode)
