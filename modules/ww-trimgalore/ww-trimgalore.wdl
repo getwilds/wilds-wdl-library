@@ -83,8 +83,8 @@ task trimgalore_paired {
   output {
     File r1_trimmed = "~{sample_name}_val_1.fq.gz"
     File r2_trimmed = "~{sample_name}_val_2.fq.gz"
-    File r1_report = glob("*_R1_001.fastq_trimming_report.txt")[0]
-    File r2_report = glob("*_R2_001.fastq_trimming_report.txt")[0]
+    File r1_report = glob("*trimming_report.txt")[0]
+    File r2_report = glob("*trimming_report.txt")[1]
   }
 
   runtime {
