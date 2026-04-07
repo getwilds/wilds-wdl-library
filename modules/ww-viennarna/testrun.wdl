@@ -6,20 +6,20 @@ import "../ww-testdata/ww-testdata.wdl" as ww_testdata
 #### TEST WORKFLOW DEFINITION ####
 
 workflow viennarna_example {
-  # Generate test RNA sequences
-  call ww_testdata.create_test_rna_fasta as download_demo_data { }
+  # Download ShapeMapper example data (TPP riboswitch RNA FASTA)
+  call ww_testdata.download_shapemapper_data as download_demo_data { }
 
-  # Predict MFE structures for all sequences in the FASTA
+  # Predict MFE structures for the TPP riboswitch sequence
   call ww_viennarna.rnafold { input:
-      input_fasta = download_demo_data.test_fasta,
+      input_fasta = download_demo_data.target_fa,
       partition_function = true,
       cpu_cores = 1,
       memory_gb = 4
   }
 
-  # Enumerate suboptimal structures for the test sequences
+  # Enumerate suboptimal structures for the test sequence
   call ww_viennarna.rnasubopt { input:
-      input_fasta = download_demo_data.test_fasta,
+      input_fasta = download_demo_data.target_fa,
       energy_range = 3.0,
       cpu_cores = 1,
       memory_gb = 4
@@ -35,7 +35,7 @@ workflow viennarna_example {
 
   # Compute local base pair probabilities
   call ww_viennarna.rnaplfold { input:
-      input_fasta = download_demo_data.test_fasta,
+      input_fasta = download_demo_data.target_fa,
       cpu_cores = 1,
       memory_gb = 4
   }
