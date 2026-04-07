@@ -2,7 +2,7 @@
 [![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A comprehensive WILDS WDL pipeline for RNA-seq analysis, covering the core workflow from raw FASTQs through differential expression with integrated quality control at every stage. Inspired by nf-core/rnaseq but focused on the essential happy path.
+A comprehensive WILDS WDL pipeline for RNA-seq analysis, covering the core workflow from raw FASTQs through differential expression with integrated quality control at every stage. Inspired by nf-core/rnaseq but focused on the core workflow steps.
 
 ## Overview
 
@@ -19,9 +19,6 @@ This pipeline extends the simpler `ww-star-deseq2` pipeline with upstream read Q
 ## Pipeline Structure
 
 **Complexity Level: Advanced** (9 steps, 7 distinct modules)
-
-
-## Pipeline Steps
 
 1. **FastQC — Pre-trim QC** (using `ww-fastqc` module):
    - Generates quality reports for raw FASTQ files
@@ -247,8 +244,6 @@ The test workflow automatically:
 - 2 untreated samples + 2 dexamethasone-treated samples
 - Aligns to chromosome 1 subset for efficiency
 - Resource requirements: 2 CPUs / 6GB RAM (fits GitHub Actions runners)
-
-
 
 ## Support
 
