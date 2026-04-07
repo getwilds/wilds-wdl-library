@@ -220,6 +220,35 @@ Genetic maps can be downloaded from:
 - **Storage**: Sufficient space for CRAM files and output VCFs
 - **Network**: Stable internet connection for module imports
 
+### Storage Warning for Large Datasets
+
+> **Warning**: This pipeline scatters the **entire set of input CRAM/BAM files** across
+> every genomic chunk for joint phasing. Some WDL executors (notably Cromwell) copy all
+> input files into each task's execution directory by default. For large datasets this
+> causes massive storage duplication — for example, a test run of just 3 samples with
+> ~20GB CRAMs across 2 chromosomes generated ~5TB of intermediate data in ~2 hours.
+> This scales quickly: more samples, more chromosomes, and larger genomic regions all
+> multiply the storage footprint.
+>
+> **Recommendations for large datasets:**
+>
+> - **Use [Sprocket](https://github.com/stjude-rust-labs/sprocket)** — Sprocket uses
+>   symlinks instead of copying inputs, eliminating the duplication problem entirely.
+> - **Focus on smaller genomic regions** — for larger datasets, consider imputing a
+>   subset of chromosomes or a specific genomic region per run to reduce the number of
+>   scatter chunks and therefore the amount of intermediate data.
+> - **If you must use Cromwell**, configure your backend to prefer linking over copying
+>   by setting the localization strategy in your backend config:
+>   ```json
+>   "filesystems": {
+>     "local": {
+>       "localization": ["hard-link", "soft-link", "copy"]
+>     }
+>   }
+>   ```
+>   Cromwell will attempt each strategy in order, falling back to copy only if linking
+>   is not possible.
+
 ### Scaling
 - All samples are phased jointly per chunk (leveraging GLIMPSE2's multi-sample mode)
 - Chromosomes are processed in parallel
