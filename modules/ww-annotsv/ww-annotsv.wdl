@@ -13,6 +13,17 @@ task annotsv_annotate {
     outputs: {
         annotated_tsv: "Tab-delimited file with detailed annotations per SV"
     }
+    topic: "dna,structural_variation"
+    species: "human"
+    operation: "annotation"
+    in_sample_data: "sequence_variations"
+    in_sample_format: "vcf"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "sequence_features"
+    out_sample_format: "tsv"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

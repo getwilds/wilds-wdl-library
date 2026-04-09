@@ -13,6 +13,17 @@ task bwa_index {
     outputs: {
         bwa_index_tar: "Compressed tarball containing BWA genome index"
     }
+    topic: "dna,mapping"
+    species: "any"
+    operation: "indexing"
+    in_sample_data: "none"
+    in_sample_format: "none"
+    in_ref_data: "dna_sequence"
+    in_ref_format: "fasta"
+    out_sample_data: "none"
+    out_sample_format: "none"
+    out_ref_data: "data_index"
+    out_ref_format: "tar_format"
   }
 
   parameter_meta {
@@ -62,6 +73,17 @@ task bwa_mem {
         sorted_bam: "Sorted BWA-MEM alignment output BAM file",
         sorted_bai: "Index files for the sorted BWA-MEM alignment BAM files"
     }
+    topic: "dna,mapping"
+    species: "any"
+    operation: "sequence_alignment"
+    in_sample_data: "nucleic_acid_sequence"
+    in_sample_format: "fastq"
+    in_ref_data: "dna_sequence,data_index"
+    in_ref_format: "fasta,tar_format"
+    out_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    out_sample_format: "bam,bai"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

@@ -14,6 +14,17 @@ task run_count {
         web_summary: "Web summary HTML file",
         metrics_summary: "Metrics summary CSV file"
     }
+    topic: "rna,gene_expression"
+    species: "any"
+    operation: "rna_seq_quantification"
+    in_sample_data: "nucleic_acid_sequence"
+    in_sample_format: "fastq"
+    in_ref_data: "dna_sequence"
+    in_ref_format: "tar_format"
+    out_sample_data: "gene_expression_matrix,sequence_report,sequence_report"
+    out_sample_format: "tar_format,html,csv"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
