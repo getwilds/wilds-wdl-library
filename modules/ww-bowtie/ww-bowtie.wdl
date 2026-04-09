@@ -13,6 +13,17 @@ task bowtie_build {
     outputs: {
         bowtie_index_tar: "Compressed tarball containing Bowtie genome index files"
     }
+    topic: "dna,rna,mapping"
+    species: "any"
+    operation: "indexing"
+    in_sample_data: "none"
+    in_sample_format: "none"
+    in_ref_data: "dna_sequence"
+    in_ref_format: "fasta"
+    out_sample_data: "none"
+    out_sample_format: "none"
+    out_ref_data: "data_index"
+    out_ref_format: "tar_format"
   }
 
   parameter_meta {
@@ -67,6 +78,17 @@ task bowtie_align {
         sorted_bam: "Sorted Bowtie alignment output BAM file",
         sorted_bai: "Index file for the sorted Bowtie alignment BAM file"
     }
+    topic: "dna,rna,mapping"
+    species: "any"
+    operation: "sequence_alignment"
+    in_sample_data: "nucleic_acid_sequence"
+    in_sample_format: "fastq"
+    in_ref_data: "data_index"
+    in_ref_format: "tar_format"
+    out_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    out_sample_format: "bam,bai"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

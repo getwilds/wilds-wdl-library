@@ -19,6 +19,17 @@ task s3_download_file {
     outputs: {
         downloaded_file: "Downloaded file from S3"
     }
+    topic: "any"
+    species: "any"
+    operation: "data_retrieval"
+    in_sample_data: "none"
+    in_sample_format: "none"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "any"
+    out_sample_format: "any"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -90,6 +101,17 @@ task s3_upload_file {
     outputs: {
         s3_uri: "S3 URI of the uploaded file"
     }
+    topic: "any"
+    species: "any"
+    operation: "data_deposition"
+    in_sample_data: "any"
+    in_sample_format: "any"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "none"
+    out_sample_format: "none"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -155,6 +177,17 @@ task s3_list_bucket {
         file_list: "Text file containing list of S3 objects",
         object_count: "Number of objects found"
     }
+    topic: "any"
+    species: "any"
+    operation: "data_retrieval"
+    in_sample_data: "none"
+    in_sample_format: "none"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "none"
+    out_sample_format: "none"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

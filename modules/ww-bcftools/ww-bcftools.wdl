@@ -14,6 +14,17 @@ task mpileup_call {
         mpileup_vcf: "Compressed VCF file containing variants called by mpileup",
         mpileup_vcf_index: "Index file for the mpileup VCF"
     }
+    topic: "dna,dna_polymorphism,structural_variation"
+    species: "any"
+    operation: "variant_calling"
+    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    in_sample_format: "bam,bai"
+    in_ref_data: "dna_sequence,data_index"
+    in_ref_format: "fasta,fai"
+    out_sample_data: "sequence_variations,data_index"
+    out_sample_format: "vcf,csi"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -106,6 +117,17 @@ task concat {
         concatenated_vcf: "Concatenated VCF/BCF file",
         concatenated_vcf_index: "Index file for concatenated VCF"
     }
+    topic: "dna,dna_polymorphism,structural_variation"
+    species: "any"
+    operation: "sequence_merging"
+    in_sample_data: "sequence_variations,data_index"
+    in_sample_format: "vcf,csi"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "sequence_variations,data_index"
+    out_sample_format: "vcf,csi"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

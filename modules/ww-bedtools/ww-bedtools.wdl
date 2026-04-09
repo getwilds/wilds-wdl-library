@@ -14,6 +14,17 @@ task coverage {
         name: "Sample name that was processed",
         mean_coverage: "File containing mean read coverage across BED intervals"
     }
+    topic: "dna,sequence_features,data_quality_management"
+    species: "any"
+    operation: "sequencing_quality_control"
+    in_sample_data: "sequence_features,nucleic_acid_sequence_alignment"
+    in_sample_format: "bed,bam"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "sequence_report"
+    out_sample_format: "textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -65,6 +76,17 @@ task intersect {
         name: "Sample name that was processed",
         intersect_output: "BEDTools intersect results file"
     }
+    topic: "dna,sequence_features"
+    species: "any"
+    operation: "sequence_merging"
+    in_sample_data: "annotation_track,nucleic_acid_sequence_alignment"
+    in_sample_format: "bed,bam"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "sequence_report"
+    out_sample_format: "textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -112,6 +134,17 @@ task makewindows {
         name: "Sample name that was processed",
         counts_bed: "Tarball of per-chromosome BED files of read counts"
     }
+    topic: "dna,sequence_features,data_quality_management"
+    species: "any"
+    operation: "sequence_merging"
+    in_sample_data: "annotation_track,nucleic_acid_sequence_alignment"
+    in_sample_format: "bed,bam"
+    in_ref_data: "dna_sequence,data_index"
+    in_ref_format: "fasta,fai"
+    out_sample_data: "sequence_report"
+    out_sample_format: "tar_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

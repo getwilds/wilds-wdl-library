@@ -13,6 +13,17 @@ task gtf2bed {
     outputs: {
         bed_file: "BED12-formatted annotation file"
     }
+    topic: "dna,sequence_features"
+    species: "any"
+    operation: "data_formatting"
+    in_sample_data: "sequence_features"
+    in_sample_format: "gtf"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "annotation_track"
+    out_sample_format: "bed"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
