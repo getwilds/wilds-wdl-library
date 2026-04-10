@@ -26,6 +26,7 @@ task run_rseqc {
     bam_index: "Index file for the aligned BAM file"
     ref_bed: "Reference genome annotation in BED format (12-column)"
     sample_name: "Sample name for output files"
+    skip_gene_body_cov: "Whether to skip the geneBody_coverage.py analysis (default: true)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
@@ -35,6 +36,7 @@ task run_rseqc {
     File bam_index
     File ref_bed
     String sample_name
+    Boolean skip_gene_body_cov = true
     Int cpu_cores = 2
     Int memory_gb = 4
   }
@@ -49,8 +51,15 @@ task run_rseqc {
     read_distribution.py -i "~{bam_file}" -r "~{ref_bed}" > "~{sample_name}.read_distribution.txt"
 
     # Gene body coverage (5' to 3' bias)
-    echo "2. Analyzing gene body coverage..."
-    geneBody_coverage.py -i "~{bam_file}" -r "~{ref_bed}" -o "~{sample_name}"
+    # This analysis can take hours on large BAMs or bacterial genomes and is
+    # most useful for eukaryotic polyA-selected libraries, so it is off by default.
+    if [ "~{skip_gene_body_cov}" = "true" ]; then
+      echo "2. Skipping gene body coverage (skip_gene_body_cov = true)"
+      echo "Gene body coverage was not calculated." > "~{sample_name}.geneBodyCoverage.txt"
+    else
+      echo "2. Analyzing gene body coverage..."
+      geneBody_coverage.py -i "~{bam_file}" -r "~{ref_bed}" -o "~{sample_name}"
+    fi
 
     # Infer experiment (strand specificity)
     echo "3. Inferring strand specificity..."
@@ -75,7 +84,7 @@ Date: $(date)
 ANALYSES PERFORMED:
 ================================================================================
 1. Read Distribution - Distribution of reads across genomic features
-2. Gene Body Coverage - 5' to 3' coverage bias assessment
+2. Gene Body Coverage - 5' to 3' coverage bias assessment (~{if skip_gene_body_cov then "SKIPPED" else "PERFORMED"})
 3. Infer Experiment - Strand specificity determination
 4. BAM Statistics - Basic alignment statistics
 5. Junction Annotation - Splice junction classification
