@@ -367,6 +367,10 @@ After meeting the requirements above, submit a PR to merge your forked repo into
 
 4. **Request reviews**: Tag Emma Bishop (@emjbishop) or Taylor Firman (@tefirman)
 
+### AI-Assisted Development
+
+We occasionally use large language models (primarily [Claude](https://www.anthropic.com/claude)) to assist with prototyping modules and pipelines, and contributors are welcome to do the same. However, all AI-generated code must go through the same review, testing, and linting process as any other contribution. Please review and understand any AI-generated code before submitting it in a PR.
+
 ### Review Criteria
 
 Your PR will be evaluated on:
