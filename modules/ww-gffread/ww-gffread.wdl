@@ -53,8 +53,7 @@ task normalize_gtf {
   }
 
   runtime {
-    # TODO: switch to getwilds/gffread:0.12.7 once that image is built and pushed
-    docker: "quay.io/biocontainers/gffread:0.12.7--hdcf5f25_4"
+    docker: "getwilds/gffread:0.12.7"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -97,8 +96,7 @@ task gff3_to_gtf {
   }
 
   runtime {
-    # TODO: switch to getwilds/gffread:0.12.7 once that image is built and pushed
-    docker: "quay.io/biocontainers/gffread:0.12.7--hdcf5f25_4"
+    docker: "getwilds/gffread:0.12.7"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

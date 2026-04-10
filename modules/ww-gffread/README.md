@@ -135,7 +135,7 @@ After the run completes, inspect the normalized GTF output files to verify:
 
 ## Docker Container
 
-This module currently uses the `quay.io/biocontainers/gffread:0.12.7--hdcf5f25_4` image. It will be migrated to `getwilds/gffread:0.12.7` once that image is built and published to the WILDS Docker library.
+This module uses the **`getwilds/gffread:0.12.7`** container image from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library), which includes gffread version 0.12.7.
 
 ## Citation
 
