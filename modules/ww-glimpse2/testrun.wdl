@@ -1,4 +1,4 @@
-version 1.1
+version 1.2
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/imputation-v1.1/modules/ww-glimpse2/ww-glimpse2.wdl" as ww_glimpse2
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/imputation-v1.1/modules/ww-testdata/ww-testdata.wdl" as ww_testdata

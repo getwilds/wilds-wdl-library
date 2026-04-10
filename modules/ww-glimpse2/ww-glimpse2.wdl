@@ -3,7 +3,7 @@
 ## This module provides tasks for reference panel preparation, phasing, and imputation.
 ## Inspired by the Broad Institute's GLIMPSE Imputation Pipeline.
 
-version 1.1
+version 1.2
 
 task glimpse2_chunk {
   meta {
