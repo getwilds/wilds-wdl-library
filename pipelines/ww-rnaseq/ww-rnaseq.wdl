@@ -4,7 +4,7 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-trimgalore/ww-trimgalore.wdl" as trimgalore_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as star_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedparse/ww-bedparse.wdl" as bedparse_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rseqc/ww-rseqc.wdl" as rseqc_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-gtf-processing/modules/ww-rseqc/ww-rseqc.wdl" as rseqc_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl" as deseq2_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-multiqc/ww-multiqc.wdl" as multiqc_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-gtf-processing/modules/ww-gffread/ww-gffread.wdl" as gffread_tasks
