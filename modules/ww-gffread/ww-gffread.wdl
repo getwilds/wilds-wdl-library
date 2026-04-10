@@ -41,38 +41,12 @@ task normalize_gtf {
   command <<<
     set -eo pipefail
 
-    # Report feature counts from the input GTF so debugging is easy
-    echo "=== Input GTF feature counts ===" | tee "~{output_prefix}.feature_counts.txt"
-    awk -F'\t' '$0 !~ /^#/ {print $3}' "~{input_gtf}" \
-      | sort \
-      | uniq -c \
-      | tee -a "~{output_prefix}.feature_counts.txt"
-
-    # gffread 0.12.7 cannot parse NCBI bacterial GTFs directly because those
-    # GTFs have `transcript_id ""` (empty string) on `gene`-type rows, which
-    # trips gffread's record ID validation with:
-    #     Error: no valid ID found for GFF record
-    # Strip `gene`-type rows before feeding to gffread. This is safe for both
-    # bacterial and eukaryotic GTFs: the coordinate and gene_id information
-    # on `gene` rows is redundant with the corresponding transcript/CDS/exon
-    # rows, and gffread reconstructs the gene-level structure from those.
+    # Strip `gene`-type rows before feeding to gffread.
     awk -F'\t' '/^#/ || $3 != "gene"' "~{input_gtf}" > stripped.gtf
 
     # Run gffread with --force-exons to synthesize exon features from CDS
-    # records for any transcript that lacks them. For already-well-formed
-    # eukaryotic GTFs this is effectively a pass-through since exon features
-    # already exist. The -T flag emits GTF (rather than gffread's default GFF3).
+    # -T flag emits GTF (rather than gffread's default GFF3)
     gffread stripped.gtf -T --force-exons -o "~{output_prefix}.gtf"
-
-    # Report feature counts from the normalized GTF
-    {
-      echo ""
-      echo "=== Normalized GTF feature counts ==="
-    } | tee -a "~{output_prefix}.feature_counts.txt"
-    awk -F'\t' '$0 !~ /^#/ {print $3}' "~{output_prefix}.gtf" \
-      | sort \
-      | uniq -c \
-      | tee -a "~{output_prefix}.feature_counts.txt"
   >>>
 
   output {
