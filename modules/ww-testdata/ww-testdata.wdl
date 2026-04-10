@@ -1659,8 +1659,13 @@ task download_pao1_ref {
 
     BASE_URL="https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/006/765/GCF_000006765.1_ASM676v1"
 
+    # Note: --no-check-certificate is required because the getwilds/samtools:1.11
+    # container's CA bundle is older than the intermediate CA that NCBI's FTP
+    # endpoint presents, so strict TLS verification fails. This matches the
+    # approach already used by download_jcast_test_data above for the same reason.
+
     # Download PAO1 reference FASTA from NCBI RefSeq
-    wget -q -O "~{output_prefix}.fa.gz" "${BASE_URL}/GCF_000006765.1_ASM676v1_genomic.fna.gz"
+    wget -q --no-check-certificate -O "~{output_prefix}.fa.gz" "${BASE_URL}/GCF_000006765.1_ASM676v1_genomic.fna.gz"
     gunzip "~{output_prefix}.fa.gz"
 
     # Create FASTA index (.fai) and dictionary (.dict) alongside the FASTA
@@ -1671,7 +1676,7 @@ task download_pao1_ref {
     # Note: this GTF has the classic bacterial layout (~5573 CDS rows,
     # ~5697 gene rows, only ~106 exon rows for tRNAs/rRNAs) which is exactly
     # the case the ww-gffread normalize_gtf task is designed to handle.
-    wget -q -O "~{output_prefix}.gtf.gz" "${BASE_URL}/GCF_000006765.1_ASM676v1_genomic.gtf.gz"
+    wget -q --no-check-certificate -O "~{output_prefix}.gtf.gz" "${BASE_URL}/GCF_000006765.1_ASM676v1_genomic.gtf.gz"
     gunzip "~{output_prefix}.gtf.gz"
   >>>
 
