@@ -7,8 +7,8 @@
 
 version 1.1
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl" as glimpse2
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bcftools/ww-bcftools.wdl" as bcftools
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/imputation-v1.1/modules/ww-glimpse2/ww-glimpse2.wdl" as glimpse2
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/imputation-v1.1/modules/ww-bcftools/ww-bcftools.wdl" as bcftools
 
 struct ChromosomeData {
     String chromosome
@@ -22,7 +22,7 @@ workflow imputation {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
     description: "WDL workflow for genotype imputation from low-coverage WGS data using GLIMPSE2. Processes CRAM/BAM files against a reference panel to produce a multi-sample imputed VCF file."
-    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-imputation/ww-imputation.wdl"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/imputation-v1.1/pipelines/ww-imputation/ww-imputation.wdl"
     outputs: {
         imputed_vcf: "Multi-sample imputed VCF/BCF file (all samples and chromosomes combined)",
         imputed_vcf_index: "Index file for the imputed VCF",
