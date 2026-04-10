@@ -19,8 +19,7 @@ task normalize_gtf {
     description: "Normalizes a GTF file so downstream tools see exon features for every transcript. Synthesizes exon features from CDS records for GTFs that lack them (typical of NCBI bacterial GTFs). Eukaryotic GTFs with proper exon annotations pass through unchanged."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gffread/ww-gffread.wdl"
     outputs: {
-        normalized_gtf: "GTF file with exon features synthesized from CDS records where needed",
-        feature_counts: "Text report comparing feature counts before and after normalization"
+        normalized_gtf: "GTF file with exon features synthesized from CDS records where needed"
     }
   }
 
@@ -51,7 +50,6 @@ task normalize_gtf {
 
   output {
     File normalized_gtf = "~{output_prefix}.gtf"
-    File feature_counts = "~{output_prefix}.feature_counts.txt"
   }
 
   runtime {

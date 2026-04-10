@@ -49,7 +49,6 @@ Normalizes a GTF file so downstream tools see exon features for every transcript
 
 **Outputs:**
 - `normalized_gtf` (File): GTF file with exon features synthesized from CDS records where needed
-- `feature_counts` (File): Text report comparing feature counts before and after normalization (useful for debugging)
 
 ### `gff3_to_gtf`
 
@@ -130,9 +129,9 @@ make run_sprocket NAME=ww-gffread
 make run_miniwdl NAME=ww-gffread
 ```
 
-After the run completes, inspect the `feature_counts` output files to verify:
-- The bacterial case shows a dramatic increase in `exon` rows (hundreds → thousands).
-- The eukaryotic case shows roughly the same number of `exon` rows before and after.
+After the run completes, inspect the normalized GTF output files to verify:
+- The bacterial case has ~5500 `exon` rows (up from ~100 in the input).
+- The eukaryotic case has roughly the same number of `exon` rows as the input.
 
 ## Docker Container
 

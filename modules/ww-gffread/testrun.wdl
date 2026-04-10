@@ -22,8 +22,6 @@ workflow gffread_example {
 
   output {
     File bacterial_normalized_gtf = normalize_bacterial.normalized_gtf
-    File bacterial_feature_counts = normalize_bacterial.feature_counts
     File eukaryotic_normalized_gtf = normalize_eukaryotic.normalized_gtf
-    File eukaryotic_feature_counts = normalize_eukaryotic.feature_counts
   }
 }
