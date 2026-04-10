@@ -84,12 +84,10 @@ Perform imputation and phasing from VCF input.
 
 ### `glimpse2_phase_cram`
 
-Perform imputation directly from CRAM/BAM files. Accepts one or more BAM/CRAM files via an array input, which are passed to GLIMPSE2_phase using `--bam-list`. Sample IDs are explicitly included in the BAM list alongside index paths (matching the Broad Institute's implementation) to ensure correct sample identification by GLIMPSE2.
+Perform imputation directly from CRAM/BAM files. Accepts a directory containing CRAM/BAM files and their co-located index files, which are passed to GLIMPSE2_phase using `--bam-list`. Sample IDs are derived from filenames by stripping the `.cram` or `.bam` extension. Using a directory input (WDL 1.1 `Directory` type) avoids file descriptor limits when running with large sample counts under Apptainer.
 
 **Inputs:**
-- `input_bams` (Array[File]): Array of input CRAM or BAM files
-- `input_bam_indices` (Array[File]): Array of index files for input CRAM/BAM files
-- `sample_ids` (Array[String]): Array of sample IDs corresponding to each CRAM/BAM file
+- `input_cram_dir` (Directory): Directory containing CRAM/BAM files and their index files (`.cram.crai` or `.crai` / `.bam.bai` or `.bai`)
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Reference genome FASTA index
 - `reference_chunk` (File): Binary reference chunk

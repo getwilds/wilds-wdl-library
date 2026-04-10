@@ -5,7 +5,7 @@
 ## Inspired by the Broad Institute's GLIMPSE Imputation Pipeline:
 ## https://github.com/broadinstitute/palantir-workflows/tree/main/GlimpseImputationPipeline
 
-version 1.0
+version 1.1
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl" as glimpse2
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bcftools/ww-bcftools.wdl" as bcftools
@@ -31,9 +31,7 @@ workflow imputation {
   }
 
   parameter_meta {
-    input_crams: "Array of input CRAM/BAM files for all samples to impute"
-    input_cram_indices: "Array of index files corresponding to input CRAMs/BAMs"
-    sample_ids: "Array of sample IDs corresponding to each input CRAM/BAM file"
+    input_cram_dir: "Directory containing input CRAM/BAM files and their index files for all samples to impute. Sample IDs are derived from filenames by stripping the .cram or .bam extension."
     chromosomes: "Array of ChromosomeData objects containing chromosome name, reference panel VCF, index, and genetic map"
     reference_fasta: "Reference genome FASTA file (must match CRAM reference)"
     reference_fasta_index: "Reference genome FASTA index file (.fai)"
@@ -64,9 +62,7 @@ workflow imputation {
 
   input {
     # Required inputs
-    Array[File] input_crams
-    Array[File] input_cram_indices
-    Array[String] sample_ids
+    Directory input_cram_dir
     Array[ChromosomeData] chromosomes
     File reference_fasta
     File reference_fasta_index
@@ -150,9 +146,7 @@ workflow imputation {
     scatter (chunk_idx in range(length(chrom_reference_chunks[chrom_idx]))) {
       call glimpse2.glimpse2_phase_cram as phase_chunk {
         input:
-          input_bams = input_crams,
-          input_bam_indices = input_cram_indices,
-          sample_ids = sample_ids,
+          input_cram_dir = input_cram_dir,
           reference_fasta = reference_fasta,
           reference_fasta_index = reference_fasta_index,
           reference_chunk = chrom_reference_chunks[chrom_idx][chunk_idx],

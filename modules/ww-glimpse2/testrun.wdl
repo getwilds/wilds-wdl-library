@@ -1,7 +1,35 @@
-version 1.0
+version 1.1
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl" as ww_glimpse2
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+
+task create_cram_directory {
+  input {
+    Array[File] cram_files
+    Array[File] crai_files
+  }
+
+  command <<<
+    set -eo pipefail
+    mkdir cram_dir
+    for f in ~{sep=' ' cram_files}; do
+      cp "$f" cram_dir/
+    done
+    for f in ~{sep=' ' crai_files}; do
+      cp "$f" cram_dir/
+    done
+  >>>
+
+  output {
+    Directory cram_directory = "cram_dir"
+  }
+
+  runtime {
+    docker: "ubuntu:24.04"
+    cpu: 1
+    memory: "2 GB"
+  }
+}
 
 workflow glimpse2_example {
   # Test region on chr1 - small enough for CI/CD but large enough for meaningful testing
@@ -37,6 +65,13 @@ workflow glimpse2_example {
   call ww_testdata.download_cram_data as download_cram {
     input:
       ref_fasta = download_reference.fasta
+  }
+
+  # Step 4a-ii: Stage CRAM and index into a directory for glimpse2_phase_cram
+  call create_cram_directory {
+    input:
+      cram_files = [download_cram.cram],
+      crai_files = [download_cram.crai]
   }
 
   # Step 4b: Download test VCF with genotype likelihoods (NA12878 from 1000 Genomes low-coverage)
@@ -95,9 +130,7 @@ workflow glimpse2_example {
 
     call ww_glimpse2.glimpse2_phase_cram {
       input:
-        input_bams = [download_cram.cram],
-        input_bam_indices = [download_cram.crai],
-        sample_ids = ["NA12878"],
+        input_cram_dir = create_cram_directory.cram_directory,
         reference_fasta = download_reference.fasta,
         reference_fasta_index = download_reference.fasta_index,
         reference_chunk = glimpse2_split_reference.reference_chunk,
