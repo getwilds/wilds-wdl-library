@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-gtf-processing/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow testdata_example {
   # Pull down reference genome and index files for chr1
@@ -75,6 +75,8 @@ workflow testdata_example {
 
   call ww_testdata.download_jcast_test_data { }
 
+  call ww_testdata.download_pao1_ref { }
+
   call validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
@@ -128,7 +130,11 @@ workflow testdata_example {
     sjl_border_points_csv = generate_sjl_data.border_points_csv,
     jcast_rmats_output = download_jcast_test_data.rmats_output,
     jcast_gtf_file = download_jcast_test_data.gtf_file,
-    jcast_genome_fasta = download_jcast_test_data.genome_fasta
+    jcast_genome_fasta = download_jcast_test_data.genome_fasta,
+    pao1_fasta = download_pao1_ref.fasta,
+    pao1_fasta_index = download_pao1_ref.fasta_index,
+    pao1_dict = download_pao1_ref.dict,
+    pao1_gtf = download_pao1_ref.gtf
   }
 
   output {
@@ -201,6 +207,11 @@ workflow testdata_example {
     File jcast_rmats_output = download_jcast_test_data.rmats_output
     File jcast_gtf_file = download_jcast_test_data.gtf_file
     File jcast_genome_fasta = download_jcast_test_data.genome_fasta
+    # Outputs from PAO1 reference download
+    File pao1_fasta = download_pao1_ref.fasta
+    File pao1_fasta_index = download_pao1_ref.fasta_index
+    File pao1_dict = download_pao1_ref.dict
+    File pao1_gtf = download_pao1_ref.gtf
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
   }
@@ -268,6 +279,10 @@ task validate_outputs {
     jcast_rmats_output: "JCAST rMATS output tarball to validate"
     jcast_gtf_file: "JCAST Ensembl GTF annotation file to validate"
     jcast_genome_fasta: "JCAST Ensembl genome FASTA file to validate"
+    pao1_fasta: "PAO1 reference FASTA file to validate"
+    pao1_fasta_index: "PAO1 reference FASTA index file to validate"
+    pao1_dict: "PAO1 reference FASTA dictionary file to validate"
+    pao1_gtf: "PAO1 NCBI RefSeq GTF annotation file to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -326,6 +341,10 @@ task validate_outputs {
     File jcast_rmats_output
     File jcast_gtf_file
     File jcast_genome_fasta
+    File pao1_fasta
+    File pao1_fasta_index
+    File pao1_dict
+    File pao1_gtf
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -412,6 +431,10 @@ task validate_outputs {
     validate_file "~{jcast_rmats_output}" "JCAST rMATS output tarball" || validation_passed=false
     validate_file "~{jcast_gtf_file}" "JCAST Ensembl GTF file" || validation_passed=false
     validate_file "~{jcast_genome_fasta}" "JCAST Ensembl genome FASTA" || validation_passed=false
+    validate_file "~{pao1_fasta}" "PAO1 reference FASTA" || validation_passed=false
+    validate_file "~{pao1_fasta_index}" "PAO1 reference FASTA index" || validation_passed=false
+    validate_file "~{pao1_dict}" "PAO1 reference FASTA dict" || validation_passed=false
+    validate_file "~{pao1_gtf}" "PAO1 NCBI RefSeq GTF" || validation_passed=false
 
     # Additional check: Verify no N bases in clean amplicon
     echo "" >> validation_report.txt
@@ -427,7 +450,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 51"
+      echo "Total files validated: 55"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

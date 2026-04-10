@@ -1627,3 +1627,64 @@ FASTA
     memory: "~{memory_gb} GB"
   }
 }
+
+task download_pao1_ref {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Downloads the Pseudomonas aeruginosa PAO1 reference genome (FASTA and GTF) from NCBI RefSeq for bacterial RNA-seq test runs"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        fasta: "Pseudomonas aeruginosa PAO1 reference genome FASTA (NC_002516.2)",
+        fasta_index: "Index file for the PAO1 reference FASTA",
+        dict: "Dictionary file for the PAO1 reference FASTA",
+        gtf: "NCBI RefSeq GTF annotation for PAO1 (bacterial layout: mostly CDS rows with only tRNA/rRNA exons)"
+    }
+  }
+
+  parameter_meta {
+    output_prefix: "Prefix used for output filenames"
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    String output_prefix = "pao1"
+    Int cpu_cores = 1
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -eo pipefail
+
+    BASE_URL="https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/006/765/GCF_000006765.1_ASM676v1"
+
+    # Download PAO1 reference FASTA from NCBI RefSeq
+    wget -q -O "~{output_prefix}.fa.gz" "${BASE_URL}/GCF_000006765.1_ASM676v1_genomic.fna.gz"
+    gunzip "~{output_prefix}.fa.gz"
+
+    # Create FASTA index (.fai) and dictionary (.dict) alongside the FASTA
+    samtools faidx "~{output_prefix}.fa"
+    samtools dict "~{output_prefix}.fa" > "~{output_prefix}.dict"
+
+    # Download PAO1 GTF annotation from NCBI RefSeq
+    # Note: this GTF has the classic bacterial layout (~5573 CDS rows,
+    # ~5697 gene rows, only ~106 exon rows for tRNAs/rRNAs) which is exactly
+    # the case the ww-gffread normalize_gtf task is designed to handle.
+    wget -q -O "~{output_prefix}.gtf.gz" "${BASE_URL}/GCF_000006765.1_ASM676v1_genomic.gtf.gz"
+    gunzip "~{output_prefix}.gtf.gz"
+  >>>
+
+  output {
+    File fasta = "~{output_prefix}.fa"
+    File fasta_index = "~{output_prefix}.fa.fai"
+    File dict = "~{output_prefix}.dict"
+    File gtf = "~{output_prefix}.gtf"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
