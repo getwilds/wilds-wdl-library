@@ -6,59 +6,66 @@ A comprehensive WILDS WDL pipeline for RNA-seq analysis, covering the core workf
 
 ## Overview
 
-This pipeline extends the simpler `ww-star-deseq2` pipeline with upstream read QC, adapter trimming, and aggregated MultiQC reporting. It integrates 7 WILDS WDL modules to perform a production-ready RNA-seq analysis workflow:
+This pipeline extends the simpler `ww-star-deseq2` pipeline with upstream read QC, adapter trimming, and aggregated MultiQC reporting. It integrates 8 WILDS WDL modules to perform a production-ready RNA-seq analysis workflow:
 
-1. **Pre-trim QC** — Assess raw read quality
-2. **Adapter Trimming** — Remove adapters and low-quality bases
-3. **Post-trim QC** — Verify trimming improved read quality
-4. **Genome Alignment** — Two-pass STAR alignment
-5. **Alignment QC** — Comprehensive post-alignment quality metrics
-6. **Differential Expression** — Count aggregation and DESeq2 analysis
-7. **Aggregated Reporting** — MultiQC summary of all QC metrics
+1. **GTF Normalization** — Ensure annotation has proper exon features (critical for bacterial genomes)
+2. **Pre-trim QC** — Assess raw read quality
+3. **Adapter Trimming** — Remove adapters and low-quality bases
+4. **Post-trim QC** — Verify trimming improved read quality
+5. **Genome Alignment** — Two-pass STAR alignment
+6. **Alignment QC** — Comprehensive post-alignment quality metrics
+7. **Differential Expression** — Count aggregation and DESeq2 analysis
+8. **Aggregated Reporting** — MultiQC summary of all QC metrics
 
 ## Pipeline Structure
 
-**Complexity Level: Advanced** (9 steps, 7 distinct modules)
+**Complexity Level: Advanced** (10 steps, 8 distinct modules)
 
-1. **FastQC — Pre-trim QC** (using `ww-fastqc` module):
+1. **GTF Normalization** (using `ww-gffread` module):
+   - Ensures the reference GTF has proper `exon` features for every transcript
+   - Critical for bacterial NCBI GTFs which only have CDS rows — without this step, STAR and RSeQC silently ignore 98% of protein-coding genes
+   - Eukaryotic GTFs with proper exon annotations pass through unchanged
+
+2. **FastQC — Pre-trim QC** (using `ww-fastqc` module):
    - Generates quality reports for raw FASTQ files
    - Provides baseline quality metrics before trimming
 
-2. **Trim Galore — Adapter Trimming** (using `ww-trimgalore` module):
+3. **Trim Galore — Adapter Trimming** (using `ww-trimgalore` module):
    - Removes adapter sequences and low-quality bases
    - Filters reads below minimum length threshold
    - Produces trimming reports with adapter detection statistics
 
-3. **FastQC — Post-trim QC** (using `ww-fastqc` module):
+4. **FastQC — Post-trim QC** (using `ww-fastqc` module):
    - Generates quality reports for trimmed reads
    - Confirms quality improvement after trimming
 
-4. **STAR Index Building** (using `ww-star` module):
-   - Builds STAR genome index from reference FASTA and GTF files
+5. **STAR Index Building** (using `ww-star` module):
+   - Builds STAR genome index from reference FASTA and normalized GTF
    - Runs once and is reused across all samples
 
-5. **STAR Two-Pass Alignment** (using `ww-star` module):
+6. **STAR Two-Pass Alignment** (using `ww-star` module):
    - Performs two-pass alignment on trimmed reads for each sample
    - Generates BAM files, BAI indices, gene counts, and alignment metrics
 
-6. **GTF to BED Conversion** (using `ww-bedparse` module):
-   - Converts GTF annotation to BED12 format for RSeQC compatibility
+7. **GTF to BED Conversion** (using `ww-bedparse` module):
+   - Converts normalized GTF to BED12 format for RSeQC compatibility
 
-7. **RSeQC — Alignment QC** (using `ww-rseqc` module):
+8. **RSeQC — Alignment QC** (using `ww-rseqc` module):
    - Analyzes read distribution, gene body coverage, and strand specificity
    - Produces comprehensive alignment quality metrics
 
-8. **DESeq2 — Count Assembly and Differential Expression** (using `ww-deseq2` module):
+9. **DESeq2 — Count Assembly and Differential Expression** (using `ww-deseq2` module):
    - Combines gene counts from all samples into a single matrix
    - Performs statistical analysis and generates visualizations (PCA, volcano, heatmap)
 
-9. **MultiQC — Aggregated Reporting** (using `ww-multiqc` module):
-   - Collects reports from FastQC, Trim Galore, STAR, and RSeQC
-   - Generates a single interactive HTML report summarizing all QC metrics
+10. **MultiQC — Aggregated Reporting** (using `ww-multiqc` module):
+    - Collects reports from FastQC, Trim Galore, STAR, and RSeQC
+    - Generates a single interactive HTML report summarizing all QC metrics
 
 ## Module Dependencies
 
 This pipeline imports and uses:
+- **ww-gffread module**: GTF normalization to ensure exon features exist (`normalize_gtf` task)
 - **ww-fastqc module**: Pre-trim and post-trim read quality assessment (`run_fastqc` task)
 - **ww-trimgalore module**: Adapter and quality trimming (`trimgalore_paired` task)
 - **ww-star module**: Genome indexing and read alignment (`build_index`, `align_two_pass` tasks)
@@ -227,16 +234,17 @@ sprocket run testrun.wdl --entrypoint rnaseq_example
 The test workflow automatically:
 1. Downloads small reference genome data (chromosome 1 subset, 50Mbp)
 2. Downloads real RNA-seq data from SRA (4 samples from DESeq2 airway study: 2 untreated + 2 dexamethasone-treated)
-3. Runs pre-trim FastQC on raw reads
-4. Trims adapters with Trim Galore
-5. Runs post-trim FastQC on trimmed reads
-6. Builds STAR genome index
-7. Performs two-pass alignment for all samples
-8. Converts GTF to BED12 format for RSeQC
-9. Runs RSeQC quality control on aligned BAMs
-10. Combines gene count matrices from all samples
-11. Performs DESeq2 differential expression analysis
-12. Aggregates all QC reports with MultiQC
+3. Normalizes the reference GTF (ensures exon features exist for all transcripts)
+4. Runs pre-trim FastQC on raw reads
+5. Trims adapters with Trim Galore
+6. Runs post-trim FastQC on trimmed reads
+7. Builds STAR genome index using normalized GTF
+8. Performs two-pass alignment for all samples
+9. Converts normalized GTF to BED12 format for RSeQC
+10. Runs RSeQC quality control on aligned BAMs
+11. Combines gene count matrices from all samples
+12. Performs DESeq2 differential expression analysis
+13. Aggregates all QC reports with MultiQC
 
 **Test Dataset Details:**
 - Uses 4 samples from SRA (SRR1039508, SRR1039509, SRR1039512, SRR1039513)

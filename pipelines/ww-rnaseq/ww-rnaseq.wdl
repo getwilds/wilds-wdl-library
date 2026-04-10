@@ -7,6 +7,8 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rseqc/ww-rseqc.wdl" as rseqc_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl" as deseq2_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-multiqc/ww-multiqc.wdl" as multiqc_tasks
+# TODO: switch to refs/heads/main before merging
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-gtf-processing/modules/ww-gffread/ww-gffread.wdl" as gffread_tasks
 
 struct SampleInfo {
     String name
@@ -81,10 +83,18 @@ workflow rnaseq {
     Int genome_sa_index_nbases = 14
   }
 
+  # Normalize GTF to ensure exon features exist for every transcript.
+  # This is critical for bacterial NCBI GTFs which only have CDS rows —
+  # without this step, STAR GeneCounts and RSeQC would silently ignore
+  # 98% of protein-coding genes. For eukaryotic GTFs this is a pass-through.
+  call gffread_tasks.normalize_gtf { input:
+      input_gtf = reference_genome.gtf
+  }
+
   # Build STAR genome index (runs once)
   call star_tasks.build_index { input:
       reference_fasta = reference_genome.fasta,
-      reference_gtf = reference_genome.gtf,
+      reference_gtf = normalize_gtf.normalized_gtf,
       cpu_cores = star_cpu,
       memory_gb = star_memory_gb,
       genome_sa_index_nbases = genome_sa_index_nbases
@@ -92,7 +102,7 @@ workflow rnaseq {
 
   # Convert GTF to BED for RSeQC
   call bedparse_tasks.gtf2bed { input:
-      gtf_file = reference_genome.gtf
+      gtf_file = normalize_gtf.normalized_gtf
   }
 
   scatter (sample in samples) {
