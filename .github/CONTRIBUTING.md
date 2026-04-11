@@ -369,7 +369,7 @@ After meeting the requirements above, submit a PR to merge your forked repo into
 
 ### AI-Assisted Development
 
-We occasionally use large language models (primarily [Claude](https://www.anthropic.com/claude)) to assist with prototyping modules and pipelines, and contributors are welcome to do the same. However, all AI-generated code must go through the same review, testing, and linting process as any other contribution. Please review and understand any AI-generated code before submitting it in a PR.
+We occasionally use large language models (primarily [Claude](https://www.anthropic.com/claude)) to assist with prototyping modules and pipelines, and contributors are welcome to do the same. However, all AI-generated code must go through the same testing, linting, and human review process as any other contribution. Please ensure you review and understand any AI-generated code before submitting it in a PR.
 
 ### Review Criteria
 
