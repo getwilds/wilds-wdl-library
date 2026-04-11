@@ -129,6 +129,12 @@ All tasks use versioned, tested Docker images from the [WILDS Docker Library](ht
 
 ---
 
+## AI Disclosure
+
+Large language models (primarily [Claude](https://www.anthropic.com/claude)) have been used to assist with prototyping new modules and pipelines in this repository, including initial drafts of task scaffolding, command structures, and test workflows. All AI-generated code is reviewed, validated, and modified as necessary by human researchers through linting tools, multi-executor test runs (Cromwell, miniWDL, Sprocket), and peer code review. No architectural or scientific decisions are made by AI tools.
+
+---
+
 ## Getting Help
 
 - **Documentation Issues**: Found something unclear or incorrect? [Report an issue](https://github.com/getwilds/wilds-wdl-library/issues)

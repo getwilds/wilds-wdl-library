@@ -125,6 +125,10 @@ Fred Hutch researchers can use [PROOF](https://sciwiki.fredhutch.org/datademos/p
 - **Documentation Standards**: Comprehensive README files and inline documentation
 - **Version Control**: Semantic versioning and careful dependency management
 
+## AI Disclosure
+
+Large language models (primarily [Claude](https://www.anthropic.com/claude)) have been used to assist with prototyping new modules and pipelines in this repository, including initial drafts of task scaffolding, command structures, and test workflows. All AI-generated code is reviewed, validated, and modified as necessary by human researchers through linting tools, multi-executor test runs (Cromwell, miniWDL, Sprocket), and peer code review. No architectural or scientific decisions are made by AI tools.
+
 ## Contributing
 
 We welcome contributions at all levels:
