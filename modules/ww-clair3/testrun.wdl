@@ -7,16 +7,17 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 #### TEST WORKFLOW DEFINITION ####
 
 workflow clair3_example {
-  # Download reference genome and BAM test data
+  # Download reference genome (restricted to first 5 Mb for faster testing) and BAM test data
   call ww_testdata.download_ref_data as download_reference { input:
-    chromo = "chr1"
+    chromo = "chr1",
+    region = "1-5000000"
   }
 
   call ww_testdata.download_bam_data as download_bam { input:
     filename = "sample1.bam"
   }
 
-  # Call Clair3 using Illumina model (test data is Illumina short-read)
+  # Call Clair3 using Illumina model with pileup-only for speed (test data is Illumina short-read)
   call ww_clair3.run_clair3 { input:
     sample_name = "sample1",
     input_bam = download_bam.bam,
@@ -25,13 +26,13 @@ workflow clair3_example {
     ref_fasta_index = download_reference.fasta_index,
     platform = "ilmn",
     model_path = "/opt/models/ilmn",
-    ctg_name = "chr1",
+    bed_file = download_reference.bed,
     pileup_only = true,
     cpu_cores = 2,
     memory_gb = 8
   }
 
-  # Test gVCF output functionality
+  # Test gVCF output with full-alignment mode (pileup_only doesn't support gVCF)
   call ww_clair3.run_clair3 as run_clair3_gvcf { input:
     sample_name = "sample1_gvcf",
     input_bam = download_bam.bam,
@@ -40,8 +41,7 @@ workflow clair3_example {
     ref_fasta_index = download_reference.fasta_index,
     platform = "ilmn",
     model_path = "/opt/models/ilmn",
-    ctg_name = "chr1",
-    pileup_only = true,
+    bed_file = download_reference.bed,
     gvcf_enabled = true,
     cpu_cores = 2,
     memory_gb = 8

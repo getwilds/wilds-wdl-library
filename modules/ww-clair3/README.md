@@ -164,9 +164,11 @@ java -jar cromwell.jar run testrun.wdl
 ### Automatic Demo Mode
 
 The test workflow automatically:
-1. Downloads reference genome (chr1) and BAM test data using `ww-testdata`
-2. Runs Clair3 variant calling on the test sample using the Illumina model (pileup-only mode for speed)
-3. Outputs a VCF file with germline variant calls
+1. Downloads reference genome (first 5 Mb of chr1) and BAM test data using `ww-testdata`
+2. Runs Clair3 variant calling in two modes using the Illumina model:
+   - **Pileup-only mode**: Fast variant calling producing a VCF
+   - **Full-alignment mode with gVCF**: Complete pipeline producing both VCF and gVCF outputs
+3. Outputs VCF and gVCF files with germline variant calls
 
 ## Docker Container
 
