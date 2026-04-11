@@ -31,8 +31,28 @@ workflow clair3_example {
     memory_gb = 8
   }
 
+  # Test gVCF output functionality
+  call ww_clair3.run_clair3 as run_clair3_gvcf { input:
+    sample_name = "sample1_gvcf",
+    input_bam = download_bam.bam,
+    input_bam_index = download_bam.bai,
+    ref_fasta = download_reference.fasta,
+    ref_fasta_index = download_reference.fasta_index,
+    platform = "ilmn",
+    model_path = "/opt/models/ilmn",
+    ctg_name = "chr1",
+    pileup_only = true,
+    gvcf_enabled = true,
+    cpu_cores = 2,
+    memory_gb = 8
+  }
+
   output {
     File output_vcf = run_clair3.output_vcf
     File output_vcf_index = run_clair3.output_vcf_index
+    File output_gvcf_vcf = run_clair3_gvcf.output_vcf
+    File output_gvcf_vcf_index = run_clair3_gvcf.output_vcf_index
+    Array[File] output_gvcf = run_clair3_gvcf.output_gvcf
+    Array[File] output_gvcf_index = run_clair3_gvcf.output_gvcf_index
   }
 }

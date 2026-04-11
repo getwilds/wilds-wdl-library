@@ -9,8 +9,8 @@ version 1.0
 
 task run_clair3 {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Runs Clair3 to call germline variants from aligned reads using deep learning pileup and full-alignment models"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-clair3/ww-clair3.wdl"
     outputs: {
@@ -45,7 +45,7 @@ task run_clair3 {
     File input_bam_index
     File ref_fasta
     File ref_fasta_index
-    String platform = "ont"
+    String platform = "ilmn"
     String model_path = "/opt/models/ont"
     Boolean gvcf_enabled = false
     File? bed_file

@@ -30,7 +30,21 @@ Runs Clair3 to call germline variants from aligned reads using deep learning pil
 - `ref_fasta` (File): Reference genome FASTA file (must be indexed with .fai)
 - `ref_fasta_index` (File): Index file for the reference FASTA
 - `platform` (String, default="ont"): Sequencing platform: `ont`, `hifi`, or `ilmn`
-- `model_path` (String, default="/opt/models/ont"): Path to Clair3 model directory
+- `model_path` (String, default="/opt/models/ont"): Path to Clair3 model directory. Available models:
+  - `/opt/models/ont` - Oxford Nanopore (default)
+  - `/opt/models/ont_guppy5` - ONT Guppy5 basecaller
+  - `/opt/models/r941_prom_hac_g360+g422` - ONT R9.4.1 PromethION HAC
+  - `/opt/models/r941_prom_sup_g5014` - ONT R9.4.1 PromethION SUP
+  - `/opt/models/r1041_e82_400bps_hac_v410` - ONT R10.4.1 HAC v4.1.0
+  - `/opt/models/r1041_e82_400bps_hac_v500` - ONT R10.4.1 HAC v5.0.0
+  - `/opt/models/r1041_e82_400bps_hac_with_mv` - ONT R10.4.1 HAC with modified bases
+  - `/opt/models/r1041_e82_400bps_sup_v410` - ONT R10.4.1 SUP v4.1.0
+  - `/opt/models/r1041_e82_400bps_sup_v430_bacteria_finetuned` - ONT R10.4.1 SUP bacteria-finetuned
+  - `/opt/models/r1041_e82_400bps_sup_v500` - ONT R10.4.1 SUP v5.0.0
+  - `/opt/models/hifi` - PacBio HiFi (default HiFi model)
+  - `/opt/models/hifi_revio` - PacBio HiFi Revio
+  - `/opt/models/hifi_sequel2` - PacBio HiFi Sequel II
+  - `/opt/models/ilmn` - Illumina
 - `gvcf_enabled` (Boolean, default=false): Whether to produce a gVCF file for joint genotyping
 - `bed_file` (File?, optional): BED file to restrict variant calling to specific regions
 - `ctg_name` (String?, optional): Contig/chromosome name to restrict calling
