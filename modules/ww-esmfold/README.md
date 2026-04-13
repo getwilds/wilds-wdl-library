@@ -100,7 +100,9 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a test workflow (`testrun.wdl`) that can be run independently:
+> **Note:** The ESMFold test workflow requires **24 GB of memory** to load the full 3B-parameter ESM-2 model, which exceeds the resources available on GitHub Actions runners (~16 GB). As a result, **this module's `testrun.wdl` is excluded from GitHub CI/CD** and is instead validated on the Fred Hutch HPC on a monthly basis. Linting checks still run in CI as normal.
+
+The module includes a test workflow (`testrun.wdl`) that can be run on an HPC or local machine with sufficient memory:
 
 ```bash
 # Using miniWDL

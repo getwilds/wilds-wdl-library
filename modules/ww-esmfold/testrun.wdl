@@ -22,7 +22,7 @@ workflow esmfold_example {
       cpu_offload = false,
       max_tokens_per_batch = 0,
       cpu_cores = 2,
-      memory_gb = 12,
+      memory_gb = 24,
       gpu_enabled = false
   }
 
