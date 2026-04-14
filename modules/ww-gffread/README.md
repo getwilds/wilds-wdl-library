@@ -9,19 +9,6 @@ A WILDS WDL module wrapping the [`gffread`](https://github.com/gpertea/gffread) 
 
 `gffread` is a small, fast utility from the Cufflinks/StringTie ecosystem for parsing, filtering, converting, and normalizing GTF and GFF3 annotation files. This module exposes the subset of `gffread` functionality most relevant to WILDS pipelines.
 
-### Why this module exists: the bacterial GTF problem
-
-NCBI RefSeq bacterial GTFs are structurally different from eukaryotic GTFs in a way that silently breaks standard RNA-seq pipelines. A typical NCBI bacterial GTF for *Pseudomonas aeruginosa* PAO1 contains:
-
-- ~5500 `CDS` rows (one per protein-coding gene)
-- ~5700 `gene` rows
-- ~100 `exon` rows (only for tRNAs/rRNAs)
-
-Tools like STAR (in GeneCounts mode) and RSeQC only consider `exon` features when building gene-level count tables and annotation summaries. When fed a bacterial GTF, these tools silently report per-gene counts for only the ~100 non-coding RNAs — dropping 98% of protein-coding genes from the results. Downstream DESeq2 then produces differential expression output for only ~100 genes instead of the ~5500 you expect.
-
-The `normalize_gtf` task in this module fixes this by synthesizing `exon` features from `CDS` records using `gffread --force-exons`. The normalized GTF then works correctly with any downstream tool that expects eukaryotic-style exon annotations, with no user-visible changes or configuration required.
-
-The task is safe to apply to any GTF: well-formed eukaryotic GTFs that already have proper `exon` annotations pass through effectively unchanged.
 
 ### A note on gffread + NCBI bacterial GTFs
 
