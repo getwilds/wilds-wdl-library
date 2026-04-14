@@ -4,7 +4,7 @@
 ## Primary use case: bacterial GTFs from NCBI RefSeq contain mostly CDS rows
 ## with very few `exon` rows (typically only tRNAs/rRNAs). Downstream tools
 ## like STAR (GeneCounts mode) and RSeQC only consider `exon` features, so
-## these bacterial GTFs silently cause 98% of protein-coding genes to drop
+## these bacterial GTFs silently cause a majority of protein-coding genes to drop
 ## out of RNA-seq results. This module's `normalize_gtf` task uses gffread
 ## with `--force-exons` to synthesize the missing exon features, making the
 ## same pipeline work for both bacterial and eukaryotic references without
@@ -16,7 +16,7 @@ task normalize_gtf {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Normalizes a GTF file so downstream tools see exon features for every transcript. Synthesizes exon features from CDS records for GTFs that lack them (typical of NCBI bacterial GTFs). Eukaryotic GTFs with proper exon annotations pass through unchanged."
+    description: "Creates exon features from CDS records for GTFs that lack them (e.g. bacterial GTFs). Eukaryotic GTFs with proper exon annotations are unchanged."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gffread/ww-gffread.wdl"
     outputs: {
         normalized_gtf: "GTF file with exon features synthesized from CDS records where needed"
@@ -24,7 +24,7 @@ task normalize_gtf {
   }
 
   parameter_meta {
-    input_gtf: "Input GTF file to normalize. Can be any GTF - bacterial or eukaryotic."
+    input_gtf: "Input GTF file to normalize."
     output_prefix: "Prefix used for output filenames"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
@@ -63,7 +63,7 @@ task gff3_to_gtf {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Converts a GFF3 annotation file to GTF format using gffread. Useful when an upstream source (e.g. Ensembl Bacteria) only publishes GFF3 but downstream tools expect GTF."
+    description: "Converts a GFF3 file to GTF using gffread."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gffread/ww-gffread.wdl"
     outputs: {
         gtf_file: "GTF-format annotation converted from the input GFF3"
