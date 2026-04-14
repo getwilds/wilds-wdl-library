@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-gtf-processing/modules/ww-gffread/ww-gffread.wdl" as ww_gffread
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-gtf-processing/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gffread/ww-gffread.wdl" as ww_gffread
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow gffread_example {
   # Case 1: Bacterial NCBI GTF (the primary use case for this module)
