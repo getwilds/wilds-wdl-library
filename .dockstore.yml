@@ -1034,6 +1034,7 @@ workflows:
         email: ebouvet@fredhutch.org
         role: Research Technician
         affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0006-6552-2522
     topic: WDL workflow for RNA-seq alignment via STAR and DESeq2 differential expression analysis
     enableAutoDois: true
     filters:
