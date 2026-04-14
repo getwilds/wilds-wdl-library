@@ -702,6 +702,21 @@ Generates synthetic tile and border points data for testing the `ww-sjl` module 
 - `tile_rds` (File): Synthetic tile RDS file with 5 geographic points across two timezones
 - `border_points_csv` (File): Synthetic border points CSV with matching timezone/latitude entries and sunrise/sunset averages in seconds from midnight
 
+### download_pao1_ref
+
+Downloads the Pseudomonas aeruginosa PAO1 reference genome (FASTA + GTF) from NCBI RefSeq (assembly GCF_000006765.1 / ASM676v1) for use in bacterial RNA-seq test runs. The downloaded GTF uses the classic NCBI bacterial layout (~5573 CDS rows, ~5697 gene rows, only ~106 exon rows for tRNAs/rRNAs), making it the canonical input for testing the `ww-gffread` `normalize_gtf` task.
+
+**Inputs**:
+- `output_prefix` (String): Prefix used for output filenames (default: "pao1")
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+
+**Outputs**:
+- `fasta` (File): PAO1 reference genome FASTA (sequence: NC_002516.2)
+- `fasta_index` (File): Samtools FASTA index (.fai)
+- `dict` (File): Samtools FASTA dictionary file (.dict)
+- `gtf` (File): NCBI RefSeq GTF annotation for PAO1
+
 ## Data Sources
 
 All reference data is downloaded from authoritative public repositories:
@@ -722,6 +737,7 @@ All reference data is downloaded from authoritative public repositories:
 - **Swiss Institute of Bioinformatics**: Minimal Cell Ranger reference (chr21/22) for single-cell testing
 - **UniProt**: E. coli K-12 reference proteome for DIAMOND protein alignment testing
 - **JCAST Repository**: rMATS output test files for alternative splicing proteomics testing
+- **NCBI RefSeq**: Pseudomonas aeruginosa PAO1 reference assembly (GCF_000006765.1) for bacterial RNA-seq testing
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
 

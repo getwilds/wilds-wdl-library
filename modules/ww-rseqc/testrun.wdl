@@ -1,8 +1,8 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rseqc/ww-rseqc.wdl" as ww_rseqc
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-gtf-processing/modules/ww-rseqc/ww-rseqc.wdl" as ww_rseqc
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedparse/ww-bedparse.wdl" as ww_bedparse
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-gtf-processing/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow rseqc_example {
   # Auto-download test reference data for testing purposes
