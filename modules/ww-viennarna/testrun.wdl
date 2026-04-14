@@ -1,7 +1,7 @@
 version 1.0
 
-import "ww-viennarna.wdl" as ww_viennarna
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-viennarna/ww-viennarna.wdl" as ww_viennarna
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
 
