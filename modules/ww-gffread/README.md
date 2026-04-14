@@ -23,10 +23,6 @@ The `normalize_gtf` task in this module fixes this by synthesizing `exon` featur
 
 The task is safe to apply to any GTF: well-formed eukaryotic GTFs that already have proper `exon` annotations pass through effectively unchanged.
 
-### A note on gffread + NCBI bacterial GTFs
-
-`gffread` 0.12.7 cannot parse NCBI bacterial GTFs directly — it reports `Error: no valid ID found for GFF record` because NCBI GTFs have `transcript_id ""` (empty string) on `gene`-type rows. The `normalize_gtf` task handles this automatically by stripping `gene`-type rows before invoking `gffread`. These rows are redundant with the corresponding `CDS` rows for coordinate and identifier information, so nothing is lost.
-
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
@@ -49,6 +45,8 @@ Normalizes a GTF file so downstream tools see exon features for every transcript
 
 **Outputs:**
 - `normalized_gtf` (File): GTF file with exon features synthesized from CDS records where needed
+
+**A note on gffread + NCBI bacterial GTFs:** `gffread` 0.12.7 cannot parse NCBI bacterial GTFs directly — it reports `Error: no valid ID found for GFF record` because NCBI GTFs have `transcript_id ""` (empty string) on `gene`-type rows. The `normalize_gtf` task handles this automatically by stripping `gene`-type rows before invoking `gffread`. These rows are redundant with the corresponding `CDS` rows for coordinate and identifier information, so nothing is lost.
 
 ### `gff3_to_gtf`
 
