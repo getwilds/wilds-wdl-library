@@ -32,11 +32,11 @@
 set -eo pipefail
 
 # ---- Configuration ----
-REPO="getwilds/wilds-wdl-library"
 ISSUE_NUMBER="${GITHUB_ISSUE_NUMBER:?Error: set GITHUB_ISSUE_NUMBER before submitting}"
 WORK_DIR="${WORK_DIR:-$(mktemp -d)}"
-RUN_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
+export RUN_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
 LOGFILE="$(mktemp)"
+REPO="getwilds/wilds-wdl-library"
 
 # ---- Environment setup ----
 # Update these module versions as needed for your HPC
@@ -50,64 +50,11 @@ cd "${WORK_DIR}/wilds-wdl-library"
 
 # ---- Run testruns ----
 echo "Starting WILDS WDL test runs at ${RUN_DATE}"
-echo "Logging to ${LOGFILE}"
-
-# Run sprocket testruns (continues past failures thanks to Makefile update)
 SPROCKET_CONFIG="${SPROCKET_CONFIG:-notes/minimal-sprocket-config.toml}"
-if make run_sprocket SPROCKET_CONFIG="${SPROCKET_CONFIG}" 2>&1 | tee "${LOGFILE}"; then
-    STATUS="PASSED"
-else
-    STATUS="FAILED"
-fi
+make run_sprocket SPROCKET_CONFIG="${SPROCKET_CONFIG}" 2>&1 | tee "${LOGFILE}" || true
 
-# ---- Build GitHub comment ----
-# Extract failure summary if any
-FAILURES=$(grep -A 100 "=== SPROCKET FAILURES ===" "${LOGFILE}" 2>/dev/null || true)
-ITEM_COUNT=$(grep -c "^\.\.\. Running " "${LOGFILE}" 2>/dev/null || echo "0")
-FAILED_COUNT=$(grep -c "^\.\.\. FAILED:" "${LOGFILE}" 2>/dev/null || echo "0")
-PASSED_COUNT=$((ITEM_COUNT - FAILED_COUNT))
-
-if [ "${STATUS}" = "PASSED" ]; then
-    STATUS_EMOJI="white_check_mark"
-else
-    STATUS_EMOJI="x"
-fi
-
-COMMENT_BODY="$(cat <<EOF
-## :${STATUS_EMOJI}: HPC Test Run — ${RUN_DATE}
-
-| | |
-|---|---|
-| **Status** | ${STATUS} |
-| **Date** | ${RUN_DATE} |
-| **Engine** | sprocket |
-| **Items tested** | ${ITEM_COUNT} |
-| **Passed** | ${PASSED_COUNT} |
-| **Failed** | ${FAILED_COUNT} |
-| **SLURM Job ID** | ${SLURM_JOB_ID:-N/A} |
-| **Branch** | $(git rev-parse --abbrev-ref HEAD) |
-| **Commit** | $(git rev-parse --short HEAD) |
-
-$(if [ -n "${FAILURES}" ]; then
-    echo "<details>"
-    echo "<summary>Failure Details</summary>"
-    echo ""
-    echo "\`\`\`"
-    echo "${FAILURES}"
-    echo "\`\`\`"
-    echo "</details>"
-fi)
-EOF
-)"
-
-# ---- Post to GitHub ----
-echo ""
-echo "Posting results to ${REPO}#${ISSUE_NUMBER}..."
-gh issue comment "${ISSUE_NUMBER}" \
-    --repo "${REPO}" \
-    --body "${COMMENT_BODY}"
-
-echo "Results posted successfully."
+# ---- Post results to GitHub ----
+python3 .github/scripts/hpc_testrun_report.py "${LOGFILE}" "${ISSUE_NUMBER}" --repo "${REPO}"
 
 # ---- Cleanup ----
 rm -f "${LOGFILE}"

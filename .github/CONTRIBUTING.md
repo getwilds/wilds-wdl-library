@@ -279,14 +279,20 @@ All contributions must pass our automated testing pipeline which executes on a P
 
 To supplement GitHub Actions CI (which has resource limits), we run the full test suite monthly on the Fred Hutch HPC using a SLURM batch script. This ensures that CI-excluded modules are still regularly validated, and that all modules/pipelines work under HPC execution conditions (Slurm + Apptainer).
 
-The script is located at [`.github/scripts/hpc-testrun.sbatch`](.github/scripts/hpc-testrun.sbatch) and results are posted as comments on a central GitHub tracking issue for visibility. To run it:
+The infrastructure consists of two scripts:
+
+- [`.github/scripts/hpc-testrun.sbatch`](.github/scripts/hpc-testrun.sbatch) — SLURM batch script that clones the repo, runs `make run_sprocket` with a [Slurm + Apptainer sprocket config](https://sprocket.bio/guides/slurm), and invokes the report script.
+- [`.github/scripts/hpc_testrun_report.py`](.github/scripts/hpc_testrun_report.py) — Python script that parses the test output and posts a pass/fail summary as a comment on a central GitHub tracking issue.
+
+To run it:
 
 ```bash
 export GITHUB_ISSUE_NUMBER=<tracking_issue_number>
-sbatch .github/scripts/hpc-testrun.sbatch
+export WORK_DIR=/hpc/temp/your-username/wilds-testrun
+sbatch /path/to/hpc-testrun.sbatch
 ```
 
-The script uses `make run_sprocket` with a [Slurm + Apptainer sprocket config](https://sprocket.bio/guides/slurm) and posts a pass/fail summary to the tracking issue after each run. You can also run the test suite manually on the HPC with:
+You can also run the test suite manually on the HPC without the SLURM script:
 
 ```bash
 make run_sprocket SPROCKET_CONFIG=/path/to/your/sprocket-slurm-config.toml
