@@ -19,6 +19,17 @@ task run_rseqc {
         junction_log: "Junction annotation analysis log",
         rseqc_summary: "Summary report of all RSeQC metrics"
     }
+    topic: "transcriptomics,data_quality_management"
+    species: "eukaryote"
+    operation: "quality_control"
+    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    in_sample_format: "bam,bai"
+    in_ref_data: "annotation_track"
+    in_ref_format: "bed"
+    out_sample_data: "sequence_report,quality_control_report"
+    out_sample_format: "textual_format,xls"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

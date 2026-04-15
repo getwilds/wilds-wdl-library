@@ -16,6 +16,17 @@ task rmats {
     outputs: {
         output_directory: "Tarball containing all rMATS output files including splice event tables and summary statistics"
     }
+    topic: "transcriptomics,rna_splicing"
+    species: "eukaryote"
+    operation: "alternative_splicing_prediction"
+    in_sample_data: "nucleic_acid_sequence_alignment"
+    in_sample_format: "bam"
+    in_ref_data: "sequence_features"
+    in_ref_format: "gtf"
+    out_sample_data: "gene_report,sequence_features"
+    out_sample_format: "tar_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -143,6 +154,17 @@ task rmats_prep {
     outputs: {
         prep_output: "Tarball containing .rmats intermediate files from preprocessing"
     }
+    topic: "transcriptomics,rna_splicing"
+    species: "eukaryote"
+    operation: "statistical_calculation"
+    in_sample_data: "nucleic_acid_sequence_alignment"
+    in_sample_format: "bam"
+    in_ref_data: "sequence_features"
+    in_ref_format: "gtf"
+    out_sample_data: "report"
+    out_sample_format: "tar_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -243,6 +265,17 @@ task rmats_post {
     outputs: {
         output_directory: "Tarball containing all rMATS output files including splice event tables and summary statistics"
     }
+    topic: "transcriptomics,rna_splicing"
+    species: "eukaryote"
+    operation: "alternative_splicing_prediction"
+    in_sample_data: "report"
+    in_sample_format: "tar_format"
+    in_ref_data: "sequence_features"
+    in_ref_format: "gtf"
+    out_sample_data: "gene_report,report"
+    out_sample_format: "tar_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -341,6 +374,17 @@ task rmats_stat {
     outputs: {
         output_directory: "Tarball containing rMATS output files with updated statistical results"
     }
+    topic: "transcriptomics,rna_splicing"
+    species: "eukaryote"
+    operation: "statistical_calculation"
+    in_sample_data: "gene_report"
+    in_sample_format: "tar_format"
+    in_ref_data: "sequence_features"
+    in_ref_format: "gtf"
+    out_sample_data: "gene_report,report"
+    out_sample_format: "tar_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

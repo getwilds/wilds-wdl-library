@@ -13,7 +13,7 @@ task bowtie2_build {
     outputs: {
         bowtie2_index_tar: "Compressed tarball containing Bowtie 2 genome index files"
     }
-    topic: "dna,rna,mapping"
+    topic: "genomics,transcriptomics,mapping"
     species: "any"
     operation: "indexing"
     in_sample_data: "none"
@@ -78,7 +78,7 @@ task bowtie2_align {
         sorted_bam: "Sorted Bowtie 2 alignment output BAM file",
         sorted_bai: "Index file for the sorted Bowtie 2 alignment BAM file"
     }
-    topic: "dna,rna,mapping"
+    topic: "genomics,transcriptomics,mapping"
     species: "any"
     operation: "sequence_alignment"
     in_sample_data: "nucleic_acid_sequence"

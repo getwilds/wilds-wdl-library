@@ -14,9 +14,9 @@ task coverage {
         name: "Sample name that was processed",
         mean_coverage: "File containing mean read coverage across BED intervals"
     }
-    topic: "dna,sequence_features,data_quality_management"
+    topic: "genomics,transcriptomics,sequence_features,data_quality_management"
     species: "any"
-    operation: "sequencing_quality_control"
+    operation: "sequencing_quality_control,quantification"
     in_sample_data: "sequence_features,nucleic_acid_sequence_alignment"
     in_sample_format: "bed,bam"
     in_ref_data: "none"
@@ -76,9 +76,9 @@ task intersect {
         name: "Sample name that was processed",
         intersect_output: "BEDTools intersect results file"
     }
-    topic: "dna,sequence_features"
+    topic: "genomics,transcriptomics,sequence_features"
     species: "any"
-    operation: "sequence_merging"
+    operation: "data_filtering"
     in_sample_data: "annotation_track,nucleic_acid_sequence_alignment"
     in_sample_format: "bed,bam"
     in_ref_data: "none"
@@ -134,9 +134,9 @@ task makewindows {
         name: "Sample name that was processed",
         counts_bed: "Tarball of per-chromosome BED files of read counts"
     }
-    topic: "dna,sequence_features,data_quality_management"
+    topic: "genomics,transcriptomics,sequence_features,data_quality_management"
     species: "any"
-    operation: "sequence_merging"
+    operation: "quantification"
     in_sample_data: "annotation_track,nucleic_acid_sequence_alignment"
     in_sample_format: "bed,bam"
     in_ref_data: "dna_sequence,data_index"

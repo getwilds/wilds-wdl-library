@@ -15,6 +15,17 @@ task fastqdump {
         r2_end: "R2 fastq file downloaded for the sample in question (empty file for single-end reads)",
         is_paired_end: "boolean indicating whether the sample used paired-end sequencing"
     }
+    topic: "any"
+    species: "any"
+    operation: "data_retrieval"
+    in_sample_data: "none"
+    in_sample_format: "none"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "nucleic_acid_sequence"
+    out_sample_format: "fastq"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

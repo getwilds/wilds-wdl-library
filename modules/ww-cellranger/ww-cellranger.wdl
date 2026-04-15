@@ -14,10 +14,10 @@ task run_count {
         web_summary: "Web summary HTML file",
         metrics_summary: "Metrics summary CSV file"
     }
-    topic: "rna,gene_expression"
+    topic: "transcriptomics,gene_expression"
     species: "any"
     operation: "rna_seq_quantification"
-    in_sample_data: "nucleic_acid_sequence"
+    in_sample_data: "rna_sequence"
     in_sample_format: "fastq"
     in_ref_data: "dna_sequence"
     in_ref_format: "tar_format"

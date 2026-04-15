@@ -12,6 +12,17 @@ task sketch {
     outputs: {
       sig: "Sourmash sketch (.sig) file"
     }
+    topic: "genomics,proteomics,metagenomics"
+    species: "any"
+    operation: "indexing"
+    in_sample_data: "nucleic_acid_sequence_alignment,protein_sequence,dna_sequence"
+    in_sample_format: "bam,fasta"
+    in_ref_data: "nucleic_acid_sequence_alignment,protein_sequence,dna_sequence"
+    in_ref_format: "bam,fasta"
+    out_sample_data: "data_index"
+    out_sample_format: "sig"
+    out_ref_data: "data_index"
+    out_ref_format: "sig"
   }
 
   parameter_meta {
@@ -72,6 +83,17 @@ task gather {
     outputs: {
       result: "CSV file of sourmash gather results"
     }
+    topic: "genomics,proteomics,metagenomics"
+    species: "any"
+    operation: "sequence_classification,quantification,statistical_calculation"
+    in_sample_data: "data_index"
+    in_sample_format: "sig"
+    in_ref_data: "data_index"
+    in_ref_format: "sig"
+    out_sample_data: "none"
+    out_sample_format: "none"
+    out_ref_data: "genome_report"
+    out_ref_format: "csv"
   }
 
   parameter_meta {
@@ -126,6 +148,17 @@ task compare {
       npy: "Numpy binary matrix file of angular similarity matrix",
       csv: "CSV file of angular similarity matrix"
     }
+    topic: "genomics,proteomics,metagenomics"
+    species: "any"
+    operation: "statistical_calculation"
+    in_sample_data: "data_index"
+    in_sample_format: "sig"
+    in_ref_data: "data_index"
+    in_ref_format: "sig"
+    out_sample_data: "comparison_matrix"
+    out_sample_format: "binary_format,csv"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

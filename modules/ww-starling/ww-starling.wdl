@@ -18,6 +18,17 @@ task generate_ensemble {
         pdb_file: "PDB topology file converted from the STARLING ensemble",
         xtc_file: "XTC trajectory file converted from the STARLING ensemble"
     }
+    topic: "proteomics,protein_disordered_structure"
+    species: "any"
+    operation: "protein_structure_prediction"
+    in_sample_data: "none"
+    in_sample_format: "none"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "topology_data,trajectory_data,structure_prediction"
+    out_sample_format: "pdb,xtc,binary_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -80,6 +91,17 @@ task generate_ensemble_batch {
         pdb_files: "Array of PDB topology files converted from the STARLING ensembles",
         xtc_files: "Array of XTC trajectory files converted from the STARLING ensembles"
     }
+    topic: "proteomics,protein_disordered_structure"
+    species: "any"
+    operation: "protein_structure_prediction"
+    in_sample_data: "protein_sequence"
+    in_sample_format: "fasta"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "topology_data,trajectory_data,structure_prediction"
+    out_sample_format: "pdb,xtc,binary_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -139,6 +161,17 @@ task split_fasta {
     outputs: {
         batch_files: "Array of FASTA files, each containing up to sequences_per_batch sequences"
     }
+    topic: "proteomics,protein_disordered_structure"
+    species: "any"
+    operation: "splitting"
+    in_sample_data: "protein_sequence"
+    in_sample_format: "fasta"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "protein_sequence"
+    out_sample_format: "fasta"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -191,6 +224,17 @@ task ensemble_info {
     outputs: {
         info_file: "Text file containing ensemble metadata and summary statistics"
     }
+    topic: "proteomics,protein_disordered_structure"
+    species: "any"
+    operation: "statistical_calculation"
+    in_sample_data: "structure_prediction"
+    in_sample_format: "binary_format"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "quality_control_report"
+    out_sample_format: "textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

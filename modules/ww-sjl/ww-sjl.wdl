@@ -17,6 +17,17 @@ task sjl_tiles {
       matched_points: "RDS file containing points with sunrise/sunset difference values",
       missing_points: "RDS file containing points that could not be matched to border points (may be empty)"
     }
+    topic: "public_health_and_epidemiology"
+    species: "any"
+    operation: "statistical_calculation"
+    in_sample_data: "report"
+    in_sample_format: "binary_format"
+    in_ref_data: "map"
+    in_ref_format: "csv"
+    out_sample_data: "report"
+    out_sample_format: "binary_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

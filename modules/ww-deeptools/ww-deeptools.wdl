@@ -16,6 +16,17 @@ task bam_coverage {
     outputs: {
         coverage_file: "Normalized coverage track file in bigWig or bedGraph format"
     }
+    topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
+    species: "any"
+    operation: "quantification"
+    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    in_sample_format: "bam,bai"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "annotation_track"
+    out_sample_format: "bigwig,bedgraph"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -89,6 +100,17 @@ task bam_compare {
     outputs: {
         comparison_file: "Coverage comparison track in bigWig or bedGraph format"
     }
+    topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
+    species: "any"
+    operation: "statistical_calculation"
+    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    in_sample_format: "bam,bai"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "annotation_track"
+    out_sample_format: "bigwig,bedgraph"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -162,6 +184,17 @@ task compute_matrix {
         matrix_gz: "Compressed matrix file for use with plotHeatmap and plotProfile",
         matrix_tab: "Tab-separated matrix values file"
     }
+    topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
+    species: "any"
+    operation: "statistical_calculation"
+    in_sample_data: "annotation_track"
+    in_sample_format: "bigwig"
+    in_ref_data: "annotation_track"
+    in_ref_format: "bed,gtf"
+    out_sample_data: "sequence_report,sequence_report"
+    out_sample_format: "matrix,tsv"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -232,6 +265,17 @@ task plot_heatmap {
     outputs: {
         heatmap: "Heatmap image file in the specified format"
     }
+    topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
+    species: "any"
+    operation: "visualisation"
+    in_sample_data: "sequence_report"
+    in_sample_format: "matrix"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "plot"
+    out_sample_format: "png,pdf,svg,eps"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -284,6 +328,17 @@ task plot_profile {
     outputs: {
         profile: "Profile plot image file in the specified format"
     }
+    topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
+    species: "any"
+    operation: "visualisation"
+    in_sample_data: "sequence_report"
+    in_sample_format: "matrix"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "plot"
+    out_sample_format: "png,pdf,svg,eps"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -334,6 +389,17 @@ task multi_bam_summary {
         summary_npz: "Compressed numpy array with coverage data for correlation and PCA analysis",
         raw_counts: "Tab-separated file with raw read counts per bin"
     }
+    topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
+    species: "any"
+    operation: "quantification,sequencing_quality_control"
+    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    in_sample_format: "bam,bai"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "sequence_report,sequence_report"
+    out_sample_format: "npz,tsv"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -397,6 +463,17 @@ task plot_correlation {
         correlation_plot: "Correlation plot image file",
         correlation_matrix: "Tab-separated correlation matrix values"
     }
+    topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
+    species: "any"
+    operation: "visualisation,statistical_calculation"
+    in_sample_data: "sequence_report"
+    in_sample_format: "npz"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "plot,sequence_report"
+    out_sample_format: "png,pdf,svg,eps,tsv"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -455,6 +532,17 @@ task plot_pca {
         pca_plot: "PCA plot image file",
         pca_data: "Tab-separated PCA data with eigenvalues and coordinates"
     }
+    topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
+    species: "any"
+    operation: "visualisation,statistical_calculation"
+    in_sample_data: "sequence_report"
+    in_sample_format: "npz"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "plot,sequence_report"
+    out_sample_format: "png,pdf,svg,eps,tsv"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -507,6 +595,17 @@ task plot_fingerprint {
         fingerprint_plot: "Fingerprint plot image file",
         quality_metrics: "Tab-separated file with quality metrics including JSD and CHANCE divergence"
     }
+    topic: "epigenomics,data_quality_management"
+    species: "any"
+    operation: "quality_control"
+    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    in_sample_format: "bam,bai"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "plot,quality_control_report"
+    out_sample_format: "png,pdf,svg,eps,tsv"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

@@ -18,6 +18,17 @@ task run_deepvariant {
         output_gvcf: "Array containing the gVCF file for downstream joint genotyping (empty when output_gvcf_enabled is false)",
         output_gvcf_index: "Array containing the gVCF index file (empty when output_gvcf_enabled is false)"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "eukaryote"
+    operation: "variant_calling"
+    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    in_sample_format: "bam,bai"
+    in_ref_data: "dna_sequence,data_index"
+    in_ref_format: "fasta,fai"
+    out_sample_data: "sequence_variations,data_index"
+    out_sample_format: "vcf,gvcf,tbi"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

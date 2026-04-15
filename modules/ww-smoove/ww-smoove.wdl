@@ -14,6 +14,17 @@ task smoove_call {
         vcf: "Structural variant calls in compressed VCF format",
         vcf_index: "Index file for the VCF output"
     }
+    topic: "genomics,structural_variation"
+    species: "any"
+    operation: "variant_calling"
+    in_sample_data: "nucleic_acid_sequence_alignment,data_index,annotation_track"
+    in_sample_format: "bam,bai,bed"
+    in_ref_data: "dna_sequence,data_index"
+    in_ref_format: "fasta,fai"
+    out_sample_data: "sequence_variations,data_index"
+    out_sample_format: "vcf,tbi"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

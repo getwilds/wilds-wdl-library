@@ -15,6 +15,17 @@ task download_by_manifest {
         downloaded_files: "Array of downloaded data files from GDC",
         download_log: "Log file with download statistics and any errors"
     }
+    topic: "genomics,transcriptomics"
+    species: "human"
+    operation: "data_retrieval"
+    in_sample_data: "accession,account_authentication"
+    in_sample_format: "textual_format"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "any,quality_control_report"
+    out_sample_format: "any,textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -131,6 +142,17 @@ task download_by_uuids {
         downloaded_files: "Array of downloaded data files from GDC",
         download_log: "Log file with download statistics and any errors"
     }
+    topic: "genomics,transcriptomics"
+    species: "human"
+    operation: "data_retrieval"
+    in_sample_data: "account_authentication"
+    in_sample_format: "textual_format"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "any,quality_control_report"
+    out_sample_format: "any,textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

@@ -14,6 +14,17 @@ task glimpse2_chunk {
     outputs: {
       chunks_file: "Text file containing chunk definitions with input/output regions"
     }
+    topic: "genomics,sequencing"
+    species: "any"
+    operation: "splitting"
+    in_sample_data: "genetic_map"
+    in_sample_format: "textual_format"
+    in_ref_data: "sequence_variations,data_index"
+    in_ref_format: "vcf,bcf,tbi,csi"
+    out_sample_data: "dna_sequence"
+    out_sample_format: "textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -81,6 +92,17 @@ task glimpse2_split_reference {
     outputs: {
       reference_chunk: "Binary reference chunk file for imputation"
     }
+    topic: "genomics,mapping,sequencing"
+    species: "any"
+    operation: "splitting,indexing"
+    in_sample_data: "genetic_map"
+    in_sample_format: "textual_format"
+    in_ref_data: "sequence_variations,data_index"
+    in_ref_format: "vcf,bcf,tbi,csi"
+    out_sample_data: "dna_sequence"
+    out_sample_format: "binary_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -147,6 +169,17 @@ task glimpse2_phase {
       imputed_chunk: "Imputed and phased BCF file for the chunk",
       imputed_chunk_index: "Index file for imputed BCF"
     }
+    topic: "genomics,sequencing"
+    species: "any"
+    operation: "statistical_calculation"
+    in_sample_data:  "sequence_variations,data_index"
+    in_sample_format: "vcf,bcf,tbi,csi"
+    in_ref_data: "dna_sequence"
+    in_ref_format: "binary_format"
+    out_sample_data: "dna_sequence,data_index"
+    out_sample_format: "bcf,csi"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -218,6 +251,17 @@ task glimpse2_phase_cram {
       imputed_chunk: "Imputed and phased BCF file for the chunk",
       imputed_chunk_index: "Index file for imputed BCF"
     }
+    topic: "genomics,sequencing"
+    species: "any"
+    operation: "statistical_calculation"
+    in_sample_data:  "nucleic_acid_sequence_alignment,data_index"
+    in_sample_format: "bam,cram,bai,crai"
+    in_ref_data: "dna_sequence,data_index"
+    in_ref_format: "fasta,binary_format,fai"
+    out_sample_data: "dna_sequence,data_index"
+    out_sample_format: "bcf,csi"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -307,6 +351,17 @@ task glimpse2_ligate {
       ligated_vcf: "Ligated VCF/BCF file containing all imputed variants",
       ligated_vcf_index: "Index file for ligated VCF"
     }
+    topic: "genomics,sequencing"
+    species: "any"
+    operation: "aggregation"
+    in_sample_data:  "dna_sequence,data_index"
+    in_sample_format: "bcf,csi"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "dna_sequence,data_index"
+    out_sample_format: "vcf,bcf,csi,tbi"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -381,6 +436,17 @@ task glimpse2_concordance {
     outputs: {
       concordance_output: "Concordance metrics output file"
     }
+    topic: "genomics,sequencing,data_quality_management"
+    species: "any"
+    operation: "statistical_calculation"
+    in_sample_data:  "dna_sequence,data_index"
+    in_sample_format: "vcf,bcf,csi,tbi"
+    in_ref_data: "dna_sequence,data_index"
+    in_ref_format: "vcf,bcf,csi,tbi"
+    out_sample_data: "quality_control_report"
+    out_sample_format: "textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -453,6 +519,17 @@ task parse_chunks_file {
       output_regions: "Array of output regions from chunks file",
       chunk_ids: "Array of chunk identifiers"
     }
+    topic: "genomics,sequencing"
+    species: "any"
+    operation: "mapping,splitting"
+    in_sample_data:  "dna_sequence"
+    in_sample_format: "textual_format"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "sequence_coordinates"
+    out_sample_format: "textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

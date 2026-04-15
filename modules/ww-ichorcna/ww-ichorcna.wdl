@@ -13,6 +13,17 @@ task readcounter_wig {
     outputs: {
         wig_file: "WIG file created from binned read count data within input BED files"
     }
+    topic: "genomics,copy_number_variation"
+    species: "human"
+    operation: "quantification"
+    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    in_sample_format: "bam,bai"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "annotation_track"
+    out_sample_format: "wig"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -71,6 +82,17 @@ task ichorcna_call {
         correct_pdf:  "Genome wide correction comparisons",
         rdata: "Saved R image after ichorCNA has finished. Results for all solutions will be included"
     }
+    topic: "genomics,copy_number_variation"
+    species: "human"
+    operation: "statistical_calculation,sequence_classification"
+    in_sample_data: "annotation_track,sequence_report"
+    in_sample_format: "wig,binary_format"
+    in_ref_data: "sequence_coordinates"
+    in_ref_format: "textual_format"
+    out_sample_data: "report,sequence_report,plot"
+    out_sample_format: "textual_format,pdf,binary_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

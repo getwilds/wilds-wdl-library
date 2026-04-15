@@ -13,7 +13,7 @@ task gtf2bed {
     outputs: {
         bed_file: "BED12-formatted annotation file"
     }
-    topic: "dna,sequence_features"
+    topic: "genomics,sequence_features"
     species: "any"
     operation: "data_formatting"
     in_sample_data: "sequence_features"

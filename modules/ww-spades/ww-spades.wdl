@@ -15,6 +15,17 @@ task metaspades {
         contigs_fasta: "Assembled contigs in compressed FASTA format",
         log_file: "SPAdes log file"
     }
+    topic: "genomics,metagenomics,sequence_assembly"
+    species: "any"
+    operation: "sequence_assembly"
+    in_sample_data: "dna_sequence"
+    in_sample_format: "fastq"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "dna_sequence,report"
+    out_sample_format: "fasta,textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

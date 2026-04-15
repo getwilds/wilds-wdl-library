@@ -15,6 +15,17 @@ task combine_count_matrices {
         counts_matrix: "Combined matrix of gene-level counts from all samples",
         sample_metadata: "Metadata file containing sample names and conditions"
     }
+    topic: "transcriptomics,gene_expression"
+    species: "any"
+    operation: "aggregation"
+    in_sample_data: "gene_expression_matrix"
+    in_sample_format: "tsv"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "gene_expression_matrix,report"
+    out_sample_format: "matrix,textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -76,6 +87,17 @@ task run_deseq2 {
         deseq2_volcano_plot: "Volcano plot showing log fold change vs. statistical significance",
         deseq2_heatmap: "Heatmap visualization of differentially expressed genes across samples"
     }
+    topic: "transcriptomics,gene_expression"
+    species: "any"
+    operation: "statistical_calculation"
+    in_sample_data: "gene_expression_matrix,report"
+    in_sample_format: "matrix,textual_format"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "report,plot"
+    out_sample_format: "csv,pdf"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
