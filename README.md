@@ -118,6 +118,7 @@ Fred Hutch researchers can use [PROOF](https://sciwiki.fredhutch.org/datademos/p
 - **Multi-Executor Validation**: Ensures compatibility across different WDL engines
 - **Real Data Testing**: Uses authentic bioinformatics datasets for validation
 - **Scheduled Monitoring**: Weekly checks detect infrastructure changes
+- **HPC Monthly Test Runs**: Resource-intensive modules excluded from GitHub CI are validated monthly on the Fred Hutch HPC, with results posted to a [tracking issue](https://github.com/getwilds/wilds-wdl-library/issues) for visibility
 
 ### Standards and Best Practices
 - **Standardized Structure**: Consistent organization across all components

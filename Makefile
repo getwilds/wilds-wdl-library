@@ -9,6 +9,8 @@ CROMWELL ?= 92
 CROMWELL_JAR ?= cromwell-$(CROMWELL).jar
 MINIWDL ?= 1.13.0
 SPROCKET_MIN ?= 0.22.0
+SPROCKET_CONFIG ?=
+SPROCKET_CONFIG_FLAG := $(if $(SPROCKET_CONFIG),-c $(SPROCKET_CONFIG),)
 
 .PHONY: help
 help: ## Show this help message
@@ -158,34 +160,67 @@ lint: lint_sprocket lint_miniwdl lint_womtool lint_cirro ## Run all linting chec
 
 ##@ Run
 
-run_sprocket: check_sprocket check_name check_wdlparse ## Run sprocket on testrun.wdl files (use NAME=foo for specific item)
+run_sprocket: check_sprocket check_name check_wdlparse ## Run sprocket on testrun.wdl files (use NAME=foo, SPROCKET_CONFIG=path for HPC)
 	@echo "Running sprocket on testrun.wdl files..."
-	@set -e; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
+	@failed=""; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			echo "... Running $$(basename $$dir)"; \
 			entrypoint=$$(wdlparse parse --format json "$$dir/testrun.wdl" | jq -r '.wdl.workflows[].name'); \
 			echo "... Using entrypoint: $$entrypoint"; \
-			sprocket run "$$dir/testrun.wdl" --target $$entrypoint; \
+			if ! sprocket run $(SPROCKET_CONFIG_FLAG) "$$dir/testrun.wdl" --target $$entrypoint; then \
+				failed="$$failed $$(basename $$dir)"; \
+				echo "... FAILED: $$(basename $$dir) (sprocket)"; \
+			fi; \
 		fi; \
-	done
+	done; \
+	if [ -n "$$failed" ]; then \
+		echo ""; \
+		echo "=== SPROCKET FAILURES ==="; \
+		echo "The following items failed with sprocket:$$failed"; \
+		exit 1; \
+	else \
+		echo "All sprocket runs passed."; \
+	fi
 
 run_miniwdl: check_uv check_name ## Run miniwdl on testrun.wdl files (use NAME=foo for specific item)
 	@echo "Running miniwdl on testrun.wdl files..."
-	@set -e; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
+	@failed=""; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			echo "... Running $$(basename $$dir)"; \
-			uv run --python 3.13 --with miniwdl==$(MINIWDL) miniwdl run "$$dir/testrun.wdl"; \
+			if ! uv run --python 3.13 --with miniwdl==$(MINIWDL) miniwdl run "$$dir/testrun.wdl"; then \
+				failed="$$failed $$(basename $$dir)"; \
+				echo "... FAILED: $$(basename $$dir) (miniwdl)"; \
+			fi; \
 		fi; \
-	done
+	done; \
+	if [ -n "$$failed" ]; then \
+		echo ""; \
+		echo "=== MINIWDL FAILURES ==="; \
+		echo "The following items failed with miniwdl:$$failed"; \
+		exit 1; \
+	else \
+		echo "All miniwdl runs passed."; \
+	fi
 
 run_cromwell: check_java check_cromwell check_name ## Run Cromwell on testrun.wdl files (use NAME=foo for specific item)
 	@echo "Running Cromwell on testrun.wdl files..."
-	@set -e; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
+	@failed=""; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			echo "... Running $$(basename $$dir)"; \
-			java -jar $(CROMWELL_JAR) run "$$dir/testrun.wdl"; \
+			if ! java -jar $(CROMWELL_JAR) run "$$dir/testrun.wdl"; then \
+				failed="$$failed $$(basename $$dir)"; \
+				echo "... FAILED: $$(basename $$dir) (Cromwell)"; \
+			fi; \
 		fi; \
-	done
+	done; \
+	if [ -n "$$failed" ]; then \
+		echo ""; \
+		echo "=== CROMWELL FAILURES ==="; \
+		echo "The following items failed with Cromwell:$$failed"; \
+		exit 1; \
+	else \
+		echo "All Cromwell runs passed."; \
+	fi
 
 run: run_sprocket run_miniwdl run_cromwell ## Run all engines on testrun.wdl files
 

@@ -275,6 +275,23 @@ All contributions must pass our automated testing pipeline which executes on a P
 - **Integration testing**: Cross-module compatibility testing
 - **Cirro validation**: Validates `.cirro/` configurations for pipelines that include them
 
+#### HPC Monthly Test Runs
+
+To supplement GitHub Actions CI (which has resource limits), we run the full test suite monthly on the Fred Hutch HPC using a SLURM batch script. This ensures that CI-excluded modules are still regularly validated, and that all modules/pipelines work under HPC execution conditions (Slurm + Apptainer).
+
+The script is located at [`.github/scripts/hpc-testrun.sbatch`](.github/scripts/hpc-testrun.sbatch) and results are posted as comments on a central GitHub tracking issue for visibility. To run it:
+
+```bash
+export GITHUB_ISSUE_NUMBER=<tracking_issue_number>
+sbatch .github/scripts/hpc-testrun.sbatch
+```
+
+The script uses `make run_sprocket` with a [Slurm + Apptainer sprocket config](https://sprocket.bio/guides/slurm) and posts a pass/fail summary to the tracking issue after each run. You can also run the test suite manually on the HPC with:
+
+```bash
+make run_sprocket SPROCKET_CONFIG=/path/to/your/sprocket-slurm-config.toml
+```
+
 ## Documentation Website
 
 The WILDS WDL Library includes an automatically-generated documentation website that provides comprehensive technical documentation for all modules and pipelines. Understanding how this documentation works is important for contributors.
