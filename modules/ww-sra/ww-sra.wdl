@@ -124,8 +124,8 @@ task fasterqdump {
       touch "~{sra_id}_2.fastq"
     fi
     # Truncate to max_reads if specified (fasterq-dump has no built-in read limit)
-    MAX_READS="~{if defined(max_reads) then max_reads else ""}"
-    if [ -n "$MAX_READS" ]; then
+    MAX_READS="~{select_first([max_reads, 0])}"
+    if [ "$MAX_READS" -gt 0 ]; then
       max_lines=$((MAX_READS * 4))
       for f in "~{sra_id}_1.fastq" "~{sra_id}_2.fastq"; do
         if [ -s "$f" ]; then
