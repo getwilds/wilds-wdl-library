@@ -16,6 +16,17 @@ task consensus_processing {
     outputs: {
         consensus_tsv: "Tab-separated file containing consensus variant calls with evidence from all callers"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "any"
+    operation: "aggregation"
+    in_sample_data: "sequence_features"
+    in_sample_format: "tsv"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "sequence_variations"
+    out_sample_format: "tsv"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

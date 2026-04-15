@@ -14,7 +14,7 @@ task annovar_annotate {
         annotated_vcf: "VCF file with Annovar annotations added",
         annotated_table: "Tab-delimited table with variant annotations"
     }
-    topic: "dna,structural_variation"
+    topic: "genomics,structural_variation"
     species: "human"
     operation: "annotation"
     in_sample_data: "sequence_variations"

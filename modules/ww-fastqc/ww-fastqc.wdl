@@ -15,6 +15,17 @@ task run_fastqc {
         html_reports: "FastQC HTML quality control reports",
         zip_reports: "FastQC ZIP archives containing all report data"
     }
+    topic: "genomics,data_quality_management"
+    species: "any"
+    operation: "quality_control"
+    in_sample_data: "dna_sequence,sequence_record"
+    in_sample_format: "fastq,textual_format"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "quality_control_report"
+    out_sample_format: "html,zip"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

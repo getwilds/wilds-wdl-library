@@ -17,6 +17,17 @@ task run_multiqc {
         html_report: "MultiQC interactive HTML summary report",
         data_dir: "Directory of parsed data files in tab-delimited format"
     }
+    topic: "any,data_quality_management"
+    species: "any"
+    operation: "quality_control"
+    in_sample_data: "quality_control_report"
+    in_sample_format: "any"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "quality_control_report"
+    out_sample_format: "html"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

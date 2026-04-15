@@ -13,6 +13,17 @@ task build_index {
     outputs: {
         star_index_tar: "Compressed tarball containing the STAR genome index for future alignment steps"
     }
+    topic: "transcriptomics,mapping"
+    species: "eukaryote"
+    operation: "indexing"
+    in_sample_data: "none"
+    in_sample_format: "none"
+    in_ref_data: "rna_sequence,sequence_features"
+    in_ref_format: "fasta,gtf"
+    out_sample_data: "none"
+    out_sample_format: "none"
+    out_ref_data: "data_index"
+    out_ref_format: "tar_format"
   }
 
   parameter_meta {
@@ -81,6 +92,17 @@ task align_two_pass {
         log: "Main log file from STAR containing detailed alignment information",
         sj_out: "Splice junction file with coordinates of detected splice junctions"
     }
+    topic: "transcriptomics,mapping"
+    species: "eukaryote"
+    operation: "sequence_alignment"
+    in_sample_data: "rna_sequence"
+    in_sample_format: "fastq"
+    in_ref_data: "data_index"
+    in_ref_format: "fasta"
+    out_sample_data: "nucleic_acid_sequence_alignment,data_index,gene_expression_matrix,report,gene_report"
+    out_sample_format: "bam,bai,textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

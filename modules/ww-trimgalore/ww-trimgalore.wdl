@@ -19,6 +19,17 @@ task trimgalore_paired {
         r1_report: "Trimming report for R1",
         r2_report: "Trimming report for R2"
     }
+    topic: "genomics,transcriptomics"
+    species: "any"
+    operation: "sequence_trimming"
+    in_sample_data: "nucleic_acid_sequence"
+    in_sample_format: "fastq"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "nucleic_acid_sequence,quality_control_report"
+    out_sample_format: "fastq,textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -104,6 +115,17 @@ task trimgalore_single {
         trimmed_fastq: "Trimmed FASTQ file",
         trimming_report: "Trimming report"
     }
+    topic: "genomics,transcriptomics"
+    species: "any"
+    operation: "sequence_trimming"
+    in_sample_data: "nucleic_acid_sequence"
+    in_sample_format: "fastq"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "nucleic_acid_sequence,quality_control_report"
+    out_sample_format: "fastq,textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

@@ -16,6 +16,17 @@ task jcast {
         output_fasta: "FASTA file containing translated protein sequences from alternative splicing events",
         output_directory: "Directory containing all JCAST output files"
     }
+    topic: "transcriptomics,proteomics,protein_expression,rna_splicing"
+    species: "eukaryote"
+    operation: "sequence_conversion"
+    in_sample_data: "gene_report"
+    in_sample_format: "directory,tar_format"
+    in_ref_data: "sequence_features,rna_sequence"
+    in_ref_format: "gtf,fasta"
+    out_sample_data: "protein_sequence,report"
+    out_sample_format: "fasta,tar_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

@@ -14,6 +14,17 @@ task crams_to_fastq {
         r2_fastq: "R2 FASTQ file generated from merged CRAM/BAM/SAM file",
         sample_name: "Sample name that was processed"
     }
+    topic: "genomics,transcriptomics"
+    species: "any"
+    operation: "data_formatting"
+    in_sample_data: "nucleic_acid_sequence_alignment"
+    in_sample_format: "cram,bam,sam"
+    in_ref_data: "nucleic_acid_sequence"
+    in_ref_format: "fasta"
+    out_sample_data: "nucleic_acid_sequence"
+    out_sample_format: "fastq"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -75,6 +86,17 @@ task merge_bams_to_cram {
         cram: "Merged CRAM file containing all reads from input BAMs",
         crai: "Index file for the merged CRAM"
     }
+    topic: "genomics,transcriptomics"
+    species: "any"
+    operation: "aggregation"
+    in_sample_data: "nucleic_acid_sequence_alignment"
+    in_sample_format: "bam"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    out_sample_format: "cram,crai"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -120,6 +142,17 @@ task mpileup {
     outputs: {
         pileup: "Pileup file"
     }
+    topic: "genomics,transcriptomics"
+    species: "any"
+    operation: "quantification"
+    in_sample_data: "nucleic_acid_sequence_alignment"
+    in_sample_format: "bam,cram"
+    in_ref_data: "nucleic_acid_sequence"
+    in_ref_format: "fasta"
+    out_sample_data: "nucleic_acid_sequence_alignment"
+    out_sample_format: "pileup"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

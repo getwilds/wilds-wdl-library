@@ -14,6 +14,17 @@ task create_reference {
     outputs: {
         reference_cnn: "CNVkit reference file (.cnn)"
     }
+    topic: "genomics,copy_number_variation"
+    species: "eukaryote"
+    operation: "indexing"
+    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    in_sample_format: "bam,bai"
+    in_ref_data: "dna_sequence,data_index"
+    in_ref_format: "fasta,fai"
+    out_sample_data: "none"
+    out_sample_format: "none"
+    out_ref_data: "data_index"
+    out_ref_format: "cnn"
   }
 
   parameter_meta {
@@ -112,6 +123,17 @@ task run_cnvkit {
         cnv_segments: "CNV segments file (.cnr)",
         cnv_plot: "CNV visualization plot"
     }
+    topic: "genomics,copy_number_variation"
+    species: "eukaryote"
+    operation: "copy_number_variation_detection"
+    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
+    in_sample_format: "bam,bai"
+    in_ref_data: "data_index,annotation_track"
+    in_ref_format: "cnn,bed"
+    out_sample_data: "sequence_variations,sequence_variations,plot"
+    out_sample_format: "cns,cnr,pdf"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

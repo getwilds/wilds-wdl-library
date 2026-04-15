@@ -19,6 +19,17 @@ task fastp_paired {
         html_report: "HTML quality control report",
         json_report: "JSON quality control report"
     }
+    topic: "genomics,transcriptomics,data_quality_management"
+    species: "any"
+    operation: "sequence_trimming,data_filtering"
+    in_sample_data: "nucleic_acid_sequence"
+    in_sample_format: "fastq"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "nucleic_acid_sequence,quality_control_report,quality_control_report"
+    out_sample_format: "fastq,html,json"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -96,6 +107,17 @@ task fastp_single {
         html_report: "HTML quality control report",
         json_report: "JSON quality control report"
     }
+    topic: "genomics,transcriptomics,data_quality_management"
+    species: "any"
+    operation: "sequence_trimming,data_filtering"
+    in_sample_data: "nucleic_acid_sequence"
+    in_sample_format: "fastq"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "nucleic_acid_sequence,quality_control_report,quality_control_report"
+    out_sample_format: "fastq,html,json"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

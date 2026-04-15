@@ -15,6 +15,17 @@ task delly_call {
         vcf_index: "Index file for the VCF output",
         summary: "Summary text file with Delly run details and statistics"
     }
+    topic: "genomics,structural_variation"
+    species: "any"
+    operation: "variant_calling"
+    in_sample_data: "nucleic_acid_sequence_alignment,data_index,annotation_track"
+    in_sample_format: "bam,bai,bed"
+    in_ref_data: "dna_sequence,data_index"
+    in_ref_format: "fasta,fai"
+    out_sample_data: "sequence_variations,data_index,report"
+    out_sample_format: "vcf,csi,textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

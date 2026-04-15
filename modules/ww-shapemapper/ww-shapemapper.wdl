@@ -15,6 +15,17 @@ task run_shapemapper {
         output_tar: "Compressed tarball of the ShapeMapper output directory",
         log_file: "ShapeMapper log file with processing details and quality metrics"
     }
+    topic: "transcriptomics,nucleic_acid_structure_analysis"
+    species: "any"
+    operation: "nucleic_acid_structure_analysis"
+    in_sample_data: "rna_sequence,pcr_primers"
+    in_sample_format: "fastq,fasta"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "nucleic_acid_property,report"
+    out_sample_format: "tar_format,textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

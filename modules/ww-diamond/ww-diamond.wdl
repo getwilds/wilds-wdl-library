@@ -14,6 +14,17 @@ task make_database {
     outputs: {
         diamond_db: "DIAMOND database file (.dmnd) created from input FASTA"
     }
+    topic: "proteomics,mapping"
+    species: "any"
+    operation: "indexing"
+    in_sample_data: "none"
+    in_sample_format: "none"
+    in_ref_data: "protein_sequence"
+    in_ref_format: "fasta"
+    out_sample_data: "none"
+    out_sample_format: "none"
+    out_ref_data: "data_index"
+    out_ref_format: "dmnd"
   }
 
   parameter_meta {
@@ -56,6 +67,17 @@ task diamond_blastp {
     outputs: {
         aln: "Compressed alignment file in tabular format (outfmt 6)"
     }
+    topic: "proteomics,mapping"
+    species: "any"
+    operation: "sequence_alignment"
+    in_sample_data: "protein_sequence"
+    in_sample_format: "fasta"
+    in_ref_data: "data_index"
+    in_ref_format: "dmnd"
+    out_sample_data: "sequence_alignment"
+    out_sample_format: "tsv"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {

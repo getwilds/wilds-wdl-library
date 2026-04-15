@@ -13,7 +13,7 @@ task annotsv_annotate {
     outputs: {
         annotated_tsv: "Tab-delimited file with detailed annotations per SV"
     }
-    topic: "dna,structural_variation"
+    topic: "genomics,structural_variation"
     species: "human"
     operation: "annotation"
     in_sample_data: "sequence_variations"

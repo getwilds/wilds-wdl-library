@@ -16,6 +16,17 @@ task download_files {
         download_summary: "Summary report of the download operation",
         accessions_used: "The accession numbers that were processed"
     }
+    topic: "any"
+    species: "any"
+    operation: "data_retrieval"
+    in_sample_data: "none"
+    in_sample_format: "none"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "nucleic_acid_sequence,report"
+    out_sample_format: "fastq,textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -122,6 +133,17 @@ task download_by_query {
         download_log: "Log file containing download status and details",
         download_summary: "Summary report of the download operation"
     }
+    topic: "any"
+    species: "any"
+    operation: "data_retrieval"
+    in_sample_data: "none"
+    in_sample_format: "none"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "nucleic_acid_sequence,report,report"
+    out_sample_format: "fastq,log,textual_format"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
@@ -203,6 +225,17 @@ task extract_fastq_pairs {
         accessions: "Array of ENA accession IDs extracted from filenames, parallel with r1_files and r2_files",
         is_paired_end_list: "Array of booleans indicating whether each sample is paired-end"
     }
+    topic: "any"
+    species: "any"
+    operation: "file_handling"
+    in_sample_data: "nucleic_acid_sequence"
+    in_sample_format: "fastq"
+    in_ref_data: "none"
+    in_ref_format: "none"
+    out_sample_data: "nucleic_acid_sequence"
+    out_sample_format: "fastq"
+    out_ref_data: "none"
+    out_ref_format: "none"
   }
 
   parameter_meta {
