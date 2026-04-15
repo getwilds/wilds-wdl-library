@@ -8,13 +8,15 @@ A WILDS WDL module for downloading genomic data from the NCBI Sequence Read Arch
 
 This module provides reusable WDL tasks for downloading sequencing data from the SRA using the SRA toolkit. It handles both single-end and paired-end reads, automatically detecting the read type and processing accordingly.
 
-The module uses `parallel-fastq-dump` for efficient, multi-threaded downloading of FASTQ files from SRA accessions.
+The module provides two tasks:
+- **`fastqdump`**: Uses `parallel-fastq-dump` for efficient, multi-threaded downloading of public FASTQ files from SRA accessions.
+- **`fasterqdump`**: Uses `prefetch` + `fasterq-dump` (the officially supported replacement) with optional NGC authentication for downloading controlled-access dbGaP data.
 
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `fastqdump`
+- **Tasks**: `fastqdump`, `fasterqdump`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 - **Container**: `getwilds/sra-tools:3.1.1`
 
@@ -27,6 +29,20 @@ Downloads FASTQ files from SRA accessions with automatic paired-end detection.
 - `sra_id` (String): SRA accession ID
 - `ncpu` (Int): Number of CPUs for parallel download (default: 8)
 - `max_reads` (Int, optional): Maximum number of reads to download for testing/downsampling
+
+**Outputs:**
+- `r1_end` (File): R1 FASTQ file
+- `r2_end` (File): R2 FASTQ file (empty for single-end)
+- `is_paired_end` (Boolean): Paired-end detection flag
+
+### `fasterqdump`
+Downloads FASTQ files from SRA accessions using `prefetch` + `fasterq-dump` with optional dbGaP/NGC authentication for controlled-access data.
+
+**Inputs:**
+- `sra_id` (String): SRA accession ID
+- `ncpu` (Int): Number of CPUs for parallel download (default: 8)
+- `max_reads` (Int, optional): Maximum number of reads to download for testing/downsampling
+- `ngc_file` (File, optional): NGC repository key file for downloading controlled-access dbGaP data
 
 **Outputs:**
 - `r1_end` (File): R1 FASTQ file
@@ -73,6 +89,21 @@ call sra_tasks.fastqdump {
     max_reads = 1000000  # Download only first 1M reads
 }
 ```
+
+### Example with dbGaP Controlled-Access Data
+
+To download controlled-access data from dbGaP, use the `fasterqdump` task with your NGC repository key file:
+
+```wdl
+call sra_tasks.fasterqdump {
+  input:
+    sra_id = "SRR12345678",
+    ncpu = 4,
+    ngc_file = ngc_key  # Your dbGaP NGC repository key file
+}
+```
+
+> **Note:** Controlled-access dbGaP data must be handled in a regulated computing environment. At Fred Hutch, this means using [PROOF Regulated](https://sciwiki.fredhutch.org/datademos/proof-regulated/) to ensure compliance with data use agreements and institutional security requirements.
 
 ### Integration Examples
 
@@ -131,6 +162,7 @@ The module supports flexible resource configuration:
 - **Standardized output**: Consistent naming for downstream processing
 - **Cross-platform**: Works with SRA accessions from NCBI, ENA, and DDBJ
 - **Optional downsampling**: Limit read count for testing and development via `max_reads` parameter
+- **dbGaP support**: Download controlled-access data using NGC repository key files via `fasterqdump`
 
 ## Performance Considerations
 

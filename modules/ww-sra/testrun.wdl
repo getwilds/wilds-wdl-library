@@ -1,11 +1,20 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/sra-dbgap/modules/ww-sra/ww-sra.wdl" as ww_sra
 
 workflow sra_example {
-  # Pulling down test SRA data
+  # Pulling down test SRA data via parallel-fastq-dump
   scatter (id in ["ERR1258306"]) {
     call ww_sra.fastqdump { input:
+        sra_id = id,
+        ncpu = 2,
+        max_reads = 1000
+    }
+  }
+
+  # Pulling down test SRA data via prefetch + fasterq-dump
+  scatter (id in ["ERR1258306"]) {
+    call ww_sra.fasterqdump { input:
         sra_id = id,
         ncpu = 2,
         max_reads = 1000
@@ -19,11 +28,22 @@ workflow sra_example {
     is_paired_flags = fastqdump.is_paired_end
   }
 
+  call validate_outputs as validate_fasterq_outputs { input:
+    sra_ids = ["ERR1258306"],
+    r1_files = fasterqdump.r1_end,
+    r2_files = fasterqdump.r2_end,
+    is_paired_flags = fasterqdump.is_paired_end
+  }
+
   output {
     Array[File] r1_fastqs = fastqdump.r1_end
     Array[File] r2_fastqs = fastqdump.r2_end
     Array[Boolean] is_paired_end = fastqdump.is_paired_end
     File validation_report = validate_outputs.report
+    Array[File] fasterq_r1_fastqs = fasterqdump.r1_end
+    Array[File] fasterq_r2_fastqs = fasterqdump.r2_end
+    Array[Boolean] fasterq_is_paired_end = fasterqdump.is_paired_end
+    File fasterq_validation_report = validate_fasterq_outputs.report
   }
 }
 

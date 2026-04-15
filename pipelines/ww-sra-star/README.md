@@ -37,7 +37,7 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
 ## Module Dependencies
 
 This pipeline imports and uses:
-- **ww-sra module**: For SRA data download (`fastqdump` task)
+- **ww-sra module**: For SRA data download (`fasterqdump` task, with optional dbGaP/NGC support)
 - **ww-star module**: For genome indexing and alignment (`build_index`, `align_two_pass` tasks)
 
 ## Usage
@@ -62,9 +62,12 @@ Create an inputs JSON file with your SRA accessions and reference genome:
     "gtf": "/path/to/annotation.gtf"
   },
   "sra_star.ncpu": 12,
-  "sra_star.memory_gb": 64
+  "sra_star.memory_gb": 64,
+  "sra_star.ngc_file": "/path/to/prj_12345.ngc"
 }
 ```
+
+> The `ngc_file` parameter is optional. Omit it when downloading public SRA data.
 
 ### Running the Pipeline
 
@@ -120,6 +123,9 @@ For detailed information on configuring and using Cirro pipelines, see the [offi
 | `ncpu` | Number of CPU cores | Int | No | 12 |
 | `memory_gb` | Memory allocation in GB | Int | No | 64 |
 | `max_reads` | Maximum reads to download per sample (for testing) | Int | No | all reads |
+| `ngc_file` | NGC repository key file for downloading controlled-access dbGaP data | File | No | - |
+
+> **Note:** When using `ngc_file` for controlled-access dbGaP data, ensure you are running in a regulated computing environment that complies with your data use agreement. At Fred Hutch, use [PROOF Regulated](https://sciwiki.fredhutch.org/datademos/proof-regulated/).
 
 ### RefGenome Structure
 

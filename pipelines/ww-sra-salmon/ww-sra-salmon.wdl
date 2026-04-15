@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as sra_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/sra-dbgap/modules/ww-sra/ww-sra.wdl" as sra_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl" as salmon_tasks
 
 struct SalmonSample {
@@ -28,6 +28,7 @@ workflow sra_salmon {
     ncpu: "number of CPUs to use for SRA download and Salmon quantification"
     memory_gb: "memory allocation in GB for Salmon tasks"
     max_reads: "Optional maximum number of reads to download from SRA (for testing/downsampling). If not specified, downloads all reads."
+    ngc_file: "Optional NGC repository key file for downloading controlled-access dbGaP data."
   }
 
   input {
@@ -36,6 +37,7 @@ workflow sra_salmon {
     Int ncpu = 8
     Int memory_gb = 16
     Int? max_reads
+    File? ngc_file
   }
 
   # Build Salmon index from transcriptome
@@ -47,30 +49,31 @@ workflow sra_salmon {
 
   # Download FASTQ files from SRA and quantify each sample
   scatter ( id in sra_id_list ){
-    call sra_tasks.fastqdump { input:
+    call sra_tasks.fasterqdump { input:
         sra_id = id,
         ncpu = ncpu,
-        max_reads = max_reads
+        max_reads = max_reads,
+        ngc_file = ngc_file
     }
 
     # Paired-end quantification
-    if (fastqdump.is_paired_end) {
+    if (fasterqdump.is_paired_end) {
       call salmon_tasks.quantify as quantify_paired { input:
           salmon_index_dir = build_index.salmon_index,
           sample_name = id,
-          fastq_r1 = fastqdump.r1_end,
-          fastq_r2 = fastqdump.r2_end,
+          fastq_r1 = fasterqdump.r1_end,
+          fastq_r2 = fasterqdump.r2_end,
           cpu_cores = ncpu,
           memory_gb = memory_gb
       }
     }
 
     # Single-end quantification
-    if (!fastqdump.is_paired_end) {
+    if (!fasterqdump.is_paired_end) {
       call salmon_tasks.quantify as quantify_single { input:
           salmon_index_dir = build_index.salmon_index,
           sample_name = id,
-          fastq_r1 = fastqdump.r1_end,
+          fastq_r1 = fasterqdump.r1_end,
           cpu_cores = ncpu,
           memory_gb = memory_gb
       }
