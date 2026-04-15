@@ -43,7 +43,7 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
 ## Module Dependencies
 
 This pipeline imports and uses:
-- **ww-sra module**: For SRA data download (`fasterqdump` task, with optional dbGaP/NGC support)
+- **ww-sra module**: For SRA data download (`fastqdump` task, with optional dbGaP/NGC support)
 - **ww-salmon module**: For transcriptome indexing and quantification (`build_index`, `quantify`, `merge_results` tasks)
 
 ## Usage

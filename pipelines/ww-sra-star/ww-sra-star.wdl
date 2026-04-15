@@ -58,7 +58,7 @@ workflow sra_star {
   }
 
   scatter ( id in sra_id_list ){
-    call sra_tasks.fasterqdump { input:
+    call sra_tasks.fastqdump { input:
         sra_id = id,
         ncpu = ncpu,
         max_reads = max_reads,
@@ -66,12 +66,12 @@ workflow sra_star {
     }
 
     # Paired-end alignment
-    if (fasterqdump.is_paired_end) {
+    if (fastqdump.is_paired_end) {
       call star_tasks.align_two_pass as align_paired { input:
           star_genome_tar = build_index.star_index_tar,
           name = id,
-          r1 = fasterqdump.r1_end,
-          r2 = fasterqdump.r2_end,
+          r1 = fastqdump.r1_end,
+          r2 = fastqdump.r2_end,
           sjdb_overhang = sjdb_overhang,
           memory_gb = memory_gb,
           cpu_cores = ncpu,
@@ -80,11 +80,11 @@ workflow sra_star {
     }
 
     # Single-end alignment
-    if (!fasterqdump.is_paired_end) {
+    if (!fastqdump.is_paired_end) {
       call star_tasks.align_two_pass as align_single { input:
           star_genome_tar = build_index.star_index_tar,
           name = id,
-          r1 = fasterqdump.r1_end,
+          r1 = fastqdump.r1_end,
           sjdb_overhang = sjdb_overhang,
           memory_gb = memory_gb,
           cpu_cores = ncpu,

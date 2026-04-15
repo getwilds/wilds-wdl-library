@@ -37,7 +37,7 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
 ## Module Dependencies
 
 This pipeline imports and uses:
-- **ww-sra module**: For SRA data download (`fasterqdump` task, with optional dbGaP/NGC support)
+- **ww-sra module**: For SRA data download (`fastqdump` task, with optional dbGaP/NGC support)
 - **ww-star module**: For genome indexing and alignment (`build_index`, `align_two_pass` tasks)
 
 ## Usage

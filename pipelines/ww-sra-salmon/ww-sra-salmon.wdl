@@ -49,7 +49,7 @@ workflow sra_salmon {
 
   # Download FASTQ files from SRA and quantify each sample
   scatter ( id in sra_id_list ){
-    call sra_tasks.fasterqdump { input:
+    call sra_tasks.fastqdump { input:
         sra_id = id,
         ncpu = ncpu,
         max_reads = max_reads,
@@ -57,23 +57,23 @@ workflow sra_salmon {
     }
 
     # Paired-end quantification
-    if (fasterqdump.is_paired_end) {
+    if (fastqdump.is_paired_end) {
       call salmon_tasks.quantify as quantify_paired { input:
           salmon_index_dir = build_index.salmon_index,
           sample_name = id,
-          fastq_r1 = fasterqdump.r1_end,
-          fastq_r2 = fasterqdump.r2_end,
+          fastq_r1 = fastqdump.r1_end,
+          fastq_r2 = fastqdump.r2_end,
           cpu_cores = ncpu,
           memory_gb = memory_gb
       }
     }
 
     # Single-end quantification
-    if (!fasterqdump.is_paired_end) {
+    if (!fastqdump.is_paired_end) {
       call salmon_tasks.quantify as quantify_single { input:
           salmon_index_dir = build_index.salmon_index,
           sample_name = id,
-          fastq_r1 = fasterqdump.r1_end,
+          fastq_r1 = fastqdump.r1_end,
           cpu_cores = ncpu,
           memory_gb = memory_gb
       }
