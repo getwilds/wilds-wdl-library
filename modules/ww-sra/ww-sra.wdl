@@ -111,19 +111,27 @@ task fasterqdump {
         --threads ~{ncpu} \
         --outdir ./ \
         --split-files \
-        ~{if defined(max_reads) then "--maxSpotId " + max_reads else ""} \
         ~{if defined(ngc_file) then "--ngc " + ngc_file else ""}
     else
       echo false > paired_file
       fasterq-dump "~{sra_id}" \
         --threads ~{ncpu} \
         --outdir ./ \
-        ~{if defined(max_reads) then "--maxSpotId " + max_reads else ""} \
         ~{if defined(ngc_file) then "--ngc " + ngc_file else ""}
       # Rename the file to match the expected output format
       mv "~{sra_id}.fastq" "~{sra_id}_1.fastq"
       # Create an empty placeholder for R2
       touch "~{sra_id}_2.fastq"
+    fi
+    # Truncate to max_reads if specified (fasterq-dump has no built-in read limit)
+    MAX_READS="~{if defined(max_reads) then max_reads else ""}"
+    if [ -n "$MAX_READS" ]; then
+      max_lines=$((MAX_READS * 4))
+      for f in "~{sra_id}_1.fastq" "~{sra_id}_2.fastq"; do
+        if [ -s "$f" ]; then
+          head -n $max_lines "$f" > "${f}.tmp" && mv "${f}.tmp" "$f"
+        fi
+      done
     fi
     # Gzip the output files (fasterq-dump does not support --gzip natively)
     gzip "~{sra_id}_1.fastq" "~{sra_id}_2.fastq"
