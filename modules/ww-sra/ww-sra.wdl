@@ -14,6 +14,7 @@ task fastqdump {
     outputs: {
         r1_end: "R1 fastq file downloaded for the sample in question",
         r2_end: "R2 fastq file downloaded for the sample in question (empty file for single-end reads)",
+        index_end: "Index read fastq file (empty file if no index reads present, e.g. for non-10x data)",
         is_paired_end: "boolean indicating whether the sample used paired-end sequencing"
     }
   }
@@ -58,23 +59,28 @@ task fastqdump {
       # Create an empty placeholder for R2
       touch "~{sra_id}_2.fastq"
     fi
+    # Create an empty placeholder for index reads if not present (common for non-10x data)
+    if [ ! -f "~{sra_id}_3.fastq" ]; then
+      touch "~{sra_id}_3.fastq"
+    fi
     # Truncate to max_reads if specified (fasterq-dump has no built-in read limit)
     MAX_READS="~{select_first([max_reads, 0])}"
     if [ "$MAX_READS" -gt 0 ]; then
       max_lines=$((MAX_READS * 4))
-      for f in "~{sra_id}_1.fastq" "~{sra_id}_2.fastq"; do
+      for f in "~{sra_id}_1.fastq" "~{sra_id}_2.fastq" "~{sra_id}_3.fastq"; do
         if [ -s "$f" ]; then
           head -n $max_lines "$f" > "${f}.tmp" && mv "${f}.tmp" "$f"
         fi
       done
     fi
     # Gzip the output files (fasterq-dump does not support --gzip natively)
-    gzip "~{sra_id}_1.fastq" "~{sra_id}_2.fastq"
+    gzip "~{sra_id}_1.fastq" "~{sra_id}_2.fastq" "~{sra_id}_3.fastq"
   >>>
 
   output {
     File r1_end = "~{sra_id}_1.fastq.gz"
     File r2_end = "~{sra_id}_2.fastq.gz"
+    File index_end = "~{sra_id}_3.fastq.gz"
     Boolean is_paired_end = read_boolean("paired_file")
   }
 
