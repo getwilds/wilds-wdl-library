@@ -9,8 +9,6 @@ CROMWELL ?= 92
 CROMWELL_JAR ?= cromwell-$(CROMWELL).jar
 MINIWDL ?= 1.13.0
 SPROCKET_MIN ?= 0.22.0
-WDLPARSE_VERSION ?= v0.0.5
-WDLPARSE := $(shell command -v wdlparse 2>/dev/null || echo $(HOME)/.local/bin/wdlparse)
 SPROCKET_CONFIG ?=
 SPROCKET_CONFIG_FLAG := $(if $(SPROCKET_CONFIG),-c $(SPROCKET_CONFIG),)
 
@@ -47,25 +45,6 @@ check_uv:
 		echo "uv version $$(uv --version | awk '{print $$2}')"; \
 		uv run --python 3.13 --with miniwdl==$(MINIWDL) python -c "from importlib.metadata import version; print(f'miniwdl v{version(\"miniwdl\")}')"; \
 	fi;
-
-check_wdlparse:
-	@echo "Checking if wdlparse is available..."
-	@if ! command -v wdlparse >/dev/null 2>&1; then \
-		echo "wdlparse not found, installing $(WDLPARSE_VERSION)..."; \
-		OS=$$(uname -s | tr '[:upper:]' '[:lower:]'); \
-		ARCH=$$(uname -m); \
-		if [ "$$OS" = "darwin" ]; then \
-			TARGET="$$ARCH-apple-$$OS"; \
-		else \
-			TARGET="$$ARCH-unknown-$$OS-gnu"; \
-		fi; \
-		mkdir -p $$HOME/.local/bin; \
-		wget -q -O /tmp/wdlparse.tar.gz \
-			"https://github.com/getwilds/wdlparse/releases/download/$(WDLPARSE_VERSION)/wdlparse-$$TARGET.tar.gz"; \
-		tar -xzf /tmp/wdlparse.tar.gz -C $$HOME/.local/bin; \
-		rm -f /tmp/wdlparse.tar.gz; \
-	fi; \
-	echo "wdlparse version $$($(WDLPARSE) --version | awk '{print $$2}')";
 
 check_name:
 	@if [ "$(NAME)" != "*" ]; then \
@@ -172,12 +151,12 @@ lint: lint_sprocket lint_miniwdl lint_womtool lint_cirro ## Run all linting chec
 
 ##@ Run
 
-run_sprocket: check_sprocket check_name check_wdlparse ## Run sprocket on testrun.wdl files (use NAME=foo, SPROCKET_CONFIG=path for HPC)
+run_sprocket: check_sprocket check_name ## Run sprocket on testrun.wdl files (use NAME=foo, SPROCKET_CONFIG=path for HPC)
 	@echo "Running sprocket on testrun.wdl files..."
 	@failed=""; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			echo "... Running $$(basename $$dir)"; \
-			entrypoint=$$($(WDLPARSE) parse --format json "$$dir/testrun.wdl" | jq -r '.wdl.workflows[].name'); \
+			entrypoint=$$(grep '^workflow ' "$$dir/testrun.wdl" | awk '{print $$2}' | tr -d '{'); \
 			echo "... Using entrypoint: $$entrypoint"; \
 			if ! sprocket run $(SPROCKET_CONFIG_FLAG) "$$dir/testrun.wdl" --target $$entrypoint; then \
 				failed="$$failed $$(basename $$dir)"; \

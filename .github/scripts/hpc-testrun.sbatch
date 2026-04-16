@@ -12,7 +12,7 @@
 #
 # Prerequisites:
 #   - gh CLI authenticated (run `gh auth login` once)
-#   - sprocket, wdlparse, and Apptainer available via module load
+#   - sprocket and Apptainer available via module load
 #   - GITHUB_ISSUE_NUMBER set to the tracking issue number
 #
 # Usage:
