@@ -40,7 +40,7 @@ task fastqdump {
     # Check if paired ended
     numLines=$(fastq-dump -X 1 -Z --split-spot "~{sra_id}" \
       ~{if defined(ngc_file) then "--ngc " + ngc_file else ""} | wc -l)
-    if [ "$numLines" -eq 8 ]; then
+    if [ "$numLines" -gt 4 ]; then
       echo true > paired_file
       fasterq-dump "~{sra_id}" \
         --threads ~{ncpu} \
