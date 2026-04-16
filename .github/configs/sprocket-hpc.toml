@@ -1,0 +1,5 @@
+# The Slurm + Apptainer backend requires explicitly opting into experimental features.
+run.experimental_features_enabled = true
+
+# Set the default backend to Slurm + Apptainer.
+run.backends.default.type = "slurm_apptainer"

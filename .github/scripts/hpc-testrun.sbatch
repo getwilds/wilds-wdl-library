@@ -52,7 +52,7 @@ cd "${WORK_DIR}/wilds-wdl-library"
 
 # ---- Run testruns ----
 echo "Starting WILDS WDL test runs at ${RUN_DATE}"
-SPROCKET_CONFIG="${SPROCKET_CONFIG:-notes/minimal-sprocket-config.toml}"
+SPROCKET_CONFIG="${SPROCKET_CONFIG:-.github/configs/sprocket-hpc.toml}"
 make run_sprocket SPROCKET_CONFIG="${SPROCKET_CONFIG}" 2>&1 | tee "${LOGFILE}" || true
 
 # ---- Post results to GitHub ----
