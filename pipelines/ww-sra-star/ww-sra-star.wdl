@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as sra_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/sra-dbgap/modules/ww-sra/ww-sra.wdl" as sra_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as star_tasks
 
 struct RefGenome {
@@ -34,6 +34,7 @@ workflow sra_star {
     ncpu: "number of CPUs to use for SRA download and STAR alignment"
     memory_gb: "memory allocation in GB for STAR tasks"
     max_reads: "Optional maximum number of reads to download from SRA (for testing/downsampling). If not specified, downloads all reads."
+    ngc_file: "Optional NGC repository key file for downloading controlled-access dbGaP data."
   }
 
   input {
@@ -44,6 +45,7 @@ workflow sra_star {
     Int ncpu = 12
     Int memory_gb = 64
     Int? max_reads
+    File? ngc_file
   }
 
   call star_tasks.build_index { input:
@@ -59,7 +61,8 @@ workflow sra_star {
     call sra_tasks.fastqdump { input:
         sra_id = id,
         ncpu = ncpu,
-        max_reads = max_reads
+        max_reads = max_reads,
+        ngc_file = ngc_file
     }
 
     # Paired-end alignment

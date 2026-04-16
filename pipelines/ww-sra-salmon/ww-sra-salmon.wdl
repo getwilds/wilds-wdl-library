@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as sra_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/sra-dbgap/modules/ww-sra/ww-sra.wdl" as sra_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl" as salmon_tasks
 
 struct SalmonSample {
@@ -28,6 +28,7 @@ workflow sra_salmon {
     ncpu: "number of CPUs to use for SRA download and Salmon quantification"
     memory_gb: "memory allocation in GB for Salmon tasks"
     max_reads: "Optional maximum number of reads to download from SRA (for testing/downsampling). If not specified, downloads all reads."
+    ngc_file: "Optional NGC repository key file for downloading controlled-access dbGaP data."
   }
 
   input {
@@ -36,6 +37,7 @@ workflow sra_salmon {
     Int ncpu = 8
     Int memory_gb = 16
     Int? max_reads
+    File? ngc_file
   }
 
   # Build Salmon index from transcriptome
@@ -50,7 +52,8 @@ workflow sra_salmon {
     call sra_tasks.fastqdump { input:
         sra_id = id,
         ncpu = ncpu,
-        max_reads = max_reads
+        max_reads = max_reads,
+        ngc_file = ngc_file
     }
 
     # Paired-end quantification
