@@ -10,6 +10,7 @@ CROMWELL_JAR ?= cromwell-$(CROMWELL).jar
 MINIWDL ?= 1.13.0
 SPROCKET_MIN ?= 0.22.0
 WDLPARSE_VERSION ?= v0.0.5
+WDLPARSE := $(shell command -v wdlparse 2>/dev/null || echo $(HOME)/.local/bin/wdlparse)
 SPROCKET_CONFIG ?=
 SPROCKET_CONFIG_FLAG := $(if $(SPROCKET_CONFIG),-c $(SPROCKET_CONFIG),)
 
@@ -58,14 +59,13 @@ check_wdlparse:
 		else \
 			TARGET="$$ARCH-unknown-$$OS-gnu"; \
 		fi; \
+		mkdir -p $$HOME/.local/bin; \
 		wget -q -O /tmp/wdlparse.tar.gz \
 			"https://github.com/getwilds/wdlparse/releases/download/$(WDLPARSE_VERSION)/wdlparse-$$TARGET.tar.gz"; \
-		tar -xzf /tmp/wdlparse.tar.gz -C /usr/local/bin 2>/dev/null \
-			|| tar -xzf /tmp/wdlparse.tar.gz -C $$HOME/.local/bin 2>/dev/null \
-			|| (mkdir -p $$HOME/.local/bin && tar -xzf /tmp/wdlparse.tar.gz -C $$HOME/.local/bin && export PATH="$$HOME/.local/bin:$$PATH"); \
+		tar -xzf /tmp/wdlparse.tar.gz -C $$HOME/.local/bin; \
 		rm -f /tmp/wdlparse.tar.gz; \
 	fi; \
-	echo "wdlparse version $$(wdlparse --version | awk '{print $$2}')";
+	echo "wdlparse version $$($(WDLPARSE) --version | awk '{print $$2}')";
 
 check_name:
 	@if [ "$(NAME)" != "*" ]; then \
@@ -177,7 +177,7 @@ run_sprocket: check_sprocket check_name check_wdlparse ## Run sprocket on testru
 	@failed=""; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			echo "... Running $$(basename $$dir)"; \
-			entrypoint=$$(wdlparse parse --format json "$$dir/testrun.wdl" | jq -r '.wdl.workflows[].name'); \
+			entrypoint=$$($(WDLPARSE) parse --format json "$$dir/testrun.wdl" | jq -r '.wdl.workflows[].name'); \
 			echo "... Using entrypoint: $$entrypoint"; \
 			if ! sprocket run $(SPROCKET_CONFIG_FLAG) "$$dir/testrun.wdl" --target $$entrypoint; then \
 				failed="$$failed $$(basename $$dir)"; \
