@@ -49,18 +49,20 @@ def get_git_info() -> dict:
     return {"branch": branch, "commit": commit}
 
 
-def build_comment(results: dict, run_date: str, slurm_job_id: str) -> str:
+def build_comment(results: dict, run_date: str, slurm_job_id: str, run_type: str = "all") -> str:
     """Build the markdown comment body."""
     git = get_git_info()
     status = "PASSED" if results["failed"] == 0 else "FAILED"
     emoji = "white_check_mark" if status == "PASSED" else "x"
+    type_label = run_type if run_type != "all" else "modules + pipelines"
 
-    comment = f"""## :{emoji}: HPC Test Run — {run_date}
+    comment = f"""## :{emoji}: HPC Test Run ({type_label}) — {run_date}
 
 | | |
 |---|---|
 | **Status** | {status} |
 | **Date** | {run_date} |
+| **Type** | {type_label} |
 | **Engine** | sprocket |
 | **Items tested** | {results['total']} |
 | **Passed** | {results['passed']} |
@@ -108,9 +110,10 @@ def main():
 
     run_date = os.environ.get("RUN_DATE", "unknown")
     slurm_job_id = os.environ.get("SLURM_JOB_ID", "N/A")
+    run_type = os.environ.get("TYPE", "all")
 
     results = parse_log(args.logfile)
-    comment = build_comment(results, run_date, slurm_job_id)
+    comment = build_comment(results, run_date, slurm_job_id, run_type)
     post_comment(comment, args.issue_number, args.repo)
 
 

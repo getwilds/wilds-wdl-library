@@ -11,6 +11,7 @@ MINIWDL ?= 1.13.0
 SPROCKET_MIN ?= 0.22.0
 SPROCKET_CONFIG ?=
 SPROCKET_CONFIG_FLAG := $(if $(SPROCKET_CONFIG),-c $(SPROCKET_CONFIG),)
+TYPE ?= all
 
 .PHONY: help
 help: ## Show this help message
@@ -151,9 +152,13 @@ lint: lint_sprocket lint_miniwdl lint_womtool lint_cirro ## Run all linting chec
 
 ##@ Run
 
-run_sprocket: check_sprocket check_name ## Run sprocket on testrun.wdl files (use NAME=foo, SPROCKET_CONFIG=path for HPC)
+run_sprocket: check_sprocket check_name ## Run sprocket on testrun.wdl files (use NAME=foo, TYPE=modules|pipelines, SPROCKET_CONFIG=path)
 	@echo "Running sprocket on testrun.wdl files..."
-	@failed=""; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
+	@failed=""; \
+	dirs=""; \
+	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)/"; fi; \
+	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)/"; fi; \
+	for dir in $$dirs; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			echo "... Running $$(basename $$dir)"; \
 			entrypoint=$$(grep '^workflow ' "$$dir/testrun.wdl" | awk '{print $$2}' | tr -d '{'); \
@@ -173,9 +178,13 @@ run_sprocket: check_sprocket check_name ## Run sprocket on testrun.wdl files (us
 		echo "All sprocket runs passed."; \
 	fi
 
-run_miniwdl: check_uv check_name ## Run miniwdl on testrun.wdl files (use NAME=foo for specific item)
+run_miniwdl: check_uv check_name ## Run miniwdl on testrun.wdl files (use NAME=foo, TYPE=modules|pipelines)
 	@echo "Running miniwdl on testrun.wdl files..."
-	@failed=""; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
+	@failed=""; \
+	dirs=""; \
+	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)/"; fi; \
+	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)/"; fi; \
+	for dir in $$dirs; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			echo "... Running $$(basename $$dir)"; \
 			if ! uv run --python 3.13 --with miniwdl==$(MINIWDL) miniwdl run "$$dir/testrun.wdl"; then \
@@ -193,9 +202,13 @@ run_miniwdl: check_uv check_name ## Run miniwdl on testrun.wdl files (use NAME=f
 		echo "All miniwdl runs passed."; \
 	fi
 
-run_cromwell: check_java check_cromwell check_name ## Run Cromwell on testrun.wdl files (use NAME=foo for specific item)
+run_cromwell: check_java check_cromwell check_name ## Run Cromwell on testrun.wdl files (use NAME=foo, TYPE=modules|pipelines)
 	@echo "Running Cromwell on testrun.wdl files..."
-	@failed=""; for dir in modules/$(NAME)/ pipelines/$(NAME)/; do \
+	@failed=""; \
+	dirs=""; \
+	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)/"; fi; \
+	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)/"; fi; \
+	for dir in $$dirs; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			echo "... Running $$(basename $$dir)"; \
 			if ! java -jar $(CROMWELL_JAR) run "$$dir/testrun.wdl"; then \
