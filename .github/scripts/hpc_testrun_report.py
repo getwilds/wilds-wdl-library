@@ -41,10 +41,10 @@ def parse_log(logfile: str) -> dict:
 def get_git_info() -> dict:
     """Get current branch and short commit hash."""
     branch = subprocess.check_output(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"], text=True
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"], universal_newlines=True
     ).strip()
     commit = subprocess.check_output(
-        ["git", "rev-parse", "--short", "HEAD"], text=True
+        ["git", "rev-parse", "--short", "HEAD"], universal_newlines=True
     ).strip()
     return {"branch": branch, "commit": commit}
 
