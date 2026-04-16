@@ -2,9 +2,7 @@
 #SBATCH --job-name=wilds_wdl_testrun
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=32G
-#SBATCH --time=12:00:00
+#SBATCH --time=72:00:00
 #SBATCH --output=logs/wilds_testrun_%j.out
 #SBATCH --error=logs/wilds_testrun_%j.err
 
