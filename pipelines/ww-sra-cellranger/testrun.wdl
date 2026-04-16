@@ -8,14 +8,14 @@ workflow sra_cellranger_example {
   call ww_testdata.download_test_cellranger_ref { }
 
   # Call the actual sra_cellranger workflow with test data
-  # Using SRR6354436: 10x Chromium 3' v2 scRNA-seq (human PBMCs)
-  # Limiting to 1000 reads for fast testing
+  # Using SRR9169219: Human PBMC 10x Chromium 3' v2 scRNA-seq (GSE132044)
+  # Limiting to 100k reads for fast testing while retaining enough for barcode detection
   call sra_cellranger_workflow.sra_cellranger { input:
-    sra_id_list = ["SRR6354436"],
+    sra_id_list = ["SRR9169219"],
     ref_gex = download_test_cellranger_ref.ref_tar,
     ncpu = 2,
     memory_gb = 6,
-    max_reads = 1000,
+    max_reads = 100000,
     create_bam = false,
     chemistry = "SC3Pv2"
   }
