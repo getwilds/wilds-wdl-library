@@ -9,6 +9,7 @@ CROMWELL ?= 92
 CROMWELL_JAR ?= cromwell-$(CROMWELL).jar
 MINIWDL ?= 1.13.0
 SPROCKET_MIN ?= 0.22.0
+WDLPARSE_VERSION ?= v0.0.5
 SPROCKET_CONFIG ?=
 SPROCKET_CONFIG_FLAG := $(if $(SPROCKET_CONFIG),-c $(SPROCKET_CONFIG),)
 
@@ -49,11 +50,22 @@ check_uv:
 check_wdlparse:
 	@echo "Checking if wdlparse is available..."
 	@if ! command -v wdlparse >/dev/null 2>&1; then \
-		echo >&2 "Error: wdlparse is not installed or not in PATH. Install wdlparse (https://github.com/getwilds/wdlparse?tab=readme-ov-file#from-releases)"; \
-		exit 1; \
-	else \
-	  echo "wdlparse version $$(wdlparse --version | awk '{print $$2}')"; \
-	fi;
+		echo "wdlparse not found, installing $(WDLPARSE_VERSION)..."; \
+		OS=$$(uname -s | tr '[:upper:]' '[:lower:]'); \
+		ARCH=$$(uname -m); \
+		if [ "$$OS" = "darwin" ]; then \
+			TARGET="$$ARCH-apple-$$OS"; \
+		else \
+			TARGET="$$ARCH-unknown-$$OS-gnu"; \
+		fi; \
+		wget -q -O /tmp/wdlparse.tar.gz \
+			"https://github.com/getwilds/wdlparse/releases/download/$(WDLPARSE_VERSION)/wdlparse-$$TARGET.tar.gz"; \
+		tar -xzf /tmp/wdlparse.tar.gz -C /usr/local/bin 2>/dev/null \
+			|| tar -xzf /tmp/wdlparse.tar.gz -C $$HOME/.local/bin 2>/dev/null \
+			|| (mkdir -p $$HOME/.local/bin && tar -xzf /tmp/wdlparse.tar.gz -C $$HOME/.local/bin && export PATH="$$HOME/.local/bin:$$PATH"); \
+		rm -f /tmp/wdlparse.tar.gz; \
+	fi; \
+	echo "wdlparse version $$(wdlparse --version | awk '{print $$2}')";
 
 check_name:
 	@if [ "$(NAME)" != "*" ]; then \
