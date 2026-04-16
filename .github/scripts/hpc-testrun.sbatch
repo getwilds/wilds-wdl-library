@@ -42,7 +42,7 @@ REPO="getwilds/wilds-wdl-library"
 # ---- Environment setup ----
 # Update these module versions as needed for your HPC
 module purge
-module load sprocket/0.22.0 Apptainer/1.1.6
+module load sprocket/0.23.0 Apptainer/1.1.6
 
 # ---- Clone fresh copy of the repo ----
 BRANCH="${BRANCH:-main}"
