@@ -127,3 +127,45 @@ task run_count {
     memory: "~{memory_gb} GB"
   }
 }
+
+task rename_fastqs {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Renames FASTQ files to match the Cell Ranger naming convention (SampleName_S1_R1_001.fastq.gz). Useful for preparing SRA downloads or other non-standard FASTQ files for Cell Ranger input."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cellranger/ww-cellranger.wdl"
+    outputs: {
+        r1_renamed: "R1 FASTQ file renamed to Cell Ranger naming convention",
+        r2_renamed: "R2 FASTQ file renamed to Cell Ranger naming convention"
+    }
+  }
+
+  parameter_meta {
+    r1_fastq: "R1 FASTQ file to rename"
+    r2_fastq: "R2 FASTQ file to rename"
+    sample_id: "Sample ID to use as the prefix in the renamed file"
+  }
+
+  input {
+    File r1_fastq
+    File r2_fastq
+    String sample_id
+  }
+
+  command <<<
+    set -eo pipefail
+    cp "~{r1_fastq}" "~{sample_id}_S1_R1_001.fastq.gz"
+    cp "~{r2_fastq}" "~{sample_id}_S1_R2_001.fastq.gz"
+  >>>
+
+  output {
+    File r1_renamed = "~{sample_id}_S1_R1_001.fastq.gz"
+    File r2_renamed = "~{sample_id}_S1_R2_001.fastq.gz"
+  }
+
+  runtime {
+    docker: "ubuntu:22.04"
+    cpu: 1
+    memory: "2 GB"
+  }
+}

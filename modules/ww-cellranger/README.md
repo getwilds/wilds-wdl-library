@@ -13,7 +13,7 @@ This module provides reusable WDL tasks for preparing and processing single-cell
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `run_count`
+- **Tasks**: `run_count`, `rename_fastqs`
 - **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
 - **Container**: `getwilds/cellranger:10.0.0` (WILDS Docker image with Cell Ranger installed)
 
@@ -34,7 +34,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 - Format: `SampleName_S1_L001_R1_001.fastq.gz` (for Read 1)
 - Format: `SampleName_S1_L001_R2_001.fastq.gz` (for Read 2)
 
-If your files don't follow this convention, you can use the `download_fastq_data` task from `ww-testdata` with the `prefix` parameter to rename them, or rename them manually before running the workflow.
+If your files don't follow this convention, you can use the `rename_fastqs` task from this module to rename them automatically.
 
 ### Current Limitations
 
@@ -65,6 +65,19 @@ Run `cellranger count` on gene expression reads from one GEM well.
 - `results_tar` (File): Compressed tarball of Cell Ranger count output directory
 - `web_summary` (File): Web summary HTML file with QC metrics
 - `metrics_summary` (File): Metrics summary CSV file with key statistics
+
+### `rename_fastqs`
+
+Renames FASTQ files to match the Cell Ranger naming convention. Useful for preparing SRA downloads or other non-standard FASTQ files for Cell Ranger input.
+
+**Inputs:**
+- `r1_fastq` (File): R1 FASTQ file to rename
+- `r2_fastq` (File): R2 FASTQ file to rename
+- `sample_id` (String): Sample ID to use as the prefix in the renamed file
+
+**Outputs:**
+- `r1_renamed` (File): R1 FASTQ file renamed to `{sample_id}_S1_R1_001.fastq.gz`
+- `r2_renamed` (File): R2 FASTQ file renamed to `{sample_id}_S1_R2_001.fastq.gz`
 
 ## Usage as a Module
 
