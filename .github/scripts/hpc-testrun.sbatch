@@ -19,8 +19,11 @@
 #
 # Usage:
 #   export GITHUB_ISSUE_NUMBER=<issue_number>
-#   export WORK_DIR=/hpc/temp/your-username/wilds-testrun
+#   export WORK_DIR=/path/to/your/working/directory
 #   sbatch /path/to/hpc-testrun.sbatch
+#
+# Optional:
+#   BRANCH=my-feature-branch  # Defaults to "main"
 #
 # To create the tracking issue (one-time setup):
 #   gh issue create \
@@ -44,8 +47,9 @@ module purge
 module load sprocket/0.22.0 Apptainer/1.1.6
 
 # ---- Clone fresh copy of the repo ----
-echo "Cloning ${REPO} into ${WORK_DIR}..."
-git clone "https://github.com/${REPO}.git" "${WORK_DIR}/wilds-wdl-library"
+BRANCH="${BRANCH:-main}"
+echo "Cloning ${REPO} (branch: ${BRANCH}) into ${WORK_DIR}..."
+git clone --branch "${BRANCH}" "https://github.com/${REPO}.git" "${WORK_DIR}/wilds-wdl-library"
 cd "${WORK_DIR}/wilds-wdl-library"
 
 # ---- Run testruns ----
