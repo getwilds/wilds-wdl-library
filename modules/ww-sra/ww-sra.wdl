@@ -46,6 +46,7 @@ task fastqdump {
         --threads ~{ncpu} \
         --outdir ./ \
         --split-files \
+        --include-technical \
         ~{if defined(ngc_file) then "--ngc " + ngc_file else ""}
     else
       echo false > paired_file

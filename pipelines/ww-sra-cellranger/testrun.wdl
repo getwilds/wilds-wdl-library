@@ -8,11 +8,10 @@ workflow sra_cellranger_example {
   call ww_testdata.download_test_cellranger_ref { }
 
   # Call the actual sra_cellranger workflow with test data
-  # Using SRR7722937: Human Merkel cell carcinoma 10x Chromium 3' v2 scRNA-seq (GSE117988)
-  # Standard read lengths (26bp R1, 98bp R2, 8bp index)
+  # Using SRR9169219: Human PBMC 10x Chromium 3' v2 scRNA-seq (GSE132044)
   # Limiting to 100k reads for fast testing while retaining enough for barcode detection
   call sra_cellranger_workflow.sra_cellranger { input:
-    sra_id_list = ["SRR7722937"],
+    sra_id_list = ["SRR9169219"],
     ref_gex = download_test_cellranger_ref.ref_tar,
     ncpu = 2,
     memory_gb = 6,
