@@ -17,14 +17,12 @@ task coverage {
     topic: "genomics,transcriptomics,sequence_features,data_quality_management"
     species: "any"
     operation: "sequencing_quality_control,quantification"
-    in_sample_data: "sequence_features,nucleic_acid_sequence_alignment"
-    in_sample_format: "bed,bam"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "sequence_report"
-    out_sample_format: "textual_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "bed_file:annotation_track:bed,aligned_bam:nucleic_acid_sequence_alignment:bam"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "mean_coverage:sequence_report:textual_format"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -79,14 +77,12 @@ task intersect {
     topic: "genomics,transcriptomics,sequence_features"
     species: "any"
     operation: "data_filtering"
-    in_sample_data: "annotation_track,nucleic_acid_sequence_alignment"
-    in_sample_format: "bed,bam"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "sequence_report"
-    out_sample_format: "textual_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "bed_file:annotation_track:bed,aligned_bam:nucleic_acid_sequence_alignment:bam"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "intersect_output:sequence_report:textual_format"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -137,14 +133,12 @@ task makewindows {
     topic: "genomics,transcriptomics,sequence_features,data_quality_management"
     species: "any"
     operation: "quantification"
-    in_sample_data: "annotation_track,nucleic_acid_sequence_alignment"
-    in_sample_format: "bed,bam"
-    in_ref_data: "dna_sequence,data_index"
-    in_ref_format: "fasta,fai"
-    out_sample_data: "sequence_report"
-    out_sample_format: "tar_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "bed_file:annotation_track:bed,aligned_bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    in_sample_opt: "none"
+    in_ref_req: "reference_fasta:nucleic_acid_sequence:fasta,reference_index:data_index:fai"
+    in_ref_opt: "none"
+    out_sample: "counts_bed:annotation_track:tar_format"
+    out_ref: "none"
   }
 
   parameter_meta {

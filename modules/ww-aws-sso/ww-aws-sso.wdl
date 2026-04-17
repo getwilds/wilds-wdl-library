@@ -22,14 +22,12 @@ task s3_download_file {
     topic: "any"
     species: "any"
     operation: "data_retrieval"
-    in_sample_data: "none"
-    in_sample_format: "none"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "any"
-    out_sample_format: "any"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "none"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "downloaded_file:any:any"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -104,14 +102,12 @@ task s3_upload_file {
     topic: "any"
     species: "any"
     operation: "data_deposition"
-    in_sample_data: "any"
-    in_sample_format: "any"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "none"
-    out_sample_format: "none"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "file_to_upload:any:any,aws_config_file:resource_metadata:configuration_file_format"
+    in_sample_opt: "aws_credentials_file:account_authentication:textual_format"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "none"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -180,14 +176,12 @@ task s3_list_bucket {
     topic: "any"
     species: "any"
     operation: "data_retrieval"
-    in_sample_data: "none"
-    in_sample_format: "none"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "none"
-    out_sample_format: "none"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "none"
+    in_sample_opt: "aws_config_file:resource_metadata:configuration_file_format,aws_credentials_file:account_authentication:textual_format"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "none"
+    out_ref: "none"
   }
 
   parameter_meta {

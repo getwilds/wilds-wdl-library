@@ -16,14 +16,12 @@ task gtf2bed {
     topic: "genomics,sequence_features"
     species: "any"
     operation: "data_formatting"
-    in_sample_data: "sequence_features"
-    in_sample_format: "gtf"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "annotation_track"
-    out_sample_format: "bed"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "gtf_file:sequence_features:gtf"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "bed_file:annotation_track:bed"
+    out_ref: "none"
   }
 
   parameter_meta {
