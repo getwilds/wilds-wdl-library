@@ -16,14 +16,12 @@ task bwa_index {
     topic: "genomics,mapping"
     species: "any"
     operation: "indexing"
-    in_sample_data: "none"
-    in_sample_format: "none"
-    in_ref_data: "dna_sequence"
-    in_ref_format: "fasta"
-    out_sample_data: "none"
-    out_sample_format: "none"
-    out_ref_data: "data_index"
-    out_ref_format: "tar_format"
+    in_sample_req: "none"
+    in_sample_opt: "none"
+    in_ref_req: "reference_fasta:dna_sequence:fasta"
+    in_ref_opt: "none"
+    out_sample: "none"
+    out_ref: "bwa_index_tar:data_index:tar_format"
   }
 
   parameter_meta {
@@ -76,14 +74,12 @@ task bwa_mem {
     topic: "genomics,mapping"
     species: "any"
     operation: "sequence_alignment"
-    in_sample_data: "dna_sequence"
-    in_sample_format: "fastq"
-    in_ref_data: "dna_sequence,data_index"
-    in_ref_format: "fasta,tar_format"
-    out_sample_data: "nucleic_acid_sequence_alignment,data_index"
-    out_sample_format: "bam,bai"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "reads:dna_sequence:fastq"
+    in_sample_opt: "mates:dna_sequence:fastq"
+    in_ref_req: "bwa_genome_tar:data_index:tar_format,reference_fasta:dna_sequence:fasta"
+    in_ref_opt: "none"
+    out_sample: "sorted_bam:nucleic_acid_sequence_alignment:bam,sorted_bai:data_index:bai"
+    out_ref: "none"
   }
 
   parameter_meta {

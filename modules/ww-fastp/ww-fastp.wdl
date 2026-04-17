@@ -22,14 +22,12 @@ task fastp_paired {
     topic: "genomics,transcriptomics,data_quality_management"
     species: "any"
     operation: "sequence_trimming,data_filtering"
-    in_sample_data: "nucleic_acid_sequence"
-    in_sample_format: "fastq"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "nucleic_acid_sequence,quality_control_report,quality_control_report"
-    out_sample_format: "fastq,html,json"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "r1_trimmed:nucleic_acid_sequence:fastq,r2_trimmed:nucleic_acid_sequence:fastq,html_report:quality_control_report:html,json_report:quality_control_report:json"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -110,14 +108,12 @@ task fastp_single {
     topic: "genomics,transcriptomics,data_quality_management"
     species: "any"
     operation: "sequence_trimming,data_filtering"
-    in_sample_data: "nucleic_acid_sequence"
-    in_sample_format: "fastq"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "nucleic_acid_sequence,quality_control_report,quality_control_report"
-    out_sample_format: "fastq,html,json"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "fastq:nucleic_acid_sequence:fastq"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "trimmed_fastq:nucleic_acid_sequence:fastq,html_report:quality_control_report:html,json_report:quality_control_report:json"
+    out_ref: "none"
   }
 
   parameter_meta {

@@ -19,14 +19,12 @@ task consensus_processing {
     topic: "genomics,dna_polymorphism"
     species: "any"
     operation: "aggregation"
-    in_sample_data: "sequence_features"
-    in_sample_format: "tsv"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "sequence_variations"
-    out_sample_format: "tsv"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "haplo_vars:sequence_variations:tsv,mpileup_vars:sequence_variations:tsv,mutect_vars:sequence_variations:tsv"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "consensus_tsv:sequence_variations:tsv"
+    out_ref: "none"
   }
 
   parameter_meta {

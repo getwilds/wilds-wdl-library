@@ -19,14 +19,12 @@ task download_files {
     topic: "any"
     species: "any"
     operation: "data_retrieval"
-    in_sample_data: "none"
-    in_sample_format: "none"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "nucleic_acid_sequence,report"
-    out_sample_format: "fastq,textual_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "none"
+    in_sample_opt: "accessions_file:accession:textual_format"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "downloaded_files:nucleic_acid_sequence:fastq,download_summary:report:textual_format"
+    out_ref: "none"
   }
 
   parameter_meta {

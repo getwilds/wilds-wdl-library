@@ -17,14 +17,12 @@ task create_reference {
     topic: "genomics,copy_number_variation"
     species: "eukaryote"
     operation: "indexing"
-    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
-    in_sample_format: "bam,bai"
-    in_ref_data: "dna_sequence,data_index"
-    in_ref_format: "fasta,fai"
-    out_sample_data: "none"
-    out_sample_format: "none"
-    out_ref_data: "data_index"
-    out_ref_format: "cnn"
+    in_sample_req: "bam_files:nucleic_acid_sequence_alignment:bam,bam_indices:data_index:bai"
+    in_sample_opt: "target_bed:annotation_track:bed,antitarget_bed:annotation_track:bed"
+    in_ref_req: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai"
+    in_ref_opt: "none"
+    out_sample: "none"
+    out_ref: "reference_cnn:data_index:cnn"
   }
 
   parameter_meta {
@@ -126,14 +124,12 @@ task run_cnvkit {
     topic: "genomics,copy_number_variation"
     species: "eukaryote"
     operation: "copy_number_variation_detection"
-    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
-    in_sample_format: "bam,bai"
-    in_ref_data: "data_index,annotation_track"
-    in_ref_format: "cnn,bed"
-    out_sample_data: "sequence_variations,sequence_variations,plot"
-    out_sample_format: "cns,cnr,pdf"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "tumor_bam:nucleic_acid_sequence_alignment:bam,tumor_bai:data_index:bai"
+    in_sample_opt: "normal_bam:nucleic_acid_sequence_alignment:bam,normal_bai:data_index:bai,target_bed:annotation_track:bed"
+    in_ref_req: "reference_cnn:data_index:cnn"
+    in_ref_opt: "none"
+    out_sample: "cnv_calls:sequence_variations:cns,cnv_segments:sequence_variations:cnr,cnv_plot:plot:pdf"
+    out_ref: "none"
   }
 
   parameter_meta {

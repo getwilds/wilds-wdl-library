@@ -18,14 +18,12 @@ task run_fastqc {
     topic: "genomics,data_quality_management"
     species: "any"
     operation: "quality_control"
-    in_sample_data: "dna_sequence,sequence_record"
-    in_sample_format: "fastq,textual_format"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "quality_control_report"
-    out_sample_format: "html,zip"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "none"
+    in_sample_opt: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq,adapters:sequence_record:textual_format,limits:report:textual_format,contaminants:report:textual_format"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "html_reports:quality_control_report:html,zip_reports:quality_control_report:zip"
+    out_ref: "none"
   }
 
   parameter_meta {
