@@ -25,7 +25,9 @@ def parse_log(logfile: str) -> dict:
 
     # Extract the failure summary block if present
     failure_block = ""
-    match = re.search(r"(=== SPROCKET FAILURES ===.*)", content, re.DOTALL)
+    match = re.search(
+        r"(=== SPROCKET FAILURES ===\n.*failed with sprocket:.*)", content
+    )
     if match:
         failure_block = match.group(1).strip()
 
