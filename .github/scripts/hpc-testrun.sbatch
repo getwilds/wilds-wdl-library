@@ -47,9 +47,10 @@ module load sprocket/0.23.0 Apptainer/1.1.6
 
 # ---- Clone fresh copy of the repo ----
 BRANCH="${BRANCH:-main}"
-echo "Cloning ${REPO} (branch: ${BRANCH}) into ${WORK_DIR}..."
-git clone --branch "${BRANCH}" "https://github.com/${REPO}.git" "${WORK_DIR}/wilds-wdl-library"
-cd "${WORK_DIR}/wilds-wdl-library"
+CLONE_DIR="${WORK_DIR}/wilds-wdl-library-${SLURM_JOB_ID}"
+echo "Cloning ${REPO} (branch: ${BRANCH}) into ${CLONE_DIR}..."
+git clone --branch "${BRANCH}" "https://github.com/${REPO}.git" "${CLONE_DIR}"
+cd "${CLONE_DIR}"
 
 # ---- Run testruns ----
 export TYPE="${TYPE:-all}"
@@ -62,4 +63,4 @@ python3 .github/scripts/hpc_testrun_report.py "${LOGFILE}" "${ISSUE_NUMBER}" --r
 
 # ---- Cleanup ----
 rm -f "${LOGFILE}"
-rm -rf "${WORK_DIR}/wilds-wdl-library"
+# Note: cloned repo + sprocket output left in place for debugging
