@@ -136,8 +136,11 @@ task mpileup {
   command <<<
     set -eo pipefail
 
+    # Symlink reference FASTA locally so samtools can write the .fai index
+    ln -s "~{ref_fasta}" "~{basename(ref_fasta)}"
+
     samtools mpileup \
-      -f "~{ref_fasta}" \
+      -f "~{basename(ref_fasta)}" \
       -q "~{min_mapq}" \
       -Q "~{min_baseq}" \
       ~{if disable_baq then "--no-BAQ" else ""} \
