@@ -17,14 +17,12 @@ task smoove_call {
     topic: "genomics,structural_variation"
     species: "any"
     operation: "variant_calling"
-    in_sample_data: "nucleic_acid_sequence_alignment,data_index,annotation_track"
-    in_sample_format: "bam,bai,bed"
-    in_ref_data: "dna_sequence,data_index"
-    in_ref_format: "fasta,fai"
-    out_sample_data: "sequence_variations,data_index"
-    out_sample_format: "vcf,tbi"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "aligned_bam:nucleic_acid_sequence_alignment:bam,aligned_bam_index:data_index:bai"
+    in_sample_opt: "target_regions_bed:annotation_track:bed,exclude_bed:annotation_track:bed"
+    in_ref_req: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai"
+    in_ref_opt: "none"
+    out_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi"
+    out_ref: "none"
   }
 
   parameter_meta {

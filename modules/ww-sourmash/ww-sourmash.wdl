@@ -15,14 +15,12 @@ task sketch {
     topic: "genomics,proteomics,metagenomics"
     species: "any"
     operation: "indexing"
-    in_sample_data: "nucleic_acid_sequence_alignment,protein_sequence,dna_sequence"
-    in_sample_format: "bam,fasta"
-    in_ref_data: "nucleic_acid_sequence_alignment,protein_sequence,dna_sequence"
-    in_ref_format: "bam,fasta"
-    out_sample_data: "data_index"
-    out_sample_format: "sig"
-    out_ref_data: "data_index"
-    out_ref_format: "sig"
+    in_sample_req: "infile:nucleic_acid_sequence:bam|fasta"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "sig:data_index:sig"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -86,14 +84,12 @@ task gather {
     topic: "genomics,proteomics,metagenomics"
     species: "any"
     operation: "sequence_classification,quantification,statistical_calculation"
-    in_sample_data: "data_index"
-    in_sample_format: "sig"
-    in_ref_data: "data_index"
-    in_ref_format: "sig"
-    out_sample_data: "none"
-    out_sample_format: "none"
-    out_ref_data: "genome_report"
-    out_ref_format: "csv"
+    in_sample_req: "query_sig:data_index:sig,reference_databases_sigs:data_index:sig"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "result:genome_report:csv"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -151,14 +147,12 @@ task compare {
     topic: "genomics,proteomics,metagenomics"
     species: "any"
     operation: "statistical_calculation"
-    in_sample_data: "data_index"
-    in_sample_format: "sig"
-    in_ref_data: "data_index"
-    in_ref_format: "sig"
-    out_sample_data: "comparison_matrix"
-    out_sample_format: "binary_format,csv"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "sig_inputs:data_index:sig"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "npy:comparison_matrix:binary_format,csv:comparison_matrix:csv"
+    out_ref: "none"
   }
 
   parameter_meta {

@@ -20,14 +20,12 @@ task sjl_tiles {
     topic: "public_health_and_epidemiology"
     species: "any"
     operation: "statistical_calculation"
-    in_sample_data: "report"
-    in_sample_format: "binary_format"
-    in_ref_data: "map"
-    in_ref_format: "csv"
-    out_sample_data: "report"
-    out_sample_format: "binary_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "tile_path:accession:binary_format,border_points_path:accession:csv"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "matched_points:report:binary_format,missing_points:report:binary_format"
+    out_ref: "none"
   }
 
   parameter_meta {

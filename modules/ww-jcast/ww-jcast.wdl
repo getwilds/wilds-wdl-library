@@ -19,14 +19,12 @@ task jcast {
     topic: "transcriptomics,proteomics,protein_expression,rna_splicing"
     species: "eukaryote"
     operation: "sequence_conversion"
-    in_sample_data: "gene_report"
-    in_sample_format: "directory,tar_format"
-    in_ref_data: "sequence_features,rna_sequence"
-    in_ref_format: "gtf,fasta"
-    out_sample_data: "protein_sequence,report"
-    out_sample_format: "fasta,tar_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "rmats_directory:gene_report:directory|tar_format|zip_format"
+    in_sample_opt: "none"
+    in_ref_req: "gtf_file:sequence_features:gtf,genome_fasta:rna_sequence:fasta"
+    in_ref_opt: "none"
+    out_sample: "output_fasta:protein_sequence:fasta,output_directory:report:tar_format"
+    out_ref: "none"
   }
 
   parameter_meta {

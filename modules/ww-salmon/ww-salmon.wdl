@@ -17,14 +17,12 @@ task build_index {
     topic: "transcriptomics,mapping,gene_expression"
     species: "any"
     operation: "indexing"
-    in_sample_data: "none"
-    in_sample_format: "none"
-    in_ref_data: "rna_sequence"
-    in_ref_format: "fasta"
-    out_sample_data: "none"
-    out_sample_format: "none"
-    out_ref_data: "data_index"
-    out_ref_format: "tar_format"
+    in_sample_req: "none"
+    in_sample_opt: "none"
+    in_ref_req: "transcriptome_fasta:rna_sequence:fasta"
+    in_ref_opt: "none"
+    out_sample: "none"
+    out_ref: "salmon_index:data_index:tar_format"
   }
 
   parameter_meta {
@@ -86,14 +84,12 @@ task quantify {
     topic: "transcriptomics,gene_expression"
     species: "any"
     operation: "rna_seq_quantification"
-    in_sample_data: "rna_sequence"
-    in_sample_format: "fastq"
-    in_ref_data: "data_index"
-    in_ref_format: "tar_format"
-    out_sample_data: "gene_expression_matrix"
-    out_sample_format: "tar_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "fastq_r1:rna_sequence:fastq"
+    in_sample_opt: "fastq_r2:rna_sequence:fastq"
+    in_ref_req: "salmon_index_dir:data_index:tar_format"
+    in_ref_opt: "none"
+    out_sample: "salmon_quant_dir:gene_expression_matrix:tar_format"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -170,14 +166,12 @@ task merge_results {
     topic: "transcriptomics,gene_expression"
     species: "any"
     operation: "aggregation"
-    in_sample_data: "gene_expression_matrix"
-    in_sample_format: "tar_format"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "gene_expression_matrix,sample_id"
-    out_sample_format: "tsv,textual_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "salmon_quant_dirs:gene_expression_matrix:tar_format"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "tpm_matrix:gene_expression_matrix:tsv,counts_matrix:gene_expression_matrix:tsv,sample_list:sample_id:textual_format"
+    out_ref: "none"
   }
 
   parameter_meta {

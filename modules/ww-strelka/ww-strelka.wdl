@@ -17,14 +17,12 @@ task strelka_germline {
     topic: "genomics,dna_polymorphism"
     species: "eukaryote"
     operation: "variant_calling"
-    in_sample_data: "nucleic_acid_sequence_alignment,data_index,annotation_track"
-    in_sample_format: "bam,bai,bed"
-    in_ref_data: "dna_sequence,data_index"
-    in_ref_format: "fasta,fai"
-    out_sample_data: "sequence_variations,data_index"
-    out_sample_format: "vcf,tbi"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "bam:nucleic_acid_sequence_alignment:bam,bai:data_index:bai"
+    in_sample_opt: "target_regions_bed:annotation_track:bed"
+    in_ref_req: "ref_fasta:dna_sequence:fasta,ref_fasta_index:data_index:fai"
+    in_ref_opt: "none"
+    out_sample: "variants_vcf:sequence_variations:vcf,variants_vcf_index:data_index:tbi"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -121,14 +119,12 @@ task strelka_somatic {
     topic: "genomics,dna_polymorphism"
     species: "eukaryote"
     operation: "variant_calling"
-    in_sample_data: "nucleic_acid_sequence_alignment,data_index,annotation_track"
-    in_sample_format: "bam,bai,bed"
-    in_ref_data: "dna_sequence,data_index"
-    in_ref_format: "fasta,fai"
-    out_sample_data: "sequence_variations,data_index"
-    out_sample_format: "vcf,tbi"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "tumor_bam:nucleic_acid_sequence_alignment:bam,tumor_bai:data_index:bai,normal_bam:nucleic_acid_sequence_alignment:bam,normal_bai:data_index:bai"
+    in_sample_opt: "target_regions_bed:annotation_track:bed"
+    in_ref_req: "ref_fasta:dna_sequence:fasta,ref_fasta_index:data_index:fai"
+    in_ref_opt: "none"
+    out_sample: "somatic_snvs_vcf:sequence_variations:vcf,somatic_snvs_vcf_index:data_index:tbi,somatic_indels_vcf:sequence_variations:vcf,somatic_indels_vcf_index:data_index:tbi"
+    out_ref: "none"
   }
 
   parameter_meta {

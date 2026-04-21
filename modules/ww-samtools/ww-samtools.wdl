@@ -17,14 +17,12 @@ task crams_to_fastq {
     topic: "genomics,transcriptomics"
     species: "any"
     operation: "data_formatting"
-    in_sample_data: "nucleic_acid_sequence_alignment"
-    in_sample_format: "cram,bam,sam"
-    in_ref_data: "nucleic_acid_sequence"
-    in_ref_format: "fasta"
-    out_sample_data: "nucleic_acid_sequence"
-    out_sample_format: "fastq"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "cram_files:nucleic_acid_sequence_alignment:cram|bam|sam"
+    in_sample_opt: "none"
+    in_ref_req: "ref:nucleic_acid_sequence:fasta"
+    in_ref_opt: "none"
+    out_sample: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -89,14 +87,12 @@ task merge_bams_to_cram {
     topic: "genomics,transcriptomics"
     species: "any"
     operation: "aggregation"
-    in_sample_data: "nucleic_acid_sequence_alignment"
-    in_sample_format: "bam"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "nucleic_acid_sequence_alignment,data_index"
-    out_sample_format: "cram,crai"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "bams_to_merge:nucleic_acid_sequence_alignment:bam"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "cram:nucleic_acid_sequence_alignment:cram,crai:data_index:crai"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -145,14 +141,12 @@ task mpileup {
     topic: "genomics,transcriptomics"
     species: "any"
     operation: "quantification"
-    in_sample_data: "nucleic_acid_sequence_alignment"
-    in_sample_format: "bam,cram"
-    in_ref_data: "nucleic_acid_sequence"
-    in_ref_format: "fasta"
-    out_sample_data: "nucleic_acid_sequence_alignment"
-    out_sample_format: "pileup"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "bamfile:nucleic_acid_sequence_alignment:bam|cram"
+    in_sample_opt: "none"
+    in_ref_req: "ref_fasta:nucleic_acid_sequence:fasta"
+    in_ref_opt: "none"
+    out_sample: "pileup:nucleic_acid_sequence_alignment:pileup"
+    out_ref: "none"
   }
 
   parameter_meta {

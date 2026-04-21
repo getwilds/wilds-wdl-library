@@ -21,14 +21,12 @@ task generate_ensemble {
     topic: "proteomics,protein_disordered_structure"
     species: "any"
     operation: "protein_structure_prediction"
-    in_sample_data: "none"
-    in_sample_format: "none"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "topology_data,trajectory_data,structure_prediction"
-    out_sample_format: "pdb,xtc,binary_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "none"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "starling_file:structure_prediction:binary_format,pdb_file:topology_data:pdb,xtc_file:trajectory_data:xtc"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -98,14 +96,12 @@ task generate_ensemble_batch {
     topic: "proteomics,protein_disordered_structure"
     species: "any"
     operation: "protein_structure_prediction"
-    in_sample_data: "protein_sequence"
-    in_sample_format: "fasta"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "topology_data,trajectory_data,structure_prediction"
-    out_sample_format: "pdb,xtc,binary_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "fasta_file:protein_sequence:fasta"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "starling_files:structure_prediction:binary_format,pdb_files:topology_data:pdb,xtc_files:trajectory_data:xtc"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -172,14 +168,12 @@ task split_fasta {
     topic: "proteomics,protein_disordered_structure"
     species: "any"
     operation: "splitting"
-    in_sample_data: "protein_sequence"
-    in_sample_format: "fasta"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "protein_sequence"
-    out_sample_format: "fasta"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "fasta_file:protein_sequence:fasta"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "batch_files:protein_sequence:fasta"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -235,14 +229,12 @@ task ensemble_info {
     topic: "proteomics,protein_disordered_structure"
     species: "any"
     operation: "statistical_calculation"
-    in_sample_data: "structure_prediction"
-    in_sample_format: "binary_format"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "quality_control_report"
-    out_sample_format: "textual_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "starling_file:structure_prediction:binary_format"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "info_file:quality_control_report:textual_format"
+    out_ref: "none"
   }
 
   parameter_meta {

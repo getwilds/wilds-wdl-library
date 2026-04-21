@@ -16,14 +16,12 @@ task build_index {
     topic: "transcriptomics,mapping"
     species: "eukaryote"
     operation: "indexing"
-    in_sample_data: "none"
-    in_sample_format: "none"
-    in_ref_data: "rna_sequence,sequence_features"
-    in_ref_format: "fasta,gtf"
-    out_sample_data: "none"
-    out_sample_format: "none"
-    out_ref_data: "data_index"
-    out_ref_format: "tar_format"
+    in_sample_req: "none"
+    in_sample_opt: "none"
+    in_ref_req: "reference_fasta:rna_sequence:fasta,reference_gtf:sequence_features:gtf"
+    in_ref_opt: "none"
+    out_sample: "none"
+    out_ref: "star_index_tar:data_index:tar_format"
   }
 
   parameter_meta {
@@ -95,14 +93,12 @@ task align_two_pass {
     topic: "transcriptomics,mapping"
     species: "eukaryote"
     operation: "sequence_alignment"
-    in_sample_data: "rna_sequence"
-    in_sample_format: "fastq"
-    in_ref_data: "data_index"
-    in_ref_format: "fasta"
-    out_sample_data: "nucleic_acid_sequence_alignment,data_index,gene_expression_matrix,report,gene_report"
-    out_sample_format: "bam,bai,textual_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "r1:rna_sequence:fastq"
+    in_sample_opt: "r2:rna_sequence:fastq"
+    in_ref_req: "star_genome_tar:data_index:tar_format"
+    in_ref_opt: "none"
+    out_sample: "bam:nucleic_acid_sequence_alignment:bam,bai:data_index:bai,gene_counts:gene_expression_matrix:textual_format,log_final:report:textual_format,log_progress:report:textual_format,log:report:textual_format,sj_out:gene_report:textual_format"
+    out_ref: "none"
   }
 
   parameter_meta {

@@ -19,14 +19,12 @@ task rmats {
     topic: "transcriptomics,rna_splicing"
     species: "eukaryote"
     operation: "alternative_splicing_prediction"
-    in_sample_data: "nucleic_acid_sequence_alignment"
-    in_sample_format: "bam"
-    in_ref_data: "sequence_features"
-    in_ref_format: "gtf"
-    out_sample_data: "gene_report,sequence_features"
-    out_sample_format: "tar_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "sample1_bams:nucleic_acid_sequence_alignment:bam,sample2_bams:nucleic_acid_sequence_alignment:bam"
+    in_sample_opt: "none"
+    in_ref_req: "gtf_file:sequence_features:gtf"
+    in_ref_opt: "none"
+    out_sample: "output_directory:report:tar_format"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -157,14 +155,12 @@ task rmats_prep {
     topic: "transcriptomics,rna_splicing"
     species: "eukaryote"
     operation: "statistical_calculation"
-    in_sample_data: "nucleic_acid_sequence_alignment"
-    in_sample_format: "bam"
-    in_ref_data: "sequence_features"
-    in_ref_format: "gtf"
-    out_sample_data: "report"
-    out_sample_format: "tar_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "sample_bams:nucleic_acid_sequence_alignment:bam"
+    in_sample_opt: "none"
+    in_ref_req: "gtf_file:sequence_features:gtf"
+    in_ref_opt: "none"
+    out_sample: "prep_output:report:tar_format"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -268,14 +264,12 @@ task rmats_post {
     topic: "transcriptomics,rna_splicing"
     species: "eukaryote"
     operation: "alternative_splicing_prediction"
-    in_sample_data: "report"
-    in_sample_format: "tar_format"
-    in_ref_data: "sequence_features"
-    in_ref_format: "gtf"
-    out_sample_data: "gene_report,report"
-    out_sample_format: "tar_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "prep_outputs:report:tar_format"
+    in_sample_opt: "none"
+    in_ref_req: "gtf_file:sequence_features:gtf"
+    in_ref_opt: "none"
+    out_sample: "output_directory:report:tar_format"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -377,14 +371,12 @@ task rmats_stat {
     topic: "transcriptomics,rna_splicing"
     species: "eukaryote"
     operation: "statistical_calculation"
-    in_sample_data: "gene_report"
-    in_sample_format: "tar_format"
-    in_ref_data: "sequence_features"
-    in_ref_format: "gtf"
-    out_sample_data: "gene_report,report"
-    out_sample_format: "tar_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "existing_output:report:tar_format"
+    in_sample_opt: "none"
+    in_ref_req: "gtf_file:sequence_features:gtf"
+    in_ref_opt: "none"
+    out_sample: "output_directory:report:tar_format"
+    out_ref: "none"
   }
 
   parameter_meta {

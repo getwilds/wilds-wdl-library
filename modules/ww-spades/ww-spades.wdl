@@ -18,14 +18,12 @@ task metaspades {
     topic: "genomics,metagenomics,sequence_assembly"
     species: "any"
     operation: "sequence_assembly"
-    in_sample_data: "dna_sequence"
-    in_sample_format: "fastq"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "dna_sequence,report"
-    out_sample_format: "fasta,textual_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "none"
+    in_sample_opt: "r1_fastq:dna_sequence:fastq,r2_fastq:dna_sequence:fastq,interleaved_fastq:dna_sequence:fastq"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "scaffolds_fasta:dna_sequence:fasta,contigs_fasta:dna_sequence:fasta,log_file:report:textual_format"
+    out_ref: "none"
   }
 
   parameter_meta {
