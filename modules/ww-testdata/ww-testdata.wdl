@@ -822,10 +822,13 @@ task create_clean_amplicon_reference {
   command <<<
     set -eo pipefail
 
+    # Symlink input FASTA locally so samtools can write the .fai index
+    ln -s "~{input_fasta}" "~{basename(input_fasta)}"
+
     # Extract region if specified, otherwise use entire sequence
     if [ -n "~{region}" ]; then
-      samtools faidx "~{input_fasta}"
-      samtools faidx "~{input_fasta}" "~{region}" > temp_extract.fa
+      samtools faidx "~{basename(input_fasta)}"
+      samtools faidx "~{basename(input_fasta)}" "~{region}" > temp_extract.fa
 
       # Replace the header with just the chromosome name
       sed "s/^>.*/>~{output_name}/" temp_extract.fa > temp.fa
