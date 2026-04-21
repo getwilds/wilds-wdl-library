@@ -149,8 +149,8 @@ EOF
 
   runtime {
     docker: "python:3.9-slim"
-    memory: "2 GB"
-    cpu: 1
+    memory: "8 GB"
+    cpu: 2
   }
 }
 
