@@ -9,11 +9,6 @@ A WILDS WDL module for predicting protein 3D structures using ESMFold. ESMFold l
 
 ESMFold predicts protein structures directly from amino acid sequences using a large protein language model. Unlike AlphaFold2, it does not require MSA computation, which dramatically reduces prediction time. The predicted structures include pLDDT confidence scores in the B-factor column of the output PDB files.
 
-**Key advantages over MSA-based methods:**
-- No MSA or template database required
-- Much faster inference (~60x compared to AlphaFold2)
-- Single-sequence input is sufficient
-
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
@@ -96,7 +91,7 @@ call esmfold_tasks.esmfold_predict { input:
 
 This module integrates seamlessly with other WILDS components:
 - **ww-testdata**: Automatic provisioning of test protein sequences for demonstrations
-- **ww-colabfold**: Alternative structure prediction using AlphaFold2 + MMseqs2
+- **ww-colabfold**: An alternative structure prediction module using AlphaFold2 + MMseqs2
 
 ## Testing the Module
 
