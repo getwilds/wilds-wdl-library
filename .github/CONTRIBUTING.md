@@ -275,6 +275,15 @@ All contributions must pass our automated testing pipeline which executes on a P
 - **Integration testing**: Cross-module compatibility testing
 - **Cirro validation**: Validates `.cirro/` configurations for pipelines that include them
 
+#### CI-Excluded Modules
+
+Some modules require more memory than GitHub Actions runners provide (~16 GB) and are excluded from CI test runs. These modules are listed in the `CI_EXCLUDED_ITEMS` dictionary in [`.github/scripts/discover_wdls.py`](.github/scripts/discover_wdls.py). Linting still runs for these modules in CI, and their test workflows are validated on the Fred Hutch HPC on a monthly basis (see below).
+
+Currently excluded:
+- **ww-esmfold**: Requires ~24 GB to load the 3B-parameter ESM-2 model
+
+If your module exceeds GitHub Actions resource limits, add it to `CI_EXCLUDED_ITEMS` and document the exclusion in your module's README. Be sure to verify that the test workflow runs successfully on an HPC or local machine with sufficient resources.
+
 #### HPC Monthly Test Runs
 
 To supplement GitHub Actions CI (which has resource limits), we run the full test suite monthly on the Fred Hutch HPC using a SLURM batch script. This ensures that CI-excluded modules are still regularly validated, and that all modules/pipelines work under HPC execution conditions (Slurm + Apptainer).
