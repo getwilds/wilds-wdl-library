@@ -149,13 +149,11 @@ task base_recalibrator {
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
-    # Symlink VCF files locally so index files can be written alongside them
     ln -s "~{dbsnp_vcf}" "~{basename(dbsnp_vcf)}"
     known_vcfs=(~{sep=" " known_indels_sites_vcfs})
     known_sites_args=""
@@ -337,13 +335,11 @@ task markdup_recal_metrics {
     # Index resulting bam file
     samtools index "~{base_file_name}.markdup.bam"
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
-    # Symlink VCF files locally so index files can be written alongside them
     ln -s "~{dbsnp_vcf}" "~{basename(dbsnp_vcf)}"
     known_vcfs=(~{sep=" " known_indels_sites_vcfs})
     known_sites_args=""
@@ -642,13 +638,11 @@ task haplotype_caller {
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
-    # Symlink dbSNP VCF locally so index can be written alongside it
     ln -s "~{dbsnp_vcf}" "~{basename(dbsnp_vcf)}"
 
     # Create index for dbSNP vcf
@@ -725,13 +719,11 @@ task mutect2 {
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
-    # Symlink gnomad VCF locally so index can be written alongside it
     ln -s "~{gnomad_vcf}" "~{basename(gnomad_vcf)}"
 
     # Index gnomad VCF
@@ -916,12 +908,10 @@ task haplotype_caller_parallel {
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
-    # Symlink dbSNP VCF locally so index can be written alongside it
     ln -s "~{dbsnp_vcf}" "~{basename(dbsnp_vcf)}"
 
     # Create index for dbSNP vcf
@@ -1034,13 +1024,11 @@ task mutect2_parallel {
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
-    # Symlink gnomad VCF locally so index can be written alongside it
     ln -s "~{gnomad_vcf}" "~{basename(gnomad_vcf)}"
 
     # Index gnomad VCF
@@ -1388,13 +1376,11 @@ task create_somatic_pon {
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
-    # Symlink and index germline resource if provided
     if [[ -f "~{germline_resource}" ]]; then
       ln -s "~{germline_resource}" "$(basename ~{germline_resource})"
       gatk IndexFeatureFile -I "$(basename ~{germline_resource})"
