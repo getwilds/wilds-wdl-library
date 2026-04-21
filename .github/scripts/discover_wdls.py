@@ -18,6 +18,12 @@ from pathlib import Path
 # Valid item types
 VALID_TYPES = ['modules', 'pipelines']
 
+# Items excluded from CI test runs (e.g., require more memory than GitHub Actions runners provide)
+CI_EXCLUDED_ITEMS = {
+    'modules': ['ww-esmfold'],
+    'pipelines': [],
+}
+
 def get_changed_files():
     """Get list of changed files in PR, or None for workflow_dispatch"""
     if os.environ.get('GITHUB_EVENT_NAME') == 'pull_request':
@@ -149,6 +155,13 @@ def main():
         # Handle PR - filter by changes
         changed_files = get_changed_files()
         final_items = filter_items_by_changes(all_items, changed_files, item_type)
+
+    # Remove items excluded from CI (e.g., too memory-intensive for GitHub Actions)
+    excluded = CI_EXCLUDED_ITEMS.get(item_type, [])
+    excluded_items = [item for item in final_items if item in excluded]
+    final_items = [item for item in final_items if item not in excluded]
+    for item in excluded_items:
+        print(f"Excluding {item} from CI (in CI_EXCLUDED_ITEMS)")
 
     print(f"\nFinal selection: {len(final_items)} {item_type}")
     for item in final_items:
