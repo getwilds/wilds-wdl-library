@@ -33,8 +33,8 @@ workflow starling_example {
     fasta_file = create_test_idp_fasta.test_fasta,
     num_conformations = 50,
     gpu_enabled = false,
-    cpu_cores = 1,
-    memory_gb = 4
+    cpu_cores = 2,
+    memory_gb = 8
   }
 
   # Test split_fasta on the multi-sequence FASTA
