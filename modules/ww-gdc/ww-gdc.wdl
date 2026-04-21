@@ -18,14 +18,12 @@ task download_by_manifest {
     topic: "genomics,transcriptomics"
     species: "human"
     operation: "data_retrieval"
-    in_sample_data: "accession,account_authentication"
-    in_sample_format: "textual_format"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "any,quality_control_report"
-    out_sample_format: "any,textual_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "manifest_file:accession:textual_format"
+    in_sample_opt: "token_file:account_authentication:textual_format"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "downloaded_files:any:any,download_log:quality_control_report:textual_format"
+    out_ref: "none"
   }
 
   parameter_meta {
@@ -145,14 +143,12 @@ task download_by_uuids {
     topic: "genomics,transcriptomics"
     species: "human"
     operation: "data_retrieval"
-    in_sample_data: "account_authentication"
-    in_sample_format: "textual_format"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "any,quality_control_report"
-    out_sample_format: "any,textual_format"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "none"
+    in_sample_opt: "token_file:account_authentication:textual_format"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "downloaded_files:any:any,download_log:quality_control_report:textual_format"
+    out_ref: "none"
   }
 
   parameter_meta {

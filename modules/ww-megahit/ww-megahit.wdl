@@ -16,14 +16,12 @@ task megahit {
     topic: "metagenomics,sequence_assembly"
     species: "prokaryote"
     operation: "sequence_assembly"
-    in_sample_data: "nucleic_acid_sequence"
-    in_sample_format: "fastq"
-    in_ref_data: "none"
-    in_ref_format: "none"
-    out_sample_data: "nucleic_acid_sequence"
-    out_sample_format: "fasta"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "input_fastq:nucleic_acid_sequence:fastq"
+    in_sample_opt: "none"
+    in_ref_req: "none"
+    in_ref_opt: "none"
+    out_sample: "contigs:nucleic_acid_sequence:fasta"
+    out_ref: "none"
   }
 
   parameter_meta {

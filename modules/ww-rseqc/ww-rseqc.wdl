@@ -22,14 +22,12 @@ task run_rseqc {
     topic: "transcriptomics,data_quality_management"
     species: "eukaryote"
     operation: "quality_control"
-    in_sample_data: "nucleic_acid_sequence_alignment,data_index"
-    in_sample_format: "bam,bai"
-    in_ref_data: "annotation_track"
-    in_ref_format: "bed"
-    out_sample_data: "sequence_report,quality_control_report"
-    out_sample_format: "textual_format,xls"
-    out_ref_data: "none"
-    out_ref_format: "none"
+    in_sample_req: "bam_file:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    in_sample_opt: "none"
+    in_ref_req: "ref_bed:annotation_track:bed"
+    in_ref_opt: "none"
+    out_sample: "read_distribution:sequence_report:textual_format,gene_body_coverage:sequence_report:textual_format,infer_experiment:sequence_report:textual_format,bam_stat:report:textual_format,junction_xls:sequence_report:xls,junction_log:sequence_report:textual_format,rseqc_summary:quality_control_report:textual_format"
+    out_ref: "none"
   }
 
   parameter_meta {
