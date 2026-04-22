@@ -73,7 +73,8 @@ task validate_outputs {
   command <<<
     set -eo pipefail
 
-    pip3 install pandas
+    pip3 install --target="$(pwd)/.pip_packages" --cache-dir="$(pwd)/.pip_cache" pandas
+    export PYTHONPATH="$(pwd)/.pip_packages:${PYTHONPATH:-}"
     python3 << 'EOF'
 import pandas as pd
 import sys
