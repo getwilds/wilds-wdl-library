@@ -59,8 +59,20 @@ struct SampleDetails {
 
 workflow ww_leukemia {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        },
+        {
+            name: "Sitapriya Moorthi",
+            email: "smoorthi@fredhutch.org"
+        }
+    ]
     description: "Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing with focus on leukemia analysis - Refactored with WILDS modules"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-leukemia/ww-leukemia.wdl"
     outputs: {

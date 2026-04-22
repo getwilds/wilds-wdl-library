@@ -266,6 +266,10 @@ This pipeline can be extended by:
 - **ww-sra-star pipeline**: SRA download to alignment pipeline
 - **Other pipelines**: Additional integration examples
 
+## Acknowledgments
+
+Special thanks to [Ethan Bouvet](https://github.com/EthanB-no) for helping test this pipeline in realistic settings. Thank you for your contributions!
+
 ## Support
 
 For questions, bugs, and/or feature requests, reach out to the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).

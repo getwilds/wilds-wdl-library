@@ -6,8 +6,8 @@ version 1.0
 
 task download_ref_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads reference genome and index files for WILDS WDL test runs"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -105,8 +105,8 @@ task download_ref_data {
 
 task download_fastq_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads small example FASTQ files for WILDS WDL test runs. Renames to Illumina naming convention with optional gzip compression."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -164,8 +164,8 @@ task download_fastq_data {
 
 task interleave_fastq {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
     description: "Interleaves a set of R1 and R2 FASTQ files"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -208,8 +208,8 @@ task interleave_fastq {
 
 task download_cram_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads small example CRAM files for WILDS WDL test runs"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -292,8 +292,8 @@ task download_cram_data {
 
 task download_bam_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads small example BAM files for WILDS WDL test runs"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -362,8 +362,8 @@ task download_bam_data {
 
 task download_ichor_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads reference data for ichorCNA analysis on hg38"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -411,8 +411,8 @@ task download_ichor_data {
 
 task download_tritonnp_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Chris Lo"
+    email: "clo2@fredhutch.org"
     description: "Downloads test data for TritonNP analysis"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -472,8 +472,8 @@ task download_tritonnp_data {
 
 task download_dbsnp_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads dbSNP VCF files for GATK workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -552,8 +552,8 @@ task download_dbsnp_vcf {
 
 task download_known_indels_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads known indel VCF files for GATK workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -601,8 +601,8 @@ task download_known_indels_vcf {
 
 task download_gnomad_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads gnomad VCF files for GATK workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -1184,8 +1184,8 @@ FASTA
 
 task download_glimpse2_genetic_map {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads genetic map files for GLIMPSE2 imputation from the official GLIMPSE repository"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -1240,8 +1240,8 @@ task download_glimpse2_genetic_map {
 
 task download_glimpse2_reference_panel {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads and prepares a 1000 Genomes reference panel subset for GLIMPSE2 imputation. Downloads phased data for the specified chromosome and filters to a region."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -1445,8 +1445,8 @@ task generate_sjl_data {
 
 task download_glimpse2_test_gl_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads low-coverage sequencing data from 1000 Genomes and generates a VCF with genotype likelihoods for GLIMPSE2 imputation testing."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {

@@ -1,5 +1,764 @@
 version: 1.2
 
+tools:
+  # =============================================================================
+  # MODULES - Individual tool-specific task collections
+  # =============================================================================
+
+  - name: ww-annotsv
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-annotsv/ww-annotsv.wdl
+    readMePath: /modules/ww-annotsv/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for structural variant annotation using AnnotSV
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-annovar
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-annovar/ww-annovar.wdl
+    readMePath: /modules/ww-annovar/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for variant annotation using Annovar
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-aws-sso
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-aws-sso/ww-aws-sso.wdl
+    readMePath: /modules/ww-aws-sso/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for downloading files from S3 using AWS SSO authentication
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-bcftools
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-bcftools/ww-bcftools.wdl
+    readMePath: /modules/ww-bcftools/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for variant calling and VCF manipulation using bcftools
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-bedparse
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-bedparse/ww-bedparse.wdl
+    readMePath: /modules/ww-bedparse/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for converting GTF annotation files to BED12 format using bedparse
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-bedtools
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-bedtools/ww-bedtools.wdl
+    readMePath: /modules/ww-bedtools/README.md
+    authors:
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+    topic: WDL module for BAM coverage analysis using BEDTools
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-bowtie
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-bowtie/ww-bowtie.wdl
+    readMePath: /modules/ww-bowtie/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for building Bowtie index files and aligning reads
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-bowtie2
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-bowtie2/ww-bowtie2.wdl
+    readMePath: /modules/ww-bowtie2/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for building Bowtie 2 index files and aligning reads
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-bwa
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-bwa/ww-bwa.wdl
+    readMePath: /modules/ww-bwa/README.md
+    authors:
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+    topic: WDL module for building BWA index files and aligning reads
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-cellranger
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-cellranger/ww-cellranger.wdl
+    readMePath: /modules/ww-cellranger/README.md
+    authors:
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+    topic: WDL module for single-cell gene expression analysis using Cell Ranger
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-cnvkit
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-cnvkit/ww-cnvkit.wdl
+    readMePath: /modules/ww-cnvkit/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for copy number variant detection using CNVkit
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-colabfold
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-colabfold/ww-colabfold.wdl
+    readMePath: /modules/ww-colabfold/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for protein structure prediction using ColabFold/AlphaFold2
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-consensus
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-consensus/ww-consensus.wdl
+    readMePath: /modules/ww-consensus/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for generating consensus variant calls from multiple variant callers
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-deeptools
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-deeptools/ww-deeptools.wdl
+    readMePath: /modules/ww-deeptools/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for generating normalized coverage tracks using deepTools
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-deepvariant
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-deepvariant/ww-deepvariant.wdl
+    readMePath: /modules/ww-deepvariant/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for germline variant calling using DeepVariant
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-delly
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-delly/ww-delly.wdl
+    readMePath: /modules/ww-delly/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for structural variant calling using Delly
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-deseq2
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-deseq2/ww-deseq2.wdl
+    readMePath: /modules/ww-deseq2/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for differential expression analysis using DESeq2
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-diamond
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-diamond/ww-diamond.wdl
+    readMePath: /modules/ww-diamond/README.md
+    authors:
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+    topic: WDL module for sequence alignment using DIAMOND
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-ena
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-ena/ww-ena.wdl
+    readMePath: /modules/ww-ena/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for downloading sequencing data from the European Nucleotide Archive
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-fastp
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-fastp/ww-fastp.wdl
+    readMePath: /modules/ww-fastp/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for FASTQ quality filtering and adapter trimming using fastp
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-fastqc
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-fastqc/ww-fastqc.wdl
+    readMePath: /modules/ww-fastqc/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for FASTQ quality control analysis using FastQC
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-gatk
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-gatk/ww-gatk.wdl
+    readMePath: /modules/ww-gatk/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+    topic: WDL module for variant calling and genome preprocessing using GATK
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-gdc
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-gdc/ww-gdc.wdl
+    readMePath: /modules/ww-gdc/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for downloading files from the Genomic Data Commons
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-glimpse2
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-glimpse2/ww-glimpse2.wdl
+    readMePath: /modules/ww-glimpse2/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for genotype imputation using GLIMPSE2
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-ichorcna
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-ichorcna/ww-ichorcna.wdl
+    readMePath: /modules/ww-ichorcna/README.md
+    authors:
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+    topic: WDL module for tumor fraction estimation using ichorCNA
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-jcast
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-jcast/ww-jcast.wdl
+    readMePath: /modules/ww-jcast/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for translating alternative splicing events into protein sequences using JCAST
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-manta
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-manta/ww-manta.wdl
+    readMePath: /modules/ww-manta/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for structural variant calling using Manta
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-megahit
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-megahit/ww-megahit.wdl
+    readMePath: /modules/ww-megahit/README.md
+    authors:
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+    topic: WDL module for de novo metagenome assembly using MEGAHIT
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-multiqc
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-multiqc/ww-multiqc.wdl
+    readMePath: /modules/ww-multiqc/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for aggregating QC reports using MultiQC
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-rmats-turbo
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-rmats-turbo/ww-rmats-turbo.wdl
+    readMePath: /modules/ww-rmats-turbo/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for differential alternative splicing analysis using rMATS
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-rseqc
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-rseqc/ww-rseqc.wdl
+    readMePath: /modules/ww-rseqc/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for RNA-seq quality control using RSeQC
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-salmon
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-salmon/ww-salmon.wdl
+    readMePath: /modules/ww-salmon/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for RNA-seq quantification using Salmon
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-samtools
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-samtools/ww-samtools.wdl
+    readMePath: /modules/ww-samtools/README.md
+    authors:
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for processing genomic files with Samtools
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-shapemapper
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-shapemapper/ww-shapemapper.wdl
+    readMePath: /modules/ww-shapemapper/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for RNA structure probing analysis using ShapeMapper
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-sjl
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-sjl/ww-sjl.wdl
+    readMePath: /modules/ww-sjl/README.md
+    authors:
+      - name: Caroline Nondin
+        email: cnondin@fredhutch.org
+        role: Research Assistant
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0009-0955-5954
+    topic: WDL module for calculating sunrise/sunset times and sun time differences for the SJL model
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-smoove
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-smoove/ww-smoove.wdl
+    readMePath: /modules/ww-smoove/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for structural variant calling using Smoove
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-sourmash
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-sourmash/ww-sourmash.wdl
+    readMePath: /modules/ww-sourmash/README.md
+    authors:
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+    topic: WDL module for sequence sketching and comparison using sourmash
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-spades
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-spades/ww-spades.wdl
+    readMePath: /modules/ww-spades/README.md
+    authors:
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+    topic: WDL module for de novo metagenomic assembly using metaSPAdes
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-sra
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-sra/ww-sra.wdl
+    readMePath: /modules/ww-sra/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for downloading sequencing data from the Sequence Read Archive
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-star
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-star/ww-star.wdl
+    readMePath: /modules/ww-star/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for RNA-seq alignment using STAR two-pass methodology
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-starling
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-starling/ww-starling.wdl
+    readMePath: /modules/ww-starling/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for structural ensemble generation using STARLING
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-strelka
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-strelka/ww-strelka.wdl
+    readMePath: /modules/ww-strelka/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for germline variant calling using Strelka
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-trimgalore
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-trimgalore/ww-trimgalore.wdl
+    readMePath: /modules/ww-trimgalore/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for adapter and quality trimming using Trim Galore
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-tritonnp
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-tritonnp/ww-tritonnp.wdl
+    readMePath: /modules/ww-tritonnp/README.md
+    authors:
+      - name: Chris Lo
+        email: clo2@fredhutch.org
+        role: Data Science Trainer
+        affiliation: Fred Hutch Cancer Center
+    topic: WDL module for running TritonNP analysis
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-testdata
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-testdata/ww-testdata.wdl
+    readMePath: /modules/ww-testdata/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+      - name: Chris Lo
+        email: clo2@fredhutch.org
+        role: Data Science Trainer
+        affiliation: Fred Hutch Cancer Center
+    topic: WDL module for downloading and provisioning test data used across WILDS WDL module and pipeline test runs
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-varscan
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-varscan/ww-varscan.wdl
+    readMePath: /modules/ww-varscan/README.md
+    authors:
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+    topic: WDL module for somatic variant calling using VarScan
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
 workflows:
   # =============================================================================
   # PIPELINES - Complete analysis workflows combining multiple modules
@@ -17,18 +776,11 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "WDL workflow to align sequencing data using BWA and perform QC steps with GATK"
-    topic: variant-calling
+    topic: WDL workflow to align sequencing data using BWA and perform QC steps with GATK
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - alignment
-        - variant-calling
-        - bwa
-        - gatk
 
   - name: ww-ena-star
     subclass: WDL
@@ -42,18 +794,11 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL workflow to download raw sequencing data from ENA and align using STAR two-pass methodology"
-    topic: rna-seq
+    topic: WDL workflow to download raw sequencing data from ENA and align using STAR two-pass methodology
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - alignment
-        - star
-        - ena
 
   - name: ww-fastq-to-cram
     subclass: WDL
@@ -72,18 +817,11 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
-    description: "Convert paired FASTQ files to unmapped CRAM format using WILDS WDL modules"
-    topic: alignment
+    topic: Convert paired FASTQ files to unmapped CRAM format using WILDS WDL modules
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - format-conversion
-        - fastq
-        - cram
-        - samtools
 
   - name: ww-imputation
     subclass: WDL
@@ -107,18 +845,11 @@ workflows:
         role: Research Associate
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0005-2936-2405
-    description: "WDL workflow for genotype imputation from low-coverage WGS data using GLIMPSE2. Processes CRAM/BAM files against a reference panel to produce imputed VCF files."
-    topic: imputation
+    topic: WDL workflow for genotype imputation from low-coverage WGS data using GLIMPSE2
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - imputation
-        - glimpse2
-        - low-coverage-wgs
-        - genotyping
 
   - name: ww-jetlag
     subclass: WDL
@@ -142,17 +873,11 @@ workflows:
         role: Research Assistant
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0009-0955-5954
-    description: "WDL pipeline to calculate sunrise/sunset times and sun time differences across an array of geographic tiles as part of the SJL model pipeline"
-    topic: geospatial
+    topic: WDL pipeline to calculate sunrise/sunset times and sun time differences across geographic tiles
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - geospatial
-        - solar-jetlag
-        - environmental-health
-        - sunrise-sunset
 
   - name: ww-leukemia
     subclass: WDL
@@ -176,18 +901,11 @@ workflows:
         role: Staff Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0001-6372-5170
-    description: "Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing with focus on leukemia analysis - Refactored with WILDS modules"
-    topic: variant-calling
+    topic: Consensus variant calling workflow for human panel/PCR-based targeted DNA sequencing for leukemia
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - variant-calling
-        - leukemia
-        - targeted-sequencing
-        - consensus-calling
 
   - name: ww-saturation
     subclass: WDL
@@ -210,18 +928,11 @@ workflows:
         email: sobrien2@fredhutch.org
         role: Post-Doctoral Research Fellow
         affiliation: Fred Hutch Cancer Center
-    description: "WDL workflow to analyze saturation mutagenesis data using BWA alignment and GATK AnalyzeSaturationMutagenesis"
-    topic: saturation-mutagenesis
+    topic: WDL workflow to analyze saturation mutagenesis data using BWA alignment and GATK
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - saturation-mutagenesis
-        - bwa
-        - gatk
-        - functional-genomics
 
   - name: ww-sra-salmon
     subclass: WDL
@@ -250,18 +961,11 @@ workflows:
         role: Staff Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0001-8220-8427
-    description: "WDL workflow to download raw sequencing data from SRA and quantify using Salmon quasi-mapping"
-    topic: rna-seq
+    topic: WDL workflow to download raw sequencing data from SRA and quantify using Salmon quasi-mapping
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - quantification
-        - salmon
-        - sra
 
   - name: ww-sra-star
     subclass: WDL
@@ -285,18 +989,11 @@ workflows:
         role: Staff Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0001-8220-8427
-    description: "WDL workflow to download raw sequencing data from SRA and align using STAR two-pass methodology"
-    topic: rna-seq
+    topic: WDL workflow to download raw sequencing data from SRA and align using STAR two-pass methodology
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - alignment
-        - star
-        - sra
 
   - name: ww-starling-batch
     subclass: WDL
@@ -310,17 +1007,11 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "Batch ensemble generation pipeline that splits a large protein FASTA into chunks and processes them in parallel using STARLING"
-    topic: protein-structure
+    topic: Batch ensemble generation pipeline splitting a protein FASTA into chunks for parallel STARLING processing
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - protein-structure
-        - ensemble-generation
-        - starling
-        - structural-biology
 
   - name: ww-star-deseq2
     subclass: WDL
@@ -343,18 +1034,12 @@ workflows:
         email: ebouvet@fredhutch.org
         role: Research Technician
         affiliation: Fred Hutch Cancer Center
-    description: "WDL workflow for RNA-seq alignment via STAR and DESeq2 differential expression analysis"
-    topic: differential-expression
+        orcid: 0009-0006-6552-2522
+    topic: WDL workflow for RNA-seq alignment via STAR and DESeq2 differential expression analysis
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - rna-seq
-        - differential-expression
-        - star
-        - deseq2
 
   - name: ww-splicing-proteomics
     subclass: WDL
@@ -368,16 +1053,8 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    description: "WDL pipeline for alternative splicing proteomics: STAR alignment, rMATS differential splicing detection, and JCAST protein sequence translation"
-    topic: proteogenomics
+    topic: WDL pipeline for alternative splicing proteomics: STAR alignment, rMATS splicing, and JCAST translation
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - proteogenomics
-        - alternative-splicing
-        - rmats
-        - jcast
-        - star
