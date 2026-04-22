@@ -43,6 +43,10 @@ task generate_ensemble {
   command <<<
     set -eo pipefail
 
+    # Use working directory for model cache to avoid filling up container root filesystem
+    TORCH_HOME="$(pwd)/.torch_cache"
+    export TORCH_HOME
+
     # Generate the structural ensemble
     starling "~{sequence}" \
       -c ~{num_conformations} \
@@ -102,6 +106,10 @@ task generate_ensemble_batch {
 
   command <<<
     set -eo pipefail
+
+    # Use working directory for model cache to avoid filling up container root filesystem
+    TORCH_HOME="$(pwd)/.torch_cache"
+    export TORCH_HOME
 
     # Generate structural ensembles for all sequences in the FASTA
     starling "~{fasta_file}" \
