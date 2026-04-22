@@ -1053,7 +1053,7 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    topic: WDL pipeline for alternative splicing proteomics: STAR alignment, rMATS splicing, and JCAST translation
+    topic: WDL pipeline for alternative splicing proteomics with STAR alignment, rMATS splicing, and JCAST translation
     enableAutoDois: true
     filters:
       branches:
