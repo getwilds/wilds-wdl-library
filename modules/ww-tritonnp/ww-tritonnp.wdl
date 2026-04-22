@@ -53,7 +53,9 @@ task triton_main {
     mkdir -p ~{results_dir}
     
     # Needed Python packages for running Triton
-    python3 -m pip install pysam numpy scipy pandas matplotlib seaborn
+    PIP_TARGET="$(pwd)/.pip_packages"
+    python3 -m pip install --target="${PIP_TARGET}" --cache-dir="$(pwd)/.pip_cache" pysam numpy scipy pandas matplotlib seaborn
+    export PYTHONPATH="${PIP_TARGET}:${PYTHONPATH:-}"
 
     # Download script
     git clone https://github.com/caalo/TritonNP.git
@@ -115,7 +117,9 @@ task combine_fms {
     # Download script
     git clone https://github.com/caalo/TritonNP.git
 
-    python3 -m pip install pandas
+    PIP_TARGET="$(pwd)/.pip_packages"
+    python3 -m pip install --target="${PIP_TARGET}" --cache-dir="$(pwd)/.pip_cache" pandas
+    export PYTHONPATH="${PIP_TARGET}:${PYTHONPATH:-}"
 
     # Run cleanup script
     python TritonNP/CombinePhasingFM.py \
