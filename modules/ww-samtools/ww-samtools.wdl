@@ -35,10 +35,21 @@ task crams_to_fastq {
   command <<<
     set -eo pipefail
 
+    # Symlink reference FASTA locally so samtools can write the .fai index
+    ln -s "~{ref}" "~{basename(ref)}"
+
+    # Symlink CRAM/BAM/SAM files locally to avoid read-only filesystem issues
+    cram_files=(~{sep=" " cram_files})
+    local_crams=""
+    for cram in "${cram_files[@]}"; do
+      ln -s "${cram}" "$(basename "${cram}")"
+      local_crams="${local_crams} $(basename "${cram}")"
+    done
+
     # Merge CRAM/BAM/SAM files if more than one, then collate and convert to FASTQ
-    samtools merge -@ ~{cpu_cores} --reference "~{ref}" -u - ~{sep=" " cram_files} | \
-    samtools collate -@ ~{cpu_cores} --reference "~{ref}" -O - | \
-    samtools fastq -@ ~{cpu_cores} --reference "~{ref}" -1 "~{name}_R1.fastq.gz" -2 "~{name}_R2.fastq.gz" -0 /dev/null -s /dev/null -
+    samtools merge -@ ~{cpu_cores} --reference "~{basename(ref)}" -u - ${local_crams} | \
+    samtools collate -@ ~{cpu_cores} --reference "~{basename(ref)}" -O - | \
+    samtools fastq -@ ~{cpu_cores} --reference "~{basename(ref)}" -1 "~{name}_R1.fastq.gz" -2 "~{name}_R2.fastq.gz" -0 /dev/null -s /dev/null -
   >>>
 
   output {
