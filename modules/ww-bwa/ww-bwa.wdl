@@ -4,12 +4,6 @@
 
 version 1.0
 
-workflow ww_bwa {
-  meta {
-    description: "Tasks for building BWA index files and aligning reads"
-  }
-}
-
 task bwa_index {
   meta {
     author: "Emma Bishop"
