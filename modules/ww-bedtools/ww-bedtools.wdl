@@ -4,12 +4,6 @@
 
 version 1.0
 
-workflow ww_bedtools {
-  meta {
-    description: "Tasks for BAM coverage analysis using BEDTools"
-  }
-}
-
 task coverage {
   meta {
     author: "Emma Bishop"
