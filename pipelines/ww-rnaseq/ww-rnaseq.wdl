@@ -127,13 +127,13 @@ workflow rnaseq {
     String sample_condition = if defined(conditions) then select_first([conditions])[idx] else tsv_rows[tsv_idx][3]
 
     # Step 1: Pre-trim FastQC
-    call fastqc_tasks.run_fastqc as pretrim_fastqc { input:
+    call fastqc_tasks.run_fastqc as step01_pretrim_fastqc { input:
         r1_fastq = sample_r1,
         r2_fastq = sample_r2
     }
 
     # Step 2: Trim Galore adapter/quality trimming
-    call trimgalore_tasks.trimgalore_paired { input:
+    call trimgalore_tasks.trimgalore_paired as step02_trimgalore { input:
         sample_name = sample_name,
         r1_fastq = sample_r1,
         r2_fastq = sample_r2,
@@ -142,93 +142,93 @@ workflow rnaseq {
     }
 
     # Step 3: Post-trim FastQC
-    call fastqc_tasks.run_fastqc as posttrim_fastqc { input:
-        r1_fastq = trimgalore_paired.r1_trimmed,
-        r2_fastq = trimgalore_paired.r2_trimmed
+    call fastqc_tasks.run_fastqc as step03_posttrim_fastqc { input:
+        r1_fastq = step02_trimgalore.r1_trimmed,
+        r2_fastq = step02_trimgalore.r2_trimmed
     }
 
     # Step 4: STAR two-pass alignment on trimmed reads
-    call star_tasks.align_two_pass { input:
+    call star_tasks.align_two_pass as step04_star_align { input:
         star_genome_tar = build_index.star_index_tar,
-        r1 = trimgalore_paired.r1_trimmed,
-        r2 = trimgalore_paired.r2_trimmed,
+        r1 = step02_trimgalore.r1_trimmed,
+        r2 = step02_trimgalore.r2_trimmed,
         name = sample_name + "." + reference_genome.name,
         cpu_cores = star_cpu,
         memory_gb = star_memory_gb
     }
 
     # Step 5: RSeQC alignment quality control
-    call rseqc_tasks.run_rseqc { input:
+    call rseqc_tasks.run_rseqc as step05_rseqc { input:
         sample_name = sample_name,
-        bam_file = align_two_pass.bam,
-        bam_index = align_two_pass.bai,
+        bam_file = step04_star_align.bam,
+        bam_index = step04_star_align.bai,
         ref_bed = gtf2bed.bed_file
     }
   }
 
   # Step 6: DESeq2 count matrix assembly and differential expression
-  call deseq2_tasks.combine_count_matrices { input:
-      gene_count_files = align_two_pass.gene_counts,
+  call deseq2_tasks.combine_count_matrices as step06_combine_counts { input:
+      gene_count_files = step04_star_align.gene_counts,
       sample_names = sample_name,
       sample_conditions = sample_condition
   }
 
-  call deseq2_tasks.run_deseq2 { input:
-      counts_matrix = combine_count_matrices.counts_matrix,
-      sample_metadata = combine_count_matrices.sample_metadata,
+  call deseq2_tasks.run_deseq2 as step07_deseq2 { input:
+      counts_matrix = step06_combine_counts.counts_matrix,
+      sample_metadata = step06_combine_counts.sample_metadata,
       reference_level = reference_level,
       contrast = contrast
   }
 
-  # Step 6b: Compile DESeq2 results with normalized counts and GTF annotations
-  call deseq2_tasks.compile_deseq2_results { input:
-      deseq2_results = run_deseq2.deseq2_results,
-      normalized_counts = run_deseq2.deseq2_normalized_counts,
+  # Step 8: Compile DESeq2 results with normalized counts and GTF annotations
+  call deseq2_tasks.compile_deseq2_results as step08_compile_results { input:
+      deseq2_results = step07_deseq2.deseq2_results,
+      normalized_counts = step07_deseq2.deseq2_normalized_counts,
       gtf_file = normalize_gtf.normalized_gtf
   }
 
-  # Step 7: MultiQC aggregation of all QC reports
-  call multiqc_tasks.run_multiqc { input:
+  # Step 9: MultiQC aggregation of all QC reports
+  call multiqc_tasks.run_multiqc as step09_multiqc { input:
       input_files = flatten([
-        flatten(pretrim_fastqc.html_reports),
-        flatten(pretrim_fastqc.zip_reports),
-        trimgalore_paired.r1_report,
-        trimgalore_paired.r2_report,
-        flatten(posttrim_fastqc.html_reports),
-        flatten(posttrim_fastqc.zip_reports),
-        align_two_pass.log_final,
-        run_rseqc.rseqc_summary
+        flatten(step01_pretrim_fastqc.html_reports),
+        flatten(step01_pretrim_fastqc.zip_reports),
+        step02_trimgalore.r1_report,
+        step02_trimgalore.r2_report,
+        flatten(step03_posttrim_fastqc.html_reports),
+        flatten(step03_posttrim_fastqc.zip_reports),
+        step04_star_align.log_final,
+        step05_rseqc.rseqc_summary
       ]),
       report_title = "RNA-seq Pipeline QC Report"
   }
 
   output {
-    Array[Array[File]] pretrim_fastqc_html = pretrim_fastqc.html_reports
-    Array[Array[File]] pretrim_fastqc_zip = pretrim_fastqc.zip_reports
-    Array[File] trimgalore_r1_trimmed = trimgalore_paired.r1_trimmed
-    Array[File] trimgalore_r2_trimmed = trimgalore_paired.r2_trimmed
-    Array[File] trimgalore_r1_report = trimgalore_paired.r1_report
-    Array[File] trimgalore_r2_report = trimgalore_paired.r2_report
-    Array[Array[File]] posttrim_fastqc_html = posttrim_fastqc.html_reports
-    Array[Array[File]] posttrim_fastqc_zip = posttrim_fastqc.zip_reports
-    Array[File] star_bam = align_two_pass.bam
-    Array[File] star_bai = align_two_pass.bai
-    Array[File] star_gene_counts = align_two_pass.gene_counts
-    Array[File] star_log_final = align_two_pass.log_final
-    Array[File] star_log_progress = align_two_pass.log_progress
-    Array[File] star_log = align_two_pass.log
-    Array[File] star_sj = align_two_pass.sj_out
-    Array[File] rseqc_qc_summary = run_rseqc.rseqc_summary
-    File combined_counts_matrix = combine_count_matrices.counts_matrix
-    File sample_metadata = combine_count_matrices.sample_metadata
-    File deseq2_all_results = run_deseq2.deseq2_results
-    File deseq2_significant_results = run_deseq2.deseq2_significant
-    File deseq2_normalized_counts = run_deseq2.deseq2_normalized_counts
-    File deseq2_pca_plot = run_deseq2.deseq2_pca_plot
-    File deseq2_volcano_plot = run_deseq2.deseq2_volcano_plot
-    File deseq2_heatmap = run_deseq2.deseq2_heatmap
-    File deseq2_compiled_results = compile_deseq2_results.compiled_results
-    File multiqc_report = run_multiqc.html_report
-    File multiqc_data = run_multiqc.data_dir
+    Array[Array[File]] pretrim_fastqc_html = step01_pretrim_fastqc.html_reports
+    Array[Array[File]] pretrim_fastqc_zip = step01_pretrim_fastqc.zip_reports
+    Array[File] trimgalore_r1_trimmed = step02_trimgalore.r1_trimmed
+    Array[File] trimgalore_r2_trimmed = step02_trimgalore.r2_trimmed
+    Array[File] trimgalore_r1_report = step02_trimgalore.r1_report
+    Array[File] trimgalore_r2_report = step02_trimgalore.r2_report
+    Array[Array[File]] posttrim_fastqc_html = step03_posttrim_fastqc.html_reports
+    Array[Array[File]] posttrim_fastqc_zip = step03_posttrim_fastqc.zip_reports
+    Array[File] star_bam = step04_star_align.bam
+    Array[File] star_bai = step04_star_align.bai
+    Array[File] star_gene_counts = step04_star_align.gene_counts
+    Array[File] star_log_final = step04_star_align.log_final
+    Array[File] star_log_progress = step04_star_align.log_progress
+    Array[File] star_log = step04_star_align.log
+    Array[File] star_sj = step04_star_align.sj_out
+    Array[File] rseqc_qc_summary = step05_rseqc.rseqc_summary
+    File combined_counts_matrix = step06_combine_counts.counts_matrix
+    File sample_metadata = step06_combine_counts.sample_metadata
+    File deseq2_all_results = step07_deseq2.deseq2_results
+    File deseq2_significant_results = step07_deseq2.deseq2_significant
+    File deseq2_normalized_counts = step07_deseq2.deseq2_normalized_counts
+    File deseq2_pca_plot = step07_deseq2.deseq2_pca_plot
+    File deseq2_volcano_plot = step07_deseq2.deseq2_volcano_plot
+    File deseq2_heatmap = step07_deseq2.deseq2_heatmap
+    File deseq2_compiled_results = step08_compile_results.compiled_results
+    File multiqc_report = step09_multiqc.html_report
+    File multiqc_data = step09_multiqc.data_dir
   }
 }
