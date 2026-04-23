@@ -17,12 +17,12 @@ task crams_to_fastq {
     topic: "genomics,transcriptomics"
     species: "any"
     operation: "data_formatting"
-    in_sample_req: "cram_files:nucleic_acid_sequence_alignment:cram|bam|sam"
-    in_sample_opt: "none"
-    in_ref_req: "ref:nucleic_acid_sequence:fasta"
-    in_ref_opt: "none"
-    out_sample: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
-    out_ref: "none"
+    input_sample_required: "cram_files:nucleic_acid_sequence_alignment:cram|bam|sam"
+    input_sample_optional: "none"
+    input_reference_required: "ref:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -76,12 +76,12 @@ task merge_bams_to_cram {
     topic: "genomics,transcriptomics"
     species: "any"
     operation: "aggregation"
-    in_sample_req: "bams_to_merge:nucleic_acid_sequence_alignment:bam"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "cram:nucleic_acid_sequence_alignment:cram,crai:data_index:crai"
-    out_ref: "none"
+    input_sample_required: "bams_to_merge:nucleic_acid_sequence_alignment:bam"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "cram:nucleic_acid_sequence_alignment:cram,crai:data_index:crai"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -130,12 +130,12 @@ task mpileup {
     topic: "genomics,transcriptomics"
     species: "any"
     operation: "quantification"
-    in_sample_req: "bamfile:nucleic_acid_sequence_alignment:bam|cram"
-    in_sample_opt: "none"
-    in_ref_req: "ref_fasta:nucleic_acid_sequence:fasta"
-    in_ref_opt: "none"
-    out_sample: "pileup:nucleic_acid_sequence_alignment:pileup"
-    out_ref: "none"
+    input_sample_required: "bamfile:nucleic_acid_sequence_alignment:bam|cram"
+    input_sample_optional: "none"
+    input_reference_required: "ref_fasta:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "pileup:nucleic_acid_sequence_alignment:pileup"
+    output_reference: "none"
   }
 
   parameter_meta {

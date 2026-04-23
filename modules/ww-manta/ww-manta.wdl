@@ -17,12 +17,12 @@ task manta_call {
     topic: "genomics,transcriptomics,structural_variation"
     species: "eukaryote"
     operation: "variant_calling"
-    in_sample_req: "aligned_bam:nucleic_acid_sequence_alignment:bam,aligned_bam_index:data_index:bai"
-    in_sample_opt: "call_regions_bed:annotation_track:bed,call_regions_index:data_index:tbi"
-    in_ref_req: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai"
-    in_ref_opt: "none"
-    out_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi"
-    out_ref: "none"
+    input_sample_required: "aligned_bam:nucleic_acid_sequence_alignment:bam,aligned_bam_index:data_index:bai"
+    input_sample_optional: "call_regions_bed:annotation_track:bed,call_regions_index:data_index:tbi"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {

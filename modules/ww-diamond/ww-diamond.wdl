@@ -17,12 +17,12 @@ task make_database {
     topic: "proteomics,mapping"
     species: "any"
     operation: "indexing"
-    in_sample_req: "none"
-    in_sample_opt: "none"
-    in_ref_req: "fasta:protein_sequence:fasta"
-    in_ref_opt: "none"
-    out_sample: "none"
-    out_ref: "diamond_db:data_index:dmnd"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "fasta:protein_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "diamond_db:data_index:dmnd"
   }
 
   parameter_meta {
@@ -68,12 +68,12 @@ task diamond_blastp {
     topic: "proteomics,mapping"
     species: "any"
     operation: "sequence_alignment"
-    in_sample_req: "query:protein_sequence:fasta"
-    in_sample_opt: "none"
-    in_ref_req: "diamond_db:data_index:dmnda"
-    in_ref_opt: "none"
-    out_sample: "none"
-    out_ref: "aln:sequence_alignment:tsv"
+    input_sample_required: "query:protein_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "diamond_db:data_index:dmnda"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "aln:sequence_alignment:tsv"
   }
 
   parameter_meta {

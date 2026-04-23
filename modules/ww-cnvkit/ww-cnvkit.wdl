@@ -17,12 +17,12 @@ task create_reference {
     topic: "genomics,copy_number_variation"
     species: "eukaryote"
     operation: "indexing"
-    in_sample_req: "bam_files:nucleic_acid_sequence_alignment:bam,bam_indices:data_index:bai"
-    in_sample_opt: "target_bed:annotation_track:bed,antitarget_bed:annotation_track:bed"
-    in_ref_req: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai"
-    in_ref_opt: "none"
-    out_sample: "none"
-    out_ref: "reference_cnn:data_index:cnn"
+    input_sample_required: "bam_files:nucleic_acid_sequence_alignment:bam,bam_indices:data_index:bai"
+    input_sample_optional: "target_bed:annotation_track:bed,antitarget_bed:annotation_track:bed"
+    input_reference_required: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "reference_cnn:data_index:cnn"
   }
 
   parameter_meta {
@@ -124,12 +124,12 @@ task run_cnvkit {
     topic: "genomics,copy_number_variation"
     species: "eukaryote"
     operation: "copy_number_variation_detection"
-    in_sample_req: "tumor_bam:nucleic_acid_sequence_alignment:bam,tumor_bai:data_index:bai"
-    in_sample_opt: "normal_bam:nucleic_acid_sequence_alignment:bam,normal_bai:data_index:bai,target_bed:annotation_track:bed"
-    in_ref_req: "reference_cnn:data_index:cnn"
-    in_ref_opt: "none"
-    out_sample: "cnv_calls:sequence_variations:cns,cnv_segments:sequence_variations:cnr,cnv_plot:plot:pdf"
-    out_ref: "none"
+    input_sample_required: "tumor_bam:nucleic_acid_sequence_alignment:bam,tumor_bai:data_index:bai"
+    input_sample_optional: "normal_bam:nucleic_acid_sequence_alignment:bam,normal_bai:data_index:bai,target_bed:annotation_track:bed"
+    input_reference_required: "reference_cnn:data_index:cnn"
+    input_reference_optional: "none"
+    output_sample: "cnv_calls:sequence_variations:cns,cnv_segments:sequence_variations:cnr,cnv_plot:plot:pdf"
+    output_reference: "none"
   }
 
   parameter_meta {

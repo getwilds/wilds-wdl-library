@@ -18,12 +18,12 @@ task run_shapemapper {
     topic: "transcriptomics,nucleic_acid_structure_analysis"
     species: "any"
     operation: "nucleic_acid_structure_analysis"
-    in_sample_req: "target_fa:rna_sequence:fasta,modified_r1:rna_sequence:fastq,modified_r2:rna_sequence:fastq,untreated_r1:rna_sequence:fastq,untreated_r2:rna_sequence:fastq"
-    in_sample_opt: "primers_fa:pcr_primers:fasta"
-    in_ref_req: "ref_fasta:nucleic_acid_sequence:fasta"
-    in_ref_opt: "none"
-    out_sample: "output_tar:nucleic_acid_property:tar_format,log_file:report:textual_format"
-    out_ref: "none"
+    input_sample_required: "target_fa:rna_sequence:fasta,modified_r1:rna_sequence:fastq,modified_r2:rna_sequence:fastq,untreated_r1:rna_sequence:fastq,untreated_r2:rna_sequence:fastq"
+    input_sample_optional: "primers_fa:pcr_primers:fasta"
+    input_reference_required: "ref_fasta:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "output_tar:nucleic_acid_property:tar_format,log_file:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {

@@ -16,12 +16,12 @@ task annotsv_annotate {
     topic: "genomics,structural_variation"
     species: "human"
     operation: "annotation"
-    in_sample_req: "raw_vcf:sequence_variations:vcf"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "annotated_tsv:sequence_features:tsv"
-    out_ref: "none"
+    input_sample_required: "raw_vcf:sequence_variations:vcf"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "annotated_tsv:sequence_features:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {

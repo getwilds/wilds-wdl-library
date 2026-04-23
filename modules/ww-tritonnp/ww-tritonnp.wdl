@@ -15,12 +15,12 @@ task triton_main {
     topic: "epigenomics,dna_packaging"
     species: "human"
     operation: "statistical_calculation"
-    in_sample_req: "bam_path:nucleic_acid_sequence_alignment:bam,bam_index_path:data_index:bai,annotation:annotation_track:bed,plot_list:gene_name:textual_format"
-    in_sample_opt: "none"
-    in_ref_req: "bias_path:sequence_report:textual_format,reference_genome:nucleic_acid_sequence:fasta,reference_genome_index:data_index:fai"
-    in_ref_opt: "none"
-    out_sample: "fm_file:sequence_features:tsv"
-    out_ref: "none"
+    input_sample_required: "bam_path:nucleic_acid_sequence_alignment:bam,bam_index_path:data_index:bai,annotation:annotation_track:bed,plot_list:gene_name:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "bias_path:sequence_report:textual_format,reference_genome:nucleic_acid_sequence:fasta,reference_genome_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "fm_file:sequence_features:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -104,12 +104,12 @@ task combine_fms {
     topic: "epigenomics,dna_packaging"
     species: "human"
     operation: "aggregation"
-    in_sample_req: "fm_files:sequence_features:tsv"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "final:sequence_features:tsv"
-    out_ref: "none"
+    input_sample_required: "fm_files:sequence_features:tsv"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "final:sequence_features:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {

@@ -17,12 +17,12 @@ task glimpse2_chunk {
     topic: "genomics,sequencing"
     species: "any"
     operation: "splitting"
-    in_sample_req: "reference_vcf:sequence_variations:vcf|bcf,reference_vcf_index:data_index:tbi|csi"
-    in_sample_opt: "none"
-    in_ref_req: "genetic_map:sequence_coordinates:textual_format"
-    in_ref_opt: "none"
-    out_sample: "chunks_file:sequence_coordinates:textual_format"
-    out_ref: "none"
+    input_sample_required: "reference_vcf:sequence_variations:vcf|bcf,reference_vcf_index:data_index:tbi|csi"
+    input_sample_optional: "none"
+    input_reference_required: "genetic_map:sequence_coordinates:textual_format"
+    input_reference_optional: "none"
+    output_sample: "chunks_file:sequence_coordinates:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -93,12 +93,12 @@ task glimpse2_split_reference {
     topic: "genomics,mapping,sequencing"
     species: "any"
     operation: "splitting,indexing"
-    in_sample_req: "none"
-    in_sample_opt: "none"
-    in_ref_req: "reference_vcf:sequence_variations:vcf|bcf,reference_vcf_index:data_index:tbi|csi,genetic_map:sequence_coordinates:textual_format"
-    in_ref_opt: "none"
-    out_sample: "none"
-    out_ref: "reference_chunk:sequence_coordinates:binary_format"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "reference_vcf:sequence_variations:vcf|bcf,reference_vcf_index:data_index:tbi|csi,genetic_map:sequence_coordinates:textual_format"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "reference_chunk:sequence_coordinates:binary_format"
   }
 
   parameter_meta {
@@ -168,12 +168,12 @@ task glimpse2_phase {
     topic: "genomics,sequencing"
     species: "any"
     operation: "statistical_calculation"
-    in_sample_req: "input_vcf:sequence_variations:vcf|bcf,input_vcf_index:data_index:tbi|csi"
-    in_sample_opt: "none"
-    in_ref_req: "reference_chunk:sequence_coordinates:binary_format"
-    in_ref_opt: "none"
-    out_sample: "imputed_chunk:sequence_variations:bcf,imputed_chunk_index:data_index:csi"
-    out_ref: "none"
+    input_sample_required: "input_vcf:sequence_variations:vcf|bcf,input_vcf_index:data_index:tbi|csi"
+    input_sample_optional: "none"
+    input_reference_required: "reference_chunk:sequence_coordinates:binary_format"
+    input_reference_optional: "none"
+    output_sample: "imputed_chunk:sequence_variations:bcf,imputed_chunk_index:data_index:csi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -248,12 +248,12 @@ task glimpse2_phase_cram {
     topic: "genomics,sequencing"
     species: "any"
     operation: "statistical_calculation"
-    in_sample_req: "input_bams:nucleic_acid_sequence_alignment:bam|cram,input_bam_indices:data_index:bai|crai"
-    in_sample_opt: "none"
-    in_ref_req: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai,reference_chunk:sequence_coordinates:binary_format"
-    in_ref_opt: "none"
-    out_sample: "imputed_chunk:sequence_variations:bcf,imputed_chunk_index:data_index:csi"
-    out_ref: "none"
+    input_sample_required: "input_bams:nucleic_acid_sequence_alignment:bam|cram,input_bam_indices:data_index:bai|crai"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai,reference_chunk:sequence_coordinates:binary_format"
+    input_reference_optional: "none"
+    output_sample: "imputed_chunk:sequence_variations:bcf,imputed_chunk_index:data_index:csi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -346,12 +346,12 @@ task glimpse2_ligate {
     topic: "genomics,sequencing"
     species: "any"
     operation: "aggregation"
-    in_sample_req: "imputed_chunks:sequence_variations:bcf,imputed_chunks_indices:data_index:csi"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "ligated_vcf:sequence_variations:vcf|bcf,ligated_vcf_index:data_index:tbi|csi"
-    out_ref: "none"
+    input_sample_required: "imputed_chunks:sequence_variations:bcf,imputed_chunks_indices:data_index:csi"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "ligated_vcf:sequence_variations:vcf|bcf,ligated_vcf_index:data_index:tbi|csi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -429,12 +429,12 @@ task glimpse2_concordance {
     topic: "genomics,sequencing,data_quality_management"
     species: "any"
     operation: "statistical_calculation"
-    in_sample_req: "imputed_vcf:sequence_variations:bcf,imputed_vcf_index:data_index:csi,truth_vcf:sequence_variations:bcf,truth_vcf_index:data_index:csi"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "allele_frequencies:sequence_variations:vcf"
-    out_sample: "concordance_output:report:textual_format"
-    out_ref: "none"
+    input_sample_required: "imputed_vcf:sequence_variations:bcf,imputed_vcf_index:data_index:csi,truth_vcf:sequence_variations:bcf,truth_vcf_index:data_index:csi"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "allele_frequencies:sequence_variations:vcf"
+    output_sample: "concordance_output:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -510,12 +510,12 @@ task parse_chunks_file {
     topic: "genomics,sequencing"
     species: "any"
     operation: "mapping,splitting"
-    in_sample_req: "chunks_file:sequence_coordinates:textual_format"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "none"
-    out_ref: "none"
+    input_sample_required: "chunks_file:sequence_coordinates:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "none"
   }
 
   parameter_meta {

@@ -16,12 +16,12 @@ task bowtie2_build {
     topic: "genomics,transcriptomics,mapping"
     species: "any"
     operation: "indexing"
-    in_sample_req: "none"
-    in_sample_opt: "none"
-    in_ref_req: "reference_fasta:nucleic_acid_sequence:fasta"
-    in_ref_opt: "none"
-    out_sample: "none"
-    out_ref: "bowtie2_index_tar:data_index:tar_format"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "bowtie2_index_tar:data_index:tar_format"
   }
 
   parameter_meta {
@@ -79,12 +79,12 @@ task bowtie2_align {
     topic: "genomics,transcriptomics,mapping"
     species: "any"
     operation: "sequence_alignment"
-    in_sample_req: "reads:nucleic_acid_sequence:fastq"
-    in_sample_opt: "mates:nucleic_acid_sequence:fastq"
-    in_ref_req: "bowtie2_index_tar:data_index:tar_format"
-    in_ref_opt: "none"
-    out_sample: "sorted_bam:nucleic_acid_sequence_alignment:bam,sorted_bai:data_index:bai"
-    out_ref: "none"
+    input_sample_required: "reads:nucleic_acid_sequence:fastq"
+    input_sample_optional: "mates:nucleic_acid_sequence:fastq"
+    input_reference_required: "bowtie2_index_tar:data_index:tar_format"
+    input_reference_optional: "none"
+    output_sample: "sorted_bam:nucleic_acid_sequence_alignment:bam,sorted_bai:data_index:bai"
+    output_reference: "none"
   }
 
   parameter_meta {
