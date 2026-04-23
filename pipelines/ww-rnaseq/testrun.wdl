@@ -4,13 +4,6 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-rnaseq/ww-rnaseq.wdl" as rnaseq_workflow
 
-struct SampleInfo {
-    String name
-    File r1
-    File r2
-    String condition
-}
-
 struct RefGenome {
     String name
     File fasta
@@ -33,35 +26,6 @@ workflow rnaseq_example {
   call ww_sra.fastqdump as treated1 { input: sra_id = "SRR1039508", ncpu = 2, max_reads = 250000 }
   call ww_sra.fastqdump as treated2 { input: sra_id = "SRR1039512", ncpu = 2, max_reads = 250000 }
 
-  # Construct SampleInfo structs from SRA downloads
-  SampleInfo sample1 = {
-    "name": "untreated_1",
-    "r1": untreated1.r1_end,
-    "r2": untreated1.r2_end,
-    "condition": "untreated"
-  }
-
-  SampleInfo sample2 = {
-    "name": "untreated_2",
-    "r1": untreated2.r1_end,
-    "r2": untreated2.r2_end,
-    "condition": "untreated"
-  }
-
-  SampleInfo sample3 = {
-    "name": "treated_1",
-    "r1": treated1.r1_end,
-    "r2": treated1.r2_end,
-    "condition": "treated"
-  }
-
-  SampleInfo sample4 = {
-    "name": "treated_2",
-    "r1": treated2.r1_end,
-    "r2": treated2.r2_end,
-    "condition": "treated"
-  }
-
   # Construct RefGenome struct
   RefGenome reference = {
     "name": "chr1_50M",
@@ -72,7 +36,10 @@ workflow rnaseq_example {
   # Run the full RNA-seq pipeline with reduced resources for testing
   call rnaseq_workflow.rnaseq {
     input:
-      samples = [sample1, sample2, sample3, sample4],
+      sample_names = ["untreated_1", "untreated_2", "treated_1", "treated_2"],
+      r1_fastqs = [untreated1.r1_end, untreated2.r1_end, treated1.r1_end, treated2.r1_end],
+      r2_fastqs = [untreated1.r2_end, untreated2.r2_end, treated1.r2_end, treated2.r2_end],
+      conditions = ["untreated", "untreated", "treated", "treated"],
       reference_genome = reference,
       reference_level = "untreated",
       contrast = "condition,treated,untreated",

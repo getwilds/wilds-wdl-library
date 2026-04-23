@@ -9,13 +9,6 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-multiqc/ww-multiqc.wdl" as multiqc_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gffread/ww-gffread.wdl" as gffread_tasks
 
-struct SampleInfo {
-    String name
-    File r1
-    File r2
-    String condition
-}
-
 struct RefGenome {
     String name
     File fasta
@@ -59,7 +52,11 @@ workflow rnaseq {
   }
 
   parameter_meta {
-    samples: "List of sample objects, each containing name, r1/r2 fastq files, and condition information"
+    samples_tsv: "Tab-separated file with columns: name, r1, r2, condition (header row required). Alternative to providing separate arrays."
+    sample_names: "Array of sample names (use with r1_fastqs, r2_fastqs, conditions as alternative to samples_tsv)"
+    r1_fastqs: "Array of R1 FASTQ file paths, one per sample"
+    r2_fastqs: "Array of R2 FASTQ file paths, one per sample"
+    conditions: "Array of condition labels for each sample (e.g., 'control', 'treatment')"
     reference_genome: "Reference genome object containing name, fasta, and gtf files"
     reference_level: "Reference level for DESeq2 contrast (e.g., 'control' when comparing treatment vs. control)"
     contrast: "DESeq2 contrast string in the format 'condition,treatment,control'"
@@ -71,7 +68,13 @@ workflow rnaseq {
   }
 
   input {
-    Array[SampleInfo] samples
+    # Option 1: Provide a TSV file with columns name, r1, r2, condition
+    File? samples_tsv
+    # Option 2: Provide separate arrays directly
+    Array[String]? sample_names
+    Array[File]? r1_fastqs
+    Array[File]? r2_fastqs
+    Array[String]? conditions
     RefGenome reference_genome
     String reference_level = ""
     String contrast = ""
@@ -81,6 +84,15 @@ workflow rnaseq {
     Int star_memory_gb = 64
     Int genome_sa_index_nbases = 14
   }
+
+  # Parse sample information from TSV if provided (skip header row).
+  # TSV format: tab-separated with header row (name, r1, r2, condition).
+  Array[Array[String]] tsv_rows = if defined(samples_tsv) then read_tsv(select_first([samples_tsv])) else []
+  Array[Array[String]] tsv_data = if length(tsv_rows) > 1 then tsv_rows[1:] else []
+
+  # Determine number of samples from whichever input method was used
+  Int n_samples = if defined(sample_names) then length(select_first([sample_names])) else length(tsv_data)
+  Array[Int] sample_indices = range(n_samples)
 
   # Normalize GTF to ensure exon features exist for every transcript.
   # This is critical for bacterial NCBI GTFs which only have CDS rows —
@@ -104,21 +116,23 @@ workflow rnaseq {
       gtf_file = normalize_gtf.normalized_gtf
   }
 
-  scatter (sample in samples) {
-    String sample_name = sample.name
-    String sample_condition = sample.condition
+  scatter (idx in sample_indices) {
+    String sample_name = if defined(sample_names) then select_first([sample_names])[idx] else tsv_data[idx][0]
+    File sample_r1 = if defined(r1_fastqs) then select_first([r1_fastqs])[idx] else tsv_data[idx][1]
+    File sample_r2 = if defined(r2_fastqs) then select_first([r2_fastqs])[idx] else tsv_data[idx][2]
+    String sample_condition = if defined(conditions) then select_first([conditions])[idx] else tsv_data[idx][3]
 
     # Step 1: Pre-trim FastQC
     call fastqc_tasks.run_fastqc as pretrim_fastqc { input:
-        r1_fastq = sample.r1,
-        r2_fastq = sample.r2
+        r1_fastq = sample_r1,
+        r2_fastq = sample_r2
     }
 
     # Step 2: Trim Galore adapter/quality trimming
     call trimgalore_tasks.trimgalore_paired { input:
-        sample_name = sample.name,
-        r1_fastq = sample.r1,
-        r2_fastq = sample.r2,
+        sample_name = sample_name,
+        r1_fastq = sample_r1,
+        r2_fastq = sample_r2,
         quality = trim_quality,
         length = trim_length
     }
@@ -134,14 +148,14 @@ workflow rnaseq {
         star_genome_tar = build_index.star_index_tar,
         r1 = trimgalore_paired.r1_trimmed,
         r2 = trimgalore_paired.r2_trimmed,
-        name = sample.name + "." + reference_genome.name,
+        name = sample_name + "." + reference_genome.name,
         cpu_cores = star_cpu,
         memory_gb = star_memory_gb
     }
 
     # Step 5: RSeQC alignment quality control
     call rseqc_tasks.run_rseqc { input:
-        sample_name = sample.name,
+        sample_name = sample_name,
         bam_file = align_two_pass.bam,
         bam_index = align_two_pass.bai,
         ref_bed = gtf2bed.bed_file

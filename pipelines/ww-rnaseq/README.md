@@ -85,24 +85,49 @@ This pipeline imports and uses:
 
 ### Input Configuration
 
-Create an inputs JSON file with your samples and reference genome:
+Sample information can be provided either as a **TSV file** (recommended) or as **separate arrays** in the inputs JSON.
+
+#### Option 1: TSV File (Recommended)
+
+Create a tab-separated file (`samples.tsv`) with a header row and one row per sample:
+
+```tsv
+name	r1	r2	condition
+sample1	/path/to/sample1_R1.fastq.gz	/path/to/sample1_R2.fastq.gz	control
+sample2	/path/to/sample2_R1.fastq.gz	/path/to/sample2_R2.fastq.gz	control
+sample3	/path/to/sample3_R1.fastq.gz	/path/to/sample3_R2.fastq.gz	treatment
+sample4	/path/to/sample4_R1.fastq.gz	/path/to/sample4_R2.fastq.gz	treatment
+```
+
+Then reference it in your inputs JSON:
 
 ```json
 {
-  "rnaseq.samples": [
-    {
-      "name": "sample1",
-      "r1": "/path/to/sample1_R1.fastq.gz",
-      "r2": "/path/to/sample1_R2.fastq.gz",
-      "condition": "control"
-    },
-    {
-      "name": "sample2",
-      "r1": "/path/to/sample2_R1.fastq.gz",
-      "r2": "/path/to/sample2_R2.fastq.gz",
-      "condition": "treatment"
-    }
-  ],
+  "rnaseq.samples_tsv": "/path/to/samples.tsv",
+  "rnaseq.reference_genome": {
+    "name": "hg38",
+    "fasta": "/path/to/genome.fasta",
+    "gtf": "/path/to/annotation.gtf"
+  },
+  "rnaseq.reference_level": "control",
+  "rnaseq.contrast": "condition,treatment,control",
+  "rnaseq.star_cpu": 8,
+  "rnaseq.star_memory_gb": 64
+}
+```
+
+An example `samples.tsv` template is included in this directory.
+
+#### Option 2: Separate Arrays
+
+Alternatively, provide sample information as parallel arrays directly in the inputs JSON. This approach is primarily used by the `testrun.wdl` test workflow, where constructing a TSV file within WDL itself is not straightforward.
+
+```json
+{
+  "rnaseq.sample_names": ["sample1", "sample2", "sample3", "sample4"],
+  "rnaseq.r1_fastqs": ["/path/to/sample1_R1.fastq.gz", "/path/to/sample2_R1.fastq.gz", "/path/to/sample3_R1.fastq.gz", "/path/to/sample4_R1.fastq.gz"],
+  "rnaseq.r2_fastqs": ["/path/to/sample1_R2.fastq.gz", "/path/to/sample2_R2.fastq.gz", "/path/to/sample3_R2.fastq.gz", "/path/to/sample4_R2.fastq.gz"],
+  "rnaseq.conditions": ["control", "control", "treatment", "treatment"],
   "rnaseq.reference_genome": {
     "name": "hg38",
     "fasta": "/path/to/genome.fasta",
@@ -140,7 +165,11 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 
 | Parameter | Description | Type | Required? | Default |
 |-----------|-------------|------|-----------|---------|
-| `samples` | List of SampleInfo objects with paired FASTQ files and condition labels | Array[SampleInfo] | Yes | - |
+| `samples_tsv` | TSV file with columns: name, r1, r2, condition (header required) | File | No* | - |
+| `sample_names` | Array of sample names | Array[String] | No* | - |
+| `r1_fastqs` | Array of R1 FASTQ file paths | Array[File] | No* | - |
+| `r2_fastqs` | Array of R2 FASTQ file paths | Array[File] | No* | - |
+| `conditions` | Array of condition labels per sample | Array[String] | No* | - |
 | `reference_genome` | Reference genome information (name, fasta, gtf) | RefGenome | Yes | - |
 | `reference_level` | Reference level for DESeq2 contrast (e.g., 'control') | String | No | "" |
 | `contrast` | DESeq2 contrast string (e.g., 'condition,treatment,control') | String | No | "" |
@@ -150,16 +179,7 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `star_memory_gb` | Memory allocation in GB for STAR alignment tasks | Int | No | 64 |
 | `genome_sa_index_nbases` | STAR SA pre-indexing string length (scales with genome size) | Int | No | 14 |
 
-### SampleInfo Structure
-
-```json
-{
-  "name": "sample_name",
-  "r1": "/path/to/R1.fastq.gz",
-  "r2": "/path/to/R2.fastq.gz",
-  "condition": "control_or_treatment"
-}
-```
+*Provide either `samples_tsv` OR all four separate arrays (`sample_names`, `r1_fastqs`, `r2_fastqs`, `conditions`).
 
 ### RefGenome Structure
 
