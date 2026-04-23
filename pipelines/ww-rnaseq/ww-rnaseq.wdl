@@ -118,11 +118,12 @@ workflow rnaseq {
   }
 
   scatter (idx in sample_indices) {
-    # Resolve sample fields: +1 offset on tsv_rows skips the header row
-    String sample_name = if defined(sample_names) then select_first([sample_names])[idx] else tsv_rows[idx + 1][0]
-    File sample_r1 = if defined(r1_fastqs) then select_first([r1_fastqs])[idx] else tsv_rows[idx + 1][1]
-    File sample_r2 = if defined(r2_fastqs) then select_first([r2_fastqs])[idx] else tsv_rows[idx + 1][2]
-    String sample_condition = if defined(conditions) then select_first([conditions])[idx] else tsv_rows[idx + 1][3]
+    # Offset index by 1 to skip the TSV header row
+    Int tsv_idx = idx + 1
+    String sample_name = if defined(sample_names) then select_first([sample_names])[idx] else tsv_rows[tsv_idx][0]
+    File sample_r1 = if defined(r1_fastqs) then select_first([r1_fastqs])[idx] else tsv_rows[tsv_idx][1]
+    File sample_r2 = if defined(r2_fastqs) then select_first([r2_fastqs])[idx] else tsv_rows[tsv_idx][2]
+    String sample_condition = if defined(conditions) then select_first([conditions])[idx] else tsv_rows[tsv_idx][3]
 
     # Step 1: Pre-trim FastQC
     call fastqc_tasks.run_fastqc as pretrim_fastqc { input:
