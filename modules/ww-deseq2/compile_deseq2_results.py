@@ -63,9 +63,14 @@ def parse_gtf_annotations(gtf_path):
             }
             records.append(record)
 
+    if not records:
+        return pd.DataFrame(columns=["gene_id"])
+
     annotations = pd.DataFrame(records)
-    # Remove columns that are entirely empty
-    annotations = annotations.dropna(axis=1, how="all")
+    # Remove columns that are entirely empty, but always keep gene_id
+    keep_cols = [c for c in annotations.columns
+                 if c == "gene_id" or annotations[c].notna().any()]
+    annotations = annotations[keep_cols]
     # Deduplicate by gene_id
     annotations = annotations.drop_duplicates(subset="gene_id")
     return annotations
@@ -95,17 +100,16 @@ def main():
     compiled = pd.merge(
         results, counts, left_on=gene_col, right_on="gene_id", how="left"
     )
-    # Drop duplicate gene_id column if merge created one
-    if "gene_id" in compiled.columns and gene_col != "gene_id":
-        compiled = compiled.drop(columns=["gene_id"])
+    # Standardize the gene identifier column to 'gene_id'
+    if gene_col != "gene_id":
+        compiled = compiled.rename(columns={gene_col: "gene_id"})
+    # Drop any duplicate gene_id columns from the counts side
+    compiled = compiled.loc[:, ~compiled.columns.duplicated()]
 
     # Join annotations
     compiled = pd.merge(
-        annotations, compiled, left_on="gene_id", right_on=gene_col, how="right"
+        annotations, compiled, on="gene_id", how="right"
     )
-    # Drop duplicate gene column if merge created one
-    if gene_col in compiled.columns and gene_col != "gene_id":
-        compiled = compiled.drop(columns=[gene_col])
 
     print(f"Writing compiled results ({len(compiled)} genes)...")
     compiled.to_csv(args.output, index=False)
