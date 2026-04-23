@@ -44,8 +44,8 @@ task combine_count_matrices {
 
     pip install pandas==2.2.3
 
-    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/combine_star_counts.py" \
-      -O combine_star_counts.py
+    curl -so combine_star_counts.py \
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/combine_star_counts.py"
 
     python combine_star_counts.py \
       --input ~{sep=" " gene_count_files} \
@@ -106,8 +106,8 @@ task run_deseq2 {
   command <<<
     set -eo pipefail
 
-    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/deseq2_analysis.R" \
-      -O deseq2_analysis.R
+    curl -so deseq2_analysis.R \
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/deseq2_analysis.R"
 
     Rscript deseq2_analysis.R \
       --counts_file="~{counts_matrix}" \
@@ -168,8 +168,8 @@ task compile_deseq2_results {
 
     pip install pandas==2.2.3
 
-    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/compile_deseq2_results.py" \
-      -O compile_deseq2_results.py
+    curl -so compile_deseq2_results.py \
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/compile_deseq2_results.py"
 
     python compile_deseq2_results.py \
       --results "~{deseq2_results}" \
