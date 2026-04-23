@@ -18,12 +18,12 @@ task somatic {
     topic: "genomics,dna_polymorphism"
     species: "eukaryote"
     operation: "variant_calling,indel_detection"
-    in_sample_req: "normal_pileup:nucleic_acid_sequence_alignment:pileup,tumor_pileup:nucleic_acid_sequence_alignment:pileup"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "somatic_snvs_vcf:sequence_variations:vcf,somatic_indels_vcf:sequence_variations:vcf"
-    out_ref: "none"
+    input_sample_required: "normal_pileup:nucleic_acid_sequence_alignment:pileup,tumor_pileup:nucleic_acid_sequence_alignment:pileup"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "somatic_snvs_vcf:sequence_variations:vcf,somatic_indels_vcf:sequence_variations:vcf"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -77,12 +77,12 @@ task mpileup2cns {
     topic: "genomics,dna_polymorphism"
     species: "eukaryote"
     operation: "variant_calling,indel_detection"
-    in_sample_req: "pileup:nucleic_acid_sequence_alignment:pileup"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "vcf:sequence_variations:vcf"
-    out_ref: "none"
+    input_sample_required: "pileup:nucleic_acid_sequence_alignment:pileup"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf"
+    output_reference: "none"
   }
 
   parameter_meta {

@@ -20,12 +20,12 @@ task run_multiqc {
     topic: "any,data_quality_management"
     species: "any"
     operation: "quality_control"
-    in_sample_req: "input_files:quality_control_report:any"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "html_report:quality_control_report:html,data_dir:quality_control_report:zip_format"
-    out_ref: "none"
+    input_sample_required: "input_files:quality_control_report:any"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "html_report:quality_control_report:html,data_dir:quality_control_report:zip_format"
+    output_reference: "none"
   }
 
   parameter_meta {

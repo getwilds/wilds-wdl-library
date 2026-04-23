@@ -19,12 +19,12 @@ task download_files {
     topic: "any"
     species: "any"
     operation: "data_retrieval"
-    in_sample_req: "none"
-    in_sample_opt: "accessions_file:accession:textual_format"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "downloaded_files:nucleic_acid_sequence:fastq,download_summary:report:textual_format"
-    out_ref: "none"
+    input_sample_required: "none"
+    input_sample_optional: "accessions_file:accession:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "downloaded_files:nucleic_acid_sequence:fastq,download_summary:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -134,12 +134,12 @@ task download_by_query {
     topic: "any"
     species: "any"
     operation: "data_retrieval"
-    in_sample_req: "none"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "downloaded_files:nucleic_acid_sequence:fastq,download_log:report:textual_format,download_summary:report:textual_format"
-    out_ref: "none"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "downloaded_files:nucleic_acid_sequence:fastq,download_log:report:textual_format,download_summary:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -224,12 +224,12 @@ task extract_fastq_pairs {
     topic: "any"
     species: "any"
     operation: "file_handling"
-    in_sample_req: "downloaded_files:nucleic_acid_sequence:fastq"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "r1_files:nucleic_acid_sequence:fastq,r2_files:nucleic_acid_sequence:fastq"
-    out_ref: "none"
+    input_sample_required: "downloaded_files:nucleic_acid_sequence:fastq"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "r1_files:nucleic_acid_sequence:fastq,r2_files:nucleic_acid_sequence:fastq"
+    output_reference: "none"
   }
 
   parameter_meta {

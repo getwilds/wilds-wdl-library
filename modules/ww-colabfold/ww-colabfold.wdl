@@ -19,12 +19,12 @@ task download_weights {
     topic: "proteomics,protein_structure_analysis"
     species: "any"
     operation: "data_retrieval"
-    in_sample_req: "none"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "none"
-    out_ref: "weights_tarball:data_index:tar_format"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "weights_tarball:data_index:tar_format"
   }
 
   parameter_meta {
@@ -79,12 +79,12 @@ task colabfold_predict {
     topic: "proteomics,protein_structure_analysis"
     species: "any"
     operation: "protein_structure_prediction"
-    in_sample_req: "fasta_file:protein_sequence:fasta"
-    in_sample_opt: "none"
-    in_ref_req: "weights_tarball:data_index:tar_format"
-    in_ref_opt: "none"
-    out_sample: "results_tarball:protein_structure:tar_format"
-    out_ref: "none"
+    input_sample_required: "fasta_file:protein_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "weights_tarball:data_index:tar_format"
+    input_reference_optional: "none"
+    output_sample: "results_tarball:protein_structure:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {

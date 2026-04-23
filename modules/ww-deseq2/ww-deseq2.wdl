@@ -18,12 +18,12 @@ task combine_count_matrices {
     topic: "transcriptomics,gene_expression"
     species: "any"
     operation: "aggregation"
-    in_sample_req: "gene_count_files:gene_expression_matrix:tsv"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "counts_matrix:gene_expression_matrix:matrix,sample_metadata:report:textual_format"
-    out_ref: "none"
+    input_sample_required: "gene_count_files:gene_expression_matrix:tsv"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "counts_matrix:gene_expression_matrix:matrix,sample_metadata:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -88,12 +88,12 @@ task run_deseq2 {
     topic: "transcriptomics,gene_expression"
     species: "any"
     operation: "statistical_calculation"
-    in_sample_req: "counts_matrix:gene_expression_matrix:matrix,sample_metadata:report:textual_format"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "deseq2_results:report:csv,deseq2_significant:report:csv,deseq2_normalized_counts:report:csv,deseq2_pca_plot:plot:pdf,deseq2_volcano_plot:plot:pdf,deseq2_heatmap:plot:pdf"
-    out_ref: "none"
+    input_sample_required: "counts_matrix:gene_expression_matrix:matrix,sample_metadata:report:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "deseq2_results:report:csv,deseq2_significant:report:csv,deseq2_normalized_counts:report:csv,deseq2_pca_plot:plot:pdf,deseq2_volcano_plot:plot:pdf,deseq2_heatmap:plot:pdf"
+    output_reference: "none"
   }
 
   parameter_meta {

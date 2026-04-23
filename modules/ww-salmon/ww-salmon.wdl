@@ -17,12 +17,12 @@ task build_index {
     topic: "transcriptomics,mapping,gene_expression"
     species: "any"
     operation: "indexing"
-    in_sample_req: "none"
-    in_sample_opt: "none"
-    in_ref_req: "transcriptome_fasta:rna_sequence:fasta"
-    in_ref_opt: "none"
-    out_sample: "none"
-    out_ref: "salmon_index:data_index:tar_format"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "transcriptome_fasta:rna_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "salmon_index:data_index:tar_format"
   }
 
   parameter_meta {
@@ -84,12 +84,12 @@ task quantify {
     topic: "transcriptomics,gene_expression"
     species: "any"
     operation: "rna_seq_quantification"
-    in_sample_req: "fastq_r1:rna_sequence:fastq"
-    in_sample_opt: "fastq_r2:rna_sequence:fastq"
-    in_ref_req: "salmon_index_dir:data_index:tar_format"
-    in_ref_opt: "none"
-    out_sample: "salmon_quant_dir:gene_expression_matrix:tar_format"
-    out_ref: "none"
+    input_sample_required: "fastq_r1:rna_sequence:fastq"
+    input_sample_optional: "fastq_r2:rna_sequence:fastq"
+    input_reference_required: "salmon_index_dir:data_index:tar_format"
+    input_reference_optional: "none"
+    output_sample: "salmon_quant_dir:gene_expression_matrix:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -166,12 +166,12 @@ task merge_results {
     topic: "transcriptomics,gene_expression"
     species: "any"
     operation: "aggregation"
-    in_sample_req: "salmon_quant_dirs:gene_expression_matrix:tar_format"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "tpm_matrix:gene_expression_matrix:tsv,counts_matrix:gene_expression_matrix:tsv,sample_list:sample_id:textual_format"
-    out_ref: "none"
+    input_sample_required: "salmon_quant_dirs:gene_expression_matrix:tar_format"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "tpm_matrix:gene_expression_matrix:tsv,counts_matrix:gene_expression_matrix:tsv,sample_list:sample_id:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {

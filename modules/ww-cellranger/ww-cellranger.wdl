@@ -17,12 +17,12 @@ task run_count {
     topic: "transcriptomics,gene_expression"
     species: "any"
     operation: "rna_seq_quantification"
-    in_sample_req: "r1_fastqs:rna_sequence:fastq,r2_fastqs:rna_sequence:fastq"
-    in_sample_opt: "none"
-    in_ref_req: "ref_gex:data_index:tar_format"
-    in_ref_opt: "none"
-    out_sample: "results_tar:gene_expression_matrix:tar_format,web_summary:quality_control_report:html,metrics_summary:quality_control_report:csv"
-    out_ref: "none"
+    input_sample_required: "r1_fastqs:rna_sequence:fastq,r2_fastqs:rna_sequence:fastq"
+    input_sample_optional: "none"
+    input_reference_required: "ref_gex:data_index:tar_format"
+    input_reference_optional: "none"
+    output_sample: "results_tar:gene_expression_matrix:tar_format,web_summary:quality_control_report:html,metrics_summary:quality_control_report:csv"
+    output_reference: "none"
   }
 
   parameter_meta {

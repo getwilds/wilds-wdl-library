@@ -19,12 +19,12 @@ task bam_coverage {
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
     species: "any"
     operation: "quantification"
-    in_sample_req: "bam:nucleic_acid_sequence_alignment:bam,bai:data_index:bai"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "coverage_file:annotation_track:bigwig|bedgraph"
-    out_ref: "none"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bai:data_index:bai"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "coverage_file:annotation_track:bigwig|bedgraph"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -101,12 +101,12 @@ task bam_compare {
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
     species: "any"
     operation: "statistical_calculation"
-    in_sample_req: "treatment_bam:nucleic_acid_sequence_alignment:bam,treatment_bai:data_index:bai,control_bam:nucleic_acid_sequence_alignment:bam,control_bai:data_index:bai"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "comparison_file:annotation_track:bigwig|bedgraph"
-    out_ref: "none"
+    input_sample_required: "treatment_bam:nucleic_acid_sequence_alignment:bam,treatment_bai:data_index:bai,control_bam:nucleic_acid_sequence_alignment:bam,control_bai:data_index:bai"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "comparison_file:annotation_track:bigwig|bedgraph"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -183,12 +183,12 @@ task compute_matrix {
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
     species: "any"
     operation: "statistical_calculation"
-    in_sample_req: "bigwig_files:annotation_track:bigwig,regions_file:annotation_track:bed|gtf"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "matrix_gz:sequence_report:matrix,matrix_tab:sequence_report:tsv"
-    out_ref: "none"
+    input_sample_required: "bigwig_files:annotation_track:bigwig,regions_file:annotation_track:bed|gtf"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "matrix_gz:sequence_report:matrix,matrix_tab:sequence_report:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -262,12 +262,12 @@ task plot_heatmap {
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
     species: "any"
     operation: "visualisation"
-    in_sample_req: "matrix_gz:sequence_report:matrix"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "heatmap:plot:png|pdf|svg|eps"
-    out_ref: "none"
+    input_sample_required: "matrix_gz:sequence_report:matrix"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "heatmap:plot:png|pdf|svg|eps"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -323,12 +323,12 @@ task plot_profile {
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
     species: "any"
     operation: "visualisation"
-    in_sample_req: "matrix_gz:sequence_report:matrix"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "profile:plot:png|pdf|svg|eps"
-    out_ref: "none"
+    input_sample_required: "matrix_gz:sequence_report:matrix"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "profile:plot:png|pdf|svg|eps"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -382,12 +382,12 @@ task multi_bam_summary {
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
     species: "any"
     operation: "quantification,sequencing_quality_control"
-    in_sample_req: "bam_files:nucleic_acid_sequence_alignment:bam,bai_files:data_index:bai"
-    in_sample_opt: "regions_file:annotation_track:bed"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "summary_npz:sequence_report:npz,raw_counts:sequence_report:tsv"
-    out_ref: "none"
+    input_sample_required: "bam_files:nucleic_acid_sequence_alignment:bam,bai_files:data_index:bai"
+    input_sample_optional: "regions_file:annotation_track:bed"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "summary_npz:sequence_report:npz,raw_counts:sequence_report:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -454,12 +454,12 @@ task plot_correlation {
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
     species: "any"
     operation: "visualisation,statistical_calculation"
-    in_sample_req: "summary_npz:sequence_report:npz"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "correlation_plot:plot:png|pdf|svg|eps,correlation_matrix:sequence_report:tsv"
-    out_ref: "none"
+    input_sample_required: "summary_npz:sequence_report:npz"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "correlation_plot:plot:png|pdf|svg|eps,correlation_matrix:sequence_report:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -521,12 +521,12 @@ task plot_pca {
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
     species: "any"
     operation: "visualisation,statistical_calculation"
-    in_sample_req: "summary_npz:sequence_report:npz"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "pca_plot:plot:png|pdf|svg|eps,pca_data:sequence_report:tsv"
-    out_ref: "none"
+    input_sample_required: "summary_npz:sequence_report:npz"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "pca_plot:plot:png|pdf|svg|eps,pca_data:sequence_report:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -582,12 +582,12 @@ task plot_fingerprint {
     topic: "epigenomics,data_quality_management"
     species: "any"
     operation: "quality_control"
-    in_sample_req: "bam_files:nucleic_acid_sequence_alignment:bam,bai_files:data_index:bai"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "fingerprint_plot:plot:png|pdf|svg|eps,quality_metrics:sequence_report:tsv"
-    out_ref: "none"
+    input_sample_required: "bam_files:nucleic_acid_sequence_alignment:bam,bai_files:data_index:bai"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "fingerprint_plot:plot:png|pdf|svg|eps,quality_metrics:sequence_report:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {

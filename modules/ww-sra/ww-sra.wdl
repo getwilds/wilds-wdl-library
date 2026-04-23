@@ -19,12 +19,12 @@ task fastqdump {
     topic: "any"
     species: "any"
     operation: "data_retrieval"
-    in_sample_req: "none"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "r1_end:dna_sequence:fastq,r2_end:dna_sequence:fastq"
-    out_ref: "none"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "r1_end:dna_sequence:fastq,r2_end:dna_sequence:fastq"
+    output_reference: "none"
   }
 
   parameter_meta {

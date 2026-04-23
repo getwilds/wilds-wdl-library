@@ -22,12 +22,12 @@ task s3_download_file {
     topic: "any"
     species: "any"
     operation: "data_retrieval"
-    in_sample_req: "none"
-    in_sample_opt: "none"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "downloaded_file:any:any"
-    out_ref: "none"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "downloaded_file:any:any"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -102,12 +102,12 @@ task s3_upload_file {
     topic: "any"
     species: "any"
     operation: "data_deposition"
-    in_sample_req: "file_to_upload:any:any,aws_config_file:resource_metadata:configuration_file_format"
-    in_sample_opt: "aws_credentials_file:account_authentication:textual_format"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "none"
-    out_ref: "none"
+    input_sample_required: "file_to_upload:any:any,aws_config_file:resource_metadata:configuration_file_format"
+    input_sample_optional: "aws_credentials_file:account_authentication:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -176,12 +176,12 @@ task s3_list_bucket {
     topic: "any"
     species: "any"
     operation: "data_retrieval"
-    in_sample_req: "none"
-    in_sample_opt: "aws_config_file:resource_metadata:configuration_file_format,aws_credentials_file:account_authentication:textual_format"
-    in_ref_req: "none"
-    in_ref_opt: "none"
-    out_sample: "none"
-    out_ref: "none"
+    input_sample_required: "none"
+    input_sample_optional: "aws_config_file:resource_metadata:configuration_file_format,aws_credentials_file:account_authentication:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "none"
   }
 
   parameter_meta {

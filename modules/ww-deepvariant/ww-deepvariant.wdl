@@ -21,12 +21,12 @@ task run_deepvariant {
     topic: "genomics,dna_polymorphism"
     species: "eukaryote"
     operation: "variant_calling"
-    in_sample_req: "input_bam:nucleic_acid_sequence_alignment:bam,input_bam_index:data_index:bai"
-    in_sample_opt: "none"
-    in_ref_req: "ref_fasta:dna_sequence:fasta,ref_fasta_index:data_index:fai"
-    in_ref_opt: "none"
-    out_sample: "output_vcf:sequence_variations:vcf,output_vcf_index:data_index:tbi,output_gvcf:sequence_variations:gvcf,output_gvcf_index:data_index:tbi"
-    out_ref: "none"
+    input_sample_required: "input_bam:nucleic_acid_sequence_alignment:bam,input_bam_index:data_index:bai"
+    input_sample_optional: "none"
+    input_reference_required: "ref_fasta:dna_sequence:fasta,ref_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "output_vcf:sequence_variations:vcf,output_vcf_index:data_index:tbi,output_gvcf:sequence_variations:gvcf,output_gvcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {
