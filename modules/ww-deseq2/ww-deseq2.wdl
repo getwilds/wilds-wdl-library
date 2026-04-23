@@ -61,7 +61,7 @@ task combine_count_matrices {
   }
 
   runtime {
-    docker: "python:3.12-slim"
+    docker: "python:3.12"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -183,7 +183,7 @@ task compile_deseq2_results {
   }
 
   runtime {
-    docker: "python:3.12-slim"
+    docker: "python:3.12"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
