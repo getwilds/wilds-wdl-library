@@ -85,13 +85,14 @@ workflow rnaseq {
     Int genome_sa_index_nbases = 14
   }
 
-  # Parse sample information from TSV if provided (skip header row).
+  # Parse sample information from TSV if provided.
   # TSV format: tab-separated with header row (name, r1, r2, condition).
+  # Header row is skipped by offsetting indices by +1 in the scatter below.
   Array[Array[String]] tsv_rows = if defined(samples_tsv) then read_tsv(select_first([samples_tsv])) else []
-  Array[Array[String]] tsv_data = if length(tsv_rows) > 1 then tsv_rows[1:] else []
 
   # Determine number of samples from whichever input method was used
-  Int n_samples = if defined(sample_names) then length(select_first([sample_names])) else length(tsv_data)
+  # For TSV: subtract 1 to exclude the header row
+  Int n_samples = if defined(sample_names) then length(select_first([sample_names])) else (length(tsv_rows) - 1)
   Array[Int] sample_indices = range(n_samples)
 
   # Normalize GTF to ensure exon features exist for every transcript.
@@ -117,10 +118,11 @@ workflow rnaseq {
   }
 
   scatter (idx in sample_indices) {
-    String sample_name = if defined(sample_names) then select_first([sample_names])[idx] else tsv_data[idx][0]
-    File sample_r1 = if defined(r1_fastqs) then select_first([r1_fastqs])[idx] else tsv_data[idx][1]
-    File sample_r2 = if defined(r2_fastqs) then select_first([r2_fastqs])[idx] else tsv_data[idx][2]
-    String sample_condition = if defined(conditions) then select_first([conditions])[idx] else tsv_data[idx][3]
+    # Resolve sample fields: +1 offset on tsv_rows skips the header row
+    String sample_name = if defined(sample_names) then select_first([sample_names])[idx] else tsv_rows[idx + 1][0]
+    File sample_r1 = if defined(r1_fastqs) then select_first([r1_fastqs])[idx] else tsv_rows[idx + 1][1]
+    File sample_r2 = if defined(r2_fastqs) then select_first([r2_fastqs])[idx] else tsv_rows[idx + 1][2]
+    String sample_condition = if defined(conditions) then select_first([conditions])[idx] else tsv_rows[idx + 1][3]
 
     # Step 1: Pre-trim FastQC
     call fastqc_tasks.run_fastqc as pretrim_fastqc { input:
