@@ -412,6 +412,8 @@ Downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-
 
 ### generate_pasilla_counts
 
+Generates DESeq2 test count matrices using the Pasilla Bioconductor dataset. Uses [generate_pasilla_counts.R](../ww-deseq2/generate_pasilla_counts.R) from the `ww-deseq2` module (fetched via wget at runtime).
+
 **Inputs**:
 - `n_samples` (Int): Number of samples to include (default: 7, max: 7 for pasilla dataset)
 - `n_genes` (Int): Approximate number of genes to include (default: 10000)

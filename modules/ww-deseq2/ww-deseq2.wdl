@@ -42,7 +42,12 @@ task combine_count_matrices {
   command <<<
     set -eo pipefail
 
-    combine_star_counts.py \
+    pip install pandas==2.2.3
+
+    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/combine_star_counts.py" \
+      -O combine_star_counts.py
+
+    python combine_star_counts.py \
       --input ~{sep=" " gene_count_files} \
       --names ~{sep=" " sample_names} \
       --conditions ~{sep=" " sample_conditions} \
@@ -56,7 +61,7 @@ task combine_count_matrices {
   }
 
   runtime {
-    docker: "getwilds/combine-counts:0.1.0"
+    docker: "python:3.12-slim"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -101,7 +106,10 @@ task run_deseq2 {
   command <<<
     set -eo pipefail
 
-    deseq2_analysis.R \
+    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/deseq2_analysis.R" \
+      -O deseq2_analysis.R
+
+    Rscript deseq2_analysis.R \
       --counts_file="~{counts_matrix}" \
       --metadata_file="~{sample_metadata}" \
       --condition_column="~{condition_column}" \
@@ -121,6 +129,61 @@ task run_deseq2 {
 
   runtime {
     docker: "getwilds/deseq2:1.40.2"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
+task compile_deseq2_results {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Merge DESeq2 results with normalized counts and GTF gene annotations into a single comprehensive output file"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl"
+    outputs: {
+        compiled_results: "Combined CSV with DESeq2 statistics, normalized counts, and gene annotations from the GTF"
+    }
+  }
+
+  parameter_meta {
+    deseq2_results: "DESeq2 all-genes results CSV (output of run_deseq2)"
+    normalized_counts: "DESeq2 normalized counts CSV (output of run_deseq2)"
+    gtf_file: "GTF annotation file used for alignment, for extracting gene descriptions"
+    output_name: "Name for the output CSV file"
+    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task"
+  }
+
+  input {
+    File deseq2_results
+    File normalized_counts
+    File gtf_file
+    String output_name = "deseq2_compiled_results.csv"
+    Int memory_gb = 4
+    Int cpu_cores = 1
+  }
+
+  command <<<
+    set -eo pipefail
+
+    pip install pandas==2.2.3
+
+    wget -q "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/compile_deseq2_results.py" \
+      -O compile_deseq2_results.py
+
+    python compile_deseq2_results.py \
+      --results "~{deseq2_results}" \
+      --counts "~{normalized_counts}" \
+      --gtf "~{gtf_file}" \
+      --output "~{output_name}"
+  >>>
+
+  output {
+    File compiled_results = "~{output_name}"
+  }
+
+  runtime {
+    docker: "python:3.12-slim"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }

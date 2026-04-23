@@ -5,7 +5,7 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as star_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedparse/ww-bedparse.wdl" as bedparse_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rseqc/ww-rseqc.wdl" as rseqc_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl" as deseq2_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/ww-deseq2.wdl" as deseq2_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-multiqc/ww-multiqc.wdl" as multiqc_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gffread/ww-gffread.wdl" as gffread_tasks
 
@@ -46,6 +46,7 @@ workflow rnaseq {
         deseq2_pca_plot: "Principal Component Analysis plot of samples based on expression patterns",
         deseq2_volcano_plot: "Volcano plot showing log fold change vs. statistical significance",
         deseq2_heatmap: "Heatmap of differentially expressed genes across samples",
+        deseq2_compiled_results: "Combined CSV with DESeq2 statistics, normalized counts, and gene annotations",
         multiqc_report: "MultiQC interactive HTML report aggregating all QC metrics",
         multiqc_data: "MultiQC data directory with parsed metrics from all tools"
     }
@@ -179,6 +180,13 @@ workflow rnaseq {
       contrast = contrast
   }
 
+  # Step 6b: Compile DESeq2 results with normalized counts and GTF annotations
+  call deseq2_tasks.compile_deseq2_results { input:
+      deseq2_results = run_deseq2.deseq2_results,
+      normalized_counts = run_deseq2.deseq2_normalized_counts,
+      gtf_file = normalize_gtf.normalized_gtf
+  }
+
   # Step 7: MultiQC aggregation of all QC reports
   call multiqc_tasks.run_multiqc { input:
       input_files = flatten([
@@ -219,6 +227,7 @@ workflow rnaseq {
     File deseq2_pca_plot = run_deseq2.deseq2_pca_plot
     File deseq2_volcano_plot = run_deseq2.deseq2_volcano_plot
     File deseq2_heatmap = run_deseq2.deseq2_heatmap
+    File deseq2_compiled_results = compile_deseq2_results.compiled_results
     File multiqc_report = run_multiqc.html_report
     File multiqc_data = run_multiqc.data_dir
   }

@@ -19,7 +19,7 @@ This pipeline extends the simpler `ww-star-deseq2` pipeline with upstream read Q
 
 ## Pipeline Structure
 
-**Complexity Level: Advanced** (10 steps, 8 distinct modules)
+**Complexity Level: Advanced** (11 steps, 8 distinct modules)
 
 1. **GTF Normalization** (using `ww-gffread` module):
    - Ensures the reference GTF has proper `exon` features for every transcript
@@ -58,7 +58,12 @@ This pipeline extends the simpler `ww-star-deseq2` pipeline with upstream read Q
    - Combines gene counts from all samples into a single matrix
    - Performs statistical analysis and generates visualizations (PCA, volcano, heatmap)
 
-10. **MultiQC — Aggregated Reporting** (using `ww-multiqc` module):
+10. **DESeq2 — Compiled Results** (using `ww-deseq2` module):
+    - Merges differential expression results with normalized counts
+    - Annotates genes with descriptions from the GTF (gene_name, gene_biotype, product)
+    - Produces a single comprehensive CSV for downstream use
+
+11. **MultiQC — Aggregated Reporting** (using `ww-multiqc` module):
     - Collects reports from FastQC, Trim Galore, STAR, and RSeQC
     - Generates a single interactive HTML report summarizing all QC metrics
 
@@ -71,7 +76,7 @@ This pipeline imports and uses:
 - **ww-star module**: Genome indexing and read alignment (`build_index`, `align_two_pass` tasks)
 - **ww-bedparse module**: GTF to BED12 conversion (`gtf2bed` task)
 - **ww-rseqc module**: RNA-seq alignment quality control (`run_rseqc` task)
-- **ww-deseq2 module**: Count matrix assembly and differential expression (`combine_count_matrices`, `run_deseq2` tasks)
+- **ww-deseq2 module**: Count matrix assembly, differential expression, and compiled results (`combine_count_matrices`, `run_deseq2`, `compile_deseq2_results` tasks)
 - **ww-multiqc module**: Aggregated QC reporting (`run_multiqc` task)
 
 ## Usage
@@ -221,6 +226,7 @@ The pipeline produces comprehensive outputs from all modules:
 | `deseq2_pca_plot` | PCA plot of samples | ww-deseq2 |
 | `deseq2_volcano_plot` | Volcano plot of differential expression | ww-deseq2 |
 | `deseq2_heatmap` | Heatmap of differentially expressed genes | ww-deseq2 |
+| `deseq2_compiled_results` | Combined CSV with DESeq2 stats, normalized counts, and gene annotations | ww-deseq2 |
 | `multiqc_report` | Aggregated interactive HTML QC report | ww-multiqc |
 | `multiqc_data` | MultiQC parsed metrics data directory | ww-multiqc |
 

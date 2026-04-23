@@ -14,9 +14,10 @@ The module can run completely standalone with automatic test data generation. In
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `combine_count_matrices`, `run_deseq2`
+- **Tasks**: `combine_count_matrices`, `run_deseq2`, `compile_deseq2_results`
+- **Scripts**: `combine_star_counts.py`, `deseq2_analysis.R`, `compile_deseq2_results.py`, `generate_pasilla_counts.R` (fetched via wget at runtime)
 - **Test workflow**: `testrun.wdl` (demonstration workflow using test data)
-- **Containers**: `getwilds/combine-counts:0.1.0`, `getwilds/deseq2:1.40.2`
+- **Containers**: `python:3.12-slim` (count matrix tasks), `getwilds/deseq2:1.40.2` (DESeq2 analysis)
 - **Dependencies**: Integrates with `ww-testdata` module for test data generation
 - **Test Data**: Uses Pasilla test dataset with 7 samples and 10,000 genes
 
@@ -41,7 +42,7 @@ Combines STAR gene count files from multiple samples into a single count matrix 
 - `sample_metadata` (File): Metadata file containing sample names and conditions
 
 ### `run_deseq2`
-Performs differential expression analysis using DESeq2 with comprehensive statistical analysis and visualization via a prewritten R script: [deseq2_analysis.R](https://github.com/getwilds/wilds-docker-library/blob/main/deseq2/deseq2_analysis.R)
+Performs differential expression analysis using DESeq2 with comprehensive statistical analysis and visualization via a prewritten R script: [deseq2_analysis.R](deseq2_analysis.R) (fetched from this repository at runtime via wget)
 
 The task automatically selects the appropriate variance-stabilizing transformation method based on dataset size:
 - **≥1000 genes with counts**: Uses `vst()` for fast, efficient transformation
@@ -65,6 +66,20 @@ This ensures the analysis works reliably across diverse dataset sizes, from smal
 - `deseq2_pca_plot` (File): Principal Component Analysis plot showing sample clustering
 - `deseq2_volcano_plot` (File): Volcano plot showing log fold change vs. statistical significance
 - `deseq2_heatmap` (File): Heatmap visualization of differentially expressed genes
+
+### `compile_deseq2_results`
+Merges DESeq2 differential expression results with normalized counts and gene annotations from a GTF file into a single comprehensive CSV. Uses [compile_deseq2_results.py](compile_deseq2_results.py) (fetched from this repository at runtime via wget).
+
+**Inputs:**
+- `deseq2_results` (File): DESeq2 all-genes results CSV (output of `run_deseq2`)
+- `normalized_counts` (File): DESeq2 normalized counts CSV (output of `run_deseq2`)
+- `gtf_file` (File): GTF annotation file for extracting gene descriptions
+- `output_name` (String): Name for the output CSV file (default: "deseq2_compiled_results.csv")
+- `memory_gb` (Int): Memory allocation in GB (default: 4)
+- `cpu_cores` (Int): Number of CPU cores (default: 1)
+
+**Outputs:**
+- `compiled_results` (File): Combined CSV with DESeq2 statistics, normalized counts, and gene annotations (gene_name, gene_biotype, product where available)
 
 ## Usage as a Module
 
@@ -202,8 +217,9 @@ The `deseq2_example` workflow:
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- R environment with DESeq2 package (provided in container)
-- Python environment for count matrix combination (provided in container)
+- Internet access for fetching scripts from GitHub at runtime
+- R environment with DESeq2 package (provided by `getwilds/deseq2:1.40.2` container)
+- Python 3.12 with pandas (provided by `python:3.12-slim` container, pandas installed at runtime)
 
 ## Support
 
