@@ -56,7 +56,7 @@ cd "${CLONE_DIR}"
 export TYPE="${TYPE:-all}"
 echo "Starting WILDS WDL test runs at ${RUN_DATE} (type: ${TYPE})"
 SPROCKET_CONFIG="${SPROCKET_CONFIG:-.github/configs/sprocket-hpc.toml}"
-make run_sprocket TYPE="${TYPE}" SPROCKET_CONFIG="${SPROCKET_CONFIG}" SPROCKET_VERBOSITY="-q" 2>&1 | tee "${LOGFILE}" || true
+make run_sprocket TYPE="${TYPE}" SPROCKET_CONFIG="${SPROCKET_CONFIG}" 2>&1 | tee "${LOGFILE}" || true
 
 # ---- Post results to GitHub ----
 python3 .github/scripts/hpc_testrun_report.py "${LOGFILE}" "${ISSUE_NUMBER}" --repo "${REPO}"

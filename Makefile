@@ -11,7 +11,6 @@ MINIWDL ?= 1.13.0
 SPROCKET_MIN ?= 0.22.0
 SPROCKET_CONFIG ?=
 SPROCKET_CONFIG_FLAG := $(if $(SPROCKET_CONFIG),-c $(SPROCKET_CONFIG),)
-SPROCKET_VERBOSITY ?=
 TYPE ?= all
 
 .PHONY: help
@@ -164,7 +163,7 @@ run_sprocket: check_sprocket check_name ## Run sprocket on testrun.wdl files (us
 			echo "... Running $$(basename $$dir)"; \
 			entrypoint=$$(grep '^workflow ' "$$dir/testrun.wdl" | awk '{print $$2}' | tr -d '{'); \
 			echo "... Using entrypoint: $$entrypoint"; \
-			if ! sprocket $(SPROCKET_VERBOSITY) run $(SPROCKET_CONFIG_FLAG) "$$dir/testrun.wdl" --target $$entrypoint; then \
+			if ! sprocket run $(SPROCKET_CONFIG_FLAG) "$$dir/testrun.wdl" --target $$entrypoint; then \
 				failed="$$failed $$(basename $$dir)"; \
 				echo "... FAILED: $$(basename $$dir) (sprocket)"; \
 			fi; \
