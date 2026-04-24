@@ -42,7 +42,7 @@ task combine_count_matrices {
   command <<<
     set -eo pipefail
 
-    pip install pandas==2.2.3
+    pip install --no-cache-dir pandas==2.2.3
 
     curl -so combine_star_counts.py \
       "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/combine_star_counts.py"
@@ -181,7 +181,7 @@ task compile_deseq2_results {
   command <<<
     set -eo pipefail
 
-    pip install pandas==2.2.3
+    pip install --no-cache-dir pandas==2.2.3
 
     curl -so compile_deseq2_results.py \
       "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/compile_deseq2_results.py"
