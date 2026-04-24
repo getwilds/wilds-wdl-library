@@ -22,6 +22,9 @@ option_list <- list(
   make_option("--condition_column", type="character", default="condition", help="Column in metadata to use for comparison [default: %default]"),
   make_option("--reference_level", type="character", default="", help="Reference level for comparison [default: first alphabetically]"),
   make_option("--contrast", type="character", default="", help="Contrast to use (comma-separated: condition,treatment,control) [default: infer from condition_column]"),
+  make_option("--min_counts", type="integer", default=10, help="Minimum number of counts a gene must have to pass filtering [default: %default]"),
+  make_option("--min_samples", type="integer", default=0, help="Minimum number of samples that must meet min_counts threshold (0 = use rowSums instead) [default: %default]"),
+  make_option("--shrinkage_method", type="character", default="", help="LFC shrinkage method: apeglm, ashr, or normal (empty = no shrinkage) [default: none]"),
   make_option("--output_prefix", type="character", default="deseq2_results", help="Prefix for output files [default: %default]")
 )
 
@@ -78,8 +81,16 @@ dds <- DESeqDataSetFromMatrix(
 
 # Filter out genes with too few counts
 cat("Filtering low count genes...\n")
-keep <- rowSums(counts(dds)) >= 10
+if (opt$min_samples > 0) {
+  cat("Keeping genes with >=", opt$min_counts, "counts in >=", opt$min_samples, "samples...\n")
+  keep <- rowSums(counts(dds) >= opt$min_counts) >= opt$min_samples
+} else {
+  cat("Keeping genes with total counts >=", opt$min_counts, "...\n")
+  keep <- rowSums(counts(dds)) >= opt$min_counts
+}
+cat("Genes before filtering:", nrow(dds), "\n")
 dds <- dds[keep,]
+cat("Genes after filtering:", nrow(dds), "\n")
 
 # Run DESeq2
 cat("Running DESeq2 analysis...\n")
@@ -105,6 +116,52 @@ res$gene <- rownames(res)
 
 # Sort by adjusted p-value
 res_ordered <- res[order(res$padj),]
+
+# Create MA plot (unshrunken)
+cat("Creating MA plot...\n")
+pdf(paste0(opt$output_prefix, "_ma_plot.pdf"), width=8, height=6)
+plotMA(res, main="MA Plot (unshrunken)", ylim=c(-5, 5))
+dev.off()
+
+# Apply LFC shrinkage if requested
+if (opt$shrinkage_method != "") {
+  cat("Applying LFC shrinkage using method:", opt$shrinkage_method, "...\n")
+
+  if (opt$shrinkage_method == "apeglm") {
+    library(apeglm)
+    # apeglm requires coef, not contrast
+    coef_name <- resultsNames(dds)[2]
+    cat("Using coefficient:", coef_name, "\n")
+    res_shrunk <- lfcShrink(dds, coef=coef_name, type="apeglm")
+  } else if (opt$shrinkage_method == "ashr") {
+    library(ashr)
+    res_shrunk <- lfcShrink(dds, contrast=if (opt$contrast != "") contrast_use else NULL,
+                            res=res, type="ashr")
+  } else if (opt$shrinkage_method == "normal") {
+    res_shrunk <- lfcShrink(dds, contrast=if (opt$contrast != "") contrast_use else NULL,
+                            res=res, type="normal")
+  } else {
+    stop("Unknown shrinkage method: ", opt$shrinkage_method,
+         ". Use 'apeglm', 'ashr', or 'normal'.")
+  }
+
+  # MA plot (shrunken)
+  cat("Creating shrunken MA plot...\n")
+  pdf(paste0(opt$output_prefix, "_ma_plot_shrunk.pdf"), width=8, height=6)
+  plotMA(res_shrunk, main=paste0("MA Plot (", opt$shrinkage_method, " shrinkage)"), ylim=c(-5, 5))
+  dev.off()
+
+  # Write shrunken results
+  res_shrunk$gene <- rownames(res_shrunk)
+  res_shrunk_ordered <- res_shrunk[order(res_shrunk$padj),]
+  write.csv(as.data.frame(res_shrunk_ordered),
+            file=paste0(opt$output_prefix, "_all_genes_shrunk.csv"), row.names=FALSE)
+  cat("Shrunken results written.\n")
+} else {
+  # Create empty shrinkage output files so WDL outputs are always satisfied
+  file.create(paste0(opt$output_prefix, "_ma_plot_shrunk.pdf"))
+  file.create(paste0(opt$output_prefix, "_all_genes_shrunk.csv"))
+}
 
 # Get normalized counts
 normalized_counts <- counts(dds, normalized=TRUE)

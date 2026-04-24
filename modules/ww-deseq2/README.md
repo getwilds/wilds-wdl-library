@@ -21,6 +21,17 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 - **Dependencies**: Integrates with `ww-testdata` module for test data generation
 - **Test Data**: Uses Pasilla test dataset with 7 samples and 10,000 genes
 
+## Scripts
+
+All scripts are fetched from this repository at runtime via `curl`. This keeps the Docker images generic and makes it easy to iterate on analysis logic without rebuilding containers.
+
+| Script | Used by | Language | Description |
+|--------|---------|----------|-------------|
+| [`combine_star_counts.py`](combine_star_counts.py) | `combine_count_matrices` | Python | Reads individual STAR `ReadsPerGene.out.tab` files, extracts the specified count column (unstranded, forward, or reverse), merges them into a single gene-by-sample count matrix, and writes a sample metadata file for DESeq2 |
+| [`deseq2_analysis.R`](deseq2_analysis.R) | `run_deseq2` | R | Runs the full DESeq2 pipeline: reads counts and metadata, applies configurable gene filtering, fits the DESeq2 model, extracts results with optional LFC shrinkage, generates MA/PCA/volcano/heatmap plots, and writes results CSVs |
+| [`compile_deseq2_results.py`](compile_deseq2_results.py) | `compile_deseq2_results` | Python | Merges the all-genes results CSV with normalized counts on gene ID, parses GTF annotations (gene_name, gene_biotype, product), and joins them into a single comprehensive output CSV |
+| [`generate_pasilla_counts.R`](generate_pasilla_counts.R) | `generate_pasilla_counts` (in ww-testdata) | R | Generates synthetic STAR-format count files from the Bioconductor Pasilla dataset for testing; creates individual `ReadsPerGene.out.tab` files with realistic header statistics |
+
 ## Tasks
 
 ### `combine_count_matrices`
@@ -56,6 +67,9 @@ This ensures the analysis works reliably across diverse dataset sizes, from smal
 - `condition_column` (String): Column name containing experimental conditions (default: "condition")
 - `reference_level` (String): Reference level for DESeq2 contrast (typically control condition)
 - `contrast` (String): DESeq2 contrast string in format 'condition,treatment,control'
+- `min_counts` (Int): Minimum counts a gene must have to pass filtering (default: 10)
+- `min_samples` (Int): Minimum samples meeting `min_counts` threshold; 0 = use total counts instead (default: 0)
+- `shrinkage_method` (String): LFC shrinkage method — `apeglm`, `ashr`, or `normal`; empty = no shrinkage (default: "")
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores (default: 2)
 
@@ -66,6 +80,9 @@ This ensures the analysis works reliably across diverse dataset sizes, from smal
 - `deseq2_pca_plot` (File): Principal Component Analysis plot showing sample clustering
 - `deseq2_volcano_plot` (File): Volcano plot showing log fold change vs. statistical significance
 - `deseq2_heatmap` (File): Heatmap visualization of differentially expressed genes
+- `deseq2_ma_plot` (File): MA plot showing log fold change vs. mean expression (unshrunken)
+- `deseq2_ma_plot_shrunk` (File): MA plot with shrunken log fold changes (empty if shrinkage not applied)
+- `deseq2_results_shrunk` (File): DESeq2 results with shrunken log fold changes (empty if shrinkage not applied)
 
 ### `compile_deseq2_results`
 Merges DESeq2 differential expression results with normalized counts and gene annotations from a GTF file into a single comprehensive CSV. Uses [compile_deseq2_results.py](compile_deseq2_results.py) (fetched from this repository at runtime via wget).

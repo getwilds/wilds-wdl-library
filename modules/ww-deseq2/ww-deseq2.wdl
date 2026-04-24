@@ -79,7 +79,10 @@ task run_deseq2 {
         deseq2_normalized_counts: "Normalized count values produced by DESeq2 for all samples",
         deseq2_pca_plot: "Principal Component Analysis plot showing sample clustering based on expression patterns",
         deseq2_volcano_plot: "Volcano plot showing log fold change vs. statistical significance",
-        deseq2_heatmap: "Heatmap visualization of differentially expressed genes across samples"
+        deseq2_heatmap: "Heatmap visualization of differentially expressed genes across samples",
+        deseq2_ma_plot: "MA plot showing log fold change vs. mean expression (unshrunken)",
+        deseq2_ma_plot_shrunk: "MA plot with shrunken log fold changes (empty if shrinkage not applied)",
+        deseq2_results_shrunk: "DESeq2 results with shrunken log fold changes (empty if shrinkage not applied)"
     }
   }
 
@@ -89,6 +92,9 @@ task run_deseq2 {
     condition_column: "Column name in the metadata file that contains the experimental condition"
     reference_level: "Reference level for the contrast (typically the control condition)"
     contrast: "DESeq2 contrast string in the format 'condition,treatment,control'"
+    min_counts: "Minimum number of counts a gene must have to pass filtering"
+    min_samples: "Minimum number of samples that must meet min_counts threshold (0 = use total counts instead)"
+    shrinkage_method: "LFC shrinkage method: apeglm, ashr, or normal (empty = no shrinkage)"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
   }
@@ -99,6 +105,9 @@ task run_deseq2 {
     String condition_column = "condition"
     String reference_level = ""
     String contrast = ""
+    Int min_counts = 10
+    Int min_samples = 0
+    String shrinkage_method = ""
     Int memory_gb = 8
     Int cpu_cores = 2
   }
@@ -115,6 +124,9 @@ task run_deseq2 {
       --condition_column="~{condition_column}" \
       --reference_level="~{reference_level}" \
       --contrast="~{contrast}" \
+      --min_counts=~{min_counts} \
+      --min_samples=~{min_samples} \
+      --shrinkage_method="~{shrinkage_method}" \
       --output_prefix="deseq2_results"
   >>>
 
@@ -125,6 +137,9 @@ task run_deseq2 {
     File deseq2_pca_plot = "deseq2_results_pca.pdf"
     File deseq2_volcano_plot = "deseq2_results_volcano.pdf"
     File deseq2_heatmap = "deseq2_results_heatmap.pdf"
+    File deseq2_ma_plot = "deseq2_results_ma_plot.pdf"
+    File deseq2_ma_plot_shrunk = "deseq2_results_ma_plot_shrunk.pdf"
+    File deseq2_results_shrunk = "deseq2_results_all_genes_shrunk.csv"
   }
 
   runtime {
