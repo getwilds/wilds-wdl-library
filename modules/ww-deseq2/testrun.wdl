@@ -73,8 +73,6 @@ task validate_outputs {
   command <<<
     set -eo pipefail
 
-    pip3 install --target="$(pwd)/.pip_packages" --cache-dir="$(pwd)/.pip_cache" pandas
-    export PYTHONPATH="$(pwd)/.pip_packages:${PYTHONPATH:-}"
     python3 << 'EOF'
 import pandas as pd
 import sys
@@ -149,9 +147,9 @@ EOF
   }
 
   runtime {
-    docker: "python:3.9-slim"
-    memory: "8 GB"
-    cpu: 2
+    docker: "getwilds/python-utils:0.1.0"
+    memory: "2 GB"
+    cpu: 1
   }
 }
 
