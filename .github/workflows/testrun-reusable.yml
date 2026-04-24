@@ -96,6 +96,10 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     -
+      name: Pre-pull cellranger image (private GHCR)
+      if: (inputs.item_type == 'modules' && matrix.item == 'ww-cellranger') || (inputs.item_type == 'pipelines' && matrix.item == 'ww-sra-cellranger')
+      run: docker pull ghcr.io/getwilds/cellranger:10.0.0
+    -
       name: Set Up Java
       uses: actions/setup-java@v4
       with:
@@ -135,6 +139,10 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+    -
+      name: Pre-pull cellranger image (private GHCR)
+      if: (inputs.item_type == 'modules' && matrix.item == 'ww-cellranger') || (inputs.item_type == 'pipelines' && matrix.item == 'ww-sra-cellranger')
+      run: docker pull ghcr.io/getwilds/cellranger:10.0.0
     -
       name: Set Up Rust
       uses: dtolnay/rust-toolchain@stable
