@@ -46,6 +46,9 @@ workflow rnaseq {
         deseq2_pca_plot: "Principal Component Analysis plot of samples based on expression patterns",
         deseq2_volcano_plot: "Volcano plot showing log fold change vs. statistical significance",
         deseq2_heatmap: "Heatmap of differentially expressed genes across samples",
+        deseq2_ma_plot: "MA plot showing log fold change vs. mean expression",
+        deseq2_ma_plot_shrunk: "MA plot with shrunken log fold changes (empty if shrinkage not applied)",
+        deseq2_results_shrunk: "DESeq2 results with shrunken log fold changes (empty if shrinkage not applied)",
         deseq2_compiled_results: "Combined CSV with DESeq2 statistics, normalized counts, and gene annotations",
         multiqc_report: "MultiQC interactive HTML report aggregating all QC metrics",
         multiqc_data: "MultiQC data directory with parsed metrics from all tools",
@@ -67,6 +70,9 @@ workflow rnaseq {
     star_cpu: "Number of CPU cores for STAR alignment tasks"
     star_memory_gb: "Memory allocation in GB for STAR alignment tasks"
     genome_sa_index_nbases: "Length of the SA pre-indexing string for STAR (typically 10-15, scales with genome size)"
+    min_counts: "Minimum number of counts a gene must have to pass DESeq2 pre-filtering"
+    min_samples: "Minimum number of samples that must meet min_counts threshold (0 = use total counts instead)"
+    shrinkage_method: "LFC shrinkage method for DESeq2: apeglm, ashr, or normal (empty = no shrinkage)"
     organize_results: "Whether to reorganize all outputs into a clean directory structure tarball (duplicates data, increases storage)"
     include_bams: "Whether to include BAM/BAI files in the organized results tarball (can significantly increase output size)"
     include_trimmed_fastqs: "Whether to include trimmed FASTQ files in the organized results tarball (can significantly increase output size)"
@@ -88,6 +94,9 @@ workflow rnaseq {
     Int star_cpu = 8
     Int star_memory_gb = 64
     Int genome_sa_index_nbases = 14
+    Int min_counts = 10
+    Int min_samples = 0
+    String shrinkage_method = ""
     Boolean organize_results = false
     Boolean include_bams = false
     Boolean include_trimmed_fastqs = false
@@ -184,7 +193,10 @@ workflow rnaseq {
       counts_matrix = step06_combine_counts.counts_matrix,
       sample_metadata = step06_combine_counts.sample_metadata,
       reference_level = reference_level,
-      contrast = contrast
+      contrast = contrast,
+      min_counts = min_counts,
+      min_samples = min_samples,
+      shrinkage_method = shrinkage_method
   }
 
   # Step 8: Compile DESeq2 results with normalized counts and GTF annotations
@@ -267,6 +279,9 @@ workflow rnaseq {
     File deseq2_pca_plot = step07_deseq2.deseq2_pca_plot
     File deseq2_volcano_plot = step07_deseq2.deseq2_volcano_plot
     File deseq2_heatmap = step07_deseq2.deseq2_heatmap
+    File deseq2_ma_plot = step07_deseq2.deseq2_ma_plot
+    File deseq2_ma_plot_shrunk = step07_deseq2.deseq2_ma_plot_shrunk
+    File deseq2_results_shrunk = step07_deseq2.deseq2_results_shrunk
     File deseq2_compiled_results = step08_compile_results.compiled_results
     File multiqc_report = step09_multiqc.html_report
     File multiqc_data = step09_multiqc.data_dir
@@ -286,9 +301,35 @@ task organize_outputs {
 
   parameter_meta {
     sample_names: "Array of sample names used to create per-sample subdirectories"
+    pretrim_fastqc_html: "Pre-trim FastQC HTML reports to organize"
+    pretrim_fastqc_zip: "Pre-trim FastQC ZIP archives to organize"
+    trimgalore_r1_trimmed: "Trimmed R1 FASTQ files to organize"
+    trimgalore_r2_trimmed: "Trimmed R2 FASTQ files to organize"
+    trimgalore_r1_report: "Trim Galore R1 trimming reports to organize"
+    trimgalore_r2_report: "Trim Galore R2 trimming reports to organize"
+    posttrim_fastqc_html: "Post-trim FastQC HTML reports to organize"
+    posttrim_fastqc_zip: "Post-trim FastQC ZIP archives to organize"
+    star_bam: "STAR alignment BAM files to organize"
+    star_bai: "STAR alignment BAM index files to organize"
+    star_gene_counts: "STAR gene count files to organize"
+    star_log_final: "STAR final log files to organize"
+    rseqc_summary: "RSeQC quality control summary files to organize"
+    counts_matrix: "Combined gene count matrix to organize"
+    sample_metadata: "Sample metadata file to organize"
+    deseq2_results: "DESeq2 all-genes results to organize"
+    deseq2_significant: "DESeq2 significant results to organize"
+    deseq2_normalized_counts: "DESeq2 normalized counts to organize"
+    deseq2_pca_plot: "DESeq2 PCA plot to organize"
+    deseq2_volcano_plot: "DESeq2 volcano plot to organize"
+    deseq2_heatmap: "DESeq2 heatmap to organize"
+    deseq2_compiled_results: "DESeq2 compiled results CSV to organize"
+    multiqc_report: "MultiQC HTML report to organize"
+    multiqc_data: "MultiQC data directory to organize"
     include_bams: "Whether to include BAM/BAI files in the output tarball (can be very large)"
     include_trimmed_fastqs: "Whether to include trimmed FASTQ files in the output tarball (can be very large)"
     output_prefix: "Prefix for the output tarball filename"
+    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task"
   }
 
   input {

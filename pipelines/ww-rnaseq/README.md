@@ -189,6 +189,9 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `star_cpu` | Number of CPU cores for STAR alignment tasks | Int | No | 8 |
 | `star_memory_gb` | Memory allocation in GB for STAR alignment tasks | Int | No | 64 |
 | `genome_sa_index_nbases` | STAR SA pre-indexing string length (scales with genome size) | Int | No | 14 |
+| `min_counts` | Minimum counts a gene must have to pass DESeq2 pre-filtering | Int | No | 10 |
+| `min_samples` | Minimum samples meeting `min_counts` threshold (0 = use total counts) | Int | No | 0 |
+| `shrinkage_method` | LFC shrinkage method: `apeglm`, `ashr`, `normal`, or empty for none | String | No | "" |
 | `organize_results` | Reorganize outputs into a clean directory tarball | Boolean | No | false |
 | `include_bams` | Include BAM/BAI files in the organized tarball | Boolean | No | false |
 | `include_trimmed_fastqs` | Include trimmed FASTQ files in the organized tarball | Boolean | No | false |
@@ -235,6 +238,9 @@ The pipeline produces comprehensive outputs from all modules:
 | `deseq2_pca_plot` | PCA plot of samples | ww-deseq2 |
 | `deseq2_volcano_plot` | Volcano plot of differential expression | ww-deseq2 |
 | `deseq2_heatmap` | Heatmap of differentially expressed genes | ww-deseq2 |
+| `deseq2_ma_plot` | MA plot of log fold change vs. mean expression | ww-deseq2 |
+| `deseq2_ma_plot_shrunk` | MA plot with shrunken LFC (empty if shrinkage not applied) | ww-deseq2 |
+| `deseq2_results_shrunk` | DESeq2 results with shrunken LFC (empty if shrinkage not applied) | ww-deseq2 |
 | `deseq2_compiled_results` | Combined CSV with DESeq2 stats, normalized counts, and gene annotations | ww-deseq2 |
 | `multiqc_report` | Aggregated interactive HTML QC report | ww-multiqc |
 | `multiqc_data` | MultiQC parsed metrics data directory | ww-multiqc |
