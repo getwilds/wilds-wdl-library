@@ -3,7 +3,3 @@ run.experimental_features_enabled = true
 
 # Set the default backend to Slurm + Apptainer.
 run.backends.default.type = "slurm_apptainer"
-
-# Suppress analyzer diagnostics already covered by the linting CI job
-# HPC run logs should stay focused on execution output
-analyzer.except = ["UnusedInput", "TodoComment", "ContainerUri"]
