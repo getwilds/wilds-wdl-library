@@ -19,7 +19,7 @@ This pipeline extends the simpler `ww-star-deseq2` pipeline with upstream read Q
 
 ## Pipeline Structure
 
-**Complexity Level: Advanced** (11 steps, 8 distinct modules)
+**Complexity Level: Advanced** (12 steps, 8 distinct modules + 1 pipeline-local task)
 
 1. **GTF Normalization** (using `ww-gffread` module):
    - Ensures the reference GTF has proper `exon` features for every transcript
@@ -66,6 +66,12 @@ This pipeline extends the simpler `ww-star-deseq2` pipeline with upstream read Q
 11. **MultiQC — Aggregated Reporting** (using `ww-multiqc` module):
     - Collects reports from FastQC, Trim Galore, STAR, and RSeQC
     - Generates a single interactive HTML report summarizing all QC metrics
+
+12. **Organize Outputs** (optional, pipeline-local task):
+    - Reorganizes all outputs into a clean numbered directory structure with sample-named subdirectories
+    - Packages results as a single `.tar.gz` for easy delivery
+    - Disabled by default (`organize_results = false`) to avoid data duplication
+    - BAM files and trimmed FASTQs can be optionally included via `include_bams` and `include_trimmed_fastqs`
 
 ## Module Dependencies
 
@@ -183,6 +189,9 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `star_cpu` | Number of CPU cores for STAR alignment tasks | Int | No | 8 |
 | `star_memory_gb` | Memory allocation in GB for STAR alignment tasks | Int | No | 64 |
 | `genome_sa_index_nbases` | STAR SA pre-indexing string length (scales with genome size) | Int | No | 14 |
+| `organize_results` | Reorganize outputs into a clean directory tarball | Boolean | No | false |
+| `include_bams` | Include BAM/BAI files in the organized tarball | Boolean | No | false |
+| `include_trimmed_fastqs` | Include trimmed FASTQ files in the organized tarball | Boolean | No | false |
 
 *Provide either `samples_tsv` OR all four separate arrays (`sample_names`, `r1_fastqs`, `r2_fastqs`, `conditions`).
 
@@ -229,6 +238,7 @@ The pipeline produces comprehensive outputs from all modules:
 | `deseq2_compiled_results` | Combined CSV with DESeq2 stats, normalized counts, and gene annotations | ww-deseq2 |
 | `multiqc_report` | Aggregated interactive HTML QC report | ww-multiqc |
 | `multiqc_data` | MultiQC parsed metrics data directory | ww-multiqc |
+| `organized_results` | (Optional) Tarball with all outputs organized by step and sample | pipeline-local |
 
 ## Resource Considerations
 

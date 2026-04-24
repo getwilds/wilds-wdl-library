@@ -11,5 +11,8 @@
   "rnaseq.trim_length": 20,
   "rnaseq.star_cpu": 8,
   "rnaseq.star_memory_gb": 64,
-  "rnaseq.genome_sa_index_nbases": 14
+  "rnaseq.genome_sa_index_nbases": 14,
+  "rnaseq.organize_results": false,
+  "rnaseq.include_bams": false,
+  "rnaseq.include_trimmed_fastqs": false
 }

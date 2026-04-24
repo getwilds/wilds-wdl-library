@@ -48,7 +48,8 @@ workflow rnaseq {
         deseq2_heatmap: "Heatmap of differentially expressed genes across samples",
         deseq2_compiled_results: "Combined CSV with DESeq2 statistics, normalized counts, and gene annotations",
         multiqc_report: "MultiQC interactive HTML report aggregating all QC metrics",
-        multiqc_data: "MultiQC data directory with parsed metrics from all tools"
+        multiqc_data: "MultiQC data directory with parsed metrics from all tools",
+        organized_results: "Tarball containing all pipeline outputs organized by step and sample name"
     }
   }
 
@@ -66,6 +67,9 @@ workflow rnaseq {
     star_cpu: "Number of CPU cores for STAR alignment tasks"
     star_memory_gb: "Memory allocation in GB for STAR alignment tasks"
     genome_sa_index_nbases: "Length of the SA pre-indexing string for STAR (typically 10-15, scales with genome size)"
+    organize_results: "Whether to reorganize all outputs into a clean directory structure tarball (duplicates data, increases storage)"
+    include_bams: "Whether to include BAM/BAI files in the organized results tarball (can significantly increase output size)"
+    include_trimmed_fastqs: "Whether to include trimmed FASTQ files in the organized results tarball (can significantly increase output size)"
   }
 
   input {
@@ -84,6 +88,9 @@ workflow rnaseq {
     Int star_cpu = 8
     Int star_memory_gb = 64
     Int genome_sa_index_nbases = 14
+    Boolean organize_results = false
+    Boolean include_bams = false
+    Boolean include_trimmed_fastqs = false
   }
 
   # Parse sample information from TSV if provided.
@@ -202,6 +209,39 @@ workflow rnaseq {
       report_title = "RNA-seq Pipeline QC Report"
   }
 
+  # Step 10 (optional): Organize all outputs into a clean directory structure
+  if (organize_results) {
+    call organize_outputs as step10_organize_outputs { input:
+        sample_names = sample_name,
+        pretrim_fastqc_html = flatten(step01_pretrim_fastqc.html_reports),
+        pretrim_fastqc_zip = flatten(step01_pretrim_fastqc.zip_reports),
+        trimgalore_r1_trimmed = step02_trimgalore.r1_trimmed,
+        trimgalore_r2_trimmed = step02_trimgalore.r2_trimmed,
+        trimgalore_r1_report = step02_trimgalore.r1_report,
+        trimgalore_r2_report = step02_trimgalore.r2_report,
+        posttrim_fastqc_html = flatten(step03_posttrim_fastqc.html_reports),
+        posttrim_fastqc_zip = flatten(step03_posttrim_fastqc.zip_reports),
+        star_bam = step04_star_align.bam,
+        star_bai = step04_star_align.bai,
+        star_gene_counts = step04_star_align.gene_counts,
+        star_log_final = step04_star_align.log_final,
+        rseqc_summary = step05_rseqc.rseqc_summary,
+        counts_matrix = step06_combine_counts.counts_matrix,
+        sample_metadata = step06_combine_counts.sample_metadata,
+        deseq2_results = step07_deseq2.deseq2_results,
+        deseq2_significant = step07_deseq2.deseq2_significant,
+        deseq2_normalized_counts = step07_deseq2.deseq2_normalized_counts,
+        deseq2_pca_plot = step07_deseq2.deseq2_pca_plot,
+        deseq2_volcano_plot = step07_deseq2.deseq2_volcano_plot,
+        deseq2_heatmap = step07_deseq2.deseq2_heatmap,
+        deseq2_compiled_results = step08_compile_results.compiled_results,
+        multiqc_report = step09_multiqc.html_report,
+        multiqc_data = step09_multiqc.data_dir,
+        include_bams = include_bams,
+        include_trimmed_fastqs = include_trimmed_fastqs
+    }
+  }
+
   output {
     Array[Array[File]] pretrim_fastqc_html = step01_pretrim_fastqc.html_reports
     Array[Array[File]] pretrim_fastqc_zip = step01_pretrim_fastqc.zip_reports
@@ -230,5 +270,137 @@ workflow rnaseq {
     File deseq2_compiled_results = step08_compile_results.compiled_results
     File multiqc_report = step09_multiqc.html_report
     File multiqc_data = step09_multiqc.data_dir
+    File? organized_results = step10_organize_outputs.results_tar
+  }
+}
+
+task organize_outputs {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Organize all RNA-seq pipeline outputs into a clean, numbered directory structure and package as a tarball"
+    outputs: {
+        results_tar: "Tarball containing all pipeline outputs organized by step and sample"
+    }
+  }
+
+  parameter_meta {
+    sample_names: "Array of sample names used to create per-sample subdirectories"
+    include_bams: "Whether to include BAM/BAI files in the output tarball (can be very large)"
+    include_trimmed_fastqs: "Whether to include trimmed FASTQ files in the output tarball (can be very large)"
+    output_prefix: "Prefix for the output tarball filename"
+  }
+
+  input {
+    Array[String] sample_names
+    Array[File] pretrim_fastqc_html
+    Array[File] pretrim_fastqc_zip
+    Array[File] trimgalore_r1_trimmed
+    Array[File] trimgalore_r2_trimmed
+    Array[File] trimgalore_r1_report
+    Array[File] trimgalore_r2_report
+    Array[File] posttrim_fastqc_html
+    Array[File] posttrim_fastqc_zip
+    Array[File] star_bam
+    Array[File] star_bai
+    Array[File] star_gene_counts
+    Array[File] star_log_final
+    Array[File] rseqc_summary
+    File counts_matrix
+    File sample_metadata
+    File deseq2_results
+    File deseq2_significant
+    File deseq2_normalized_counts
+    File deseq2_pca_plot
+    File deseq2_volcano_plot
+    File deseq2_heatmap
+    File deseq2_compiled_results
+    File multiqc_report
+    File multiqc_data
+    Boolean include_bams = false
+    Boolean include_trimmed_fastqs = false
+    String output_prefix = "rnaseq_results"
+    Int memory_gb = 4
+    Int cpu_cores = 1
+  }
+
+  command <<<
+    set -eo pipefail
+
+    OUTDIR="~{output_prefix}"
+    NAMES=(~{sep=" " sample_names})
+    N=${#NAMES[@]}
+
+    PRETRIM_HTML=(~{sep=" " pretrim_fastqc_html})
+    PRETRIM_ZIP=(~{sep=" " pretrim_fastqc_zip})
+    TRIM_R1=(~{sep=" " trimgalore_r1_trimmed})
+    TRIM_R2=(~{sep=" " trimgalore_r2_trimmed})
+    TRIM_R1_RPT=(~{sep=" " trimgalore_r1_report})
+    TRIM_R2_RPT=(~{sep=" " trimgalore_r2_report})
+    POSTTRIM_HTML=(~{sep=" " posttrim_fastqc_html})
+    POSTTRIM_ZIP=(~{sep=" " posttrim_fastqc_zip})
+    STAR_BAM=(~{sep=" " star_bam})
+    STAR_BAI=(~{sep=" " star_bai})
+    STAR_COUNTS=(~{sep=" " star_gene_counts})
+    STAR_LOG=(~{sep=" " star_log_final})
+    RSEQC=(~{sep=" " rseqc_summary})
+
+    for i in $(seq 0 $((N - 1))); do
+      SAMPLE="${NAMES[$i]}"
+
+      mkdir -p "$OUTDIR/01-pretrim_fastqc/$SAMPLE"
+      cp "${PRETRIM_HTML[$i]}" "$OUTDIR/01-pretrim_fastqc/$SAMPLE/"
+      cp "${PRETRIM_ZIP[$i]}" "$OUTDIR/01-pretrim_fastqc/$SAMPLE/"
+
+      mkdir -p "$OUTDIR/02-trimgalore/$SAMPLE"
+      if [ "~{include_trimmed_fastqs}" = "true" ]; then
+        cp "${TRIM_R1[$i]}" "$OUTDIR/02-trimgalore/$SAMPLE/"
+        cp "${TRIM_R2[$i]}" "$OUTDIR/02-trimgalore/$SAMPLE/"
+      fi
+      cp "${TRIM_R1_RPT[$i]}" "$OUTDIR/02-trimgalore/$SAMPLE/"
+      cp "${TRIM_R2_RPT[$i]}" "$OUTDIR/02-trimgalore/$SAMPLE/"
+
+      mkdir -p "$OUTDIR/03-posttrim_fastqc/$SAMPLE"
+      cp "${POSTTRIM_HTML[$i]}" "$OUTDIR/03-posttrim_fastqc/$SAMPLE/"
+      cp "${POSTTRIM_ZIP[$i]}" "$OUTDIR/03-posttrim_fastqc/$SAMPLE/"
+
+      mkdir -p "$OUTDIR/04-star_align/$SAMPLE"
+      if [ "~{include_bams}" = "true" ]; then
+        cp "${STAR_BAM[$i]}" "$OUTDIR/04-star_align/$SAMPLE/"
+        cp "${STAR_BAI[$i]}" "$OUTDIR/04-star_align/$SAMPLE/"
+      fi
+      cp "${STAR_COUNTS[$i]}" "$OUTDIR/04-star_align/$SAMPLE/"
+      cp "${STAR_LOG[$i]}" "$OUTDIR/04-star_align/$SAMPLE/"
+
+      mkdir -p "$OUTDIR/05-rseqc/$SAMPLE"
+      cp "${RSEQC[$i]}" "$OUTDIR/05-rseqc/$SAMPLE/"
+    done
+
+    mkdir -p "$OUTDIR/06-deseq2"
+    cp "~{counts_matrix}" "$OUTDIR/06-deseq2/"
+    cp "~{sample_metadata}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_results}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_significant}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_normalized_counts}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_compiled_results}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_pca_plot}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_volcano_plot}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_heatmap}" "$OUTDIR/06-deseq2/"
+
+    mkdir -p "$OUTDIR/07-multiqc"
+    cp "~{multiqc_report}" "$OUTDIR/07-multiqc/"
+    cp -r "~{multiqc_data}" "$OUTDIR/07-multiqc/"
+
+    tar -czf "~{output_prefix}.tar.gz" "$OUTDIR"
+  >>>
+
+  output {
+    File results_tar = "~{output_prefix}.tar.gz"
+  }
+
+  runtime {
+    docker: "ubuntu:24.04"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
   }
 }

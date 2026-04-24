@@ -47,7 +47,10 @@ workflow rnaseq_example {
       trim_length = 20,
       star_cpu = 2,
       star_memory_gb = 6,
-      genome_sa_index_nbases = 10
+      genome_sa_index_nbases = 10,
+      organize_results = true,
+      include_bams = true,
+      include_trimmed_fastqs = true
   }
 
   output {
@@ -75,7 +78,9 @@ workflow rnaseq_example {
     File deseq2_pca_plot = rnaseq.deseq2_pca_plot
     File deseq2_volcano_plot = rnaseq.deseq2_volcano_plot
     File deseq2_heatmap = rnaseq.deseq2_heatmap
+    File deseq2_compiled_results = rnaseq.deseq2_compiled_results
     File multiqc_report = rnaseq.multiqc_report
     File multiqc_data = rnaseq.multiqc_data
+    File? organized_results = rnaseq.organized_results
   }
 }
