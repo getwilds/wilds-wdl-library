@@ -17,7 +17,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 - **Tasks**: `combine_count_matrices`, `run_deseq2`, `compile_deseq2_results`
 - **Scripts**: `combine_star_counts.py`, `deseq2_analysis.R`, `compile_deseq2_results.py`, `generate_pasilla_counts.R` (fetched via curl at runtime)
 - **Test workflow**: `testrun.wdl` (demonstration workflow using test data)
-- **Containers**: `python:3.12` (count matrix tasks; pandas installed into the task working directory at runtime), `getwilds/deseq2:1.40.2` (DESeq2 analysis)
+- **Containers**: `getwilds/python-utils:0.1.0` (count matrix tasks), `getwilds/deseq2:1.40.2` (DESeq2 analysis)
 - **Dependencies**: Integrates with `ww-testdata` module for test data generation
 - **Test Data**: Uses Pasilla test dataset with 7 samples and 10,000 genes
 
@@ -236,7 +236,7 @@ The `deseq2_example` workflow:
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
 - Internet access for fetching scripts from GitHub at runtime
 - R environment with DESeq2 package (provided by `getwilds/deseq2:1.40.2` container)
-- Python 3.12 (provided by `python:3.12` container; pandas is installed into the task's working directory at runtime to avoid filling system scratch space on HPC systems)
+- Python 3 with pandas (provided by `getwilds/python-utils:0.1.0` container)
 
 ## Support
 

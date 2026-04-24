@@ -30,8 +30,8 @@ task combine_count_matrices {
     Array[File] gene_count_files
     Array[String] sample_names
     Array[String] sample_conditions
-    Int memory_gb = 8
-    Int cpu_cores = 2
+    Int memory_gb = 4
+    Int cpu_cores = 1
     Int count_column = 2
         # Column to extract from ReadsPerGene.out.tab files:
         # 2 = unstranded counts
@@ -41,12 +41,6 @@ task combine_count_matrices {
 
   command <<<
     set -eo pipefail
-
-    # Install pandas into the task working directory to avoid
-    # filling up scratch/tmp space on HPC systems
-    PIP_TARGET="$(pwd)/.pip_packages"
-    python3 -m pip install --target="${PIP_TARGET}" --cache-dir="$(pwd)/.pip_cache" pandas==2.2.3
-    export PYTHONPATH="${PIP_TARGET}:${PYTHONPATH:-}"
 
     curl -so combine_star_counts.py \
       "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/combine_star_counts.py"
@@ -65,7 +59,7 @@ task combine_count_matrices {
   }
 
   runtime {
-    docker: "python:3.12"
+    docker: "getwilds/python-utils:0.1.0"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -185,12 +179,6 @@ task compile_deseq2_results {
   command <<<
     set -eo pipefail
 
-    # Install pandas into the task working directory to avoid
-    # filling up scratch/tmp space on HPC systems
-    PIP_TARGET="$(pwd)/.pip_packages"
-    python3 -m pip install --target="${PIP_TARGET}" --cache-dir="$(pwd)/.pip_cache" pandas==2.2.3
-    export PYTHONPATH="${PIP_TARGET}:${PYTHONPATH:-}"
-
     curl -so compile_deseq2_results.py \
       "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/compile_deseq2_results.py"
 
@@ -206,7 +194,7 @@ task compile_deseq2_results {
   }
 
   runtime {
-    docker: "python:3.12"
+    docker: "getwilds/python-utils:0.1.0"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
