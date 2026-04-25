@@ -2,7 +2,7 @@ version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-hpc-testrun/pipelines/ww-splicing-proteomics/ww-splicing-proteomics.wdl" as splicing_proteomics_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-splicing-proteomics/ww-splicing-proteomics.wdl" as splicing_proteomics_workflow
 
 struct SampleInfo {
     String name
@@ -23,12 +23,11 @@ workflow splicing_proteomics_example {
   call ww_testdata.download_jcast_test_data { }
 
   # Download RNA-seq data from SRA (airway study - dexamethasone treatment)
-  # Using 2 treated + 2 untreated samples for differential splicing analysis
-  # Using 500K reads per sample to have sufficient coverage for splicing detection
-  call ww_sra.fastqdump as untreated1 { input: sra_id = "SRR1039509", ncpu = 2, max_reads = 500000 }
-  call ww_sra.fastqdump as untreated2 { input: sra_id = "SRR1039513", ncpu = 2, max_reads = 500000 }
-  call ww_sra.fastqdump as treated1 { input: sra_id = "SRR1039508", ncpu = 2, max_reads = 500000 }
-  call ww_sra.fastqdump as treated2 { input: sra_id = "SRR1039512", ncpu = 2, max_reads = 500000 }
+  # Using 1 treated + 1 untreated sample for a CI smoke test (not biologically meaningful)
+  # Using 250K reads per sample to keep runtime under control on free GitHub runners
+  # while retaining enough chr15 coverage for rMATS to detect splice events
+  call ww_sra.fastqdump as untreated1 { input: sra_id = "SRR1039509", ncpu = 2, max_reads = 250000 }
+  call ww_sra.fastqdump as treated1 { input: sra_id = "SRR1039508", ncpu = 2, max_reads = 250000 }
 
   # Construct SampleInfo structs from SRA downloads
   # group1 = untreated (control), group2 = treated (dexamethasone)
@@ -40,23 +39,9 @@ workflow splicing_proteomics_example {
   }
 
   SampleInfo sample2 = {
-    "name": "untreated_2",
-    "r1": untreated2.r1_end,
-    "r2": untreated2.r2_end,
-    "group": "group1"
-  }
-
-  SampleInfo sample3 = {
     "name": "treated_1",
     "r1": treated1.r1_end,
     "r2": treated1.r2_end,
-    "group": "group2"
-  }
-
-  SampleInfo sample4 = {
-    "name": "treated_2",
-    "r1": treated2.r1_end,
-    "r2": treated2.r2_end,
     "group": "group2"
   }
 
@@ -70,7 +55,7 @@ workflow splicing_proteomics_example {
   # Run splicing proteomics pipeline
   call splicing_proteomics_workflow.splicing_proteomics {
     input:
-      samples = [sample1, sample2, sample3, sample4],
+      samples = [sample1, sample2],
       reference_genome = reference,
       read_length = 63,  # Airway dataset read length
       read_type = "paired",
