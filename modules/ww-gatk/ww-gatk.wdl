@@ -149,17 +149,23 @@ task base_recalibrator {
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    ln -s "~{dbsnp_vcf}" "~{basename(dbsnp_vcf)}"
+    known_vcfs=(~{sep=" " known_indels_sites_vcfs})
+    known_sites_args=""
+    for known_vcf in "${known_vcfs[@]}"; do
+      ln -s "${known_vcf}" "$(basename "${known_vcf}")"
+      known_sites_args="${known_sites_args} --known-sites $(basename "${known_vcf}")"
+    done
 
     # Generate vcf index files using GATK
-    gatk IndexFeatureFile -I "~{dbsnp_vcf}"
-    known_vcfs=(~{sep=" " known_indels_sites_vcfs})
+    gatk IndexFeatureFile -I "~{basename(dbsnp_vcf)}"
     for known_vcf in "${known_vcfs[@]}"; do
-      gatk IndexFeatureFile -I "${known_vcf}"
+      gatk IndexFeatureFile -I "$(basename "${known_vcf}")"
     done
 
     # Generate Base Recalibration Table
@@ -168,8 +174,8 @@ task base_recalibrator {
       -R "~{basename(reference_fasta)}" \
       -I "~{bam}" \
       -O "~{base_file_name}.recal_data.table" \
-      --known-sites "~{dbsnp_vcf}" \
-      --known-sites ~{sep=" --known-sites " known_indels_sites_vcfs} \
+      --known-sites "~{basename(dbsnp_vcf)}" \
+      ${known_sites_args} \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       --verbosity WARNING
 
@@ -329,17 +335,23 @@ task markdup_recal_metrics {
     # Index resulting bam file
     samtools index "~{base_file_name}.markdup.bam"
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    ln -s "~{dbsnp_vcf}" "~{basename(dbsnp_vcf)}"
+    known_vcfs=(~{sep=" " known_indels_sites_vcfs})
+    known_sites_args=""
+    for known_vcf in "${known_vcfs[@]}"; do
+      ln -s "${known_vcf}" "$(basename "${known_vcf}")"
+      known_sites_args="${known_sites_args} --known-sites $(basename "${known_vcf}")"
+    done
 
     # Generate vcf index files using GATK
-    gatk IndexFeatureFile -I "~{dbsnp_vcf}"
-    known_vcfs=(~{sep=" " known_indels_sites_vcfs})
+    gatk IndexFeatureFile -I "~{basename(dbsnp_vcf)}"
     for known_vcf in "${known_vcfs[@]}"; do
-      gatk IndexFeatureFile -I "${known_vcf}"
+      gatk IndexFeatureFile -I "$(basename "${known_vcf}")"
     done
 
     # Generate Base Recalibration Table
@@ -348,8 +360,8 @@ task markdup_recal_metrics {
       -R "~{basename(reference_fasta)}" \
       -I "~{bam}" \
       -O "~{base_file_name}.recal_data.table" \
-      --known-sites "~{dbsnp_vcf}" \
-      --known-sites ~{sep=" --known-sites " known_indels_sites_vcfs} \
+      --known-sites "~{basename(dbsnp_vcf)}" \
+      ${known_sites_args} \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       --verbosity WARNING
 
@@ -626,14 +638,15 @@ task haplotype_caller {
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    ln -s "~{dbsnp_vcf}" "~{basename(dbsnp_vcf)}"
 
     # Create index for dbSNP vcf
-    gatk IndexFeatureFile -I "~{dbsnp_vcf}"
+    gatk IndexFeatureFile -I "~{basename(dbsnp_vcf)}"
 
     # Run HaplotypeCaller
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
@@ -641,7 +654,7 @@ task haplotype_caller {
       -R "~{basename(reference_fasta)}" \
       -I "~{bam}" \
       -O "~{base_file_name}.haplotypecaller.vcf.gz" \
-      --dbsnp "~{dbsnp_vcf}" \
+      --dbsnp "~{basename(dbsnp_vcf)}" \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       ~{if defined(intervals) then "--interval-padding 100" else ""} \
       --verbosity WARNING
@@ -706,14 +719,15 @@ task mutect2 {
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    ln -s "~{gnomad_vcf}" "~{basename(gnomad_vcf)}"
 
     # Index gnomad VCF
-    gatk IndexFeatureFile -I "~{gnomad_vcf}"
+    gatk IndexFeatureFile -I "~{basename(gnomad_vcf)}"
 
     # Run Mutect2
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
@@ -723,7 +737,7 @@ task mutect2 {
       -O "~{base_file_name}.unfiltered.vcf.gz" \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       ~{if defined(intervals) then "--interval-padding 100" else ""} \
-      --germline-resource "~{gnomad_vcf}" \
+      --germline-resource "~{basename(gnomad_vcf)}" \
       --f1r2-tar-gz "~{base_file_name}.f1r2.tar.gz" \
       --max-mnp-distance "~{max_mnp_distance}" \
       --verbosity WARNING
@@ -894,13 +908,14 @@ task haplotype_caller_parallel {
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    ln -s "~{dbsnp_vcf}" "~{basename(dbsnp_vcf)}"
 
     # Create index for dbSNP vcf
-    gatk IndexFeatureFile -I "~{dbsnp_vcf}"
+    gatk IndexFeatureFile -I "~{basename(dbsnp_vcf)}"
 
     # Calculate memory per parallel job
     mem_per_job=$(( (~{memory_gb} - 4) / ~{length(intervals)} ))
@@ -923,7 +938,7 @@ task haplotype_caller_parallel {
         -O "~{base_file_name}.${interval_name}.vcf.gz" \
         --intervals "$interval_file" \
         --interval-padding 100 \
-        --dbsnp "~{dbsnp_vcf}" \
+        --dbsnp "${dbsnp_vcf}" \
         --verbosity WARNING
     }
 
@@ -931,7 +946,7 @@ task haplotype_caller_parallel {
     export -f run_haplotypecaller
     export reference_fasta="~{basename(reference_fasta)}"
     export bam="~{bam}"
-    export dbsnp_vcf="~{dbsnp_vcf}"
+    export dbsnp_vcf="~{basename(dbsnp_vcf)}"
     export base_file_name="~{base_file_name}"
     export mem_per_job
 
@@ -1009,14 +1024,15 @@ task mutect2_parallel {
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    ln -s "~{gnomad_vcf}" "~{basename(gnomad_vcf)}"
 
     # Index gnomad VCF
-    gatk IndexFeatureFile -I "~{gnomad_vcf}"
+    gatk IndexFeatureFile -I "~{basename(gnomad_vcf)}"
 
     # Calculate memory per parallel job
     mem_per_job=$(( (~{memory_gb} - 4) / ~{length(intervals)} ))
@@ -1040,7 +1056,7 @@ task mutect2_parallel {
         -O "~{base_file_name}.${interval_name}.unfiltered.vcf.gz" \
         --intervals "$interval_file" \
         --interval-padding 100 \
-        --germline-resource "~{gnomad_vcf}" \
+        --germline-resource "${gnomad_vcf}" \
         --f1r2-tar-gz "~{base_file_name}.${interval_name}.f1r2.tar.gz" \
         --max-mnp-distance "~{max_mnp_distance}" \
         --verbosity WARNING
@@ -1059,7 +1075,7 @@ task mutect2_parallel {
     export -f run_mutect2
     export reference_fasta="~{basename(reference_fasta)}"
     export bam="~{bam}"
-    export gnomad_vcf="~{gnomad_vcf}"
+    export gnomad_vcf="~{basename(gnomad_vcf)}"
     export base_file_name="~{base_file_name}"
     export mem_per_job
 
@@ -1360,15 +1376,14 @@ task create_somatic_pon {
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
-    # Index germline resource if provided
     if [[ -f "~{germline_resource}" ]]; then
-      gatk IndexFeatureFile -I "~{germline_resource}"
+      ln -s "~{germline_resource}" "$(basename ~{germline_resource})"
+      gatk IndexFeatureFile -I "$(basename ~{germline_resource})"
     fi
 
     # Create a GenomicsDB from normal calls
@@ -1387,7 +1402,7 @@ task create_somatic_pon {
       -V gendb://"~{database_name}" \
       -R "~{basename(reference_fasta)}" \
       -L "~{intervals}" \
-      ~{if defined(germline_resource) then "--germline-resource " + germline_resource else ""} \
+      ~{if defined(germline_resource) then "--germline-resource " + basename(select_first([germline_resource])) else ""} \
       -O "~{base_file_name}.pon.vcf.gz" \
       --verbosity WARNING
   >>>

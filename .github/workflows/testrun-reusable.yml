@@ -35,7 +35,8 @@ jobs:
 
   miniwdl-test:
     needs: [discover]
-    # Test runs at the workflow level become difficult to run due to large collection 
+    if: ${{ needs.discover.outputs.items != '[]' }}
+    # Test runs at the workflow level become difficult to run due to large collection
     # of Docker images that need to be pulled down (see ww-leukemia for example).
     # Consider using larger runners in the future, e.g. ubuntu-latest-4-cores (4-core, 16GB RAM, 150GB disk)
     # https://docs.github.com/en/enterprise-cloud@latest/actions/concepts/runners/larger-runners
@@ -75,7 +76,8 @@ jobs:
 
   cromwell-test:
     needs: [discover]
-    # Test runs at the workflow level become difficult to run due to large collection 
+    if: ${{ needs.discover.outputs.items != '[]' }}
+    # Test runs at the workflow level become difficult to run due to large collection
     # of Docker images that need to be pulled down (see ww-leukemia for example).
     # Consider using larger runners in the future, e.g. ubuntu-latest-4-cores (4-core, 16GB RAM, 150GB disk)
     # https://docs.github.com/en/enterprise-cloud@latest/actions/concepts/runners/larger-runners
@@ -119,7 +121,8 @@ jobs:
 
   sprocket-test:
     needs: [discover]
-    # Test runs at the workflow level become difficult to run due to large collection 
+    if: ${{ needs.discover.outputs.items != '[]' }}
+    # Test runs at the workflow level become difficult to run due to large collection
     # of Docker images that need to be pulled down (see ww-leukemia for example).
     # Consider using larger runners in the future, e.g. ubuntu-latest-4-cores (4-core, 16GB RAM, 150GB disk)
     # https://docs.github.com/en/enterprise-cloud@latest/actions/concepts/runners/larger-runners

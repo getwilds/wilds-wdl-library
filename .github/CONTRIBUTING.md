@@ -12,6 +12,8 @@ Thank you for your interest in contributing to the WILDS WDL Library! This docum
 - [Testing Requirements](#testing-requirements)
 - [Documentation Standards](#documentation-standards)
 - [Documentation Website](#documentation-website)
+- [Citation and Attribution](#citation-and-attribution)
+- [Dockstore Registration](#dockstore-registration)
 - [Pull Request Process](#pull-request-process)
 - [Code of Conduct](#code-of-conduct)
 
@@ -275,6 +277,38 @@ All contributions must pass our automated testing pipeline which executes on a P
 - **Integration testing**: Cross-module compatibility testing
 - **Cirro validation**: Validates `.cirro/` configurations for pipelines that include them
 
+#### CI-Excluded Modules
+
+Some modules require more memory than GitHub Actions runners provide (~16 GB) and are excluded from CI test runs. These modules are listed in the `CI_EXCLUDED_ITEMS` dictionary in [`.github/scripts/discover_wdls.py`](.github/scripts/discover_wdls.py). Linting still runs for these modules in CI, and their test workflows are validated on the Fred Hutch high performance computing (HPC) cluster on a monthly basis (see below).
+
+Currently excluded:
+- **ww-esmfold**: Requires ~24 GB to load the 3B-parameter ESM-2 model
+
+If your module exceeds GitHub Actions resource limits, add it to `CI_EXCLUDED_ITEMS` and document the exclusion in your module's README. Be sure to verify that the test workflow runs successfully on an HPC or local machine with sufficient resources.
+
+#### HPC Monthly Test Runs
+
+Contributors should be aware that to supplement GitHub Actions CI (which has resource limits), we run the full test suite monthly on the Fred Hutch HPC using a SLURM batch script. This ensures that CI-excluded modules are still regularly validated, and that all modules/pipelines work under HPC execution conditions (Slurm + Apptainer).
+
+The infrastructure consists of two scripts:
+
+- [`.github/scripts/hpc-testrun.sbatch`](.github/scripts/hpc-testrun.sbatch) — SLURM batch script that clones the repo, runs `make run_sprocket` with a [Slurm + Apptainer sprocket config](https://sprocket.bio/guides/slurm), and invokes the report script.
+- [`.github/scripts/hpc_testrun_report.py`](.github/scripts/hpc_testrun_report.py) — Python script that parses the test output and posts a pass/fail summary as a comment on a central GitHub tracking issue.
+
+To run it:
+
+```bash
+export GITHUB_ISSUE_NUMBER=<tracking_issue_number>
+export WORK_DIR=/hpc/temp/your-username/wilds-testrun
+sbatch /path/to/hpc-testrun.sbatch
+```
+
+You can also run the test suite manually on the HPC without the SLURM script:
+
+```bash
+make run_sprocket SPROCKET_CONFIG=/path/to/your/sprocket-slurm-config.toml
+```
+
 ## Documentation Website
 
 The WILDS WDL Library includes an automatically-generated documentation website that provides comprehensive technical documentation for all modules and pipelines. Understanding how this documentation works is important for contributors.
@@ -353,6 +387,74 @@ If you encounter issues with local documentation builds:
 - Review error messages - they often indicate issues with WDL syntax or README formatting
 
 For questions about documentation, please contact [wilds@fredhutch.org](mailto:wilds@fredhutch.org).
+
+## Citation and Attribution
+
+The repository includes a `CITATION.cff` file that provides structured citation metadata for the WILDS WDL Library. This file follows the [Citation File Format](https://citation-file-format.github.io/) standard and is used by GitHub, Zenodo, and other platforms to generate proper citations.
+
+### When to Update `CITATION.cff`
+
+If you are a new contributor making a significant contribution (e.g., a new module or pipeline), add yourself to the `authors:` list in `CITATION.cff`:
+
+```yaml
+authors:
+  - family-names: LastName
+    given-names: FirstName
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0000-0000-0000-0000"  # optional but encouraged
+```
+
+Keep the ORCID in full URL format (`https://orcid.org/...`) in `CITATION.cff` — this differs from `.dockstore.yml` which uses just the numeric ID.
+
+### Keeping Author Info Consistent
+
+Author information appears in several places across the repo. When adding or updating author details, make sure the following are consistent:
+
+- **`CITATION.cff`** — the canonical source for contributor names, affiliations, and ORCIDs
+- **`.dockstore.yml`** — author entries for each module/pipeline (see [Dockstore Registration](#dockstore-registration))
+- **WDL `meta` blocks** — `author` and `email` fields in task/workflow metadata
+
+## Dockstore Registration
+
+All modules and pipelines in this library are published on [Dockstore](https://dockstore.org/), a platform for sharing and discovering bioinformatics workflows. When you contribute a new module or pipeline, you must add a corresponding entry to the `.dockstore.yml` file in the repository root.
+
+### Adding a Module Entry
+
+Modules are registered under the `tools:` section. Use an existing entry as a template:
+
+```yaml
+tools:
+  - name: ww-toolname
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-toolname/ww-toolname.wdl
+    readMePath: /modules/ww-toolname/README.md
+    authors:
+      - name: Your Name
+        email: your.email@fredhutch.org
+        role: Your Role
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0000-0000-0000  # optional but encouraged
+    description: "Brief description of what this module does"
+    topic: relevant-topic
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+      tags:
+        - relevant-tag-1
+        - relevant-tag-2
+```
+
+### Adding a Pipeline Entry
+
+Pipelines are registered under the `workflows:` section with the same structure, but with paths pointing to the `pipelines/` directory. If you have an `inputs.json`, include it in `testParameterFiles`.
+
+### Author Information
+
+- List all authors who contributed tasks to the module or steps to the pipeline
+- Include `orcid` if available (use the numeric ID only, e.g., `0009-0002-2052-1084`)
+- Keep entries in alphabetical order by module/pipeline name within their section
+- Author details should match the `CITATION.cff` file where applicable
 
 ## Pull Request Process
 

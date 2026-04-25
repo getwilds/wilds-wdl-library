@@ -6,8 +6,8 @@ version 1.0
 
 task download_ref_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads reference genome and index files for WILDS WDL test runs"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -105,8 +105,8 @@ task download_ref_data {
 
 task download_fastq_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads small example FASTQ files for WILDS WDL test runs. Renames to Illumina naming convention with optional gzip compression."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -164,8 +164,8 @@ task download_fastq_data {
 
 task interleave_fastq {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
     description: "Interleaves a set of R1 and R2 FASTQ files"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -208,8 +208,8 @@ task interleave_fastq {
 
 task download_cram_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads small example CRAM files for WILDS WDL test runs"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -221,6 +221,7 @@ task download_cram_data {
   parameter_meta {
     ref_fasta: "Reference genome FASTA file to use for CRAM conversion"
     chromosome: "Chromosome to extract from the BAM file (default: chr1)"
+    output_name: "Optional name for output CRAM file (default: NA12878_{chromosome})"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -228,9 +229,12 @@ task download_cram_data {
   input {
     File ref_fasta
     String chromosome = "chr1"
+    String? output_name
     Int cpu_cores = 2
     Int memory_gb = 4
   }
+
+  String final_name = select_first([output_name, "NA12878_~{chromosome}"])
 
   command <<<
     set -euo pipefail
@@ -271,16 +275,16 @@ task download_cram_data {
     samtools index -@ ~{cpu_cores} NA12878_~{chromosome}.bam
 
     # Convert BAM to CRAM using the local reference copy
-    samtools view -@ ~{cpu_cores} -C -T ref.fa -o NA12878_~{chromosome}.cram NA12878_~{chromosome}.bam
-    samtools index -@ ~{cpu_cores} NA12878_~{chromosome}.cram
+    samtools view -@ ~{cpu_cores} -C -T ref.fa -o ~{final_name}.cram NA12878_~{chromosome}.bam
+    samtools index -@ ~{cpu_cores} ~{final_name}.cram
 
     # Clean up intermediate files
     rm NA12878_full.bam NA12878_full.bam.bai NA12878.bam NA12878.bam.bai NA12878_~{chromosome}.bam NA12878_~{chromosome}.bam.bai
   >>>
 
   output {
-    File cram = "NA12878_~{chromosome}.cram"
-    File crai = "NA12878_~{chromosome}.cram.crai"
+    File cram = "~{final_name}.cram"
+    File crai = "~{final_name}.cram.crai"
   }
 
   runtime {
@@ -292,8 +296,8 @@ task download_cram_data {
 
 task download_bam_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads small example BAM files for WILDS WDL test runs"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -362,8 +366,8 @@ task download_bam_data {
 
 task download_ichor_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads reference data for ichorCNA analysis on hg38"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -411,8 +415,8 @@ task download_ichor_data {
 
 task download_tritonnp_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Chris Lo"
+    email: "clo2@fredhutch.org"
     description: "Downloads test data for TritonNP analysis"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -472,8 +476,8 @@ task download_tritonnp_data {
 
 task download_dbsnp_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads dbSNP VCF files for GATK workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -552,8 +556,8 @@ task download_dbsnp_vcf {
 
 task download_known_indels_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads known indel VCF files for GATK workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -601,8 +605,8 @@ task download_known_indels_vcf {
 
 task download_gnomad_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads gnomad VCF files for GATK workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -822,10 +826,13 @@ task create_clean_amplicon_reference {
   command <<<
     set -eo pipefail
 
+    # Symlink input FASTA locally so samtools can write the .fai index
+    ln -s "~{input_fasta}" "~{basename(input_fasta)}"
+
     # Extract region if specified, otherwise use entire sequence
     if [ -n "~{region}" ]; then
-      samtools faidx "~{input_fasta}"
-      samtools faidx "~{input_fasta}" "~{region}" > temp_extract.fa
+      samtools faidx "~{basename(input_fasta)}"
+      samtools faidx "~{basename(input_fasta)}" "~{region}" > temp_extract.fa
 
       # Replace the header with just the chromosome name
       sed "s/^>.*/>~{output_name}/" temp_extract.fa > temp.fa
@@ -1184,8 +1191,8 @@ FASTA
 
 task download_glimpse2_genetic_map {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads genetic map files for GLIMPSE2 imputation from the official GLIMPSE repository"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -1240,8 +1247,8 @@ task download_glimpse2_genetic_map {
 
 task download_glimpse2_reference_panel {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads and prepares a 1000 Genomes reference panel subset for GLIMPSE2 imputation. Downloads phased data for the specified chromosome and filters to a region."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -1445,8 +1452,8 @@ task generate_sjl_data {
 
 task download_glimpse2_test_gl_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads low-coverage sequencing data from 1000 Genomes and generates a VCF with genotype likelihoods for GLIMPSE2 imputation testing."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {

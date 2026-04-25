@@ -1,7 +1,7 @@
 ## WILDS WDL Module: ww-deseq2
 ## Description: Module for differential expression analysis using DESeq2
-## Author: WILDS Team
-## Contact: wilds@fredhutch.org
+## Author: Taylor Firman
+## Contact: tfirman@fredhutch.org
 
 version 1.0
 

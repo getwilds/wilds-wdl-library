@@ -15,7 +15,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 - **Tasks**: `triton_main`, `combine_fms`
 - **Test workflow**: `testrun.wdl` (demonstration workflow executing all tasks)
-- **Container**: `python:bullseye`
+- **Container**: `getwilds/python-utils:0.1.0`
 
 ## Tasks
 

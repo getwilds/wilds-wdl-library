@@ -1,14 +1,14 @@
 ## WILDS WDL Module: ww-salmon
 ## Description: Module for RNA-seq quantification using Salmon
-## Author: WILDS Team
-## Contact: wilds@fredhutch.org
+## Author: Taylor Firman
+## Contact: tfirman@fredhutch.org
 
 version 1.0
 
 task build_index {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Build Salmon index from reference transcriptome FASTA file"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl"
     outputs: {
@@ -64,8 +64,8 @@ task build_index {
 
 task quantify {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Quantify transcript expression from RNA-seq reads using Salmon. Supports both paired-end and single-end data."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl"
     outputs: {
@@ -136,8 +136,8 @@ task quantify {
 
 task merge_results {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Merge Salmon quantification results from multiple samples into count and TPM matrices"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl"
     outputs: {
