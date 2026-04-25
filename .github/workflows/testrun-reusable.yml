@@ -115,7 +115,7 @@ jobs:
         item_dir="${{ inputs.item_type }}/${{ matrix.item }}"
         wdl_file="$item_dir/testrun.wdl"
         echo "Running ${{ inputs.item_type }}/${{ matrix.item }} with Cromwell..."
-        java -jar cromwell-92.jar run "$wdl_file"
+        java -Dconfig.file=.github/cromwell.conf -jar cromwell-92.jar run "$wdl_file"
 
   sprocket-test:
     needs: [discover]
