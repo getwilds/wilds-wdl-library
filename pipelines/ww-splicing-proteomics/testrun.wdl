@@ -24,9 +24,10 @@ workflow splicing_proteomics_example {
 
   # Download RNA-seq data from SRA (airway study - dexamethasone treatment)
   # Using 1 treated + 1 untreated sample for a CI smoke test (not biologically meaningful)
-  # Using 100K reads per sample to keep runtime under control on free GitHub runners
-  call ww_sra.fastqdump as untreated1 { input: sra_id = "SRR1039509", ncpu = 2, max_reads = 100000 }
-  call ww_sra.fastqdump as treated1 { input: sra_id = "SRR1039508", ncpu = 2, max_reads = 100000 }
+  # Using 250K reads per sample to keep runtime under control on free GitHub runners
+  # while retaining enough chr15 coverage for rMATS to detect splice events
+  call ww_sra.fastqdump as untreated1 { input: sra_id = "SRR1039509", ncpu = 2, max_reads = 250000 }
+  call ww_sra.fastqdump as treated1 { input: sra_id = "SRR1039508", ncpu = 2, max_reads = 250000 }
 
   # Construct SampleInfo structs from SRA downloads
   # group1 = untreated (control), group2 = treated (dexamethasone)
