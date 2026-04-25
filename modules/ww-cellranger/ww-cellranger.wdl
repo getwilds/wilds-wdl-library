@@ -26,6 +26,8 @@ task run_count {
     memory_gb: "Memory allocation in GB"
     expect_cells: "Optional: Expected number of recovered cells"
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
+    docker_image: "Docker image to use for execution. Used by container-based backends (Cromwell-Docker, miniWDL, Sprocket)."
+    environment_modules: "Space-separated list of HPC environment modules to load (e.g. 'cellranger/10.0.0'). Honored only by backends configured with a 'modules' runtime attribute (e.g. Fred Hutch HPC Cromwell). Ignored by container-based backends. Set this OR docker_image, not both."
   }
 
   input {
@@ -38,6 +40,8 @@ task run_count {
     Int memory_gb = 64
     Int? expect_cells
     String? chemistry
+    String docker_image = "ghcr.io/getwilds/cellranger:10.0.0"
+    String environment_modules = ""
   }
 
   command <<<
@@ -122,7 +126,8 @@ task run_count {
   }
 
   runtime {
-    docker: "ghcr.io/getwilds/cellranger:10.0.0"
+    docker: docker_image
+    modules: environment_modules
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

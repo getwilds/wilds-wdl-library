@@ -58,6 +58,8 @@ Run `cellranger count` on gene expression reads from one GEM well.
 - `memory_gb` (Int, default=64): Memory allocation in GB
 - `expect_cells` (Int, optional): Expected number of recovered cells
 - `chemistry` (String, optional): Assay configuration (e.g., SC3Pv3)
+- `docker_image` (String, default=`ghcr.io/getwilds/cellranger:10.0.0`): Container image used by container-based backends
+- `environment_modules` (String, default=`""`): HPC environment modules to load (e.g., `cellranger/10.0.0`); see [Software Environment](#software-environment) below
 
 **Important:** All input FASTQs must be from one GEM well. If you have multiple GEM wells, use `run_count` separately for each well. The task validates that FASTQ filenames follow Cell Ranger's naming convention and will fail with a helpful error message if they don't.
 
@@ -65,6 +67,27 @@ Run `cellranger count` on gene expression reads from one GEM well.
 - `results_tar` (File): Compressed tarball of Cell Ranger count output directory
 - `web_summary` (File): Web summary HTML file with QC metrics
 - `metrics_summary` (File): Metrics summary CSV file with key statistics
+
+#### Software Environment
+
+`run_count` exposes two mutually exclusive ways to provide the Cell Ranger software environment:
+
+- **`docker_image`** (default): Pulls the pinned WILDS Cell Ranger container. Used by container-based backends (Cromwell with the Docker backend, miniWDL, Sprocket). This is the right choice for cloud, CI, and most local runs.
+- **`environment_modules`**: Loads the named HPC environment module(s) before running the command (e.g., `cellranger/10.0.0`). Honored only by backends whose Cromwell configuration registers a `modules` runtime attribute (e.g., the Fred Hutch HPC via PROOF). Ignored silently by all other executors.
+
+**Set one or the other, not both.** If `environment_modules` is non-empty on a backend that honors it, also overriding `docker_image` is unsupported — the resulting environment is backend-dependent and may mix or conflict between the container and the loaded modules. To use HPC modules, leave `docker_image` at its default (it will be ignored by the HPC backend) and set `environment_modules`. To use Docker, leave `environment_modules` at its default empty string.
+
+Example, HPC with environment modules:
+```wdl
+call cellranger_tasks.run_count {
+  input:
+    r1_fastqs = r1_fastqs,
+    r2_fastqs = r2_fastqs,
+    ref_gex = reference,
+    sample_id = "my_sample",
+    environment_modules = "cellranger/10.0.0"
+}
+```
 
 ### `rename_fastqs`
 
