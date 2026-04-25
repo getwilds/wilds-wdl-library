@@ -1,8 +1,8 @@
 version 1.0
 
 # Import module under test and testdata module using relative paths for local development
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-starling/ww-starling.wdl" as ww_starling
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-hpc-testrun/modules/ww-starling/ww-starling.wdl" as ww_starling
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-hpc-testrun/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
 
@@ -33,8 +33,8 @@ workflow starling_example {
     fasta_file = create_test_idp_fasta.test_fasta,
     num_conformations = 50,
     gpu_enabled = false,
-    cpu_cores = 1,
-    memory_gb = 4
+    cpu_cores = 2,
+    memory_gb = 8
   }
 
   # Test split_fasta on the multi-sequence FASTA

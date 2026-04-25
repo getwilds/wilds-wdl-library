@@ -52,9 +52,6 @@ task triton_main {
     # Create results directory if it doesn't exist
     mkdir -p ~{results_dir}
     
-    # Needed Python packages for running Triton
-    python3 -m pip install pysam numpy scipy pandas matplotlib seaborn
-
     # Download script
     git clone https://github.com/caalo/TritonNP.git
 
@@ -79,7 +76,7 @@ task triton_main {
   runtime {
     cpu: ncpus
     memory: "~{memory_gb} GB"
-    docker: "python:bullseye"
+    docker: "getwilds/python-utils:0.1.0"
   }
 }
 
@@ -115,8 +112,6 @@ task combine_fms {
     # Download script
     git clone https://github.com/caalo/TritonNP.git
 
-    python3 -m pip install pandas
-
     # Run cleanup script
     python TritonNP/CombinePhasingFM.py \
        --inputs ~{sep=" " fm_files} \
@@ -130,6 +125,6 @@ task combine_fms {
   runtime {
     cpu: 1
     memory: "~{memory_gb} GB"
-    docker: "python:bullseye"
+    docker: "getwilds/python-utils:0.1.0"
   }
 }

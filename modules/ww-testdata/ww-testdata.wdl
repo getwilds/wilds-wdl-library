@@ -221,6 +221,7 @@ task download_cram_data {
   parameter_meta {
     ref_fasta: "Reference genome FASTA file to use for CRAM conversion"
     chromosome: "Chromosome to extract from the BAM file (default: chr1)"
+    output_name: "Optional name for output CRAM file (default: NA12878_{chromosome})"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -228,9 +229,12 @@ task download_cram_data {
   input {
     File ref_fasta
     String chromosome = "chr1"
+    String? output_name
     Int cpu_cores = 2
     Int memory_gb = 4
   }
+
+  String final_name = select_first([output_name, "NA12878_~{chromosome}"])
 
   command <<<
     set -euo pipefail
@@ -271,16 +275,16 @@ task download_cram_data {
     samtools index -@ ~{cpu_cores} NA12878_~{chromosome}.bam
 
     # Convert BAM to CRAM using the local reference copy
-    samtools view -@ ~{cpu_cores} -C -T ref.fa -o NA12878_~{chromosome}.cram NA12878_~{chromosome}.bam
-    samtools index -@ ~{cpu_cores} NA12878_~{chromosome}.cram
+    samtools view -@ ~{cpu_cores} -C -T ref.fa -o ~{final_name}.cram NA12878_~{chromosome}.bam
+    samtools index -@ ~{cpu_cores} ~{final_name}.cram
 
     # Clean up intermediate files
     rm NA12878_full.bam NA12878_full.bam.bai NA12878.bam NA12878.bam.bai NA12878_~{chromosome}.bam NA12878_~{chromosome}.bam.bai
   >>>
 
   output {
-    File cram = "NA12878_~{chromosome}.cram"
-    File crai = "NA12878_~{chromosome}.cram.crai"
+    File cram = "~{final_name}.cram"
+    File crai = "~{final_name}.cram.crai"
   }
 
   runtime {
@@ -822,10 +826,13 @@ task create_clean_amplicon_reference {
   command <<<
     set -eo pipefail
 
+    # Symlink input FASTA locally so samtools can write the .fai index
+    ln -s "~{input_fasta}" "~{basename(input_fasta)}"
+
     # Extract region if specified, otherwise use entire sequence
     if [ -n "~{region}" ]; then
-      samtools faidx "~{input_fasta}"
-      samtools faidx "~{input_fasta}" "~{region}" > temp_extract.fa
+      samtools faidx "~{basename(input_fasta)}"
+      samtools faidx "~{basename(input_fasta)}" "~{region}" > temp_extract.fa
 
       # Replace the header with just the chromosome name
       sed "s/^>.*/>~{output_name}/" temp_extract.fa > temp.fa

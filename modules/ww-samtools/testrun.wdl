@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl" as ww_samtools
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-hpc-testrun/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-hpc-testrun/modules/ww-samtools/ww-samtools.wdl" as ww_samtools
 
 workflow samtools_example {
   # Download test data
@@ -12,7 +12,8 @@ workflow samtools_example {
       ref_fasta = download_ref_data.fasta
   }
   call ww_testdata.download_cram_data as download_cram_2 { input:
-      ref_fasta = download_ref_data.fasta
+      ref_fasta = download_ref_data.fasta,
+      output_name = "NA12878_chr1_copy"
   }
 
   # Download two BAM files to test merging in merge_bams_to_cram

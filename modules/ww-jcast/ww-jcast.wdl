@@ -73,11 +73,14 @@ task jcast {
     echo "rMATS input directory contents:"
     ls -la "${RMATS_DIR}"
 
+    # Symlink GTF locally so JCAST can write cache files alongside it
+    ln -s "~{gtf_file}" "~{basename(gtf_file)}"
+
     # Run JCAST
     echo "Running JCAST..."
     jcast \
       "${RMATS_DIR}" \
-      "~{gtf_file}" \
+      "~{basename(gtf_file)}" \
       "~{genome_fasta}" \
       -o "~{output_name}" \
       -r ~{min_read_count} \
