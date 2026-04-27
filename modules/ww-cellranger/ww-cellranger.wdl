@@ -40,8 +40,8 @@ task run_count {
     Int memory_gb = 64
     Int? expect_cells
     String? chemistry
-    String docker_image = "ghcr.io/getwilds/cellranger:10.0.0"
-    String environment_modules = ""
+    # String docker_image = "ghcr.io/getwilds/cellranger:10.0.0"
+    String environment_modules = "CellRanger/10.0.0"
   }
 
   command <<<
@@ -126,8 +126,8 @@ task run_count {
   }
 
   runtime {
-    docker: "~{docker_image}"
-    modules: "~{environment_modules}"
+    # docker: docker_image
+    modules: environment_modules
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
