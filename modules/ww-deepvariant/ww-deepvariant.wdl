@@ -19,7 +19,7 @@ task run_deepvariant {
         output_gvcf_index: "Array containing the gVCF index file (empty when output_gvcf_enabled is false)"
     }
     topic: "genomics,dna_polymorphism"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "variant_calling"
     input_sample_required: "input_bam:nucleic_acid_sequence_alignment:bam,input_bam_index:data_index:bai"
     input_sample_optional: "none"

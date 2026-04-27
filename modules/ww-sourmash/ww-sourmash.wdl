@@ -13,7 +13,7 @@ task sketch {
       sig: "Sourmash sketch (.sig) file"
     }
     topic: "genomics,proteomics,metagenomics"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "indexing"
     input_sample_required: "infile:nucleic_acid_sequence:bam|fasta"
     input_sample_optional: "none"
@@ -82,7 +82,7 @@ task gather {
       result: "CSV file of sourmash gather results"
     }
     topic: "genomics,proteomics,metagenomics"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "sequence_classification,quantification,statistical_calculation"
     input_sample_required: "query_sig:data_index:sig,reference_databases_sigs:data_index:sig"
     input_sample_optional: "none"
@@ -145,7 +145,7 @@ task compare {
       csv: "CSV file of angular similarity matrix"
     }
     topic: "genomics,proteomics,metagenomics"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "statistical_calculation"
     input_sample_required: "sig_inputs:data_index:sig"
     input_sample_optional: "none"

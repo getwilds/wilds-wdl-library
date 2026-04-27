@@ -15,7 +15,7 @@ task run_count {
         metrics_summary: "Metrics summary CSV file"
     }
     topic: "transcriptomics,gene_expression"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "rna_seq_quantification"
     input_sample_required: "r1_fastqs:rna_sequence:fastq,r2_fastqs:rna_sequence:fastq"
     input_sample_optional: "none"

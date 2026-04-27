@@ -14,7 +14,7 @@ task create_sequence_dictionary {
         sequence_dict: "Sequence dictionary file (.dict) for the reference genome"
     }
     topic: "genomics,transcriptomics,mapping,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "indexing"
     input_sample_required: "none"
     input_sample_optional: "none"
@@ -71,7 +71,7 @@ task mark_duplicates {
         duplicate_metrics: "Metrics file containing duplicate marking statistics"
     }
     topic: "genomics,transcriptomics,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "sequencing_quality_control"
     input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
     input_sample_optional: "none"
@@ -135,7 +135,7 @@ task base_recalibrator {
         recalibration_report: "Base recalibration report table"
     }
     topic: "genomics,transcriptomics,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "sequencing_quality_control"
     input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
     input_sample_optional: "intervals:sequence_coordinates:textual_format"
@@ -237,7 +237,7 @@ task collect_wgs_metrics {
         metrics_file: "Comprehensive WGS metrics file with coverage and quality statistics"
     }
     topic: "genomics,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "statistical_calculation"
     input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
     input_sample_optional: "intervals:sequence_coordinates:textual_format"
@@ -315,7 +315,7 @@ task markdup_recal_metrics {
         wgs_metrics: "Comprehensive WGS metrics file with coverage and quality statistics"
     }
     topic: "genomics,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "sequencing_quality_control"
     input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
     input_sample_optional: "intervals:sequence_coordinates:textual_format"
@@ -452,7 +452,7 @@ task split_intervals {
         interval_files: "Array of interval files optimized for parallel processing"
     }
     topic: "genomics,transcriptomics"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "splitting"
     input_sample_required: "none"
     input_sample_optional: "intervals:sequence_coordinates:textual_format"
@@ -565,7 +565,7 @@ task print_reads {
         interval_bam_indices: "Array of index files for the interval BAMs"
     }
     topic: "genomics,transcriptomics"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "data_handling"
     input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
     input_sample_optional: "intervals:sequence_coordinates:textual_format"
@@ -659,7 +659,7 @@ task haplotype_caller {
         vcf_index: "Index file for the VCF output"
     }
     topic: "genomics,dna_polymorphism"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "variant_calling"
     input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
     input_sample_optional: "intervals:sequence_coordinates:textual_format"
@@ -746,7 +746,7 @@ task mutect2 {
         f1r2_counts: "F1R2 counts for filtering"
     }
     topic: "genomics,dna_polymorphism"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "variant_calling"
     input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
     input_sample_optional: "intervals:sequence_coordinates:textual_format"
@@ -846,7 +846,7 @@ task merge_vcfs {
         merged_vcf_index: "Index for merged VCF file"
     }
     topic: "genomics,dna_polymorphism,structural_variation"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "aggregation"
     input_sample_required: "vcfs:sequence_variations:vcf,vcf_indices:data_index:tbi"
     input_sample_optional: "none"
@@ -907,7 +907,7 @@ task merge_mutect_stats {
         merged_stats: "Merged Mutect2 statistics file"
     }
     topic: "genomics,dna_polymorphism"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "aggregation"
     input_sample_required: "stats:report:vcf"
     input_sample_optional: "none"
@@ -963,7 +963,7 @@ task haplotype_caller_parallel {
         vcf_index: "Index file for the VCF output"
     }
     topic: "genomics,dna_polymorphism"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "variant_calling"
     input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai,intervals:sequence_coordinates:textual_format"
     input_sample_optional: "none"
@@ -1085,7 +1085,7 @@ task mutect2_parallel {
         stats_file: "Merged Mutect2 statistics file"
     }
     topic: "genomics,dna_polymorphism"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "variant_calling"
     input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai,intervals:sequence_coordinates:textual_format"
     input_sample_optional: "none"
@@ -1243,7 +1243,7 @@ task fastq_to_bam {
         unmapped_bam: "Unmapped BAM file containing reads from input FASTQ files"
     }
     topic: "genomics,transcriptomics"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "data_formatting"
     input_sample_required: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
     input_sample_optional: "none"
@@ -1319,7 +1319,7 @@ task validate_sam_file {
         validation_report: "Text file containing validation statistics and any errors/warnings"
     }
     topic: "genomics,transcriptomics,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "sequencing_quality_control"
     input_sample_required: "input_file:nucleic_acid_sequence_alignment:bam|sam|cram"
     input_sample_optional: "none"
@@ -1388,7 +1388,7 @@ task analyze_saturation_mutagenesis {
         variant_counts: "Variant count table"
     }
     topic: "genomics,dna_mutation"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "statistical_calculation"
     input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
     input_sample_optional: "none"
@@ -1472,7 +1472,7 @@ task create_somatic_pon {
         pon_vcf_index: "Index file for the panel of normals VCF"
     }
     topic: "genomics,dna_polymorphism"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "aggregation"
     input_sample_required: "normal_vcfs:sequence_variations:vcf,normal_vcf_indices:data_index:tbi,intervals:sequence_coordinates:textual_format"
     input_sample_optional: "none"

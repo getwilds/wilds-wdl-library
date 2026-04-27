@@ -18,7 +18,7 @@ task run_multiqc {
         data_dir: "Directory of parsed data files in tab-delimited format"
     }
     topic: "any,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "quality_control"
     input_sample_required: "input_files:quality_control_report:any"
     input_sample_optional: "none"

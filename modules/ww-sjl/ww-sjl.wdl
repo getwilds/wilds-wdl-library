@@ -18,7 +18,7 @@ task sjl_tiles {
       missing_points: "RDS file containing points that could not be matched to border points (may be empty)"
     }
     topic: "public_health_and_epidemiology"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "statistical_calculation"
     input_sample_required: "tile_path:accession:binary_format,border_points_path:accession:csv"
     input_sample_optional: "none"

@@ -15,7 +15,7 @@ task mpileup_call {
         mpileup_vcf_index: "Index file for the mpileup VCF"
     }
     topic: "genomics,transcriptomics,dna_polymorphism,structural_variation"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "variant_calling"
     input_sample_required: "bam_file:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
     input_sample_optional: "regions_bed:annotation_track:bed"
@@ -116,7 +116,7 @@ task concat {
         concatenated_vcf_index: "Index file for concatenated VCF"
     }
     topic: "genomics,transcriptomics,dna_polymorphism,structural_variation"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "aggregation"
     input_sample_required: "vcf_files:sequence_variations:vcf,vcf_indices:data_index:csi"
     input_sample_optional: "none"

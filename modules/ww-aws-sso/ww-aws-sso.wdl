@@ -20,7 +20,7 @@ task s3_download_file {
         downloaded_file: "Downloaded file from S3"
     }
     topic: "any"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "data_retrieval"
     input_sample_required: "none"
     input_sample_optional: "none"
@@ -100,7 +100,7 @@ task s3_upload_file {
         s3_uri: "S3 URI of the uploaded file"
     }
     topic: "any"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "data_deposition"
     input_sample_required: "file_to_upload:any:any,aws_config_file:resource_metadata:configuration_file_format"
     input_sample_optional: "aws_credentials_file:account_authentication:textual_format"
@@ -174,7 +174,7 @@ task s3_list_bucket {
         object_count: "Number of objects found"
     }
     topic: "any"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "data_retrieval"
     input_sample_required: "none"
     input_sample_optional: "aws_config_file:resource_metadata:configuration_file_format,aws_credentials_file:account_authentication:textual_format"

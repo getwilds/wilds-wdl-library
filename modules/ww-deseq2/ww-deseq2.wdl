@@ -16,7 +16,7 @@ task combine_count_matrices {
         sample_metadata: "Metadata file containing sample names and conditions"
     }
     topic: "transcriptomics,gene_expression"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "aggregation"
     input_sample_required: "gene_count_files:gene_expression_matrix:tsv"
     input_sample_optional: "none"
@@ -86,7 +86,7 @@ task run_deseq2 {
         deseq2_heatmap: "Heatmap visualization of differentially expressed genes across samples"
     }
     topic: "transcriptomics,gene_expression"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "statistical_calculation"
     input_sample_required: "counts_matrix:gene_expression_matrix:matrix,sample_metadata:report:textual_format"
     input_sample_optional: "none"

@@ -20,7 +20,7 @@ task fastp_paired {
         json_report: "JSON quality control report"
     }
     topic: "genomics,transcriptomics,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "sequence_trimming,data_filtering"
     input_sample_required: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
     input_sample_optional: "none"
@@ -106,7 +106,7 @@ task fastp_single {
         json_report: "JSON quality control report"
     }
     topic: "genomics,transcriptomics,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "sequence_trimming,data_filtering"
     input_sample_required: "fastq:nucleic_acid_sequence:fastq"
     input_sample_optional: "none"

@@ -17,7 +17,7 @@ task bam_coverage {
         coverage_file: "Normalized coverage track file in bigWig or bedGraph format"
     }
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "quantification"
     input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bai:data_index:bai"
     input_sample_optional: "none"
@@ -99,7 +99,7 @@ task bam_compare {
         comparison_file: "Coverage comparison track in bigWig or bedGraph format"
     }
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "statistical_calculation"
     input_sample_required: "treatment_bam:nucleic_acid_sequence_alignment:bam,treatment_bai:data_index:bai,control_bam:nucleic_acid_sequence_alignment:bam,control_bai:data_index:bai"
     input_sample_optional: "none"
@@ -181,7 +181,7 @@ task compute_matrix {
         matrix_tab: "Tab-separated matrix values file"
     }
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "statistical_calculation"
     input_sample_required: "bigwig_files:annotation_track:bigwig,regions_file:annotation_track:bed|gtf"
     input_sample_optional: "none"
@@ -260,7 +260,7 @@ task plot_heatmap {
         heatmap: "Heatmap image file in the specified format"
     }
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "visualisation"
     input_sample_required: "matrix_gz:sequence_report:matrix"
     input_sample_optional: "none"
@@ -321,7 +321,7 @@ task plot_profile {
         profile: "Profile plot image file in the specified format"
     }
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "visualisation"
     input_sample_required: "matrix_gz:sequence_report:matrix"
     input_sample_optional: "none"
@@ -380,7 +380,7 @@ task multi_bam_summary {
         raw_counts: "Tab-separated file with raw read counts per bin"
     }
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "quantification,sequencing_quality_control"
     input_sample_required: "bam_files:nucleic_acid_sequence_alignment:bam,bai_files:data_index:bai"
     input_sample_optional: "regions_file:annotation_track:bed"
@@ -452,7 +452,7 @@ task plot_correlation {
         correlation_matrix: "Tab-separated correlation matrix values"
     }
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "visualisation,statistical_calculation"
     input_sample_required: "summary_npz:sequence_report:npz"
     input_sample_optional: "none"
@@ -519,7 +519,7 @@ task plot_pca {
         pca_data: "Tab-separated PCA data with eigenvalues and coordinates"
     }
     topic: "genomics,transcriptomics,epigenomics,ribosome_profiling"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "visualisation,statistical_calculation"
     input_sample_required: "summary_npz:sequence_report:npz"
     input_sample_optional: "none"
@@ -580,7 +580,7 @@ task plot_fingerprint {
         quality_metrics: "Tab-separated file with quality metrics including JSD and CHANCE divergence"
     }
     topic: "epigenomics,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "quality_control"
     input_sample_required: "bam_files:nucleic_acid_sequence_alignment:bam,bai_files:data_index:bai"
     input_sample_optional: "none"

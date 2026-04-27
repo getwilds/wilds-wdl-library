@@ -15,7 +15,7 @@ task coverage {
         mean_coverage: "File containing mean read coverage across BED intervals"
     }
     topic: "genomics,transcriptomics,sequence_features,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "sequencing_quality_control,quantification"
     input_sample_required: "bed_file:annotation_track:bed,aligned_bam:nucleic_acid_sequence_alignment:bam"
     input_sample_optional: "none"
@@ -75,7 +75,7 @@ task intersect {
         intersect_output: "BEDTools intersect results file"
     }
     topic: "genomics,transcriptomics,sequence_features"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "data_filtering"
     input_sample_required: "bed_file:annotation_track:bed,aligned_bam:nucleic_acid_sequence_alignment:bam"
     input_sample_optional: "none"
@@ -131,7 +131,7 @@ task makewindows {
         counts_bed: "Tarball of per-chromosome BED files of read counts"
     }
     topic: "genomics,transcriptomics,sequence_features,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "quantification"
     input_sample_required: "bed_file:annotation_track:bed,aligned_bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
     input_sample_optional: "none"

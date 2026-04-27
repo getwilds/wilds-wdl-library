@@ -16,7 +16,7 @@ task metaspades {
         log_file: "SPAdes log file"
     }
     topic: "genomics,metagenomics,sequence_assembly"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "sequence_assembly"
     input_sample_required: "none"
     input_sample_optional: "r1_fastq:dna_sequence:fastq,r2_fastq:dna_sequence:fastq,interleaved_fastq:dna_sequence:fastq"

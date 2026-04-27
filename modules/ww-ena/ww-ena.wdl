@@ -17,7 +17,7 @@ task download_files {
         accessions_used: "The accession numbers that were processed"
     }
     topic: "any"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "data_retrieval"
     input_sample_required: "none"
     input_sample_optional: "accessions_file:accession:textual_format"
@@ -132,7 +132,7 @@ task download_by_query {
         download_summary: "Summary report of the download operation"
     }
     topic: "any"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "data_retrieval"
     input_sample_required: "none"
     input_sample_optional: "none"
@@ -222,7 +222,7 @@ task extract_fastq_pairs {
         is_paired_end_list: "Array of booleans indicating whether each sample is paired-end"
     }
     topic: "any"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "file_handling"
     input_sample_required: "downloaded_files:nucleic_acid_sequence:fastq"
     input_sample_optional: "none"

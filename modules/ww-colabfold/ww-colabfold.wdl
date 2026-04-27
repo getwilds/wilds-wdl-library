@@ -17,7 +17,7 @@ task download_weights {
         weights_tarball: "Compressed tarball containing AlphaFold2 model weights (~15-20 GB)"
     }
     topic: "proteomics,protein_structure_analysis"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "data_retrieval"
     input_sample_required: "none"
     input_sample_optional: "none"
@@ -77,7 +77,7 @@ task colabfold_predict {
         results_tarball: "Compressed tarball containing all ColabFold outputs including PDB structure files, PAE plots, pLDDT plots, coverage plots, and prediction metrics"
     }
     topic: "proteomics,protein_structure_analysis"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "protein_structure_prediction"
     input_sample_required: "fasta_file:protein_sequence:fasta"
     input_sample_optional: "none"

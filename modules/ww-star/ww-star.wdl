@@ -14,7 +14,7 @@ task build_index {
         star_index_tar: "Compressed tarball containing the STAR genome index for future alignment steps"
     }
     topic: "transcriptomics,mapping"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "indexing"
     input_sample_required: "none"
     input_sample_optional: "none"
@@ -91,7 +91,7 @@ task align_two_pass {
         sj_out: "Splice junction file with coordinates of detected splice junctions"
     }
     topic: "transcriptomics,mapping"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "sequence_alignment"
     input_sample_required: "r1:rna_sequence:fastq"
     input_sample_optional: "r2:rna_sequence:fastq"

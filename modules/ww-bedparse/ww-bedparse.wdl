@@ -14,7 +14,7 @@ task gtf2bed {
         bed_file: "BED12-formatted annotation file"
     }
     topic: "genomics,sequence_features"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "data_formatting"
     input_sample_required: "gtf_file:sequence_features:gtf"
     input_sample_optional: "none"

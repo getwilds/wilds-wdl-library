@@ -15,7 +15,7 @@ task strelka_germline {
         variants_vcf_index: "Index file for the variants VCF"
     }
     topic: "genomics,dna_polymorphism"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "variant_calling"
     input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bai:data_index:bai"
     input_sample_optional: "target_regions_bed:annotation_track:bed"
@@ -117,7 +117,7 @@ task strelka_somatic {
         somatic_indels_vcf_index: "Index file for the somatic indels VCF"
     }
     topic: "genomics,dna_polymorphism"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "variant_calling"
     input_sample_required: "tumor_bam:nucleic_acid_sequence_alignment:bam,tumor_bai:data_index:bai,normal_bam:nucleic_acid_sequence_alignment:bam,normal_bai:data_index:bai"
     input_sample_optional: "target_regions_bed:annotation_track:bed"

@@ -16,7 +16,7 @@ task somatic {
         somatic_indels_vcf: "VCF file containing somatic indel calls"
     }
     topic: "genomics,dna_polymorphism"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "variant_calling,indel_detection"
     input_sample_required: "normal_pileup:nucleic_acid_sequence_alignment:pileup,tumor_pileup:nucleic_acid_sequence_alignment:pileup"
     input_sample_optional: "none"
@@ -75,7 +75,7 @@ task mpileup2cns {
         vcf: "VCF file containing SNV and indel calls"
     }
     topic: "genomics,dna_polymorphism"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "variant_calling,indel_detection"
     input_sample_required: "pileup:nucleic_acid_sequence_alignment:pileup"
     input_sample_optional: "none"
