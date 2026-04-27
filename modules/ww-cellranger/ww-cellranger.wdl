@@ -126,8 +126,8 @@ task run_count {
   }
 
   runtime {
-    docker: docker_image
-    modules: environment_modules
+    docker: "~{docker_image}"
+    modules: "~{environment_modules}"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
