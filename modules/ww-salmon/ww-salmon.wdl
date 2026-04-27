@@ -15,7 +15,7 @@ task build_index {
         salmon_index: "Compressed tarball containing the Salmon index for quantification"
     }
     topic: "transcriptomics,mapping,gene_expression"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "indexing"
     input_sample_required: "none"
     input_sample_optional: "none"
@@ -82,7 +82,7 @@ task quantify {
         output_sample_name: "Sample name used for output files"
     }
     topic: "transcriptomics,gene_expression"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "rna_seq_quantification"
     input_sample_required: "fastq_r1:rna_sequence:fastq"
     input_sample_optional: "fastq_r2:rna_sequence:fastq"
@@ -164,7 +164,7 @@ task merge_results {
         sample_list: "Text file listing all sample names included in the matrices"
     }
     topic: "transcriptomics,gene_expression"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "aggregation"
     input_sample_required: "salmon_quant_dirs:gene_expression_matrix:tar_format"
     input_sample_optional: "none"

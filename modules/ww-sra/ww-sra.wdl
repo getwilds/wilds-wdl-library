@@ -17,7 +17,7 @@ task fastqdump {
         is_paired_end: "boolean indicating whether the sample used paired-end sequencing"
     }
     topic: "any"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "data_retrieval"
     input_sample_required: "none"
     input_sample_optional: "none"

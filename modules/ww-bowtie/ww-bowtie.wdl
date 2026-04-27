@@ -14,7 +14,7 @@ task bowtie_build {
         bowtie_index_tar: "Compressed tarball containing Bowtie genome index files"
     }
     topic: "genomics,transcriptomics,mapping"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "indexing"
     input_sample_required: "none"
     input_sample_optional: "none"
@@ -77,7 +77,7 @@ task bowtie_align {
         sorted_bai: "Index file for the sorted Bowtie alignment BAM file"
     }
     topic: "genomics,transcriptomics,mapping"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "sequence_alignment"
     input_sample_required: "reads:nucleic_acid_sequence:fastq"
     input_sample_optional: "mates:nucleic_acid_sequence:fastq"

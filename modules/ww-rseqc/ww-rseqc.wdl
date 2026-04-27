@@ -20,7 +20,7 @@ task run_rseqc {
         rseqc_summary: "Summary report of all RSeQC metrics"
     }
     topic: "transcriptomics,data_quality_management"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "quality_control"
     input_sample_required: "bam_file:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
     input_sample_optional: "none"

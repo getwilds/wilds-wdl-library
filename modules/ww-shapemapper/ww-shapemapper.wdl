@@ -16,7 +16,7 @@ task run_shapemapper {
         log_file: "ShapeMapper log file with processing details and quality metrics"
     }
     topic: "transcriptomics,nucleic_acid_structure_analysis"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "nucleic_acid_structure_analysis"
     input_sample_required: "target_fa:rna_sequence:fasta,modified_r1:rna_sequence:fastq,modified_r2:rna_sequence:fastq,untreated_r1:rna_sequence:fastq,untreated_r2:rna_sequence:fastq"
     input_sample_optional: "primers_fa:pcr_primers:fasta"

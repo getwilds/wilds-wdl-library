@@ -17,7 +17,7 @@ task rmats {
         output_directory: "Tarball containing all rMATS output files including splice event tables and summary statistics"
     }
     topic: "transcriptomics,rna_splicing"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "alternative_splicing_prediction"
     input_sample_required: "sample1_bams:nucleic_acid_sequence_alignment:bam,sample2_bams:nucleic_acid_sequence_alignment:bam"
     input_sample_optional: "none"
@@ -153,7 +153,7 @@ task rmats_prep {
         prep_output: "Tarball containing .rmats intermediate files from preprocessing"
     }
     topic: "transcriptomics,rna_splicing"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "statistical_calculation"
     input_sample_required: "sample_bams:nucleic_acid_sequence_alignment:bam"
     input_sample_optional: "none"
@@ -262,7 +262,7 @@ task rmats_post {
         output_directory: "Tarball containing all rMATS output files including splice event tables and summary statistics"
     }
     topic: "transcriptomics,rna_splicing"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "alternative_splicing_prediction"
     input_sample_required: "prep_outputs:report:tar_format"
     input_sample_optional: "none"
@@ -369,7 +369,7 @@ task rmats_stat {
         output_directory: "Tarball containing rMATS output files with updated statistical results"
     }
     topic: "transcriptomics,rna_splicing"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "statistical_calculation"
     input_sample_required: "existing_output:report:tar_format"
     input_sample_optional: "none"

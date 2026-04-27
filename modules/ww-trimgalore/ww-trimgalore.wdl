@@ -20,7 +20,7 @@ task trimgalore_paired {
         r2_report: "Trimming report for R2"
     }
     topic: "genomics,transcriptomics"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "sequence_trimming"
     input_sample_required: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
     input_sample_optional: "none"
@@ -114,7 +114,7 @@ task trimgalore_single {
         trimming_report: "Trimming report"
     }
     topic: "genomics,transcriptomics"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "sequence_trimming"
     input_sample_required: "fastq:nucleic_acid_sequence:fastq"
     input_sample_optional: "none"

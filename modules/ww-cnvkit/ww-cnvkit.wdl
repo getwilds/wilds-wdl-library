@@ -15,7 +15,7 @@ task create_reference {
         reference_cnn: "CNVkit reference file (.cnn)"
     }
     topic: "genomics,copy_number_variation"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "indexing"
     input_sample_required: "bam_files:nucleic_acid_sequence_alignment:bam,bam_indices:data_index:bai"
     input_sample_optional: "target_bed:annotation_track:bed,antitarget_bed:annotation_track:bed"
@@ -122,7 +122,7 @@ task run_cnvkit {
         cnv_plot: "CNV visualization plot"
     }
     topic: "genomics,copy_number_variation"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "copy_number_variation_detection"
     input_sample_required: "tumor_bam:nucleic_acid_sequence_alignment:bam,tumor_bai:data_index:bai"
     input_sample_optional: "normal_bam:nucleic_acid_sequence_alignment:bam,normal_bai:data_index:bai,target_bed:annotation_track:bed"

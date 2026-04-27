@@ -17,7 +17,7 @@ task jcast {
         output_directory: "Directory containing all JCAST output files"
     }
     topic: "transcriptomics,proteomics,protein_expression,rna_splicing"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "sequence_conversion"
     input_sample_required: "rmats_directory:gene_report:directory|tar_format|zip_format"
     input_sample_optional: "none"

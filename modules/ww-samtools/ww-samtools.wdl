@@ -15,7 +15,7 @@ task crams_to_fastq {
         sample_name: "Sample name that was processed"
     }
     topic: "genomics,transcriptomics"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "data_formatting"
     input_sample_required: "cram_files:nucleic_acid_sequence_alignment:cram|bam|sam"
     input_sample_optional: "none"
@@ -85,7 +85,7 @@ task merge_bams_to_cram {
         crai: "Index file for the merged CRAM"
     }
     topic: "genomics,transcriptomics"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "aggregation"
     input_sample_required: "bams_to_merge:nucleic_acid_sequence_alignment:bam"
     input_sample_optional: "none"
@@ -139,7 +139,7 @@ task mpileup {
         pileup: "Pileup file"
     }
     topic: "genomics,transcriptomics"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "quantification"
     input_sample_required: "bamfile:nucleic_acid_sequence_alignment:bam|cram"
     input_sample_optional: "none"

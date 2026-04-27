@@ -15,7 +15,7 @@ task glimpse2_chunk {
       chunks_file: "Text file containing chunk definitions with input/output regions"
     }
     topic: "genomics,sequencing"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "splitting"
     input_sample_required: "reference_vcf:sequence_variations:vcf|bcf,reference_vcf_index:data_index:tbi|csi"
     input_sample_optional: "none"
@@ -91,7 +91,7 @@ task glimpse2_split_reference {
       reference_chunk: "Binary reference chunk file for imputation"
     }
     topic: "genomics,mapping,sequencing"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "splitting,indexing"
     input_sample_required: "none"
     input_sample_optional: "none"
@@ -166,7 +166,7 @@ task glimpse2_phase {
       imputed_chunk_index: "Index file for imputed BCF"
     }
     topic: "genomics,sequencing"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "statistical_calculation"
     input_sample_required: "input_vcf:sequence_variations:vcf|bcf,input_vcf_index:data_index:tbi|csi"
     input_sample_optional: "none"
@@ -246,7 +246,7 @@ task glimpse2_phase_cram {
       imputed_chunk_index: "Index file for imputed BCF"
     }
     topic: "genomics,sequencing"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "statistical_calculation"
     input_sample_required: "input_bams:nucleic_acid_sequence_alignment:bam|cram,input_bam_indices:data_index:bai|crai"
     input_sample_optional: "none"
@@ -344,7 +344,7 @@ task glimpse2_ligate {
       ligated_vcf_index: "Index file for ligated VCF"
     }
     topic: "genomics,sequencing"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "aggregation"
     input_sample_required: "imputed_chunks:sequence_variations:bcf,imputed_chunks_indices:data_index:csi"
     input_sample_optional: "none"
@@ -427,7 +427,7 @@ task glimpse2_concordance {
       concordance_output: "Concordance metrics output file"
     }
     topic: "genomics,sequencing,data_quality_management"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "statistical_calculation"
     input_sample_required: "imputed_vcf:sequence_variations:bcf,imputed_vcf_index:data_index:csi,truth_vcf:sequence_variations:bcf,truth_vcf_index:data_index:csi"
     input_sample_optional: "none"
@@ -508,7 +508,7 @@ task parse_chunks_file {
       chunk_ids: "Array of chunk identifiers"
     }
     topic: "genomics,sequencing"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "mapping,splitting"
     input_sample_required: "chunks_file:sequence_coordinates:textual_format"
     input_sample_optional: "none"

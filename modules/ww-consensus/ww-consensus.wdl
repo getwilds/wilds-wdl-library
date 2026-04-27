@@ -17,7 +17,7 @@ task consensus_processing {
         consensus_tsv: "Tab-separated file containing consensus variant calls with evidence from all callers"
     }
     topic: "genomics,dna_polymorphism"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "aggregation"
     input_sample_required: "haplo_vars:sequence_variations:tsv,mpileup_vars:sequence_variations:tsv,mutect_vars:sequence_variations:tsv"
     input_sample_optional: "none"

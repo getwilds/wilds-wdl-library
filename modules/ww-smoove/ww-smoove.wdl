@@ -15,7 +15,7 @@ task smoove_call {
         vcf_index: "Index file for the VCF output"
     }
     topic: "genomics,structural_variation"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "variant_calling"
     input_sample_required: "aligned_bam:nucleic_acid_sequence_alignment:bam,aligned_bam_index:data_index:bai"
     input_sample_optional: "target_regions_bed:annotation_track:bed,exclude_bed:annotation_track:bed"

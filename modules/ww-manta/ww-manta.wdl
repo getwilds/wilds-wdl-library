@@ -15,7 +15,7 @@ task manta_call {
         vcf_index: "Index file for the VCF output"
     }
     topic: "genomics,transcriptomics,structural_variation"
-    species: "eukaryote"
+    species: "human,eukaryote"
     operation: "variant_calling"
     input_sample_required: "aligned_bam:nucleic_acid_sequence_alignment:bam,aligned_bam_index:data_index:bai"
     input_sample_optional: "call_regions_bed:annotation_track:bed,call_regions_index:data_index:tbi"

@@ -19,7 +19,7 @@ task generate_ensemble {
         xtc_file: "XTC trajectory file converted from the STARLING ensemble"
     }
     topic: "proteomics,protein_disordered_structure"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "protein_structure_prediction"
     input_sample_required: "none"
     input_sample_optional: "none"
@@ -94,7 +94,7 @@ task generate_ensemble_batch {
         xtc_files: "Array of XTC trajectory files converted from the STARLING ensembles"
     }
     topic: "proteomics,protein_disordered_structure"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "protein_structure_prediction"
     input_sample_required: "fasta_file:protein_sequence:fasta"
     input_sample_optional: "none"
@@ -166,7 +166,7 @@ task split_fasta {
         batch_files: "Array of FASTA files, each containing up to sequences_per_batch sequences"
     }
     topic: "proteomics,protein_disordered_structure"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "splitting"
     input_sample_required: "fasta_file:protein_sequence:fasta"
     input_sample_optional: "none"
@@ -227,7 +227,7 @@ task ensemble_info {
         info_file: "Text file containing ensemble metadata and summary statistics"
     }
     topic: "proteomics,protein_disordered_structure"
-    species: "any"
+    species: "human,eukaryote,prokaryote,virus"
     operation: "statistical_calculation"
     input_sample_required: "starling_file:structure_prediction:binary_format"
     input_sample_optional: "none"
