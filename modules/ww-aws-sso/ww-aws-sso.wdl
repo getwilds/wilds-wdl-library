@@ -10,6 +10,12 @@
 
 version 1.0
 
+workflow ww_aws_sso {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 task s3_download_file {
   meta {
     author: "Taylor Firman"

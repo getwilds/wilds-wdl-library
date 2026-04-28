@@ -4,6 +4,12 @@
 
 version 1.0
 
+workflow ww_bowtie2 {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 task bowtie2_build {
   meta {
     author: "Taylor Firman"

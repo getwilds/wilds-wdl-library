@@ -5,6 +5,12 @@
 
 version 1.0
 
+workflow ww_salmon {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 task build_index {
   meta {
     author: "Taylor Firman"

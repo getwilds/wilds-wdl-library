@@ -3,6 +3,12 @@
 
 version 1.0
 
+workflow ww_tritonnp {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 task triton_main {
   meta {
     author: "Chris Lo"

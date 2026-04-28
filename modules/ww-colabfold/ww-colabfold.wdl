@@ -5,6 +5,12 @@
 
 version 1.0
 
+workflow ww_colabfold {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 #### TASK DEFINITIONS ####
 
 task download_weights {

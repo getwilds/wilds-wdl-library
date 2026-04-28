@@ -4,6 +4,12 @@
 
 version 1.0
 
+workflow ww_bcftools {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 task mpileup_call {
   meta {
     author: "Taylor Firman"
