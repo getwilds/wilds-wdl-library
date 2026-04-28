@@ -3,12 +3,6 @@
 
 version 1.0
 
-workflow ww_sourmash {
-  meta {
-    description: "Dummy workflow for Dockstore tool registration"
-  }
-}
-
 task sketch {
   meta {
     author: "Emma Bishop"

@@ -5,12 +5,6 @@
 
 version 1.0
 
-workflow ww_glimpse2 {
-  meta {
-    description: "Dummy workflow for Dockstore tool registration"
-  }
-}
-
 task glimpse2_chunk {
   meta {
     author: "Taylor Firman"
