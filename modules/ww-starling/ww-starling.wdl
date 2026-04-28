@@ -5,6 +5,12 @@
 
 version 1.0
 
+workflow ww_starling {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 #### TASK DEFINITIONS ####
 
 task generate_ensemble {

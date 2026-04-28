@@ -5,6 +5,12 @@
 
 version 1.0
 
+workflow ww_cnvkit {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 task create_reference {
   meta {
     author: "Taylor Firman"

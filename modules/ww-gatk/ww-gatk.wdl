@@ -4,6 +4,12 @@
 
 version 1.0
 
+workflow ww_gatk {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 task create_sequence_dictionary {
   meta {
     author: "Taylor Firman"

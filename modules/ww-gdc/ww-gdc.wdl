@@ -5,6 +5,12 @@
 
 version 1.0
 
+workflow ww_gdc {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 task download_by_manifest {
   meta {
     author: "Taylor Firman"

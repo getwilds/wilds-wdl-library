@@ -5,6 +5,12 @@
 
 version 1.0
 
+workflow ww_trimgalore {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 #### TASK DEFINITIONS ####
 
 task trimgalore_paired {

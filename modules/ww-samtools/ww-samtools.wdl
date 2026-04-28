@@ -3,6 +3,12 @@
 
 version 1.0
 
+workflow ww_samtools {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 task crams_to_fastq {
   meta {
     author: "Emma Bishop"

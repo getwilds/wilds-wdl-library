@@ -5,6 +5,12 @@
 
 version 1.0
 
+workflow ww_varscan {
+  meta {
+    description: "Dummy workflow for Dockstore tool registration"
+  }
+}
+
 task somatic {
   meta {
     author: "Emma Bishop"
