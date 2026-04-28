@@ -19,7 +19,7 @@ This pipeline extends the simpler `ww-star-deseq2` pipeline with upstream read Q
 
 ## Pipeline Structure
 
-**Complexity Level: Advanced** (10 steps, 8 distinct modules)
+**Complexity Level: Advanced** (12 steps, 8 distinct modules + 1 pipeline-local task)
 
 1. **GTF Normalization** (using `ww-gffread` module):
    - Ensures the reference GTF has proper `exon` features for every transcript
@@ -58,9 +58,20 @@ This pipeline extends the simpler `ww-star-deseq2` pipeline with upstream read Q
    - Combines gene counts from all samples into a single matrix
    - Performs statistical analysis and generates visualizations (PCA, volcano, heatmap)
 
-10. **MultiQC — Aggregated Reporting** (using `ww-multiqc` module):
+10. **DESeq2 — Compiled Results** (using `ww-deseq2` module):
+    - Merges differential expression results with normalized counts
+    - Annotates genes with descriptions from the GTF (gene_name, gene_biotype, product)
+    - Produces a single comprehensive CSV for downstream use
+
+11. **MultiQC — Aggregated Reporting** (using `ww-multiqc` module):
     - Collects reports from FastQC, Trim Galore, STAR, and RSeQC
     - Generates a single interactive HTML report summarizing all QC metrics
+
+12. **Organize Outputs** (optional, pipeline-local task):
+    - Reorganizes all outputs into a clean numbered directory structure with sample-named subdirectories
+    - Packages results as a single `.tar.gz` for easy delivery
+    - Disabled by default (`organize_results = false`) to avoid data duplication
+    - BAM files and trimmed FASTQs can be optionally included via `include_bams` and `include_trimmed_fastqs`
 
 ## Module Dependencies
 
@@ -71,7 +82,7 @@ This pipeline imports and uses:
 - **ww-star module**: Genome indexing and read alignment (`build_index`, `align_two_pass` tasks)
 - **ww-bedparse module**: GTF to BED12 conversion (`gtf2bed` task)
 - **ww-rseqc module**: RNA-seq alignment quality control (`run_rseqc` task)
-- **ww-deseq2 module**: Count matrix assembly and differential expression (`combine_count_matrices`, `run_deseq2` tasks)
+- **ww-deseq2 module**: Count matrix assembly, differential expression, and compiled results (`combine_count_matrices`, `run_deseq2`, `compile_deseq2_results` tasks)
 - **ww-multiqc module**: Aggregated QC reporting (`run_multiqc` task)
 
 ## Usage
@@ -85,24 +96,49 @@ This pipeline imports and uses:
 
 ### Input Configuration
 
-Create an inputs JSON file with your samples and reference genome:
+Sample information can be provided either as a **TSV file** (recommended) or as **separate arrays** in the inputs JSON.
+
+#### Option 1: TSV File (Recommended)
+
+Create a tab-separated file (`samples.tsv`) with a header row and one row per sample:
+
+```tsv
+name	r1	r2	condition
+sample1	/path/to/sample1_R1.fastq.gz	/path/to/sample1_R2.fastq.gz	control
+sample2	/path/to/sample2_R1.fastq.gz	/path/to/sample2_R2.fastq.gz	control
+sample3	/path/to/sample3_R1.fastq.gz	/path/to/sample3_R2.fastq.gz	treatment
+sample4	/path/to/sample4_R1.fastq.gz	/path/to/sample4_R2.fastq.gz	treatment
+```
+
+Then reference it in your inputs JSON:
 
 ```json
 {
-  "rnaseq.samples": [
-    {
-      "name": "sample1",
-      "r1": "/path/to/sample1_R1.fastq.gz",
-      "r2": "/path/to/sample1_R2.fastq.gz",
-      "condition": "control"
-    },
-    {
-      "name": "sample2",
-      "r1": "/path/to/sample2_R1.fastq.gz",
-      "r2": "/path/to/sample2_R2.fastq.gz",
-      "condition": "treatment"
-    }
-  ],
+  "rnaseq.samples_tsv": "/path/to/samples.tsv",
+  "rnaseq.reference_genome": {
+    "name": "hg38",
+    "fasta": "/path/to/genome.fasta",
+    "gtf": "/path/to/annotation.gtf"
+  },
+  "rnaseq.reference_level": "control",
+  "rnaseq.contrast": "condition,treatment,control",
+  "rnaseq.star_cpu": 8,
+  "rnaseq.star_memory_gb": 64
+}
+```
+
+An example `samples.tsv` template is included in this directory.
+
+#### Option 2: Separate Arrays
+
+Alternatively, provide sample information as parallel arrays directly in the inputs JSON. This approach is primarily used by the `testrun.wdl` test workflow, where constructing a TSV file within WDL itself is not straightforward.
+
+```json
+{
+  "rnaseq.sample_names": ["sample1", "sample2", "sample3", "sample4"],
+  "rnaseq.r1_fastqs": ["/path/to/sample1_R1.fastq.gz", "/path/to/sample2_R1.fastq.gz", "/path/to/sample3_R1.fastq.gz", "/path/to/sample4_R1.fastq.gz"],
+  "rnaseq.r2_fastqs": ["/path/to/sample1_R2.fastq.gz", "/path/to/sample2_R2.fastq.gz", "/path/to/sample3_R2.fastq.gz", "/path/to/sample4_R2.fastq.gz"],
+  "rnaseq.conditions": ["control", "control", "treatment", "treatment"],
   "rnaseq.reference_genome": {
     "name": "hg38",
     "fasta": "/path/to/genome.fasta",
@@ -140,7 +176,11 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 
 | Parameter | Description | Type | Required? | Default |
 |-----------|-------------|------|-----------|---------|
-| `samples` | List of SampleInfo objects with paired FASTQ files and condition labels | Array[SampleInfo] | Yes | - |
+| `samples_tsv` | TSV file with columns: name, r1, r2, condition (header required) | File | No* | - |
+| `sample_names` | Array of sample names | Array[String] | No* | - |
+| `r1_fastqs` | Array of R1 FASTQ file paths | Array[File] | No* | - |
+| `r2_fastqs` | Array of R2 FASTQ file paths | Array[File] | No* | - |
+| `conditions` | Array of condition labels per sample | Array[String] | No* | - |
 | `reference_genome` | Reference genome information (name, fasta, gtf) | RefGenome | Yes | - |
 | `reference_level` | Reference level for DESeq2 contrast (e.g., 'control') | String | No | "" |
 | `contrast` | DESeq2 contrast string (e.g., 'condition,treatment,control') | String | No | "" |
@@ -149,17 +189,14 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `star_cpu` | Number of CPU cores for STAR alignment tasks | Int | No | 8 |
 | `star_memory_gb` | Memory allocation in GB for STAR alignment tasks | Int | No | 64 |
 | `genome_sa_index_nbases` | STAR SA pre-indexing string length (scales with genome size) | Int | No | 14 |
+| `min_counts` | Minimum counts a gene must have to pass DESeq2 pre-filtering | Int | No | 10 |
+| `min_samples` | Minimum samples meeting `min_counts` threshold (0 = use total counts) | Int | No | 0 |
+| `shrinkage_method` | LFC shrinkage method: `apeglm`, `ashr`, `normal`, or empty for none | String | No | "" |
+| `organize_results` | Reorganize outputs into a clean directory tarball | Boolean | No | false |
+| `include_bams` | Include BAM/BAI files in the organized tarball | Boolean | No | false |
+| `include_trimmed_fastqs` | Include trimmed FASTQ files in the organized tarball | Boolean | No | false |
 
-### SampleInfo Structure
-
-```json
-{
-  "name": "sample_name",
-  "r1": "/path/to/R1.fastq.gz",
-  "r2": "/path/to/R2.fastq.gz",
-  "condition": "control_or_treatment"
-}
-```
+*Provide either `samples_tsv` OR all four separate arrays (`sample_names`, `r1_fastqs`, `r2_fastqs`, `conditions`).
 
 ### RefGenome Structure
 
@@ -201,8 +238,13 @@ The pipeline produces comprehensive outputs from all modules:
 | `deseq2_pca_plot` | PCA plot of samples | ww-deseq2 |
 | `deseq2_volcano_plot` | Volcano plot of differential expression | ww-deseq2 |
 | `deseq2_heatmap` | Heatmap of differentially expressed genes | ww-deseq2 |
+| `deseq2_ma_plot` | MA plot of log fold change vs. mean expression | ww-deseq2 |
+| `deseq2_ma_plot_shrunk` | MA plot with shrunken LFC (empty if shrinkage not applied) | ww-deseq2 |
+| `deseq2_results_shrunk` | DESeq2 results with shrunken LFC (empty if shrinkage not applied) | ww-deseq2 |
+| `deseq2_compiled_results` | Combined CSV with DESeq2 stats, normalized counts, and gene annotations | ww-deseq2 |
 | `multiqc_report` | Aggregated interactive HTML QC report | ww-multiqc |
 | `multiqc_data` | MultiQC parsed metrics data directory | ww-multiqc |
+| `organized_results` | (Optional) Tarball with all outputs organized by step and sample | pipeline-local |
 
 ## Resource Considerations
 
