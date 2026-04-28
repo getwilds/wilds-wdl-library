@@ -5,12 +5,6 @@
 
 version 1.0
 
-workflow ww_ena {
-  meta {
-    description: "Dummy workflow for Dockstore tool registration"
-  }
-}
-
 task download_files {
   meta {
     author: "Taylor Firman"

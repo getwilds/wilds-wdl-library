@@ -5,12 +5,6 @@
 
 version 1.0
 
-workflow ww_fastp {
-  meta {
-    description: "Dummy workflow for Dockstore tool registration"
-  }
-}
-
 #### TASK DEFINITIONS ####
 
 task fastp_paired {

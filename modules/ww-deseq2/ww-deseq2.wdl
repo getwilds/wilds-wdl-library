@@ -5,12 +5,6 @@
 
 version 1.0
 
-workflow ww_deseq2 {
-  meta {
-    description: "Dummy workflow for Dockstore tool registration"
-  }
-}
-
 task combine_count_matrices {
   meta {
     author: "Taylor Firman"

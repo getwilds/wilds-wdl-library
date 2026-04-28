@@ -4,12 +4,6 @@
 
 version 1.0
 
-workflow ww_testdata {
-  meta {
-    description: "Dummy workflow for Dockstore tool registration"
-  }
-}
-
 task download_ref_data {
   meta {
     author: "Taylor Firman"

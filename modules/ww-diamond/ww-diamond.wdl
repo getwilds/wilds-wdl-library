@@ -5,12 +5,6 @@
 
 version 1.0
 
-workflow ww_diamond {
-  meta {
-    description: "Dummy workflow for Dockstore tool registration"
-  }
-}
-
 task make_database {
   meta {
     author: "Emma Bishop"

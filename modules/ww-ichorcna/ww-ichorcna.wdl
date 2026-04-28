@@ -4,12 +4,6 @@
 
 version 1.0
 
-workflow ww_ichorcna {
-  meta {
-    description: "Dummy workflow for Dockstore tool registration"
-  }
-}
-
 task readcounter_wig {
   meta {
     author: "Emma Bishop"

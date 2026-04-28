@@ -4,12 +4,6 @@
 
 version 1.0
 
-workflow ww_strelka {
-  meta {
-    description: "Dummy workflow for Dockstore tool registration"
-  }
-}
-
 task strelka_germline {
   meta {
     author: "Taylor Firman"
