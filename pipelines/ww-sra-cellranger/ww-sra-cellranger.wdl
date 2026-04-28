@@ -26,6 +26,9 @@ workflow sra_cellranger {
     create_bam: "Whether Cell Ranger should generate a BAM file (default: true)"
     expect_cells: "Optional expected number of recovered cells per sample"
     chemistry: "Optional assay configuration for Cell Ranger (e.g. SC3Pv2, SC3Pv3)"
+    use_hpc_modules: "If true, run Cell Ranger via run_count_hpc (HPC environment modules). If false (default), run via run_count (private Docker image). Cell Ranger is not redistributable, so the Docker path requires you to supply your own image via docker_image."
+    docker_image: "Private Cell Ranger Docker image used by run_count. Ignored when use_hpc_modules is true."
+    environment_modules: "HPC environment module(s) used by run_count_hpc. Ignored when use_hpc_modules is false."
   }
 
   input {
@@ -38,6 +41,9 @@ workflow sra_cellranger {
     Boolean create_bam = true
     Int? expect_cells
     String? chemistry
+    Boolean use_hpc_modules = false
+    String docker_image = "ghcr.io/getwilds/cellranger:10.0.0"
+    String environment_modules = "CellRanger/10.0.0"
   }
 
   scatter (id in sra_id_list) {
@@ -56,23 +62,47 @@ workflow sra_cellranger {
         sample_id = id
     }
 
-    # Run Cell Ranger count
-    call cellranger_tasks.run_count { input:
-        r1_fastqs = [rename_fastqs.r1_renamed],
-        r2_fastqs = [rename_fastqs.r2_renamed],
-        ref_gex = ref_gex,
-        sample_id = id,
-        create_bam = create_bam,
-        cpu_cores = ncpu,
-        memory_gb = memory_gb,
-        expect_cells = expect_cells,
-        chemistry = chemistry
+    # Dispatch to the Docker or HPC-modules variant of cellranger count.
+    # Each branch's outputs are Optional; select_first below collapses them
+    # back to a single non-optional File per scatter iteration.
+    if (!use_hpc_modules) {
+      call cellranger_tasks.run_count { input:
+          r1_fastqs = [rename_fastqs.r1_renamed],
+          r2_fastqs = [rename_fastqs.r2_renamed],
+          ref_gex = ref_gex,
+          sample_id = id,
+          create_bam = create_bam,
+          cpu_cores = ncpu,
+          memory_gb = memory_gb,
+          expect_cells = expect_cells,
+          chemistry = chemistry,
+          docker_image = docker_image
+      }
     }
+
+    if (use_hpc_modules) {
+      call cellranger_tasks.run_count_hpc { input:
+          r1_fastqs = [rename_fastqs.r1_renamed],
+          r2_fastqs = [rename_fastqs.r2_renamed],
+          ref_gex = ref_gex,
+          sample_id = id,
+          create_bam = create_bam,
+          cpu_cores = ncpu,
+          memory_gb = memory_gb,
+          expect_cells = expect_cells,
+          chemistry = chemistry,
+          environment_modules = environment_modules
+      }
+    }
+
+    File results_tar = select_first([run_count.results_tar, run_count_hpc.results_tar])
+    File web_summary = select_first([run_count.web_summary, run_count_hpc.web_summary])
+    File metrics_summary = select_first([run_count.metrics_summary, run_count_hpc.metrics_summary])
   }
 
   output {
-    Array[File] cellranger_results = run_count.results_tar
-    Array[File] cellranger_web_summaries = run_count.web_summary
-    Array[File] cellranger_metrics = run_count.metrics_summary
+    Array[File] cellranger_results = results_tar
+    Array[File] cellranger_web_summaries = web_summary
+    Array[File] cellranger_metrics = metrics_summary
   }
 }
