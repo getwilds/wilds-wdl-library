@@ -967,6 +967,36 @@ workflows:
       branches:
         - main
 
+  - name: ww-sra-cellranger
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-sra-cellranger/ww-sra-cellranger.wdl
+    readMePath: /pipelines/ww-sra-cellranger/README.md
+    testParameterFiles:
+      - /pipelines/ww-sra-cellranger/inputs.json
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+    description: "WDL workflow to download single-cell RNA-seq data from SRA and process using Cell Ranger count"
+    topic: single-cell
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+      tags:
+        - genomics
+        - single-cell
+        - rna-seq
+        - cellranger
+        - sra
+
   - name: ww-sra-star
     subclass: WDL
     primaryDescriptorPath: /pipelines/ww-sra-star/ww-sra-star.wdl

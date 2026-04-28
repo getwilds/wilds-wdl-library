@@ -6,7 +6,7 @@ A WILDS WDL module for downloading genomic data from the NCBI Sequence Read Arch
 
 ## Overview
 
-This module provides reusable WDL tasks for downloading sequencing data from the SRA using the SRA toolkit. It handles both single-end and paired-end reads, automatically detecting the read type and processing accordingly.
+This module provides reusable WDL tasks for downloading sequencing data from the SRA using the SRA toolkit. It handles single-end, paired-end, and multi-read data (e.g., 10x Chromium single-cell), automatically detecting the read type and processing accordingly.
 
 The module uses `prefetch` + `fasterq-dump` for efficient, multi-threaded downloading of FASTQ files from SRA accessions, with optional NGC authentication for downloading controlled-access dbGaP data.
 
@@ -21,7 +21,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 ## Tasks
 
 ### `fastqdump`
-Downloads FASTQ files from SRA accessions with automatic paired-end detection. Supports controlled-access dbGaP data via optional NGC repository key file.
+Downloads FASTQ files from SRA accessions with automatic read structure detection. Handles standard paired-end data as well as multi-read single-cell data (e.g., 10x Chromium with barcode, index, and cDNA reads) by including technical reads and reassigning files so that R1 and R2 outputs always contain the biological reads. Supports controlled-access dbGaP data via optional NGC repository key file.
 
 **Inputs:**
 - `sra_id` (String): SRA accession ID
@@ -96,6 +96,7 @@ This module pairs well with other WILDS modules:
 - **ww-star**: For RNA-seq alignment after SRA download
 - **ww-bwa**: For DNA-seq alignment after SRA download
 - **ww-sra-star pipeline**: Complete pipeline from SRA to alignment
+- **ww-sra-cellranger pipeline**: Complete pipeline from SRA to single-cell gene expression quantification
 
 ## Testing the Module
 
@@ -131,7 +132,7 @@ The module supports flexible resource configuration:
 - **SRR**: Single sample run accessions
 - **ERR**: ENA (European Nucleotide Archive) accessions
 - **DRR**: DDBJ (DNA Data Bank of Japan) accessions
-- Supports both single-end and paired-end automatically
+- Supports single-end, paired-end, and multi-read (e.g., 10x single-cell) automatically
 
 ## Requirements
 
@@ -142,7 +143,7 @@ The module supports flexible resource configuration:
 
 ## Features
 
-- **Automatic paired-end detection**: Determines read structure automatically
+- **Automatic read structure detection**: Handles single-end, paired-end, and multi-read (e.g., 10x single-cell) data automatically
 - **Parallel downloading**: Multi-threaded downloads for improved performance
 - **Standardized output**: Consistent naming for downstream processing
 - **Cross-platform**: Works with SRA accessions from NCBI, ENA, and DDBJ

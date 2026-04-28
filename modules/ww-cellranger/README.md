@@ -13,18 +13,20 @@ This module provides reusable WDL tasks for preparing and processing single-cell
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `run_count`
+- **Tasks**: `run_count`, `run_count_hpc`, `rename_fastqs`
 - **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
-- **Container**: `getwilds/cellranger:10.0.0` (WILDS Docker image with Cell Ranger installed)
+- **Container**: Cell Ranger is not redistributable, so the WILDS Docker Library does not publish a public Cell Ranger image. A [Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) is provided so users can build their own private image. Fred Hutch users running on institutional HPC can instead use `run_count_hpc` with the `CellRanger/10.0.0` environment module under Fred Hutch's institutional Cell Ranger license.
 
 ## Important Requirements
 
 ### Platform Requirements
 
-**Cell Ranger requires Linux x86_64 architecture with AVX instruction support.** This module runs Cell Ranger inside a Docker container (`getwilds/cellranger:10.0.0`), which works on:
+**Cell Ranger requires Linux x86_64 architecture with AVX instruction support.** When using `run_count`, the binary runs inside a Docker container built from the [WILDS Cell Ranger Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest), which works on:
 - Linux x86_64 systems (native)
 - Intel-based Macs (via Docker)
 - Cloud platforms and HPC clusters (GitHub Actions, AWS, Google Cloud, etc.)
+
+When using `run_count_hpc`, the same architecture requirement applies to the HPC compute nodes that load the Cell Ranger environment module.
 
 **Note for Apple Silicon (M1/M2/M3) Mac users:** Local testing is not supported. Docker's x86_64 emulation on Apple Silicon does not support the AVX instructions that Cell Ranger requires. The CI/CD pipeline will test this module on compatible infrastructure.
 
@@ -34,7 +36,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 - Format: `SampleName_S1_L001_R1_001.fastq.gz` (for Read 1)
 - Format: `SampleName_S1_L001_R2_001.fastq.gz` (for Read 2)
 
-If your files don't follow this convention, you can use the `download_fastq_data` task from `ww-testdata` with the `prefix` parameter to rename them, or rename them manually before running the workflow.
+If your files don't follow this convention, you can use the `rename_fastqs` task from this module to rename them automatically.
 
 ### Current Limitations
 
@@ -44,9 +46,20 @@ If you need support for feature barcoding or other Cell Ranger features, please 
 
 ## Tasks
 
+### Picking a `run_count` variant
+
+Cell Ranger's license prevents WILDS from publishing a public Docker image, and WDL's runtime block does not let a single task cleanly toggle between the `docker` and `modules` runtime attributes. This module therefore exposes two near-identical tasks; pick the one that matches your environment:
+
+| Task | Use when | Runtime attribute |
+| --- | --- | --- |
+| `run_count` | You have a private Cell Ranger Docker image (built locally from the [WILDS Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) or supplied by your organization). Right choice for cloud, CI, and most local runs. | `docker` |
+| `run_count_hpc` | You are running on an institutional HPC where Cell Ranger is provided as an environment module under an institutional license (e.g., Fred Hutch HPC via PROOF). | `modules` |
+
+Both tasks produce identical outputs and accept the same scientific parameters; they differ only in how they obtain the Cell Ranger binary.
+
 ### `run_count`
 
-Run `cellranger count` on gene expression reads from one GEM well.
+Run `cellranger count` on gene expression reads from one GEM well using a private Cell Ranger Docker image.
 
 **Inputs:**
 - `r1_fastqs` (Array[File]): Array of R1 FASTQ files (contain cell barcodes and UMIs)
@@ -58,6 +71,7 @@ Run `cellranger count` on gene expression reads from one GEM well.
 - `memory_gb` (Int, default=64): Memory allocation in GB
 - `expect_cells` (Int, optional): Expected number of recovered cells
 - `chemistry` (String, optional): Assay configuration (e.g., SC3Pv3)
+- `docker_image` (String, default=`ghcr.io/getwilds/cellranger:10.0.0`): Private Cell Ranger Docker image. Cell Ranger is not redistributable, so you must supply your own image (see the WILDS Dockerfile recipe linked above) and override the default if it is not available in your registry.
 
 **Important:** All input FASTQs must be from one GEM well. If you have multiple GEM wells, use `run_count` separately for each well. The task validates that FASTQ filenames follow Cell Ranger's naming convention and will fail with a helpful error message if they don't.
 
@@ -65,6 +79,40 @@ Run `cellranger count` on gene expression reads from one GEM well.
 - `results_tar` (File): Compressed tarball of Cell Ranger count output directory
 - `web_summary` (File): Web summary HTML file with QC metrics
 - `metrics_summary` (File): Metrics summary CSV file with key statistics
+
+### `run_count_hpc`
+
+Run `cellranger count` on gene expression reads from one GEM well using an HPC environment module instead of a Docker image. Honored only by backends whose Cromwell configuration registers a `modules` runtime attribute (e.g., the Fred Hutch HPC via PROOF); on container-based backends the `modules` runtime attribute is ignored, no Cell Ranger binary will be on `PATH`, and the task will fail.
+
+**Inputs:** Same as `run_count`, except `docker_image` is replaced by:
+- `environment_modules` (String, default=`"CellRanger/10.0.0"`): Space-separated list of HPC environment modules to load before invoking `cellranger count`.
+
+**Outputs:** Same as `run_count`.
+
+Example, HPC with environment modules:
+```wdl
+call cellranger_tasks.run_count_hpc {
+  input:
+    r1_fastqs = r1_fastqs,
+    r2_fastqs = r2_fastqs,
+    ref_gex = reference,
+    sample_id = "my_sample",
+    environment_modules = "CellRanger/10.0.0"
+}
+```
+
+### `rename_fastqs`
+
+Renames FASTQ files to match the Cell Ranger naming convention. Useful for preparing SRA downloads or other non-standard FASTQ files for Cell Ranger input.
+
+**Inputs:**
+- `r1_fastq` (File): R1 FASTQ file to rename
+- `r2_fastq` (File): R2 FASTQ file to rename
+- `sample_id` (String): Sample ID to use as the prefix in the renamed file
+
+**Outputs:**
+- `r1_renamed` (File): R1 FASTQ file renamed to `{sample_id}_S1_R1_001.fastq.gz`
+- `r2_renamed` (File): R2 FASTQ file renamed to `{sample_id}_S1_R2_001.fastq.gz`
 
 ## Usage as a Module
 
@@ -188,7 +236,7 @@ The module supports flexible resource configuration:
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- Docker or Apptainer support for containerized execution
+- One of: Docker/Apptainer support with a private Cell Ranger image (for `run_count`), or an HPC backend configured with a `modules` runtime attribute and a Cell Ranger environment module (for `run_count_hpc`)
 - Sufficient computational resources (Cell Ranger can be memory-intensive)
 - 10x Genomics reference transcriptome (available from [10x Genomics Download Center](https://www.10xgenomics.com/support/software/cell-ranger/downloads#reference-downloads))
 

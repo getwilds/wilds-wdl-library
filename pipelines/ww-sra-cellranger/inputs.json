@@ -1,0 +1,9 @@
+{
+  "sra_cellranger.sra_id_list": ["SRR12345678", "SRR12345679"],
+  "sra_cellranger.ref_gex": "/path/to/cellranger/reference.tar.gz",
+  "sra_cellranger.ncpu": 8,
+  "sra_cellranger.memory_gb": 64,
+  "sra_cellranger.use_hpc_modules": true,
+  "sra_cellranger.docker_image": "ghcr.io/getwilds/cellranger:10.0.0",
+  "sra_cellranger.environment_modules": "CellRanger/10.0.0"
+}

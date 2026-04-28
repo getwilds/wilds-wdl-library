@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   discover:
@@ -48,6 +49,13 @@ jobs:
     -
       name: Checkout
       uses: actions/checkout@v4
+    -
+      name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     -
       name: Set up Python
       uses: actions/setup-python@v5
@@ -83,6 +91,17 @@ jobs:
       name: Checkout
       uses: actions/checkout@v4
     -
+      name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    -
+      name: Pre-pull cellranger image (private GHCR)
+      if: (inputs.item_type == 'modules' && matrix.item == 'ww-cellranger') || (inputs.item_type == 'pipelines' && matrix.item == 'ww-sra-cellranger')
+      run: docker pull ghcr.io/getwilds/cellranger:10.0.0
+    -
       name: Set Up Java
       uses: actions/setup-java@v4
       with:
@@ -98,7 +117,7 @@ jobs:
         item_dir="${{ inputs.item_type }}/${{ matrix.item }}"
         wdl_file="$item_dir/testrun.wdl"
         echo "Running ${{ inputs.item_type }}/${{ matrix.item }} with Cromwell..."
-        java -jar cromwell-92.jar run "$wdl_file"
+        java -Dconfig.file=.github/cromwell.conf -jar cromwell-92.jar run "$wdl_file"
 
   sprocket-test:
     needs: [discover]
@@ -116,6 +135,17 @@ jobs:
     -
       name: Checkout
       uses: actions/checkout@v4
+    -
+      name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    -
+      name: Pre-pull cellranger image (private GHCR)
+      if: (inputs.item_type == 'modules' && matrix.item == 'ww-cellranger') || (inputs.item_type == 'pipelines' && matrix.item == 'ww-sra-cellranger')
+      run: docker pull ghcr.io/getwilds/cellranger:10.0.0
     -
       name: Set Up Rust
       uses: dtolnay/rust-toolchain@stable
