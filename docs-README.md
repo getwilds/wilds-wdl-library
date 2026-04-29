@@ -12,7 +12,7 @@
 [![Project Status: Stable – Useable, full support, open to feedback, stable API.](https://getwilds.org/badges/badges/stable.svg)](https://getwilds.org/badges/#stable)
 [![WDL Executors](https://img.shields.io/badge/WDL-Cromwell%20%7C%20miniWDL%20%7C%20Sprocket-blue.svg)](https://github.com/getwilds/wilds-wdl-library)
 [![GitHub Release](https://img.shields.io/github/v/release/getwilds/wilds-wdl-library)](https://github.com/getwilds/wilds-wdl-library/releases)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19339693.svg)](https://doi.org/10.5281/zenodo.19339693)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19339693-blue)](https://doi.org/10.5281/zenodo.19339693)
 
 ---
 
