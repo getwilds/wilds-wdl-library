@@ -67,8 +67,16 @@ task combine_count_matrices {
 
 task run_deseq2 {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Elaine Glenny",
+            email: "eglenny@fredhutch.org"
+        }
+    ]
     description: "Perform differential expression analysis using DESeq2"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl"
     outputs: {
@@ -149,8 +157,16 @@ task run_deseq2 {
 
 task compile_deseq2_results {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Elaine Glenny",
+            email: "eglenny@fredhutch.org"
+        }
+    ]
     description: "Merge DESeq2 results with normalized counts and GTF gene annotations into a single comprehensive output file"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl"
     outputs: {

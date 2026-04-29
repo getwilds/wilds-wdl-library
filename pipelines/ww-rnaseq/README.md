@@ -301,6 +301,8 @@ For questions, bugs, and/or feature requests, reach out to the Fred Hutch Office
 
 ## Contributing
 
+Special thanks to [Elle Glenny](https://github.com/eglenny) for extensive testing of this pipeline, identifying bugs, and suggesting feature improvements that have shaped the current design. Thank you for your contributions!
+
 If you would like to contribute to this WILDS WDL pipeline, please see our [contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
 
 ## License

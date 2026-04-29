@@ -17,8 +17,20 @@ struct RefGenome {
 
 workflow rnaseq {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        },
+        {
+            name: "Elaine Glenny",
+            email: "eglenny@fredhutch.org"
+        }
+    ]
     description: "Comprehensive RNA-seq pipeline covering read QC, adapter trimming, alignment, post-alignment QC, differential expression, and aggregated reporting"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-rnaseq/ww-rnaseq.wdl"
     outputs: {
