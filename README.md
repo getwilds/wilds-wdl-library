@@ -11,8 +11,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Project Status: Stable – Useable, full support, open to feedback, stable API.](https://getwilds.org/badges/badges/stable.svg)](https://getwilds.org/badges/#stable)
 [![WDL Executors](https://img.shields.io/badge/WDL-Cromwell%20%7C%20miniWDL%20%7C%20Sprocket-blue.svg)](https://github.com/getwilds/wilds-wdl-library)
-[![WDL](https://img.shields.io/badge/WDL-1.0-orange.svg)](https://openwdl.org/)
-[![GitHub Release](https://img.shields.io/github/v/release/getwilds/wilds-wdl-library)](https://github.com/getwilds/wilds-wdl-library/releases)<br>
+[![GitHub Release](https://img.shields.io/github/v/release/getwilds/wilds-wdl-library)](https://github.com/getwilds/wilds-wdl-library/releases)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19339693-blue)](https://doi.org/10.5281/zenodo.19339693)<br>
 [![Module Tests](https://github.com/getwilds/wilds-wdl-library/actions/workflows/modules-testrun.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/modules-testrun.yml)
 [![Pipeline Tests](https://github.com/getwilds/wilds-wdl-library/actions/workflows/pipelines-testrun.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/pipelines-testrun.yml)
 [![Linting](https://github.com/getwilds/wilds-wdl-library/actions/workflows/linting.yml/badge.svg)](https://github.com/getwilds/wilds-wdl-library/actions/workflows/linting.yml)
@@ -172,6 +172,27 @@ See our [Contributing Guidelines](.github/CONTRIBUTING.md) for detailed informat
 - **General Questions**: Contact the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org
 - **Documentation**: [Contributing Guidelines](.github/CONTRIBUTING.md)
 - **Fred Hutch Users**: [Scientific Computing Wiki](https://sciwiki.fredhutch.org/)
+
+## Citation
+
+If you use the WILDS WDL Library in your research, please cite it. The DOI below always resolves to the latest release; see the [Zenodo record](https://doi.org/10.5281/zenodo.19339693) for version-specific DOIs.
+
+> Firman, T., Bishop, E., et al. (2026). WILDS WDL Library [Computer software]. GitHub. https://doi.org/10.5281/zenodo.19339693
+
+BibTeX:
+
+```bibtex
+@software{wilds_wdl_library,
+  author    = {Firman, Taylor and Bishop, Emma and others},
+  title     = {WILDS WDL Library},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.19339693},
+  url       = {https://doi.org/10.5281/zenodo.19339693}
+}
+```
+
+A machine-readable citation is also available in [CITATION.cff](CITATION.cff), which GitHub uses to power the "Cite this repository" button in the sidebar.
 
 ## Dockstore
 
