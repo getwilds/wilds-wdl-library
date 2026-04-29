@@ -165,6 +165,22 @@ tools:
       branches:
         - main
 
+  - name: ww-clair3
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-clair3/ww-clair3.wdl
+    readMePath: /modules/ww-clair3/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for germline variant calling using Clair3 deep learning models
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-cnvkit
     subclass: WDL
     primaryDescriptorPath: /modules/ww-cnvkit/ww-cnvkit.wdl
@@ -309,6 +325,22 @@ tools:
       branches:
         - main
 
+  - name: ww-esmfold
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-esmfold/ww-esmfold.wdl
+    readMePath: /modules/ww-esmfold/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for protein 3D structure prediction from amino acid sequences using ESMFold
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-fastp
     subclass: WDL
     primaryDescriptorPath: /modules/ww-fastp/ww-fastp.wdl
@@ -373,6 +405,22 @@ tools:
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
     topic: WDL module for downloading files from the Genomic Data Commons
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-gffread
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-gffread/ww-gffread.wdl
+    readMePath: /modules/ww-gffread/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for GFF/GTF annotation file conversion and normalization using gffread
     enableAutoDois: true
     filters:
       branches:
@@ -687,6 +735,31 @@ tools:
       branches:
         - main
 
+  - name: ww-testdata
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-testdata/ww-testdata.wdl
+    readMePath: /modules/ww-testdata/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+      - name: Chris Lo
+        email: clo2@fredhutch.org
+        role: Data Science Trainer
+        affiliation: Fred Hutch Cancer Center
+    topic: WDL module for downloading and provisioning test data used across WILDS WDL module and pipeline test runs
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-trimgalore
     subclass: WDL
     primaryDescriptorPath: /modules/ww-trimgalore/ww-trimgalore.wdl
@@ -718,31 +791,6 @@ tools:
       branches:
         - main
 
-  - name: ww-testdata
-    subclass: WDL
-    primaryDescriptorPath: /modules/ww-testdata/ww-testdata.wdl
-    readMePath: /modules/ww-testdata/README.md
-    authors:
-      - name: Taylor Firman
-        email: tfirman@fredhutch.org
-        role: Research Informatics Data Scientist
-        affiliation: Fred Hutch Cancer Center
-        orcid: 0009-0002-2052-1084
-      - name: Emma Bishop
-        email: ebishop@fredhutch.org
-        role: Research Informatics Data Scientist
-        affiliation: Fred Hutch Cancer Center
-        orcid: 0000-0003-4484-3336
-      - name: Chris Lo
-        email: clo2@fredhutch.org
-        role: Data Science Trainer
-        affiliation: Fred Hutch Cancer Center
-    topic: WDL module for downloading and provisioning test data used across WILDS WDL module and pipeline test runs
-    enableAutoDois: true
-    filters:
-      branches:
-        - main
-
   - name: ww-varscan
     subclass: WDL
     primaryDescriptorPath: /modules/ww-varscan/ww-varscan.wdl
@@ -754,6 +802,22 @@ tools:
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
     topic: WDL module for somatic variant calling using VarScan
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-viennarna
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-viennarna/ww-viennarna.wdl
+    readMePath: /modules/ww-viennarna/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for RNA secondary structure prediction using the ViennaRNA package
     enableAutoDois: true
     filters:
       branches:
@@ -934,6 +998,24 @@ workflows:
       branches:
         - main
 
+  - name: ww-splicing-proteomics
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-splicing-proteomics/ww-splicing-proteomics.wdl
+    readMePath: /pipelines/ww-splicing-proteomics/README.md
+    testParameterFiles:
+      - /pipelines/ww-splicing-proteomics/inputs.json
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL pipeline for alternative splicing proteomics with STAR alignment, rMATS splicing, and JCAST translation
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-sra-salmon
     subclass: WDL
     primaryDescriptorPath: /pipelines/ww-sra-salmon/ww-sra-salmon.wdl
@@ -995,24 +1077,6 @@ workflows:
       branches:
         - main
 
-  - name: ww-starling-batch
-    subclass: WDL
-    primaryDescriptorPath: /pipelines/ww-starling-batch/ww-starling-batch.wdl
-    readMePath: /pipelines/ww-starling-batch/README.md
-    testParameterFiles:
-      - /pipelines/ww-starling-batch/inputs.json
-    authors:
-      - name: Taylor Firman
-        email: tfirman@fredhutch.org
-        role: Research Informatics Data Scientist
-        affiliation: Fred Hutch Cancer Center
-        orcid: 0009-0002-2052-1084
-    topic: Batch ensemble generation pipeline splitting a protein FASTA into chunks for parallel STARLING processing
-    enableAutoDois: true
-    filters:
-      branches:
-        - main
-
   - name: ww-star-deseq2
     subclass: WDL
     primaryDescriptorPath: /pipelines/ww-star-deseq2/ww-star-deseq2.wdl
@@ -1041,21 +1105,20 @@ workflows:
       branches:
         - main
 
-  - name: ww-splicing-proteomics
+  - name: ww-starling-batch
     subclass: WDL
-    primaryDescriptorPath: /pipelines/ww-splicing-proteomics/ww-splicing-proteomics.wdl
-    readMePath: /pipelines/ww-splicing-proteomics/README.md
+    primaryDescriptorPath: /pipelines/ww-starling-batch/ww-starling-batch.wdl
+    readMePath: /pipelines/ww-starling-batch/README.md
     testParameterFiles:
-      - /pipelines/ww-splicing-proteomics/inputs.json
+      - /pipelines/ww-starling-batch/inputs.json
     authors:
       - name: Taylor Firman
         email: tfirman@fredhutch.org
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
-    topic: WDL pipeline for alternative splicing proteomics with STAR alignment, rMATS splicing, and JCAST translation
+    topic: Batch ensemble generation pipeline splitting a protein FASTA into chunks for parallel STARLING processing
     enableAutoDois: true
     filters:
       branches:
         - main
-

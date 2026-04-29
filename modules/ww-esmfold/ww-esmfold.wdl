@@ -48,7 +48,12 @@ task esmfold_predict {
   command <<<
     set -eo pipefail
 
-    mkdir -p pdb_output
+    # Redirect model/temp caches to working directory to avoid filling container root filesystem
+    TORCH_HOME="$(pwd)/.cache/torch"
+    HF_HOME="$(pwd)/.cache/huggingface"
+    TMPDIR="$(pwd)/.cache/tmp"
+    export TORCH_HOME HF_HOME TMPDIR
+    mkdir -p "${TORCH_HOME}" "${HF_HOME}" "${TMPDIR}" pdb_output
 
     # Build the esm-fold command
     esm-fold \

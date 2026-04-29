@@ -12,7 +12,8 @@ workflow samtools_example {
       ref_fasta = download_ref_data.fasta
   }
   call ww_testdata.download_cram_data as download_cram_2 { input:
-      ref_fasta = download_ref_data.fasta
+      ref_fasta = download_ref_data.fasta,
+      output_name = "NA12878_chr1_copy"
   }
 
   # Download two BAM files to test merging in merge_bams_to_cram
