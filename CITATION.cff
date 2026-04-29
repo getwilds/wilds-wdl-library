@@ -8,6 +8,13 @@ date-released: "2026-03-31"
 license: MIT
 repository-code: "https://github.com/getwilds/wilds-wdl-library"
 url: "https://getwilds.org/wilds-wdl-library/"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.19339693
+    description: "Concept DOI for all versions of the WILDS WDL Library"
+  - type: doi
+    value: 10.5281/zenodo.19339694
+    description: "DOI for version 0.2.0"
 contact:
   - email: wilds@fredhutch.org
     name: "Fred Hutch OCDO WILDS"
