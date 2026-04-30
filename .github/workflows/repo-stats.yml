@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: write
-  administration: read
 
 jobs:
   collect:
@@ -51,7 +50,7 @@ jobs:
       -
         name: Collect traffic stats
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GHRS_GITHUB_API_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: python .github/scripts/collect_repo_stats.py
 
