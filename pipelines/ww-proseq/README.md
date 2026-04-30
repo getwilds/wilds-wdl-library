@@ -183,13 +183,19 @@ Total testrun duration: ~10-15 minutes (dominated by the SRA download).
 
 ## Citation
 
-If you use this pipeline, please cite:
+If you use this pipeline, please cite the qPRO-seq protocol it implements:
 
-> **PRO-seq method:** Mahat DB, Kwak H, Booth GT, et al. Base-pair-resolution genome-wide mapping of active RNA polymerases using precision nuclear run-on (PRO-seq). *Nat Protoc.* 2016;11(8):1455-1476. DOI: [10.1038/nprot.2016.086](https://doi.org/10.1038/nprot.2016.086)
+> **qPRO-seq paper:** Judd J, Wojenski LA, Wainman LM, et al. A rapid, sensitive, scalable method for Precision Run-On sequencing (PRO-seq). *bioRxiv* 2020. DOI: [10.1101/2020.05.18.102277](https://doi.org/10.1101/2020.05.18.102277)
+
+> **qPRO-seq wet-lab protocol:** [protocols.io/view/a-rapid-sensitive-scalable-method-for-precision-ru-3byl42p7ovo5](https://www.protocols.io/view/a-rapid-sensitive-scalable-method-for-precision-ru-3byl42p7ovo5/v1)
 
 > **Reference shell pipeline:** Judd J, JAJ256/PROseq_alignment.sh. https://github.com/JAJ256/PROseq_alignment.sh
 
-> Plus the underlying tool citations: fastp, bowtie2, samtools, UMI-tools, deepTools, MultiQC.
+The qPRO-seq protocol is itself a dual-UMI extension of the original PRO-seq method:
+
+> **Original PRO-seq method:** Mahat DB, Kwak H, Booth GT, et al. Base-pair-resolution genome-wide mapping of active RNA polymerases using precision nuclear run-on (PRO-seq). *Nat Protoc.* 2016;11(8):1455-1476. DOI: [10.1038/nprot.2016.086](https://doi.org/10.1038/nprot.2016.086)
+
+Plus the underlying tool citations: fastp, bowtie2, samtools, UMI-tools, deepTools, MultiQC.
 
 ## Support
 
