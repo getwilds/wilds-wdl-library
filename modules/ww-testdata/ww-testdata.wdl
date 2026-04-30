@@ -8,7 +8,7 @@ task download_ref_data {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Downloads reference genome and index files for WILDS WDL test runs"
+    description: "Downloads chromosome FASTA + GTF + BED + samtools index/dict from a UCSC assembly. Falls back to the whole-genome bigZips FASTA for assemblies without per-chromosome files (e.g. dm6, sacCer3)."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         fasta: "Reference genome FASTA file",
@@ -21,7 +21,7 @@ task download_ref_data {
 
   parameter_meta {
     chromo: "Chromosome to download (e.g., chr1, chr2, etc.)"
-    version: "Reference genome version (e.g., hg38, hg19)"
+    version: "UCSC reference genome version (e.g., hg38, mm10, dm6, sacCer3)"
     region: "Optional region coordinates to extract from chromosome in format '1-30000000'. If not specified, uses entire chromosome."
     output_name: "Optional name for output files (default: uses chromo name)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
@@ -42,10 +42,22 @@ task download_ref_data {
   command <<<
     set -euo pipefail
 
-    # Download chromosome fasta
-    wget -q -O "~{chromo}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"
-    gunzip "~{chromo}.fa.gz"
-    mv "~{chromo}.fa" temp.fa
+    # Try the per-chromosome FASTA first (available for hg19/hg38/mm10/etc.).
+    # Fall back to the whole-genome bigZips FASTA for assemblies that don't ship
+    # per-chromosome files (e.g. dm6, sacCer3) — extract the requested chromosome
+    # via samtools faidx after downloading.
+    if wget -q --spider "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"; then
+      wget -q -O "~{chromo}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"
+      gunzip "~{chromo}.fa.gz"
+      mv "~{chromo}.fa" temp.fa
+    else
+      echo "No per-chromosome FASTA for ~{version}/~{chromo}; falling back to whole-genome bigZips download"
+      wget -q -O "~{version}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/bigZips/~{version}.fa.gz"
+      gunzip "~{version}.fa.gz"
+      samtools faidx "~{version}.fa"
+      samtools faidx "~{version}.fa" "~{chromo}" > temp.fa
+      rm "~{version}.fa" "~{version}.fa.fai"
+    fi
 
     # Subset to specified region if provided
     REGION="~{if defined(region) then region else ""}"
@@ -107,7 +119,7 @@ task merge_fastas_with_prefix {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Builds a merged FASTA by concatenating two input FASTAs, prepending a configurable prefix to the contig names of the second one. Useful for assembling experimental + spike-in references where the spike-in contigs need a distinguishing name prefix (e.g. 'hg38' on a dm6+hg38 PRO-seq merged reference)."
+    description: "Concatenates two FASTAs, prepending a configurable prefix to the second one's contig names. Used to assemble experimental + spike-in references with a distinguishing prefix on the spike-in contigs."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         merged_fasta: "Merged FASTA: first_fasta contigs unchanged, second_fasta contigs renamed with the prefix",
@@ -467,7 +479,7 @@ task inject_synthetic_umis {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Test-data helper that appends a deterministic synthetic 6-mer UMI to each read name in a BAM, mimicking the format produced by fastp --umi (read_id<separator>UMI). Both mates of a pair receive the same UMI so paired-end UMI dedup tools can run end-to-end without real UMI data."
+    description: "Appends a deterministic synthetic 6-mer UMI to each read name in a BAM, mimicking the format produced by fastp --umi. Mates of a pair share a UMI so paired-end UMI dedup tools can run end-to-end without real UMI data."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         umi_bam: "Coordinate-sorted BAM with synthetic UMIs appended to read names",

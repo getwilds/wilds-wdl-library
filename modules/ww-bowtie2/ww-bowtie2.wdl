@@ -61,7 +61,7 @@ task bowtie2_align {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Task for aligning sequence reads to a reference genome using Bowtie 2. Supports named sensitivity presets, post-alignment MAPQ + SAM-flag filtering, capture of unaligned reads (e.g. for rRNA depletion), and an extra-args escape hatch for tool-specific flags."
+    description: "Aligns reads to a reference using Bowtie 2. Supports sensitivity presets, post-alignment MAPQ + SAM-flag filtering, capture of unaligned reads, and an extra-args escape hatch."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bowtie2/ww-bowtie2.wdl"
     outputs: {
         sorted_bam: "Sorted Bowtie 2 alignment output BAM file",
@@ -78,7 +78,7 @@ task bowtie2_align {
     reads: "FASTQ file for forward (R1) reads"
     name: "Sample name for output file naming and read group information"
     mates: "Optional FASTQ file for reverse (R2) reads for paired-end alignment"
-    preset: "Optional bowtie2 sensitivity preset. One of 'fast', 'sensitive', 'very-sensitive', 'fast-local', 'sensitive-local', 'very-sensitive-local'. When unset, bowtie2 uses its default end-to-end '--sensitive' preset."
+    preset: "Optional bowtie2 sensitivity preset (fast, sensitive, very-sensitive, fast-local, sensitive-local, very-sensitive-local). Defaults to bowtie2's end-to-end --sensitive when unset."
     capture_unaligned: "If true, write reads that fail to align concordantly to gzipped FASTQ outputs (--un-gz / --un-conc-gz). Used for e.g. rRNA depletion upstream of a second alignment step."
     min_mapq: "Minimum MAPQ score for samtools view -q post-alignment filter. 0 means no filter (default)."
     samtools_filter_flags: "Extra flags passed to samtools view for post-alignment filtering (e.g. '-f 2' to keep only proper pairs). Empty by default."

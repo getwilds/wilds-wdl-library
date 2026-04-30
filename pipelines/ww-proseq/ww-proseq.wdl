@@ -24,7 +24,7 @@ workflow proseq {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Paired-end PRO-seq pipeline with UMI deduplication and spike-in normalization. Adapted from JAJ256/PROseq_alignment.sh — covers UMI-aware adapter trimming (fastp), rRNA depletion + spike-in alignment + experimental alignment (bowtie2), UMI deduplication (umi_tools), strand-specific 3' single-base bigWig generation (deepTools), and aggregated QC (MultiQC)."
+    description: "Paired-end PRO-seq pipeline with UMI deduplication and spike-in normalization, adapted from JAJ256/PROseq_alignment.sh. Covers UMI-aware trimming, rRNA depletion + spike-in + experimental alignment, UMI dedup, strand-specific 3' bigWigs, and aggregated QC."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-proseq/ww-proseq.wdl"
     outputs: {
         fastp_r1_trimmed: "UMI-extracted, adapter-trimmed R1 FASTQ files for each sample",

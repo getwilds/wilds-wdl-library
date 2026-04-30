@@ -115,7 +115,7 @@ task filter_bam_by_chrom_prefix {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Filters a coordinate-sorted, indexed BAM down to reads on contigs whose names start with the given prefix. Useful for splitting a BAM aligned to a merged reference (e.g. an experimental + spike-in genome) into per-organism BAMs."
+    description: "Filters a coordinate-sorted, indexed BAM to reads on contigs whose names start with the given prefix. Useful for splitting a BAM aligned to a merged reference into per-organism BAMs."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl"
     outputs: {
         filtered_bam: "Coordinate-sorted BAM containing only reads on contigs matching the prefix",

@@ -241,9 +241,11 @@ call colabfold_tasks.colabfold_predict {
 
 ### download_ref_data
 
+Downloads a UCSC reference chromosome FASTA + GTF + BED + samtools index/dict for the requested assembly. For assemblies that ship per-chromosome FASTAs (hg19, hg38, mm10, etc.) the per-chromosome file is fetched directly. For assemblies that only ship a whole-genome FASTA at `bigZips/<version>.fa.gz` (e.g. dm6, sacCer3), the task transparently falls back to downloading the whole-genome file and extracting the requested chromosome via `samtools faidx`.
+
 **Inputs**:
 - `chromo` (String): Chromosome to download (default: "chr1")
-- `version` (String): Genome version (default: "hg38")
+- `version` (String): Genome version (default: "hg38"). Any UCSC golden-path assembly works; per-chromosome FASTAs are used when available with a whole-genome bigZips fallback otherwise.
 - `region` (String, optional): Region coordinates to extract from chromosome in format '1-30000000'. If not specified, uses entire chromosome
 - `output_name` (String, optional): Name for output files (default: uses chromo name)
 - `cpu_cores` (Int): CPU allocation (default: 1)
