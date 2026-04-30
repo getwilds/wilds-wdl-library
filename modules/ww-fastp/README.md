@@ -31,6 +31,8 @@ Run fastp on paired-end FASTQ files for quality filtering, adapter trimming, and
 - `length_required` (Int, default=15): Minimum read length after trimming
 - `detect_adapter_for_pe` (Boolean, default=true): Enable auto-detection of adapters for paired-end data
 - `adapter_fasta` (File?, optional): FASTA file with custom adapter sequences
+- `umi_loc` (String?, optional): Where to extract UMIs from. One of `read1`, `read2`, `per_read`, `index1`, `index2`, `per_index`. Leave unset to disable UMI processing. When set, fastp moves the UMI from the read sequence into the read name (separated by `:`), matching the format expected by `umi_tools dedup`.
+- `umi_len` (Int, default=6): Length of the UMI in basepairs. Only consulted when `umi_loc` is set.
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
@@ -50,6 +52,8 @@ Run fastp on single-end FASTQ files for quality filtering, adapter trimming, and
 - `qualified_quality_phred` (Int, default=15): Minimum base quality score for a base to be qualified
 - `length_required` (Int, default=15): Minimum read length after trimming
 - `adapter_fasta` (File?, optional): FASTA file with custom adapter sequences
+- `umi_loc` (String?, optional): Where to extract UMIs from. One of `read1`, `index1`, `index2`, `per_index`. Leave unset to disable UMI processing.
+- `umi_len` (Int, default=6): Length of the UMI in basepairs. Only consulted when `umi_loc` is set.
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
@@ -109,11 +113,37 @@ call fastp_tasks.fastp_paired {
 }
 ```
 
+**UMI extraction (e.g., PRO-seq, single-cell):**
+```wdl
+# UMIs on both ends of the read (PRO-seq with 5' and 3' UMIs)
+call fastp_tasks.fastp_paired {
+  input:
+    sample_name = "proseq_sample",
+    r1_fastq = r1_file,
+    r2_fastq = r2_file,
+    umi_loc = "per_read",
+    umi_len = 6
+}
+
+# UMI only on R1 (e.g., 3' end of fragment for many small-RNA protocols)
+call fastp_tasks.fastp_paired {
+  input:
+    sample_name = "r1_umi_sample",
+    r1_fastq = r1_file,
+    r2_fastq = r2_file,
+    umi_loc = "read1",
+    umi_len = 8
+}
+```
+
+The extracted UMI is appended to the read name (e.g., `@READ_ID:AGCTGT`), which is the format consumed downstream by `ww-umi-tools.dedup`.
+
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
 - **ww-fastqc**: Can be used alongside fastp for additional QC checks
-- **ww-bwa / ww-star**: Trimmed reads can be passed directly to alignment modules
+- **ww-bwa / ww-star / ww-bowtie2**: Trimmed reads can be passed directly to alignment modules
+- **ww-umi-tools**: When `umi_loc` is set, fastp encodes UMIs into read names that `ww-umi-tools.dedup` consumes after alignment to remove PCR duplicates
 
 ## Testing the Module
 
