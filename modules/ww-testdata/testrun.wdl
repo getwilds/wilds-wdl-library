@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "ww-testdata.wdl" as ww_testdata
 
 workflow testdata_example {
   # Pull down reference genome and index files for chr1
@@ -22,6 +22,12 @@ workflow testdata_example {
   }
 
   call ww_testdata.download_bam_data { }
+
+  call ww_testdata.inject_synthetic_umis { input:
+    input_bam = download_bam_data.bam,
+    input_bai = download_bam_data.bai,
+    sample_name = "umi_demo"
+  }
 
   call ww_testdata.download_ichor_data { }
 
@@ -90,6 +96,8 @@ workflow testdata_example {
     crai = download_cram_data.crai,
     bam = download_bam_data.bam,
     bai = download_bam_data.bai,
+    umi_bam = inject_synthetic_umis.umi_bam,
+    umi_bai = inject_synthetic_umis.umi_bai,
     ichor_gc_wig = download_ichor_data.wig_gc,
     ichor_map_wig = download_ichor_data.wig_map,
     ichor_centromeres = download_ichor_data.centromeres,
@@ -151,6 +159,9 @@ workflow testdata_example {
     File crai = download_cram_data.crai
     File bam = download_bam_data.bam
     File bai = download_bam_data.bai
+    # Outputs from synthetic UMI injection on the BAM
+    File umi_bam = inject_synthetic_umis.umi_bam
+    File umi_bai = inject_synthetic_umis.umi_bai
     # Outputs from the ichorCNA data download
     File ichor_gc_wig = download_ichor_data.wig_gc
     File ichor_map_wig = download_ichor_data.wig_map
@@ -238,6 +249,8 @@ task validate_outputs {
     crai: "CRAM index file to validate"
     bam: "BAM file to validate"
     bai: "BAM index file to validate"
+    umi_bam: "UMI-tagged BAM file (output of inject_synthetic_umis) to validate"
+    umi_bai: "UMI-tagged BAM index file to validate"
     ichor_gc_wig: "ichorCNA GC content file to validate"
     ichor_map_wig: "ichorCNA mapping quality file to validate"
     ichor_centromeres: "ichorCNA centromere locations file to validate"
@@ -300,6 +313,8 @@ task validate_outputs {
     File crai
     File bam
     File bai
+    File umi_bam
+    File umi_bai
     File ichor_gc_wig
     File ichor_map_wig
     File ichor_centromeres
@@ -385,6 +400,8 @@ task validate_outputs {
     validate_file "~{crai}" "CRAM index" || validation_passed=false
     validate_file "~{bam}" "BAM file" || validation_passed=false
     validate_file "~{bai}" "BAM index" || validation_passed=false
+    validate_file "~{umi_bam}" "UMI-tagged BAM file" || validation_passed=false
+    validate_file "~{umi_bai}" "UMI-tagged BAM index" || validation_passed=false
     validate_file "~{ichor_gc_wig}" "ichorCNA GC WIG" || validation_passed=false
     validate_file "~{ichor_map_wig}" "ichorCNA MAP WIG" || validation_passed=false
     validate_file "~{ichor_centromeres}" "ichorCNA centromeres" || validation_passed=false
@@ -450,7 +467,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 55"
+      echo "Total files validated: 57"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

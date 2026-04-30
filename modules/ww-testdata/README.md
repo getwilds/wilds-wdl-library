@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `create_diamond_data`, `create_test_protein_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`
+- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `inject_synthetic_umis`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `create_diamond_data`, `create_test_protein_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`, `download_pao1_ref`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -355,6 +355,40 @@ Downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-
 **Outputs**:
 - `bam` (File): Processed BAM alignment file (chr1 only, primary alignments, 10% subsampled)
 - `bai` (File): BAM index file
+
+### inject_synthetic_umis
+
+Appends a deterministic synthetic 6-mer UMI to each read name in a BAM, mimicking the format produced by `fastp --umi` (`read_id<separator>UMI`). Both mates of a pair receive the same UMI so paired-end UMI dedup tools (e.g., `umi_tools dedup`) can run end-to-end against a BAM that has no real UMIs.
+
+**Use Case**: Test data BAMs from public sources rarely carry UMIs in their read names. This task lets WILDS modules and pipelines that consume UMI-tagged BAMs (e.g., `ww-umi-tools`, the upcoming `ww-proseq` pipeline) run zero-config testruns without needing custom UMI-bearing test data.
+
+**Inputs**:
+- `input_bam` (File): BAM whose read names lack UMIs
+- `input_bai` (File): Index for the input BAM
+- `sample_name` (String): Sample name used for output file naming
+- `umi_separator` (String): Character separating the read ID from the appended UMI in the read name (default: `":"`)
+- `cpu_cores` (Int): CPU allocation (default: 2)
+- `memory_gb` (Int): Memory allocation in GB (default: 4)
+
+**Outputs**:
+- `umi_bam` (File): Coordinate-sorted BAM with synthetic UMIs appended to read names
+- `umi_bai` (File): Index for the UMI-tagged BAM
+
+**Example Usage**:
+```wdl
+call testdata.download_bam_data { }
+call testdata.inject_synthetic_umis { input:
+  input_bam = download_bam_data.bam,
+  input_bai = download_bam_data.bai,
+  sample_name = "demo"
+}
+call umi_tools_tasks.dedup { input:
+  input_bam = inject_synthetic_umis.umi_bam,
+  input_bai = inject_synthetic_umis.umi_bai,
+  sample_name = "demo",
+  paired = true
+}
+```
 
 ### download_ichor_data
 
@@ -772,6 +806,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-consensus**: Consensus variant calling (uses gnomAD VCF from `download_gnomad_vcf`)
 - **ww-sjl / ww-jetlag**: Solar Jetlag tile processing (uses synthetic tile and border points from `generate_sjl_data`)
 - **ww-jcast**: Alternative splicing proteomics (uses rMATS test data from `download_jcast_test_data`)
+- **ww-umi-tools**: UMI-aware deduplication (uses synthetic UMI-tagged BAMs from `inject_synthetic_umis` for zero-config testing)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:

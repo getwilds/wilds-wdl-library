@@ -364,6 +364,69 @@ task download_bam_data {
   }
 }
 
+task inject_synthetic_umis {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Test-data helper that appends a deterministic synthetic 6-mer UMI to each read name in a BAM, mimicking the format produced by fastp --umi (read_id<separator>UMI). Both mates of a pair receive the same UMI so paired-end UMI dedup tools can run end-to-end without real UMI data."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        umi_bam: "Coordinate-sorted BAM with synthetic UMIs appended to read names",
+        umi_bai: "Index for the UMI-tagged BAM"
+    }
+  }
+
+  parameter_meta {
+    input_bam: "BAM whose read names lack UMIs"
+    input_bai: "Index for the input BAM"
+    sample_name: "Sample name used for output file naming"
+    umi_separator: "Character separating the read ID from the appended UMI in the read name"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+  }
+
+  input {
+    File input_bam
+    File input_bai
+    String sample_name
+    String umi_separator = ":"
+    Int cpu_cores = 2
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -eo pipefail
+
+    samtools view -h "~{input_bam}" | awk -v sep="~{umi_separator}" 'BEGIN{OFS="\t"}
+      /^@/ {print; next}
+      {
+        n = $1
+        bases = "ACGT"
+        umi = ""
+        for (i = 1; i <= 6; i++) {
+          c = substr(n, length(n) - i + 1, 1)
+          idx = index(bases, c)
+          if (idx == 0) idx = i
+          umi = umi substr(bases, ((idx - 1) % 4) + 1, 1)
+        }
+        $1 = n sep umi
+        print
+      }' | samtools sort -@ ~{cpu_cores} -o "~{sample_name}.umi.bam" -
+    samtools index -@ ~{cpu_cores} "~{sample_name}.umi.bam"
+  >>>
+
+  output {
+    File umi_bam = "~{sample_name}.umi.bam"
+    File umi_bai = "~{sample_name}.umi.bam.bai"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task download_ichor_data {
   meta {
     author: "Taylor Firman"
