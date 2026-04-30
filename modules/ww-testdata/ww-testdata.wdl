@@ -181,7 +181,7 @@ task download_rrna_reference {
     set -eo pipefail
 
     # NR_046235.3: Homo sapiens RNA, 45S pre-ribosomal N5 (RNA45SN5)
-    wget -q -O "~{output_name}.fa" \
+    wget -q --no-check-certificate -O "~{output_name}.fa" \
       "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NR_046235.3&rettype=fasta&retmode=text"
 
     # Sanity check: the fetch must produce a non-empty FASTA with at least one record.
