@@ -178,6 +178,10 @@ The module supports flexible resource configuration:
 - `star_threads`: Usually set slightly less than `cpu_cores` to leave resources for I/O
 - Resource allocation can be tuned for different compute environments
 
+**For prokaryotic data:** A new `align_two_pass` parameter would be needed that sets `--alignIntronMax` to `1` to prohibit splicing (see [this thread](https://groups.google.com/g/rna-star/c/UhKoLcWr4TA) involving the tool author). If you need this added, please [file an issue](https://github.com/getwilds/wilds-wdl-library/issues).
+
+**For stranded data:** Our STAR tasks currently account for stranded data by default, since we require an annotation file when building the index and use `--quantMode GeneCounts` when aligning. Strand information is reported in the `align_two_pass` output `gene_counts` (a `ReadsPerGene.out.tab` file). See Section 7 of the [STAR manual](https://github.com/alexdobin/STAR/tree/2.7.6a/doc) and [this thread](https://groups.google.com/g/rna-star/c/oGvChGG2gto/m/UQrP3c8yDQAJ) with the tool author.
+
 
 ## Requirements
 
