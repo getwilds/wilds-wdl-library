@@ -103,6 +103,105 @@ task download_ref_data {
   }
 }
 
+task merge_fastas_with_prefix {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Builds a merged FASTA by concatenating two input FASTAs, prepending a configurable prefix to the contig names of the second one. Useful for assembling experimental + spike-in references where the spike-in contigs need a distinguishing name prefix (e.g. 'hg38' on a dm6+hg38 PRO-seq merged reference)."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        merged_fasta: "Merged FASTA: first_fasta contigs unchanged, second_fasta contigs renamed with the prefix",
+        merged_fasta_index: "samtools .fai index for the merged FASTA"
+    }
+  }
+
+  parameter_meta {
+    first_fasta: "FASTA whose contig names are kept as-is in the merged output"
+    second_fasta: "FASTA whose contig names get the prefix prepended in the merged output"
+    second_prefix: "String to prepend to every contig name in second_fasta (e.g. 'hg38')"
+    output_name: "Output filename prefix (without the .fa extension)"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+  }
+
+  input {
+    File first_fasta
+    File second_fasta
+    String second_prefix
+    String output_name
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    cat "~{first_fasta}" > "~{output_name}.fa"
+    sed "s/^>/>~{second_prefix}/" "~{second_fasta}" >> "~{output_name}.fa"
+
+    samtools faidx "~{output_name}.fa"
+  >>>
+
+  output {
+    File merged_fasta = "~{output_name}.fa"
+    File merged_fasta_index = "~{output_name}.fa.fai"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_rrna_reference {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Downloads the human 45S rRNA precursor (NR_046235.3, ~13 kb) from NCBI Entrez. Single-sequence FASTA suitable for building a small bowtie2 index for PRO-seq rRNA depletion."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        fasta: "Human 45S rRNA precursor FASTA"
+    }
+  }
+
+  parameter_meta {
+    output_name: "Output filename prefix (without the .fa extension)"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+  }
+
+  input {
+    String output_name = "human_45S_rRNA"
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # NR_046235.3: Homo sapiens RNA, 45S pre-ribosomal N5 (RNA45SN5)
+    wget -q -O "~{output_name}.fa" \
+      "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NR_046235.3&rettype=fasta&retmode=text"
+
+    # Sanity check: the fetch must produce a non-empty FASTA with at least one record.
+    if ! grep -q "^>" "~{output_name}.fa"; then
+      echo "ERROR: NCBI efetch did not return a valid FASTA" >&2
+      exit 1
+    fi
+  >>>
+
+  output {
+    File fasta = "~{output_name}.fa"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task download_fastq_data {
   meta {
     author: "Taylor Firman"

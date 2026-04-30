@@ -1,6 +1,6 @@
 version 1.0
 
-import "ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-proseq/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow testdata_example {
   # Pull down reference genome and index files for chr1
@@ -83,6 +83,17 @@ workflow testdata_example {
 
   call ww_testdata.download_pao1_ref { }
 
+  # Exercise the spike-in-style merged reference builder using two existing fragments.
+  call ww_testdata.merge_fastas_with_prefix { input:
+    first_fasta = download_ref_data.fasta,
+    second_fasta = download_pao1_ref.fasta,
+    second_prefix = "spikein_",
+    output_name = "merged_demo"
+  }
+
+  # Exercise the human rRNA precursor download.
+  call ww_testdata.download_rrna_reference { }
+
   call validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
@@ -142,7 +153,10 @@ workflow testdata_example {
     pao1_fasta = download_pao1_ref.fasta,
     pao1_fasta_index = download_pao1_ref.fasta_index,
     pao1_dict = download_pao1_ref.dict,
-    pao1_gtf = download_pao1_ref.gtf
+    pao1_gtf = download_pao1_ref.gtf,
+    merged_demo_fasta = merge_fastas_with_prefix.merged_fasta,
+    merged_demo_fasta_index = merge_fastas_with_prefix.merged_fasta_index,
+    rrna_fasta = download_rrna_reference.fasta
   }
 
   output {
@@ -223,6 +237,10 @@ workflow testdata_example {
     File pao1_fasta_index = download_pao1_ref.fasta_index
     File pao1_dict = download_pao1_ref.dict
     File pao1_gtf = download_pao1_ref.gtf
+    # Outputs from merged-FASTA + rRNA reference helpers
+    File merged_demo_fasta = merge_fastas_with_prefix.merged_fasta
+    File merged_demo_fasta_index = merge_fastas_with_prefix.merged_fasta_index
+    File rrna_fasta = download_rrna_reference.fasta
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
   }
@@ -296,6 +314,9 @@ task validate_outputs {
     pao1_fasta_index: "PAO1 reference FASTA index file to validate"
     pao1_dict: "PAO1 reference FASTA dictionary file to validate"
     pao1_gtf: "PAO1 NCBI RefSeq GTF annotation file to validate"
+    merged_demo_fasta: "Merged FASTA produced by merge_fastas_with_prefix to validate"
+    merged_demo_fasta_index: "Index for the merged FASTA to validate"
+    rrna_fasta: "Human 45S rRNA precursor FASTA from download_rrna_reference to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -360,6 +381,9 @@ task validate_outputs {
     File pao1_fasta_index
     File pao1_dict
     File pao1_gtf
+    File merged_demo_fasta
+    File merged_demo_fasta_index
+    File rrna_fasta
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -452,6 +476,9 @@ task validate_outputs {
     validate_file "~{pao1_fasta_index}" "PAO1 reference FASTA index" || validation_passed=false
     validate_file "~{pao1_dict}" "PAO1 reference FASTA dict" || validation_passed=false
     validate_file "~{pao1_gtf}" "PAO1 NCBI RefSeq GTF" || validation_passed=false
+    validate_file "~{merged_demo_fasta}" "Merged demo FASTA" || validation_passed=false
+    validate_file "~{merged_demo_fasta_index}" "Merged demo FASTA index" || validation_passed=false
+    validate_file "~{rrna_fasta}" "Human 45S rRNA precursor FASTA" || validation_passed=false
 
     # Additional check: Verify no N bases in clean amplicon
     echo "" >> validation_report.txt
@@ -467,7 +494,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 57"
+      echo "Total files validated: 60"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

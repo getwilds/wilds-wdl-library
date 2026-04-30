@@ -1,6 +1,6 @@
 version 1.0
 
-import "ww-bowtie2.wdl" as ww_bowtie2
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-proseq/modules/ww-bowtie2/ww-bowtie2.wdl" as ww_bowtie2
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct Bowtie2Sample {

@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `inject_synthetic_umis`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `create_diamond_data`, `create_test_protein_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`, `download_pao1_ref`
+- **Tasks**: `download_ref_data`, `merge_fastas_with_prefix`, `download_rrna_reference`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `inject_synthetic_umis`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `create_diamond_data`, `create_test_protein_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`, `download_pao1_ref`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -257,6 +257,34 @@ call colabfold_tasks.colabfold_predict {
 - `dict` (File): Samtools FASTA dictionary file (.dict) for GATK compatibility
 - `gtf` (File): Chromosome-specific gene annotations (filtered to region if specified)
 - `bed` (File): BED file covering the entire chromosome or specified region
+
+### merge_fastas_with_prefix
+
+Builds a merged FASTA by concatenating two input FASTAs and prepending a configurable prefix to the contig names of the second one. Useful for assembling experimental + spike-in references where the spike-in contigs need a distinguishing name prefix (e.g. `hg38` on a dm6+hg38 PRO-seq merged reference, so downstream tools can split reads back out by prefix).
+
+**Inputs**:
+- `first_fasta` (File): FASTA whose contig names are kept as-is in the merged output
+- `second_fasta` (File): FASTA whose contig names get the prefix prepended in the merged output
+- `second_prefix` (String): String to prepend to every contig name in `second_fasta` (e.g. `"hg38"`)
+- `output_name` (String): Output filename prefix (without the `.fa` extension)
+- `cpu_cores` (Int, default=1): CPU allocation
+- `memory_gb` (Int, default=2): Memory allocation in GB
+
+**Outputs**:
+- `merged_fasta` (File): Merged FASTA — first_fasta contigs unchanged, second_fasta contigs renamed with the prefix
+- `merged_fasta_index` (File): samtools `.fai` index for the merged FASTA
+
+### download_rrna_reference
+
+Downloads the human 45S rRNA precursor (NCBI accession `NR_046235.3`, ~13 kb) from NCBI Entrez. Single-sequence FASTA suitable for building a small bowtie2 index for PRO-seq rRNA depletion (or any other workflow that needs to filter reads against rDNA).
+
+**Inputs**:
+- `output_name` (String, default="human_45S_rRNA"): Output filename prefix (without the `.fa` extension)
+- `cpu_cores` (Int, default=1): CPU allocation
+- `memory_gb` (Int, default=2): Memory allocation in GB
+
+**Outputs**:
+- `fasta` (File): Human 45S rRNA precursor FASTA
 
 ### download_fastq_data
 
