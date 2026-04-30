@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  administration: read
 
 jobs:
   collect:
