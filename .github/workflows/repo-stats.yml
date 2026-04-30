@@ -1,0 +1,68 @@
+name: Repo Traffic Stats
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run daily at 23:30 UTC (captures a full UTC day before the API rolls over)
+    - cron: '30 23 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout repo-stats branch
+        uses: actions/checkout@v4
+        with:
+          ref: repo-stats
+        continue-on-error: true
+
+      -
+        name: Initialize repo-stats branch on first run
+        run: |
+          if [ ! -d .git ]; then
+            git init -b repo-stats
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      -
+        name: Fetch collection script from main
+        run: |
+          mkdir -p .github/scripts
+          curl -fsSL \
+            "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/.github/scripts/collect_repo_stats.py" \
+            -o .github/scripts/collect_repo_stats.py
+
+      -
+        name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      -
+        name: Install dependencies
+        run: pip install pandas matplotlib
+
+      -
+        name: Collect traffic stats
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python .github/scripts/collect_repo_stats.py
+
+      -
+        name: Commit and push
+        run: |
+          set -eo pipefail
+          git add data/
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Update traffic stats $(date -u +%Y-%m-%d)"
+          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" \
+            HEAD:repo-stats
