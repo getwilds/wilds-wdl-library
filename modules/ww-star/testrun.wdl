@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as ww_star
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-star/ww-star.wdl" as ww_star
 
 struct StarSample {
     String name
@@ -54,13 +54,28 @@ workflow star_example {
       cpu_cores = 2
   }
 
+  # Test prohibiting splicing
+  call ww_star.align_two_pass as align_no_splice { input:
+        star_genome_tar = build_index.star_index_tar,
+        r1 = download_fastq_data.r1_fastq,
+        r2 = download_fastq_data.r2_fastq,
+        name = "demo_sample_ns",
+        prohibit_splicing = true,
+        sjdb_overhang = 100,
+        memory_gb = 8,
+        cpu_cores = 2
+  }
+
   call validate_outputs { input:
     bam_files = align_two_pass.bam,
     bai_files = align_two_pass.bai,
     gene_count_files = align_two_pass.gene_counts,
     se_bam = align_single_end.bam,
     se_bai = align_single_end.bai,
-    se_gene_counts = align_single_end.gene_counts
+    se_gene_counts = align_single_end.gene_counts,
+    ns_bam = align_no_splice.bam,
+    ns_bai = align_no_splice.bai,
+    ns_gene_counts = align_no_splice.gene_counts
   }
 
   output {
@@ -74,6 +89,9 @@ workflow star_example {
     File star_se_bam = align_single_end.bam
     File star_se_bai = align_single_end.bai
     File star_se_gene_counts = align_single_end.gene_counts
+    File star_ns_bam = align_no_splice.bam
+    File star_ns_bai = align_no_splice.bai
+    File star_ns_gene_counts = align_no_splice.gene_counts
     File validation_report = validate_outputs.report
   }
 }
@@ -93,6 +111,9 @@ task validate_outputs {
     se_bam: "Single-end BAM file to validate"
     se_bai: "Single-end BAM index file to validate"
     se_gene_counts: "Single-end gene count file to validate"
+    ns_bam: "Splicing-prohibited BAM file to validate"
+    ns_bai: "Splicing-prohibited BAM index file to validate"
+    ns_gene_counts: "Splicing-prohibited gene count file to validate"
   }
 
   input {
@@ -102,6 +123,9 @@ task validate_outputs {
     File se_bam
     File se_bai
     File se_gene_counts
+    File ns_bam
+    File ns_bai
+    File ns_gene_counts
   }
 
   command <<<
@@ -201,6 +225,43 @@ task validate_outputs {
       echo "Gene counts file: ~{se_gene_counts} (${se_gc_size} bytes, ${se_gc_lines} lines)" >> validation_report.txt
     else
       echo "Gene counts file: ~{se_gene_counts} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    echo "" >> validation_report.txt
+
+    # Validate splice-prohibited outputs
+    echo "--- Splice-prohibited sample: ~{ns_bam} ---" >> validation_report.txt
+
+    if [[ -f "~{ns_bam}" && -s "~{ns_bam}" ]]; then
+      ns_bam_size=$(stat -c%s "~{ns_bam}")
+      echo "BAM file: ~{ns_bam} (${ns_bam_size} bytes)" >> validation_report.txt
+
+      if command -v samtools &> /dev/null; then
+        ns_mapped=$(samtools view -c -F 4 "~{ns_bam}" 2>/dev/null || echo "N/A")
+        ns_total=$(samtools view -c "~{ns_bam}" 2>/dev/null || echo "N/A")
+        echo "  Total reads: $ns_total" >> validation_report.txt
+        echo "  Mapped reads: $ns_mapped" >> validation_report.txt
+      fi
+    else
+      echo "BAM file: ~{ns_bam} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{ns_bai}" ]]; then
+      ns_bai_size=$(stat -c%s "~{ns_bai}")
+      echo "BAI file: ~{ns_bai} (${ns_bai_size} bytes)" >> validation_report.txt
+    else
+      echo "BAI file: ~{ns_bai} - MISSING" >> validation_report.txt
+      validation_passed=false
+    fi
+
+    if [[ -f "~{ns_gene_counts}" && -s "~{ns_gene_counts}" ]]; then
+      ns_gc_size=$(stat -c%s "~{ns_gene_counts}")
+      ns_gc_lines=$(wc -l < "~{ns_gene_counts}" 2>/dev/null || echo "N/A")
+      echo "Gene counts file: ~{ns_gene_counts} (${ns_gc_size} bytes, ${ns_gc_lines} lines)" >> validation_report.txt
+    else
+      echo "Gene counts file: ~{ns_gene_counts} - MISSING OR EMPTY" >> validation_report.txt
       validation_passed=false
     fi
 
