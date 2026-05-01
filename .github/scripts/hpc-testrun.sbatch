@@ -23,6 +23,8 @@
 # Optional:
 #   BRANCH=my-feature-branch  # Defaults to "main"
 #   TYPE=modules|pipelines    # Defaults to "all"
+#   NAME=ww-toolname          # Run a single module/pipeline (defaults to all)
+#   NUM_RETRIES=N             # Retry failed testruns up to N times (defaults to 0)
 #
 # To create the tracking issue (one-time setup):
 #   gh issue create \
@@ -43,7 +45,7 @@ REPO="getwilds/wilds-wdl-library"
 # ---- Environment setup ----
 # Update these module versions as needed for your HPC
 module purge
-module load sprocket/0.23.0 Apptainer/1.1.6
+module load sprocket/0.23.0 Apptainer/1.1.6 gh/2.86.0
 
 # ---- Clone fresh copy of the repo ----
 BRANCH="${BRANCH:-main}"
@@ -54,9 +56,11 @@ cd "${CLONE_DIR}"
 
 # ---- Run testruns ----
 export TYPE="${TYPE:-all}"
-echo "Starting WILDS WDL test runs at ${RUN_DATE} (type: ${TYPE})"
+NAME="${NAME:-*}"
+NUM_RETRIES="${NUM_RETRIES:-0}"
+echo "Starting WILDS WDL test runs at ${RUN_DATE} (type: ${TYPE}, name: ${NAME}, retries: ${NUM_RETRIES})"
 SPROCKET_CONFIG="${SPROCKET_CONFIG:-.github/configs/sprocket-hpc.toml}"
-make run_sprocket TYPE="${TYPE}" SPROCKET_CONFIG="${SPROCKET_CONFIG}" 2>&1 | tee "${LOGFILE}" || true
+make run_sprocket TYPE="${TYPE}" NAME="${NAME}" NUM_RETRIES="${NUM_RETRIES}" SPROCKET_CONFIG="${SPROCKET_CONFIG}" 2>&1 | tee "${LOGFILE}" || true
 
 # ---- Post results to GitHub ----
 python3 .github/scripts/hpc_testrun_report.py "${LOGFILE}" "${ISSUE_NUMBER}" --repo "${REPO}"

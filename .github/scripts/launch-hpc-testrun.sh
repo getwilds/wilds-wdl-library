@@ -13,5 +13,5 @@ export WORK_DIR=/path/to/scratch/wilds-testrun
 SBATCH_SCRIPT=/path/to/hpc-testrun.sbatch
 
 # Submit modules and pipelines as separate SLURM jobs
-TYPE=modules sbatch "${SBATCH_SCRIPT}"
-TYPE=pipelines sbatch "${SBATCH_SCRIPT}"
+TYPE=modules NUM_RETRIES=2 sbatch "${SBATCH_SCRIPT}"
+TYPE=pipelines NUM_RETRIES=2 sbatch "${SBATCH_SCRIPT}"
