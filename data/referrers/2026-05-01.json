@@ -1,0 +1,37 @@
+[
+  {
+    "referrer": "statics.teams.cdn.office.net",
+    "count": 12,
+    "uniques": 1
+  },
+  {
+    "referrer": "github.com",
+    "count": 7,
+    "uniques": 3
+  },
+  {
+    "referrer": "getwilds.org",
+    "count": 5,
+    "uniques": 1
+  },
+  {
+    "referrer": "Google",
+    "count": 3,
+    "uniques": 1
+  },
+  {
+    "referrer": "com.linkedin.android",
+    "count": 1,
+    "uniques": 1
+  },
+  {
+    "referrer": "linkedin.com",
+    "count": 1,
+    "uniques": 1
+  },
+  {
+    "referrer": "sciwiki.fredhutch.org",
+    "count": 1,
+    "uniques": 1
+  }
+]
