@@ -88,16 +88,14 @@ def build_comment(results: dict, run_date: str, slurm_job_id: str, run_type: str
 
 
 def post_comment(comment: str, issue_number: str, repo: str) -> None:
-    """Post the comment to the GitHub issue using the gh REST API."""
+    """Post the comment to the GitHub issue using the gh CLI."""
     subprocess.run(
-        [
-            "gh", "api",
-            "repos/{}/issues/{}/comments".format(repo, issue_number),
-            "-f", "body={}".format(comment),
-        ],
+        ["gh", "issue", "comment", issue_number, "--repo", repo, "--body-file", "-"],
+        input=comment,
+        text=True,
         check=True,
     )
-    print("Results posted to {}#{}".format(repo, issue_number))
+    print(f"Results posted to {repo}#{issue_number}")
 
 
 def main():
