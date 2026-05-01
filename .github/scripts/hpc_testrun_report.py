@@ -92,7 +92,7 @@ def post_comment(comment: str, issue_number: str, repo: str) -> None:
     subprocess.run(
         ["gh", "issue", "comment", issue_number, "--repo", repo, "--body-file", "-"],
         input=comment,
-        text=True,
+        universal_newlines=True,
         check=True,
     )
     print(f"Results posted to {repo}#{issue_number}")
