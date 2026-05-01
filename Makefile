@@ -12,6 +12,7 @@ SPROCKET_MIN ?= 0.22.0
 SPROCKET_CONFIG ?=
 SPROCKET_CONFIG_FLAG := $(if $(SPROCKET_CONFIG),-c $(SPROCKET_CONFIG),)
 TYPE ?= all
+NUM_RETRIES ?= 0
 
 .PHONY: help
 help: ## Show this help message
@@ -152,20 +153,32 @@ lint: lint_sprocket lint_miniwdl lint_womtool lint_cirro ## Run all linting chec
 
 ##@ Run
 
-run_sprocket: check_sprocket check_name ## Run sprocket on testrun.wdl files (use NAME=foo, TYPE=modules|pipelines, SPROCKET_CONFIG=path)
+run_sprocket: check_sprocket check_name ## Run sprocket on testrun.wdl files (use NAME=foo, TYPE=modules|pipelines, SPROCKET_CONFIG=path, NUM_RETRIES=N)
 	@echo "Running sprocket on testrun.wdl files..."
 	@failed=""; \
 	dirs=""; \
+	max_attempts=$$(($(NUM_RETRIES) + 1)); \
 	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)/"; fi; \
 	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)/"; fi; \
 	for dir in $$dirs; do \
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
-			echo "... Running $$(basename $$dir)"; \
+			name=$$(basename $$dir); \
+			echo "... Running $$name"; \
 			entrypoint=$$(grep '^workflow ' "$$dir/testrun.wdl" | awk '{print $$2}' | tr -d '{'); \
 			echo "... Using entrypoint: $$entrypoint"; \
-			if ! sprocket run $(SPROCKET_CONFIG_FLAG) "$$dir/testrun.wdl" --target $$entrypoint; then \
-				failed="$$failed $$(basename $$dir)"; \
-				echo "... FAILED: $$(basename $$dir) (sprocket)"; \
+			attempt=1; passed=0; \
+			while [ $$attempt -le $$max_attempts ]; do \
+				if [ $$attempt -gt 1 ]; then echo "[retry] Attempt $$attempt/$$max_attempts for $$name"; fi; \
+				if sprocket run $(SPROCKET_CONFIG_FLAG) "$$dir/testrun.wdl" --target $$entrypoint; then \
+					passed=1; break; \
+				fi; \
+				attempt=$$((attempt + 1)); \
+			done; \
+			if [ $$passed -eq 0 ]; then \
+				failed="$$failed $$name"; \
+				echo "... FAILED: $$name (sprocket, after $$max_attempts attempts)"; \
+			elif [ $$attempt -gt 1 ]; then \
+				echo "[retry] $$name passed on attempt $$attempt"; \
 			fi; \
 		fi; \
 	done; \

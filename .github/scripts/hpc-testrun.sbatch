@@ -24,6 +24,7 @@
 #   BRANCH=my-feature-branch  # Defaults to "main"
 #   TYPE=modules|pipelines    # Defaults to "all"
 #   NAME=ww-toolname          # Run a single module/pipeline (defaults to all)
+#   NUM_RETRIES=N             # Retry failed testruns up to N times (defaults to 0)
 #
 # To create the tracking issue (one-time setup):
 #   gh issue create \
@@ -56,9 +57,10 @@ cd "${CLONE_DIR}"
 # ---- Run testruns ----
 export TYPE="${TYPE:-all}"
 NAME="${NAME:-*}"
-echo "Starting WILDS WDL test runs at ${RUN_DATE} (type: ${TYPE}, name: ${NAME})"
+NUM_RETRIES="${NUM_RETRIES:-0}"
+echo "Starting WILDS WDL test runs at ${RUN_DATE} (type: ${TYPE}, name: ${NAME}, retries: ${NUM_RETRIES})"
 SPROCKET_CONFIG="${SPROCKET_CONFIG:-.github/configs/sprocket-hpc.toml}"
-make run_sprocket TYPE="${TYPE}" NAME="${NAME}" SPROCKET_CONFIG="${SPROCKET_CONFIG}" 2>&1 | tee "${LOGFILE}" || true
+make run_sprocket TYPE="${TYPE}" NAME="${NAME}" NUM_RETRIES="${NUM_RETRIES}" SPROCKET_CONFIG="${SPROCKET_CONFIG}" 2>&1 | tee "${LOGFILE}" || true
 
 # ---- Post results to GitHub ----
 python3 .github/scripts/hpc_testrun_report.py "${LOGFILE}" "${ISSUE_NUMBER}" --repo "${REPO}"
