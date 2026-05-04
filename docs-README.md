@@ -103,6 +103,7 @@ The WILDS WDL Library is organized into two complementary tiers:
 **Content**: Individual bioinformatics tools (STAR, BWA, GATK, etc.)
 **Testing**: Unit tests ensure each task functions correctly
 **Usage**: Import tasks into custom workflows or run demonstration workflows
+**Metadata**: Tasks optionally include [EDAM ontology](https://www.ebi.ac.uk/ols4/ontologies/edam) tags describing the bioinformatics topic, operation, applicable species, and file input/output data types. File parameters are described using the format `<param_name>:<EDAM data type>:<EDAM format type>` See the [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details.
 
 ### Pipelines (`pipelines/`)
 **Purpose**: Functional pipelines ranging from educational examples to production-ready analyses
