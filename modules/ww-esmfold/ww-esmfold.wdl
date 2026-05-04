@@ -17,6 +17,15 @@ task esmfold_predict {
     outputs: {
         pdb_output: "Directory of predicted PDB structure files with pLDDT confidence scores in the B-factor column"
     }
+    topic: "proteomics,protein_structure_analysis"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "protein_structure_prediction"
+    input_sample_required: "fasta_file:protein_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "pdb_output:protein_structure:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {
