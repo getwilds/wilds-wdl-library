@@ -5,16 +5,9 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as star_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedparse/ww-bedparse.wdl" as bedparse_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rseqc/ww-rseqc.wdl" as rseqc_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl" as deseq2_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/ww-deseq2.wdl" as deseq2_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-multiqc/ww-multiqc.wdl" as multiqc_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gffread/ww-gffread.wdl" as gffread_tasks
-
-struct SampleInfo {
-    String name
-    File r1
-    File r2
-    String condition
-}
 
 struct RefGenome {
     String name
@@ -24,8 +17,20 @@ struct RefGenome {
 
 workflow rnaseq {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        },
+        {
+            name: "Elaine Glenny",
+            email: "eglenny@fredhutch.org"
+        }
+    ]
     description: "Comprehensive RNA-seq pipeline covering read QC, adapter trimming, alignment, post-alignment QC, differential expression, and aggregated reporting"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-rnaseq/ww-rnaseq.wdl"
     outputs: {
@@ -53,13 +58,22 @@ workflow rnaseq {
         deseq2_pca_plot: "Principal Component Analysis plot of samples based on expression patterns",
         deseq2_volcano_plot: "Volcano plot showing log fold change vs. statistical significance",
         deseq2_heatmap: "Heatmap of differentially expressed genes across samples",
+        deseq2_ma_plot: "MA plot showing log fold change vs. mean expression",
+        deseq2_ma_plot_shrunk: "MA plot with shrunken log fold changes (empty if shrinkage not applied)",
+        deseq2_results_shrunk: "DESeq2 results with shrunken log fold changes (empty if shrinkage not applied)",
+        deseq2_compiled_results: "Combined CSV with DESeq2 statistics, normalized counts, and gene annotations",
         multiqc_report: "MultiQC interactive HTML report aggregating all QC metrics",
-        multiqc_data: "MultiQC data directory with parsed metrics from all tools"
+        multiqc_data: "MultiQC data directory with parsed metrics from all tools",
+        organized_results: "Tarball containing all pipeline outputs organized by step and sample name"
     }
   }
 
   parameter_meta {
-    samples: "List of sample objects, each containing name, r1/r2 fastq files, and condition information"
+    samples_tsv: "Tab-separated file with columns: name, r1, r2, condition (header row required). Alternative to providing separate arrays."
+    sample_names: "Array of sample names (use with r1_fastqs, r2_fastqs, conditions as alternative to samples_tsv)"
+    r1_fastqs: "Array of R1 FASTQ file paths, one per sample"
+    r2_fastqs: "Array of R2 FASTQ file paths, one per sample"
+    conditions: "Array of condition labels for each sample (e.g., 'control', 'treatment')"
     reference_genome: "Reference genome object containing name, fasta, and gtf files"
     reference_level: "Reference level for DESeq2 contrast (e.g., 'control' when comparing treatment vs. control)"
     contrast: "DESeq2 contrast string in the format 'condition,treatment,control'"
@@ -68,10 +82,22 @@ workflow rnaseq {
     star_cpu: "Number of CPU cores for STAR alignment tasks"
     star_memory_gb: "Memory allocation in GB for STAR alignment tasks"
     genome_sa_index_nbases: "Length of the SA pre-indexing string for STAR (typically 10-15, scales with genome size)"
+    min_counts: "Minimum number of counts a gene must have to pass DESeq2 pre-filtering"
+    min_samples: "Minimum number of samples that must meet min_counts threshold (0 = use total counts instead)"
+    shrinkage_method: "LFC shrinkage method for DESeq2: apeglm, ashr, or normal (empty = no shrinkage)"
+    organize_results: "Whether to reorganize all outputs into a clean directory structure tarball (duplicates data, increases storage)"
+    include_bams: "Whether to include BAM/BAI files in the organized results tarball (can significantly increase output size)"
+    include_trimmed_fastqs: "Whether to include trimmed FASTQ files in the organized results tarball (can significantly increase output size)"
   }
 
   input {
-    Array[SampleInfo] samples
+    # Option 1: Provide a TSV file with columns name, r1, r2, condition
+    File? samples_tsv
+    # Option 2: Provide separate arrays directly
+    Array[String]? sample_names
+    Array[File]? r1_fastqs
+    Array[File]? r2_fastqs
+    Array[String]? conditions
     RefGenome reference_genome
     String reference_level = ""
     String contrast = ""
@@ -80,7 +106,23 @@ workflow rnaseq {
     Int star_cpu = 8
     Int star_memory_gb = 64
     Int genome_sa_index_nbases = 14
+    Int min_counts = 10
+    Int min_samples = 0
+    String shrinkage_method = ""
+    Boolean organize_results = false
+    Boolean include_bams = false
+    Boolean include_trimmed_fastqs = false
   }
+
+  # Parse sample information from TSV if provided.
+  # TSV format: tab-separated with header row (name, r1, r2, condition).
+  # Header row is skipped by offsetting indices by +1 in the scatter below.
+  Array[Array[String]] tsv_rows = if defined(samples_tsv) then read_tsv(select_first([samples_tsv])) else []
+
+  # Determine number of samples from whichever input method was used
+  # For TSV: subtract 1 to exclude the header row
+  Int n_samples = if defined(sample_names) then length(select_first([sample_names])) else (length(tsv_rows) - 1)
+  Array[Int] sample_indices = range(n_samples)
 
   # Normalize GTF to ensure exon features exist for every transcript.
   # This is critical for bacterial NCBI GTFs which only have CDS rows —
@@ -104,105 +146,314 @@ workflow rnaseq {
       gtf_file = normalize_gtf.normalized_gtf
   }
 
-  scatter (sample in samples) {
-    String sample_name = sample.name
-    String sample_condition = sample.condition
+  scatter (idx in sample_indices) {
+    # Offset index by 1 to skip the TSV header row
+    Int tsv_idx = idx + 1
+    String sample_name = if defined(sample_names) then select_first([sample_names])[idx] else tsv_rows[tsv_idx][0]
+    File sample_r1 = if defined(r1_fastqs) then select_first([r1_fastqs])[idx] else tsv_rows[tsv_idx][1]
+    File sample_r2 = if defined(r2_fastqs) then select_first([r2_fastqs])[idx] else tsv_rows[tsv_idx][2]
+    String sample_condition = if defined(conditions) then select_first([conditions])[idx] else tsv_rows[tsv_idx][3]
 
     # Step 1: Pre-trim FastQC
-    call fastqc_tasks.run_fastqc as pretrim_fastqc { input:
-        r1_fastq = sample.r1,
-        r2_fastq = sample.r2
+    call fastqc_tasks.run_fastqc as step01_pretrim_fastqc { input:
+        r1_fastq = sample_r1,
+        r2_fastq = sample_r2
     }
 
     # Step 2: Trim Galore adapter/quality trimming
-    call trimgalore_tasks.trimgalore_paired { input:
-        sample_name = sample.name,
-        r1_fastq = sample.r1,
-        r2_fastq = sample.r2,
+    call trimgalore_tasks.trimgalore_paired as step02_trimgalore { input:
+        sample_name = sample_name,
+        r1_fastq = sample_r1,
+        r2_fastq = sample_r2,
         quality = trim_quality,
         length = trim_length
     }
 
     # Step 3: Post-trim FastQC
-    call fastqc_tasks.run_fastqc as posttrim_fastqc { input:
-        r1_fastq = trimgalore_paired.r1_trimmed,
-        r2_fastq = trimgalore_paired.r2_trimmed
+    call fastqc_tasks.run_fastqc as step03_posttrim_fastqc { input:
+        r1_fastq = step02_trimgalore.r1_trimmed,
+        r2_fastq = step02_trimgalore.r2_trimmed
     }
 
     # Step 4: STAR two-pass alignment on trimmed reads
-    call star_tasks.align_two_pass { input:
+    call star_tasks.align_two_pass as step04_star_align { input:
         star_genome_tar = build_index.star_index_tar,
-        r1 = trimgalore_paired.r1_trimmed,
-        r2 = trimgalore_paired.r2_trimmed,
-        name = sample.name + "." + reference_genome.name,
+        r1 = step02_trimgalore.r1_trimmed,
+        r2 = step02_trimgalore.r2_trimmed,
+        name = sample_name + "." + reference_genome.name,
         cpu_cores = star_cpu,
         memory_gb = star_memory_gb
     }
 
     # Step 5: RSeQC alignment quality control
-    call rseqc_tasks.run_rseqc { input:
-        sample_name = sample.name,
-        bam_file = align_two_pass.bam,
-        bam_index = align_two_pass.bai,
+    call rseqc_tasks.run_rseqc as step05_rseqc { input:
+        sample_name = sample_name,
+        bam_file = step04_star_align.bam,
+        bam_index = step04_star_align.bai,
         ref_bed = gtf2bed.bed_file
     }
   }
 
   # Step 6: DESeq2 count matrix assembly and differential expression
-  call deseq2_tasks.combine_count_matrices { input:
-      gene_count_files = align_two_pass.gene_counts,
+  call deseq2_tasks.combine_count_matrices as step06_combine_counts { input:
+      gene_count_files = step04_star_align.gene_counts,
       sample_names = sample_name,
       sample_conditions = sample_condition
   }
 
-  call deseq2_tasks.run_deseq2 { input:
-      counts_matrix = combine_count_matrices.counts_matrix,
-      sample_metadata = combine_count_matrices.sample_metadata,
+  call deseq2_tasks.run_deseq2 as step07_deseq2 { input:
+      counts_matrix = step06_combine_counts.counts_matrix,
+      sample_metadata = step06_combine_counts.sample_metadata,
       reference_level = reference_level,
-      contrast = contrast
+      contrast = contrast,
+      min_counts = min_counts,
+      min_samples = min_samples,
+      shrinkage_method = shrinkage_method
   }
 
-  # Step 7: MultiQC aggregation of all QC reports
-  call multiqc_tasks.run_multiqc { input:
+  # Step 8: Compile DESeq2 results with normalized counts and GTF annotations
+  call deseq2_tasks.compile_deseq2_results as step08_compile_results { input:
+      deseq2_results = step07_deseq2.deseq2_results,
+      normalized_counts = step07_deseq2.deseq2_normalized_counts,
+      gtf_file = normalize_gtf.normalized_gtf
+  }
+
+  # Step 9: MultiQC aggregation of all QC reports
+  call multiqc_tasks.run_multiqc as step09_multiqc { input:
       input_files = flatten([
-        flatten(pretrim_fastqc.html_reports),
-        flatten(pretrim_fastqc.zip_reports),
-        trimgalore_paired.r1_report,
-        trimgalore_paired.r2_report,
-        flatten(posttrim_fastqc.html_reports),
-        flatten(posttrim_fastqc.zip_reports),
-        align_two_pass.log_final,
-        run_rseqc.rseqc_summary
+        flatten(step01_pretrim_fastqc.html_reports),
+        flatten(step01_pretrim_fastqc.zip_reports),
+        step02_trimgalore.r1_report,
+        step02_trimgalore.r2_report,
+        flatten(step03_posttrim_fastqc.html_reports),
+        flatten(step03_posttrim_fastqc.zip_reports),
+        step04_star_align.log_final,
+        step05_rseqc.rseqc_summary
       ]),
       report_title = "RNA-seq Pipeline QC Report"
   }
 
+  # Step 10 (optional): Organize all outputs into a clean directory structure
+  if (organize_results) {
+    call organize_outputs as step10_organize_outputs { input:
+        sample_names = sample_name,
+        pretrim_fastqc_html = flatten(step01_pretrim_fastqc.html_reports),
+        pretrim_fastqc_zip = flatten(step01_pretrim_fastqc.zip_reports),
+        trimgalore_r1_trimmed = step02_trimgalore.r1_trimmed,
+        trimgalore_r2_trimmed = step02_trimgalore.r2_trimmed,
+        trimgalore_r1_report = step02_trimgalore.r1_report,
+        trimgalore_r2_report = step02_trimgalore.r2_report,
+        posttrim_fastqc_html = flatten(step03_posttrim_fastqc.html_reports),
+        posttrim_fastqc_zip = flatten(step03_posttrim_fastqc.zip_reports),
+        star_bam = step04_star_align.bam,
+        star_bai = step04_star_align.bai,
+        star_gene_counts = step04_star_align.gene_counts,
+        star_log_final = step04_star_align.log_final,
+        rseqc_summary = step05_rseqc.rseqc_summary,
+        counts_matrix = step06_combine_counts.counts_matrix,
+        sample_metadata = step06_combine_counts.sample_metadata,
+        deseq2_results = step07_deseq2.deseq2_results,
+        deseq2_significant = step07_deseq2.deseq2_significant,
+        deseq2_normalized_counts = step07_deseq2.deseq2_normalized_counts,
+        deseq2_pca_plot = step07_deseq2.deseq2_pca_plot,
+        deseq2_volcano_plot = step07_deseq2.deseq2_volcano_plot,
+        deseq2_heatmap = step07_deseq2.deseq2_heatmap,
+        deseq2_compiled_results = step08_compile_results.compiled_results,
+        multiqc_report = step09_multiqc.html_report,
+        multiqc_data = step09_multiqc.data_dir,
+        include_bams = include_bams,
+        include_trimmed_fastqs = include_trimmed_fastqs
+    }
+  }
+
   output {
-    Array[Array[File]] pretrim_fastqc_html = pretrim_fastqc.html_reports
-    Array[Array[File]] pretrim_fastqc_zip = pretrim_fastqc.zip_reports
-    Array[File] trimgalore_r1_trimmed = trimgalore_paired.r1_trimmed
-    Array[File] trimgalore_r2_trimmed = trimgalore_paired.r2_trimmed
-    Array[File] trimgalore_r1_report = trimgalore_paired.r1_report
-    Array[File] trimgalore_r2_report = trimgalore_paired.r2_report
-    Array[Array[File]] posttrim_fastqc_html = posttrim_fastqc.html_reports
-    Array[Array[File]] posttrim_fastqc_zip = posttrim_fastqc.zip_reports
-    Array[File] star_bam = align_two_pass.bam
-    Array[File] star_bai = align_two_pass.bai
-    Array[File] star_gene_counts = align_two_pass.gene_counts
-    Array[File] star_log_final = align_two_pass.log_final
-    Array[File] star_log_progress = align_two_pass.log_progress
-    Array[File] star_log = align_two_pass.log
-    Array[File] star_sj = align_two_pass.sj_out
-    Array[File] rseqc_qc_summary = run_rseqc.rseqc_summary
-    File combined_counts_matrix = combine_count_matrices.counts_matrix
-    File sample_metadata = combine_count_matrices.sample_metadata
-    File deseq2_all_results = run_deseq2.deseq2_results
-    File deseq2_significant_results = run_deseq2.deseq2_significant
-    File deseq2_normalized_counts = run_deseq2.deseq2_normalized_counts
-    File deseq2_pca_plot = run_deseq2.deseq2_pca_plot
-    File deseq2_volcano_plot = run_deseq2.deseq2_volcano_plot
-    File deseq2_heatmap = run_deseq2.deseq2_heatmap
-    File multiqc_report = run_multiqc.html_report
-    File multiqc_data = run_multiqc.data_dir
+    Array[Array[File]] pretrim_fastqc_html = step01_pretrim_fastqc.html_reports
+    Array[Array[File]] pretrim_fastqc_zip = step01_pretrim_fastqc.zip_reports
+    Array[File] trimgalore_r1_trimmed = step02_trimgalore.r1_trimmed
+    Array[File] trimgalore_r2_trimmed = step02_trimgalore.r2_trimmed
+    Array[File] trimgalore_r1_report = step02_trimgalore.r1_report
+    Array[File] trimgalore_r2_report = step02_trimgalore.r2_report
+    Array[Array[File]] posttrim_fastqc_html = step03_posttrim_fastqc.html_reports
+    Array[Array[File]] posttrim_fastqc_zip = step03_posttrim_fastqc.zip_reports
+    Array[File] star_bam = step04_star_align.bam
+    Array[File] star_bai = step04_star_align.bai
+    Array[File] star_gene_counts = step04_star_align.gene_counts
+    Array[File] star_log_final = step04_star_align.log_final
+    Array[File] star_log_progress = step04_star_align.log_progress
+    Array[File] star_log = step04_star_align.log
+    Array[File] star_sj = step04_star_align.sj_out
+    Array[File] rseqc_qc_summary = step05_rseqc.rseqc_summary
+    File combined_counts_matrix = step06_combine_counts.counts_matrix
+    File sample_metadata = step06_combine_counts.sample_metadata
+    File deseq2_all_results = step07_deseq2.deseq2_results
+    File deseq2_significant_results = step07_deseq2.deseq2_significant
+    File deseq2_normalized_counts = step07_deseq2.deseq2_normalized_counts
+    File deseq2_pca_plot = step07_deseq2.deseq2_pca_plot
+    File deseq2_volcano_plot = step07_deseq2.deseq2_volcano_plot
+    File deseq2_heatmap = step07_deseq2.deseq2_heatmap
+    File deseq2_ma_plot = step07_deseq2.deseq2_ma_plot
+    File deseq2_ma_plot_shrunk = step07_deseq2.deseq2_ma_plot_shrunk
+    File deseq2_results_shrunk = step07_deseq2.deseq2_results_shrunk
+    File deseq2_compiled_results = step08_compile_results.compiled_results
+    File multiqc_report = step09_multiqc.html_report
+    File multiqc_data = step09_multiqc.data_dir
+    File? organized_results = step10_organize_outputs.results_tar
+  }
+}
+
+task organize_outputs {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Organize all RNA-seq pipeline outputs into a clean, numbered directory structure and package as a tarball"
+    outputs: {
+        results_tar: "Tarball containing all pipeline outputs organized by step and sample"
+    }
+  }
+
+  parameter_meta {
+    sample_names: "Array of sample names used to create per-sample subdirectories"
+    pretrim_fastqc_html: "Pre-trim FastQC HTML reports to organize"
+    pretrim_fastqc_zip: "Pre-trim FastQC ZIP archives to organize"
+    trimgalore_r1_trimmed: "Trimmed R1 FASTQ files to organize"
+    trimgalore_r2_trimmed: "Trimmed R2 FASTQ files to organize"
+    trimgalore_r1_report: "Trim Galore R1 trimming reports to organize"
+    trimgalore_r2_report: "Trim Galore R2 trimming reports to organize"
+    posttrim_fastqc_html: "Post-trim FastQC HTML reports to organize"
+    posttrim_fastqc_zip: "Post-trim FastQC ZIP archives to organize"
+    star_bam: "STAR alignment BAM files to organize"
+    star_bai: "STAR alignment BAM index files to organize"
+    star_gene_counts: "STAR gene count files to organize"
+    star_log_final: "STAR final log files to organize"
+    rseqc_summary: "RSeQC quality control summary files to organize"
+    counts_matrix: "Combined gene count matrix to organize"
+    sample_metadata: "Sample metadata file to organize"
+    deseq2_results: "DESeq2 all-genes results to organize"
+    deseq2_significant: "DESeq2 significant results to organize"
+    deseq2_normalized_counts: "DESeq2 normalized counts to organize"
+    deseq2_pca_plot: "DESeq2 PCA plot to organize"
+    deseq2_volcano_plot: "DESeq2 volcano plot to organize"
+    deseq2_heatmap: "DESeq2 heatmap to organize"
+    deseq2_compiled_results: "DESeq2 compiled results CSV to organize"
+    multiqc_report: "MultiQC HTML report to organize"
+    multiqc_data: "MultiQC data directory to organize"
+    include_bams: "Whether to include BAM/BAI files in the output tarball (can be very large)"
+    include_trimmed_fastqs: "Whether to include trimmed FASTQ files in the output tarball (can be very large)"
+    output_prefix: "Prefix for the output tarball filename"
+    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task"
+  }
+
+  input {
+    Array[String] sample_names
+    Array[File] pretrim_fastqc_html
+    Array[File] pretrim_fastqc_zip
+    Array[File] trimgalore_r1_trimmed
+    Array[File] trimgalore_r2_trimmed
+    Array[File] trimgalore_r1_report
+    Array[File] trimgalore_r2_report
+    Array[File] posttrim_fastqc_html
+    Array[File] posttrim_fastqc_zip
+    Array[File] star_bam
+    Array[File] star_bai
+    Array[File] star_gene_counts
+    Array[File] star_log_final
+    Array[File] rseqc_summary
+    File counts_matrix
+    File sample_metadata
+    File deseq2_results
+    File deseq2_significant
+    File deseq2_normalized_counts
+    File deseq2_pca_plot
+    File deseq2_volcano_plot
+    File deseq2_heatmap
+    File deseq2_compiled_results
+    File multiqc_report
+    File multiqc_data
+    Boolean include_bams = false
+    Boolean include_trimmed_fastqs = false
+    String output_prefix = "rnaseq_results"
+    Int memory_gb = 4
+    Int cpu_cores = 1
+  }
+
+  command <<<
+    set -eo pipefail
+
+    OUTDIR="~{output_prefix}"
+    NAMES=(~{sep=" " sample_names})
+    N=${#NAMES[@]}
+
+    PRETRIM_HTML=(~{sep=" " pretrim_fastqc_html})
+    PRETRIM_ZIP=(~{sep=" " pretrim_fastqc_zip})
+    TRIM_R1=(~{sep=" " trimgalore_r1_trimmed})
+    TRIM_R2=(~{sep=" " trimgalore_r2_trimmed})
+    TRIM_R1_RPT=(~{sep=" " trimgalore_r1_report})
+    TRIM_R2_RPT=(~{sep=" " trimgalore_r2_report})
+    POSTTRIM_HTML=(~{sep=" " posttrim_fastqc_html})
+    POSTTRIM_ZIP=(~{sep=" " posttrim_fastqc_zip})
+    STAR_BAM=(~{sep=" " star_bam})
+    STAR_BAI=(~{sep=" " star_bai})
+    STAR_COUNTS=(~{sep=" " star_gene_counts})
+    STAR_LOG=(~{sep=" " star_log_final})
+    RSEQC=(~{sep=" " rseqc_summary})
+
+    for i in $(seq 0 $((N - 1))); do
+      SAMPLE="${NAMES[$i]}"
+
+      mkdir -p "$OUTDIR/01-pretrim_fastqc/$SAMPLE"
+      cp "${PRETRIM_HTML[$i]}" "$OUTDIR/01-pretrim_fastqc/$SAMPLE/"
+      cp "${PRETRIM_ZIP[$i]}" "$OUTDIR/01-pretrim_fastqc/$SAMPLE/"
+
+      mkdir -p "$OUTDIR/02-trimgalore/$SAMPLE"
+      if [ "~{include_trimmed_fastqs}" = "true" ]; then
+        cp "${TRIM_R1[$i]}" "$OUTDIR/02-trimgalore/$SAMPLE/"
+        cp "${TRIM_R2[$i]}" "$OUTDIR/02-trimgalore/$SAMPLE/"
+      fi
+      cp "${TRIM_R1_RPT[$i]}" "$OUTDIR/02-trimgalore/$SAMPLE/"
+      cp "${TRIM_R2_RPT[$i]}" "$OUTDIR/02-trimgalore/$SAMPLE/"
+
+      mkdir -p "$OUTDIR/03-posttrim_fastqc/$SAMPLE"
+      cp "${POSTTRIM_HTML[$i]}" "$OUTDIR/03-posttrim_fastqc/$SAMPLE/"
+      cp "${POSTTRIM_ZIP[$i]}" "$OUTDIR/03-posttrim_fastqc/$SAMPLE/"
+
+      mkdir -p "$OUTDIR/04-star_align/$SAMPLE"
+      if [ "~{include_bams}" = "true" ]; then
+        cp "${STAR_BAM[$i]}" "$OUTDIR/04-star_align/$SAMPLE/"
+        cp "${STAR_BAI[$i]}" "$OUTDIR/04-star_align/$SAMPLE/"
+      fi
+      cp "${STAR_COUNTS[$i]}" "$OUTDIR/04-star_align/$SAMPLE/"
+      cp "${STAR_LOG[$i]}" "$OUTDIR/04-star_align/$SAMPLE/"
+
+      mkdir -p "$OUTDIR/05-rseqc/$SAMPLE"
+      cp "${RSEQC[$i]}" "$OUTDIR/05-rseqc/$SAMPLE/"
+    done
+
+    mkdir -p "$OUTDIR/06-deseq2"
+    cp "~{counts_matrix}" "$OUTDIR/06-deseq2/"
+    cp "~{sample_metadata}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_results}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_significant}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_normalized_counts}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_compiled_results}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_pca_plot}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_volcano_plot}" "$OUTDIR/06-deseq2/"
+    cp "~{deseq2_heatmap}" "$OUTDIR/06-deseq2/"
+
+    mkdir -p "$OUTDIR/07-multiqc"
+    cp "~{multiqc_report}" "$OUTDIR/07-multiqc/"
+    cp -r "~{multiqc_data}" "$OUTDIR/07-multiqc/"
+
+    tar -czf "~{output_prefix}.tar.gz" "$OUTDIR"
+  >>>
+
+  output {
+    File results_tar = "~{output_prefix}.tar.gz"
+  }
+
+  runtime {
+    docker: "ubuntu:24.04"
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
   }
 }

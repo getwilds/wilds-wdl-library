@@ -14,11 +14,23 @@ The module can run completely standalone with automatic test data generation. In
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `combine_count_matrices`, `run_deseq2`
+- **Tasks**: `combine_count_matrices`, `run_deseq2`, `compile_deseq2_results`
+- **Scripts**: `combine_star_counts.py`, `deseq2_analysis.R`, `compile_deseq2_results.py`, `generate_pasilla_counts.R` (fetched via curl at runtime)
 - **Test workflow**: `testrun.wdl` (demonstration workflow using test data)
-- **Containers**: `getwilds/combine-counts:0.1.0`, `getwilds/deseq2:1.40.2`
+- **Containers**: `getwilds/python-utils:0.1.0` (count matrix tasks), `getwilds/deseq2:1.40.2` (DESeq2 analysis)
 - **Dependencies**: Integrates with `ww-testdata` module for test data generation
 - **Test Data**: Uses Pasilla test dataset with 7 samples and 10,000 genes
+
+## Scripts
+
+All scripts are fetched from this repository at runtime via `curl`. This keeps the Docker images generic and makes it easy to iterate on analysis logic without rebuilding containers.
+
+| Script | Used by | Language | Description |
+|--------|---------|----------|-------------|
+| [`combine_star_counts.py`](combine_star_counts.py) | `combine_count_matrices` | Python | Reads individual STAR `ReadsPerGene.out.tab` files, extracts the specified count column (unstranded, forward, or reverse), merges them into a single gene-by-sample count matrix, and writes a sample metadata file for DESeq2 |
+| [`deseq2_analysis.R`](deseq2_analysis.R) | `run_deseq2` | R | Runs the full DESeq2 pipeline: reads counts and metadata, applies configurable gene filtering, fits the DESeq2 model, extracts results with optional log fold change shrinkage, generates MA/PCA/volcano/heatmap plots, and writes results CSVs |
+| [`compile_deseq2_results.py`](compile_deseq2_results.py) | `compile_deseq2_results` | Python | Merges the all-genes results CSV with normalized counts on gene ID, parses GTF annotations (gene_name, gene_biotype, product), and joins them into a single comprehensive output CSV |
+| [`generate_pasilla_counts.R`](generate_pasilla_counts.R) | `generate_pasilla_counts` (in ww-testdata) | R | Generates synthetic STAR-format count files from the Bioconductor Pasilla dataset for testing; creates individual `ReadsPerGene.out.tab` files with realistic header statistics |
 
 ## Tasks
 
@@ -41,7 +53,7 @@ Combines STAR gene count files from multiple samples into a single count matrix 
 - `sample_metadata` (File): Metadata file containing sample names and conditions
 
 ### `run_deseq2`
-Performs differential expression analysis using DESeq2 with comprehensive statistical analysis and visualization via a prewritten R script: [deseq2_analysis.R](https://github.com/getwilds/wilds-docker-library/blob/main/deseq2/deseq2_analysis.R)
+Performs differential expression analysis using DESeq2 with comprehensive statistical analysis and visualization via a prewritten R script: [deseq2_analysis.R](deseq2_analysis.R) (fetched from this repository at runtime via wget)
 
 The task automatically selects the appropriate variance-stabilizing transformation method based on dataset size:
 - **≥1000 genes with counts**: Uses `vst()` for fast, efficient transformation
@@ -55,6 +67,9 @@ This ensures the analysis works reliably across diverse dataset sizes, from smal
 - `condition_column` (String): Column name containing experimental conditions (default: "condition")
 - `reference_level` (String): Reference level for DESeq2 contrast (typically control condition)
 - `contrast` (String): DESeq2 contrast string in format 'condition,treatment,control'
+- `min_counts` (Int): Minimum counts a gene must have to pass filtering (default: 10)
+- `min_samples` (Int): A gene must meet the `min_counts` threshold in this many samples to be kept. 0 = Gene is kept if its count across all samples meets the `min_count` threshold (default: 0)
+- `shrinkage_method` (String): LFC shrinkage method — `apeglm`, `ashr`, or `normal`; empty = no shrinkage (default: "")
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores (default: 2)
 
@@ -65,6 +80,23 @@ This ensures the analysis works reliably across diverse dataset sizes, from smal
 - `deseq2_pca_plot` (File): Principal Component Analysis plot showing sample clustering
 - `deseq2_volcano_plot` (File): Volcano plot showing log fold change vs. statistical significance
 - `deseq2_heatmap` (File): Heatmap visualization of differentially expressed genes
+- `deseq2_ma_plot` (File): MA plot showing log fold change vs. mean expression (unshrunken)
+- `deseq2_ma_plot_shrunk` (File): MA plot with shrunken log fold changes (empty if shrinkage not applied)
+- `deseq2_results_shrunk` (File): DESeq2 results with shrunken log fold changes (empty if shrinkage not applied)
+
+### `compile_deseq2_results`
+Merges DESeq2 differential expression results with normalized counts and gene annotations from a GTF file into a single comprehensive CSV. Uses [compile_deseq2_results.py](compile_deseq2_results.py) (fetched from this repository at runtime via wget).
+
+**Inputs:**
+- `deseq2_results` (File): DESeq2 all-genes results CSV (output of `run_deseq2`)
+- `normalized_counts` (File): DESeq2 normalized counts CSV (output of `run_deseq2`)
+- `gtf_file` (File): GTF annotation file for extracting gene descriptions
+- `output_name` (String): Name for the output CSV file (default: "deseq2_compiled_results.csv")
+- `memory_gb` (Int): Memory allocation in GB (default: 4)
+- `cpu_cores` (Int): Number of CPU cores (default: 1)
+
+**Outputs:**
+- `compiled_results` (File): Combined CSV with DESeq2 statistics, normalized counts, and gene annotations (gene_name, gene_biotype, product where available)
 
 ## Usage as a Module
 
@@ -202,8 +234,9 @@ The `deseq2_example` workflow:
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- R environment with DESeq2 package (provided in container)
-- Python environment for count matrix combination (provided in container)
+- Internet access for fetching scripts from GitHub at runtime
+- R environment with DESeq2 package (provided by `getwilds/deseq2:1.40.2` container)
+- Python 3 with pandas (provided by `getwilds/python-utils:0.1.0` container)
 
 ## Support
 
@@ -214,6 +247,8 @@ For questions specific to DESeq2 usage or interpretation, please refer to the [D
 Love MI, Huber W, Anders S. Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology. 2014;15(12):550.
 
 ## Contributing
+
+Special thanks to [Elle Glenny](https://github.com/eglenny) for extensive testing of this module, identifying bugs, and suggesting feature improvements that have shaped the current design. Thank you for your contributions!
 
 If you would like to contribute to this WILDS WDL module, please see our [contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
 

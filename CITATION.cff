@@ -67,6 +67,11 @@ authors:
   - family-names: O'Brien
     given-names: Siobhan
     affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0000-0003-4958-1080"
+  - family-names: Glenny
+    given-names: Elaine
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0000-0002-1024-4290"
   - family-names: Bouvet
     given-names: Ethan
     affiliation: "Fred Hutch Cancer Center"

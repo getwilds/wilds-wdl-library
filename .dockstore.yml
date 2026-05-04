@@ -287,6 +287,11 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
+      - name: Elaine Glenny
+        email: eglenny@fredhutch.org
+        role: Staff Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0002-1024-4290
     topic: WDL module for differential expression analysis using DESeq2
     enableAutoDois: true
     filters:
@@ -971,6 +976,34 @@ workflows:
       branches:
         - main
 
+  - name: ww-rnaseq
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-rnaseq/ww-rnaseq.wdl
+    readMePath: /pipelines/ww-rnaseq/README.md
+    testParameterFiles:
+      - /pipelines/ww-rnaseq/inputs.json
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+      - name: Elaine Glenny
+        email: eglenny@fredhutch.org
+        role: Staff Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0002-1024-4290
+    topic: Comprehensive RNA-seq pipeline covering read QC, adapter trimming, alignment, post-alignment QC, differential expression, and aggregated reporting
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-saturation
     subclass: WDL
     primaryDescriptorPath: /pipelines/ww-saturation/ww-saturation.wdl
@@ -992,6 +1025,7 @@ workflows:
         email: sobrien2@fredhutch.org
         role: Post-Doctoral Research Fellow
         affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4958-1080
     topic: WDL workflow to analyze saturation mutagenesis data using BWA alignment and GATK
     enableAutoDois: true
     filters:

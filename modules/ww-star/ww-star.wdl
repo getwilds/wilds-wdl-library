@@ -88,6 +88,7 @@ task align_two_pass {
     r1: "FASTQ file for read 1"
     r2: "Optional FASTQ file for read 2 (omit for single-end data)"
     name: "Sample name to include in output filenames"
+    prohibit_splicing: "Whether to set --alignIntronMax to 1 (default: false)"
     sjdb_overhang: "Length of the genomic sequence around the annotated junction"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Total number of CPU cores allocated for the task"
@@ -99,6 +100,7 @@ task align_two_pass {
     File r1
     File? r2
     String name
+    Boolean prohibit_splicing = false
     Int sjdb_overhang = 100
     Int memory_gb = 62
     Int cpu_cores = 8
@@ -129,6 +131,7 @@ task align_two_pass {
       --outFileNamePrefix "./" \
       --quantMode GeneCounts \
       --quantTranscriptomeBAMcompression 5 \
+      ~{if prohibit_splicing then "--alignIntronMax 1" else ""} \
       --limitBAMsortRAM ${BAM_SORT_RAM} 
 
     # Clean up temporary directories
