@@ -40,12 +40,13 @@ task fastqdump {
     # Check if paired ended
     numLines=$(fastq-dump -X 1 -Z --split-spot "~{sra_id}" \
       ~{if defined(ngc_file) then "--ngc " + ngc_file else ""} | wc -l)
-    if [ "$numLines" -eq 8 ]; then
+    if [ "$numLines" -gt 4 ]; then
       echo true > paired_file
       fasterq-dump "~{sra_id}" \
         --threads ~{ncpu} \
         --outdir ./ \
         --split-files \
+        --include-technical \
         ~{if defined(ngc_file) then "--ngc " + ngc_file else ""}
     else
       echo false > paired_file
@@ -57,6 +58,12 @@ task fastqdump {
       mv "~{sra_id}.fastq" "~{sra_id}_1.fastq"
       # Create an empty placeholder for R2
       touch "~{sra_id}_2.fastq"
+    fi
+    # Handle cases where index reads are included: fasterq-dump --split-files produces 3 files where
+    # _1 = R1, _2 = index read, _3 = R2
+    # Reassign _3 to _2 so R1/R2 outputs always contain the biological reads.
+    if [ -f "~{sra_id}_3.fastq" ]; then
+      mv "~{sra_id}_3.fastq" "~{sra_id}_2.fastq"
     fi
     # Truncate to max_reads if specified (fasterq-dump has no built-in read limit)
     MAX_READS="~{select_first([max_reads, 0])}"

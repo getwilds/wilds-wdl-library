@@ -21,7 +21,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 ## Tasks
 
 ### `fastqdump`
-Downloads FASTQ files from SRA accessions with automatic paired-end detection. Supports controlled-access dbGaP data via optional NGC repository key file.
+Downloads FASTQ files from SRA accessions with automatic read structure detection. Handles paired-end data including datasets with index fastqs (e.g., 10x Chromium with barcode, index, and cDNA reads) by including technical reads and reassigning files so that R1 and R2 outputs always contain the biological reads. Supports controlled-access dbGaP data via optional NGC repository key file.
 
 **Inputs:**
 - `sra_id` (String): SRA accession ID
@@ -96,6 +96,7 @@ This module pairs well with other WILDS modules:
 - **ww-star**: For RNA-seq alignment after SRA download
 - **ww-bwa**: For DNA-seq alignment after SRA download
 - **ww-sra-star pipeline**: Complete pipeline from SRA to alignment
+- **ww-sra-cellranger pipeline**: Complete pipeline from SRA to single-cell gene expression quantification
 
 ## Testing the Module
 
@@ -142,7 +143,7 @@ The module supports flexible resource configuration:
 
 ## Features
 
-- **Automatic paired-end detection**: Determines read structure automatically
+- **Automatic read structure detection**: Handles single-end and paired-end data automatically
 - **Parallel downloading**: Multi-threaded downloads for improved performance
 - **Standardized output**: Consistent naming for downstream processing
 - **Cross-platform**: Works with SRA accessions from NCBI, ENA, and DDBJ
