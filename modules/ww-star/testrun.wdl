@@ -39,7 +39,7 @@ workflow star_example {
         r2 = sample.r2,
         name = sample.name,
         sjdb_overhang = 100,
-        memory_gb = 8,
+        memory_gb = 2,
         cpu_cores = 2
     }
   }
@@ -62,7 +62,7 @@ workflow star_example {
         name = "demo_sample_ns",
         prohibit_splicing = true,
         sjdb_overhang = 100,
-        memory_gb = 8,
+        memory_gb = 2,
         cpu_cores = 2
   }
 
