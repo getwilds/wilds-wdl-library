@@ -6,7 +6,7 @@ A WILDS WDL module for downloading genomic data from the NCBI Sequence Read Arch
 
 ## Overview
 
-This module provides reusable WDL tasks for downloading sequencing data from the SRA using the SRA toolkit. It handles single-end, paired-end, and multi-read data (e.g., 10x Chromium single-cell), automatically detecting the read type and processing accordingly.
+This module provides reusable WDL tasks for downloading sequencing data from the SRA using the SRA toolkit. It handles both single-end and paired-end reads, automatically detecting the read type and processing accordingly.
 
 The module uses `prefetch` + `fasterq-dump` for efficient, multi-threaded downloading of FASTQ files from SRA accessions, with optional NGC authentication for downloading controlled-access dbGaP data.
 
@@ -132,7 +132,7 @@ The module supports flexible resource configuration:
 - **SRR**: Single sample run accessions
 - **ERR**: ENA (European Nucleotide Archive) accessions
 - **DRR**: DDBJ (DNA Data Bank of Japan) accessions
-- Supports single-end, paired-end, and multi-read (e.g., 10x single-cell) automatically
+- Supports both single-end and paired-end automatically
 
 ## Requirements
 
