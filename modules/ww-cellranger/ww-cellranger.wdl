@@ -135,7 +135,7 @@ task run_count_hpc {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Run cellranger count using an HPC environment module instead of a Docker image. Intended for institutional HPC backends (e.g. Fred Hutch Cromwell) where Cell Ranger is provided via Lmod/environment modules under an institutional license."
+    description: "Run cellranger count on an HPC system using a Cell Ranger binary loaded from the host's environment-module system rather than a Docker image."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cellranger/ww-cellranger.wdl"
     outputs: {
         results_tar: "Compressed tarball of Cell Ranger count output directory",
@@ -154,7 +154,7 @@ task run_count_hpc {
     memory_gb: "Memory allocation in GB"
     expect_cells: "Optional: Expected number of recovered cells"
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
-    environment_modules: "Space-separated list of HPC environment modules to load (e.g. 'CellRanger/10.0.0'). Honored only by backends configured with a 'modules' runtime attribute."
+    cellranger_module: "HPC environment module to load for Cell Ranger (e.g. 'CellRanger/10.0.0')"
   }
 
   input {
@@ -167,12 +167,16 @@ task run_count_hpc {
     Int memory_gb = 64
     Int? expect_cells
     String? chemistry
-    String environment_modules = "CellRanger/10.0.0"
+    String cellranger_module = "CellRanger/10.0.0"
   }
 
   # Keep command block in sync with run_count.
   command <<<
     set -eo pipefail
+
+    # Load Cell Ranger from the host's environment-module system.
+    . /app/lmod/lmod/init/profile
+    module load ~{cellranger_module}
 
     # Create arrays from WDL inputs
     R1_FILES=(~{sep=' ' r1_fastqs})
@@ -253,7 +257,6 @@ task run_count_hpc {
   }
 
   runtime {
-    modules: environment_modules
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
