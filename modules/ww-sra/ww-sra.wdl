@@ -59,8 +59,8 @@ task fastqdump {
       # Create an empty placeholder for R2
       touch "~{sra_id}_2.fastq"
     fi
-    # Handle 10x/3-read data: fasterq-dump --split-files produces 3 files where
-    # _1 = R1 (barcode+UMI), _2 = index read, _3 = R2 (cDNA).
+    # Handle cases where index reads are included: fasterq-dump --split-files produces 3 files where
+    # _1 = R1, _2 = index read, _3 = R2
     # Reassign _3 to _2 so R1/R2 outputs always contain the biological reads.
     if [ -f "~{sra_id}_3.fastq" ]; then
       mv "~{sra_id}_3.fastq" "~{sra_id}_2.fastq"
