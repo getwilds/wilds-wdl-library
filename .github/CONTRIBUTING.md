@@ -105,6 +105,14 @@ wilds-wdl-library/
 - **Version declaration**: Use WDL version 1.0
 - **Task definitions**: Individual tasks with proper resource requirements
 - **Metadata documentation**: Describe properties of tasks (e.g. inputs, outputs) using `meta` and `parameter_meta` blocks
+- **Optional metadata**: Include the following metadata tags in each task's `meta` block to describe the task with [EDAM ontology](https://www.ebi.ac.uk/ols4/ontologies/edam) terms (using underscores instead of spaces):
+  - **`topic`**: Comma-separated EDAM `topic` terms describing the bioinformatics topic and data type(s) the task handles. For example, a DNA variant caller for SNPs would be `"genomics,dna_polymorphism"`. Use `"any"` for tasks that are very non-specific (e.g. downloading data from AWS).
+  - **`operation`**: An EDAM `operation` term describing what the task does (e.g. `"variant_calling"`). Use `"any"` for tasks that are very non-specific.
+  - **`species`**: Comma-separated list of species terms. Choose from: `human` (human data), `eukaryote` (non-human eukaryote data), `prokaryote` (prokaryote data), `virus` (viral data). Include all that apply. For example, a task that works on both human and mouse data should include both `human` and `eukaryote`.
+  - **File inputs/outputs**: Describe `File`-type parameters (not strings, integers, booleans, etc.) using the format `<param_name>:<EDAM data type>:<EDAM format type>`. Use `"none"` if a category has no files. For important but niche formats not in EDAM, you may use the file extension (e.g. `sig`, `csi`). Separate multiple formats per parameter with `|` (e.g. `"input_aln:nucleic_acid_sequence_alignment:bam|sam|cram"`). Use these metadata tags to describe file inputs/outputs:
+    - Sample or run-specific data (e.g. target region BED file, sample FASTQ): `input_sample_required`, `input_sample_optional`
+    - Reference data (e.g. allele frequencies, reference genome)`input_reference_required`, `input_reference_optional`
+    - Output files (e.g. sample BAM, reference genome index)`output_sample`, `output_reference`
 
 **Your test workflow file (`testrun.wdl`) must include:**
 
