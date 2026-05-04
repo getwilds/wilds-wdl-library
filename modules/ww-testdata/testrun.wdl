@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow testdata_example {
   # Pull down reference genome and index files for chr1
@@ -63,6 +63,8 @@ workflow testdata_example {
 
   call ww_testdata.create_test_protein_fasta { }
 
+  call ww_testdata.create_realistic_protein_fasta { }
+
   call ww_testdata.download_glimpse2_genetic_map { }
 
   call ww_testdata.download_glimpse2_reference_panel { }
@@ -117,6 +119,7 @@ workflow testdata_example {
     diamond_reference = create_diamond_data.reference,
     diamond_query = create_diamond_data.query,
     test_protein_fasta = create_test_protein_fasta.test_fasta,
+    realistic_protein_fasta = create_realistic_protein_fasta.test_fasta,
     glimpse2_genetic_map = download_glimpse2_genetic_map.genetic_map,
     glimpse2_reference_vcf = download_glimpse2_reference_panel.reference_vcf,
     glimpse2_reference_vcf_index = download_glimpse2_reference_panel.reference_vcf_index,
@@ -188,8 +191,9 @@ workflow testdata_example {
     # Outputs from DIAMOND data download
     File diamond_reference = create_diamond_data.reference
     File diamond_query = create_diamond_data.query
-    # Output from test protein FASTA creation
+    # Outputs from test protein FASTA creation
     File test_protein_fasta = create_test_protein_fasta.test_fasta
+    File realistic_protein_fasta = create_realistic_protein_fasta.test_fasta
     # Outputs from GLIMPSE2 test data downloads
     File glimpse2_genetic_map = download_glimpse2_genetic_map.genetic_map
     File glimpse2_reference_vcf = download_glimpse2_reference_panel.reference_vcf
@@ -265,6 +269,7 @@ task validate_outputs {
     diamond_reference: "DIAMOND E. coli reference proteome FASTA file to validate"
     diamond_query: "DIAMOND E. coli query subset FASTA file to validate"
     test_protein_fasta: "Test protein FASTA file for structure prediction to validate"
+    realistic_protein_fasta: "Realistic single-domain protein FASTA file (ubiquitin) to validate"
     glimpse2_genetic_map: "GLIMPSE2 genetic map file to validate"
     glimpse2_reference_vcf: "GLIMPSE2 reference panel BCF file to validate"
     glimpse2_reference_vcf_index: "GLIMPSE2 reference panel BCF index to validate"
@@ -327,6 +332,7 @@ task validate_outputs {
     File diamond_reference
     File diamond_query
     File test_protein_fasta
+    File realistic_protein_fasta
     File glimpse2_genetic_map
     File glimpse2_reference_vcf
     File glimpse2_reference_vcf_index
@@ -417,6 +423,7 @@ task validate_outputs {
     validate_file "~{diamond_reference}" "DIAMOND reference proteome FASTA" || validation_passed=false
     validate_file "~{diamond_query}" "DIAMOND query subset FASTA" || validation_passed=false
     validate_file "~{test_protein_fasta}" "Test protein FASTA" || validation_passed=false
+    validate_file "~{realistic_protein_fasta}" "Realistic protein FASTA (ubiquitin)" || validation_passed=false
     validate_file "~{glimpse2_genetic_map}" "GLIMPSE2 genetic map" || validation_passed=false
     validate_file "~{glimpse2_reference_vcf}" "GLIMPSE2 reference panel BCF" || validation_passed=false
     validate_file "~{glimpse2_reference_vcf_index}" "GLIMPSE2 reference panel BCF index" || validation_passed=false
@@ -450,7 +457,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 55"
+      echo "Total files validated: 56"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

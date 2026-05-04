@@ -1192,6 +1192,49 @@ FASTA
   }
 }
 
+task create_realistic_protein_fasta {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Create a single-domain protein FASTA file (human ubiquitin, 76 residues) for realistic structure-prediction tests on HPC"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        test_fasta: "FASTA file containing a realistic single-domain test protein (human ubiquitin, UniProt P0CG48 residues 1-76)"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Human ubiquitin (76 residues, UniProt P0CG48 residues 1-76) - canonical
+    # single-domain benchmark protein; folds in seconds on a single GPU.
+    cat > test_protein.fasta <<'FASTA'
+>test_ubiquitin
+MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG
+FASTA
+  >>>
+
+  output {
+    File test_fasta = "test_protein.fasta"
+  }
+
+  runtime {
+    docker: "ubuntu:22.04"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task download_glimpse2_genetic_map {
   meta {
     author: "Taylor Firman"

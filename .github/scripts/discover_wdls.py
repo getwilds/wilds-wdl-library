@@ -18,11 +18,10 @@ from pathlib import Path
 # Valid item types
 VALID_TYPES = ['modules', 'pipelines']
 
-# Items excluded from CI test runs (e.g., require more memory than GitHub Actions runners provide)
-CI_EXCLUDED_ITEMS = {
-    'modules': ['ww-esmfold'],
-    'pipelines': [],
-}
+# Test-run target selection:
+#   - "ci"  selects testrun.wdl (skips items that only have testrun_hpc.wdl)
+#   - "hpc" selects testrun_hpc.wdl when present, else falls back to testrun.wdl
+VALID_TARGETS = ['ci', 'hpc']
 
 def get_changed_files():
     """Get list of changed files in PR, or None for workflow_dispatch"""
@@ -39,30 +38,48 @@ def get_changed_files():
             raise SystemExit(1)
     return None
 
-def find_valid_items(item_type):
-    """Find all directories with valid structure (containing testrun.wdl)"""
+def find_valid_items(item_type, target):
+    """Find all directories with a test-run WDL appropriate for the target.
+
+    Convention:
+      - testrun.wdl       : runs in CI and (as fallback) on HPC
+      - testrun_hpc.wdl   : runs on HPC; if present alongside testrun.wdl it
+                            takes precedence on HPC; if it is the only file
+                            present, the item is HPC-only and skipped in CI
+      - neither           : invalid; the item is reported and skipped
+    """
     items = []
     items_dir = Path(item_type)
-    singular = item_type.rstrip('s')  # Remove trailing 's' for singular
+    singular = item_type.rstrip('s')
 
     if not items_dir.exists():
         print(f"No {item_type} directory found")
         return items
 
-    for item_dir in items_dir.iterdir():
+    for item_dir in sorted(items_dir.iterdir()):
         if not item_dir.is_dir():
             continue
 
         item_name = item_dir.name
-        wdl_file = item_dir / 'testrun.wdl'
+        ci_wdl = item_dir / 'testrun.wdl'
+        hpc_wdl = item_dir / 'testrun_hpc.wdl'
 
-        if wdl_file.exists():
+        if not ci_wdl.exists() and not hpc_wdl.exists():
+            print(f"ERROR: {item_name} has neither testrun.wdl nor testrun_hpc.wdl")
+            raise SystemExit(1)
+
+        if target == 'ci':
+            if ci_wdl.exists():
+                items.append(item_name)
+                print(f"Found valid {singular} for CI: {item_name}")
+            else:
+                print(f"Skipping {item_name} for CI (HPC-only: testrun_hpc.wdl with no testrun.wdl)")
+        elif target == 'hpc':
             items.append(item_name)
-            print(f"Found valid {singular}: {item_name}")
-        else:
-            print(f"Skipping {item_name} - missing testrun.wdl")
+            chosen = 'testrun_hpc.wdl' if hpc_wdl.exists() else 'testrun.wdl'
+            print(f"Found valid {singular} for HPC: {item_name} ({chosen})")
 
-    return sorted(items)
+    return items
 
 def filter_items_by_changes(items, changed_files, item_type):
     """Filter items to only those with WDL file changes"""
@@ -116,9 +133,9 @@ def handle_workflow_dispatch_input(items, dispatch_item, item_type):
 
 def main():
     # Parse command line arguments
-    if len(sys.argv) < 2:
-        print("ERROR: Item type not specified")
-        print("Usage: discover_wdls.py <modules|pipelines> [specific_item_name]")
+    if len(sys.argv) < 3:
+        print("ERROR: Missing arguments")
+        print("Usage: discover_wdls.py <modules|pipelines> <ci|hpc> [specific_item_name]")
         raise SystemExit(1)
 
     item_type = sys.argv[1].lower()
@@ -127,41 +144,37 @@ def main():
         print(f"Valid types: {', '.join(VALID_TYPES)}")
         raise SystemExit(1)
 
-    singular = item_type.rstrip('s')  # Remove trailing 's' for singular
+    target = sys.argv[2].lower()
+    if target not in VALID_TARGETS:
+        print(f"ERROR: Invalid target '{target}'")
+        print(f"Valid targets: {', '.join(VALID_TARGETS)}")
+        raise SystemExit(1)
+
+    singular = item_type.rstrip('s')
 
     dispatch_item = None
-    if len(sys.argv) > 2:
-        dispatch_item = sys.argv[2]
+    if len(sys.argv) > 3:
+        dispatch_item = sys.argv[3]
         print(f"Workflow dispatch {singular} argument: '{dispatch_item}'")
 
-    print(f"=== WILDS {item_type.title()} Discovery ===")
+    print(f"=== WILDS {item_type.title()} Discovery (target: {target}) ===")
 
-    # Find all valid items
-    all_items = find_valid_items(item_type)
-    print(f"\nFound {len(all_items)} valid {item_type}")
+    # Find all valid items for this target
+    all_items = find_valid_items(item_type, target)
+    print(f"\nFound {len(all_items)} valid {item_type} for {target}")
 
     # Check event type
     event_name = os.environ.get('GITHUB_EVENT_NAME', '')
     print(f"GitHub event: {event_name}")
 
     if event_name == 'workflow_dispatch':
-        # Handle manual workflow dispatch
         final_items = handle_workflow_dispatch_input(all_items, dispatch_item, item_type)
     elif event_name == 'schedule':
-        # Scheduled runs test all items
         print("Scheduled run - testing all items")
         final_items = all_items
     else:
-        # Handle PR - filter by changes
         changed_files = get_changed_files()
         final_items = filter_items_by_changes(all_items, changed_files, item_type)
-
-    # Remove items excluded from CI (e.g., too memory-intensive for GitHub Actions)
-    excluded = CI_EXCLUDED_ITEMS.get(item_type, [])
-    excluded_items = [item for item in final_items if item in excluded]
-    final_items = [item for item in final_items if item not in excluded]
-    for item in excluded_items:
-        print(f"Excluding {item} from CI (in CI_EXCLUDED_ITEMS)")
 
     print(f"\nFinal selection: {len(final_items)} {item_type}")
     for item in final_items:

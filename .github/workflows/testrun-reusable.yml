@@ -31,7 +31,7 @@ jobs:
     -
       name: Find items
       id: find-items
-      run: python3 .github/scripts/discover_wdls.py ${{ inputs.item_type }} "${{ inputs.item_name }}"
+      run: python3 .github/scripts/discover_wdls.py ${{ inputs.item_type }} ci "${{ inputs.item_name }}"
 
   miniwdl-test:
     needs: [discover]

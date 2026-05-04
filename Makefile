@@ -13,6 +13,10 @@ SPROCKET_CONFIG ?=
 SPROCKET_CONFIG_FLAG := $(if $(SPROCKET_CONFIG),-c $(SPROCKET_CONFIG),)
 TYPE ?= all
 NUM_RETRIES ?= 0
+# TARGET=ci uses testrun.wdl; TARGET=hpc prefers testrun_hpc.wdl when present
+# and falls back to testrun.wdl. Items lacking testrun.wdl are HPC-only and
+# are skipped when TARGET=ci.
+TARGET ?= ci
 
 .PHONY: help
 help: ## Show this help message
@@ -153,33 +157,39 @@ lint: lint_sprocket lint_miniwdl lint_womtool lint_cirro ## Run all linting chec
 
 ##@ Run
 
-run_sprocket: check_sprocket check_name ## Run sprocket on testrun.wdl files (use NAME=foo, TYPE=modules|pipelines, SPROCKET_CONFIG=path, NUM_RETRIES=N)
-	@echo "Running sprocket on testrun.wdl files..."
+run_sprocket: check_sprocket check_name ## Run sprocket on testrun WDLs (use NAME=foo, TYPE=modules|pipelines, TARGET=ci|hpc, SPROCKET_CONFIG=path, NUM_RETRIES=N)
+	@echo "Running sprocket on test-run WDLs (target: $(TARGET))..."
 	@failed=""; \
 	dirs=""; \
 	max_attempts=$$(($(NUM_RETRIES) + 1)); \
 	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)/"; fi; \
 	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)/"; fi; \
 	for dir in $$dirs; do \
-		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
-			name=$$(basename $$dir); \
-			echo "... Running $$name"; \
-			entrypoint=$$(grep '^workflow ' "$$dir/testrun.wdl" | awk '{print $$2}' | tr -d '{'); \
-			echo "... Using entrypoint: $$entrypoint"; \
-			attempt=1; passed=0; \
-			while [ $$attempt -le $$max_attempts ]; do \
-				if [ $$attempt -gt 1 ]; then echo "[retry] Attempt $$attempt/$$max_attempts for $$name"; fi; \
-				if sprocket run $(SPROCKET_CONFIG_FLAG) "$$dir/testrun.wdl" --target $$entrypoint; then \
-					passed=1; break; \
-				fi; \
-				attempt=$$((attempt + 1)); \
-			done; \
-			if [ $$passed -eq 0 ]; then \
-				failed="$$failed $$name"; \
-				echo "... FAILED: $$name (sprocket, after $$max_attempts attempts)"; \
-			elif [ $$attempt -gt 1 ]; then \
-				echo "[retry] $$name passed on attempt $$attempt"; \
+		if [ ! -d "$$dir" ]; then continue; fi; \
+		wdl=""; \
+		if [ "$(TARGET)" = "hpc" ] && [ -f "$$dir/testrun_hpc.wdl" ]; then \
+			wdl="$$dir/testrun_hpc.wdl"; \
+		elif [ -f "$$dir/testrun.wdl" ]; then \
+			wdl="$$dir/testrun.wdl"; \
+		fi; \
+		if [ -z "$$wdl" ]; then continue; fi; \
+		name=$$(basename $$dir); \
+		echo "... Running $$name ($$wdl)"; \
+		entrypoint=$$(grep '^workflow ' "$$wdl" | awk '{print $$2}' | tr -d '{'); \
+		echo "... Using entrypoint: $$entrypoint"; \
+		attempt=1; passed=0; \
+		while [ $$attempt -le $$max_attempts ]; do \
+			if [ $$attempt -gt 1 ]; then echo "[retry] Attempt $$attempt/$$max_attempts for $$name"; fi; \
+			if sprocket run $(SPROCKET_CONFIG_FLAG) "$$wdl" --target $$entrypoint; then \
+				passed=1; break; \
 			fi; \
+			attempt=$$((attempt + 1)); \
+		done; \
+		if [ $$passed -eq 0 ]; then \
+			failed="$$failed $$name"; \
+			echo "... FAILED: $$name (sprocket, after $$max_attempts attempts)"; \
+		elif [ $$attempt -gt 1 ]; then \
+			echo "[retry] $$name passed on attempt $$attempt"; \
 		fi; \
 	done; \
 	if [ -n "$$failed" ]; then \
@@ -191,19 +201,25 @@ run_sprocket: check_sprocket check_name ## Run sprocket on testrun.wdl files (us
 		echo "All sprocket runs passed."; \
 	fi
 
-run_miniwdl: check_uv check_name ## Run miniwdl on testrun.wdl files (use NAME=foo, TYPE=modules|pipelines)
-	@echo "Running miniwdl on testrun.wdl files..."
+run_miniwdl: check_uv check_name ## Run miniwdl on testrun WDLs (use NAME=foo, TYPE=modules|pipelines, TARGET=ci|hpc)
+	@echo "Running miniwdl on test-run WDLs (target: $(TARGET))..."
 	@failed=""; \
 	dirs=""; \
 	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)/"; fi; \
 	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)/"; fi; \
 	for dir in $$dirs; do \
-		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
-			echo "... Running $$(basename $$dir)"; \
-			if ! uv run --python 3.13 --with miniwdl==$(MINIWDL) miniwdl run "$$dir/testrun.wdl"; then \
-				failed="$$failed $$(basename $$dir)"; \
-				echo "... FAILED: $$(basename $$dir) (miniwdl)"; \
-			fi; \
+		if [ ! -d "$$dir" ]; then continue; fi; \
+		wdl=""; \
+		if [ "$(TARGET)" = "hpc" ] && [ -f "$$dir/testrun_hpc.wdl" ]; then \
+			wdl="$$dir/testrun_hpc.wdl"; \
+		elif [ -f "$$dir/testrun.wdl" ]; then \
+			wdl="$$dir/testrun.wdl"; \
+		fi; \
+		if [ -z "$$wdl" ]; then continue; fi; \
+		echo "... Running $$(basename $$dir) ($$wdl)"; \
+		if ! uv run --python 3.13 --with miniwdl==$(MINIWDL) miniwdl run "$$wdl"; then \
+			failed="$$failed $$(basename $$dir)"; \
+			echo "... FAILED: $$(basename $$dir) (miniwdl)"; \
 		fi; \
 	done; \
 	if [ -n "$$failed" ]; then \
@@ -215,19 +231,25 @@ run_miniwdl: check_uv check_name ## Run miniwdl on testrun.wdl files (use NAME=f
 		echo "All miniwdl runs passed."; \
 	fi
 
-run_cromwell: check_java check_cromwell check_name ## Run Cromwell on testrun.wdl files (use NAME=foo, TYPE=modules|pipelines)
-	@echo "Running Cromwell on testrun.wdl files..."
+run_cromwell: check_java check_cromwell check_name ## Run Cromwell on testrun WDLs (use NAME=foo, TYPE=modules|pipelines, TARGET=ci|hpc)
+	@echo "Running Cromwell on test-run WDLs (target: $(TARGET))..."
 	@failed=""; \
 	dirs=""; \
 	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)/"; fi; \
 	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)/"; fi; \
 	for dir in $$dirs; do \
-		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
-			echo "... Running $$(basename $$dir)"; \
-			if ! java -jar $(CROMWELL_JAR) run "$$dir/testrun.wdl"; then \
-				failed="$$failed $$(basename $$dir)"; \
-				echo "... FAILED: $$(basename $$dir) (Cromwell)"; \
-			fi; \
+		if [ ! -d "$$dir" ]; then continue; fi; \
+		wdl=""; \
+		if [ "$(TARGET)" = "hpc" ] && [ -f "$$dir/testrun_hpc.wdl" ]; then \
+			wdl="$$dir/testrun_hpc.wdl"; \
+		elif [ -f "$$dir/testrun.wdl" ]; then \
+			wdl="$$dir/testrun.wdl"; \
+		fi; \
+		if [ -z "$$wdl" ]; then continue; fi; \
+		echo "... Running $$(basename $$dir) ($$wdl)"; \
+		if ! java -jar $(CROMWELL_JAR) run "$$wdl"; then \
+			failed="$$failed $$(basename $$dir)"; \
+			echo "... FAILED: $$(basename $$dir) (Cromwell)"; \
 		fi; \
 	done; \
 	if [ -n "$$failed" ]; then \
@@ -268,7 +290,7 @@ docs-preview: check_sprocket check_uv ## Build and serve documentation preview l
 	@echo "Step 3/7: Creating preambles..."
 	@uv run --python 3.13 .github/scripts/make_preambles.py
 	@echo "Step 4/7: Creating .sprocketignore..."
-	@printf '%s\n' '# Excluding test run WDL'\''s from documentation builds' 'modules/**/testrun.wdl' 'pipelines/**/testrun.wdl' > .sprocketignore
+	@printf '%s\n' '# Excluding test run WDL'\''s from documentation builds' 'modules/**/testrun.wdl' 'modules/**/testrun_hpc.wdl' 'pipelines/**/testrun.wdl' 'pipelines/**/testrun_hpc.wdl' > .sprocketignore
 	@echo "Step 5/7: Building docs with sprocket..."
 	@sprocket dev doc -v --homepage docs-README.md --logo WILDSWDLNameLogo.svg .
 	@echo "Step 6/7: Post-processing documentation..."
