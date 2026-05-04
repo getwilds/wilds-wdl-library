@@ -143,7 +143,7 @@ The module supports flexible resource configuration:
 
 ## Features
 
-- **Automatic read structure detection**: Handles single-end, paired-end, and multi-read (e.g., 10x single-cell) data automatically
+- **Automatic read structure detection**: Handles single-end and paired-end data automatically
 - **Parallel downloading**: Multi-threaded downloads for improved performance
 - **Standardized output**: Consistent naming for downstream processing
 - **Cross-platform**: Works with SRA accessions from NCBI, ENA, and DDBJ
