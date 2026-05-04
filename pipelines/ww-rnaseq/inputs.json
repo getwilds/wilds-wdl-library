@@ -9,6 +9,8 @@
   "rnaseq.contrast": "condition,treatment,control",
   "rnaseq.trim_quality": 20,
   "rnaseq.trim_length": 20,
+  "rnaseq.min_counts": 10,
+  "rnaseq.min_samples": 0,
   "rnaseq.star_cpu": 8,
   "rnaseq.star_memory_gb": 64,
   "rnaseq.genome_sa_index_nbases": 14,
