@@ -99,7 +99,7 @@ task run_deseq2 {
     reference_level: "Reference level for the contrast (typically the control condition)"
     contrast: "DESeq2 contrast string in the format 'condition,treatment,control'"
     min_counts: "Minimum number of counts a gene must have to pass filtering"
-    min_samples: "Minimum number of samples that must meet min_counts threshold (0 = use total counts instead)"
+    min_samples: "A gene must meet the `min_counts` threshold in this many samples to be kept. 0 = Gene is kept if its count across all samples meets the `min_count` threshold (default: 0)"
     shrinkage_method: "LFC shrinkage method: apeglm, ashr, or normal (empty = no shrinkage)"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"

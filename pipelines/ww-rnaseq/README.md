@@ -190,7 +190,7 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `star_memory_gb` | Memory allocation in GB for STAR alignment tasks | Int | No | 64 |
 | `genome_sa_index_nbases` | STAR SA pre-indexing string length (scales with genome size) | Int | No | 14 |
 | `min_counts` | Minimum counts a gene must have to pass DESeq2 pre-filtering | Int | No | 10 |
-| `min_samples` | Minimum samples meeting `min_counts` threshold (0 = use total counts) | Int | No | 0 |
+| `min_samples` | A gene must meet the `min_counts` threshold in this many samples to be kept. 0 = Gene is kept if its count across all samples meets the `min_count` threshold (default: 0)| Int | No | 0 |
 | `shrinkage_method` | LFC shrinkage method: `apeglm`, `ashr`, `normal`, or empty for none | String | No | "" |
 | `organize_results` | Reorganize outputs into a clean directory tarball | Boolean | No | false |
 | `include_bams` | Include BAM/BAI files in the organized tarball | Boolean | No | false |

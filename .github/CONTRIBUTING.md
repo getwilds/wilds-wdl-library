@@ -149,7 +149,7 @@ wilds-wdl-library/
 
 **Prefer Existing Modules**
 
-- Pipelines should primarily combine existing modules - prefer using existing modules over creating new task definitions. If you need new functionality, consider contributing it as a module first. Pipeline-local tasks are acceptable only when the logic is truly specific to that single pipeline and would not be reusable elsewhere (e.g., reorganizing that pipeline's particular outputs).
+- Pipelines should primarily combine existing modules - prefer using existing modules over creating new task definitions. If you need new functionality, consider contributing it as a module first. Tasks defined within pipelines are acceptable only when the logic is truly specific to that single pipeline and would not be reusable elsewhere (e.g., reorganizing that pipeline's particular outputs).
 
 **Pipeline inputs.json**
 
