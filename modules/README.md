@@ -43,7 +43,7 @@ modules/module-name/
 
 ### **Required Components**
 
-- **WDL File**: Contains all task definitions for the module
+- **WDL File**: Contains all task definitions for the module, each with `meta` and `parameter_meta` blocks for documentation. Tasks optionally include [EDAM ontology](https://www.ebi.ac.uk/ols4/ontologies/edam) tags and file input/output descriptors. See the [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details.
 - **Test Workflow**: `testrun.wdl` - Zero-configuration demonstration workflow that exercises all tasks
 - **README**: Module-specific documentation with usage examples
 
