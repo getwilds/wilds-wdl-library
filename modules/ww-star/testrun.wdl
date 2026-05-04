@@ -19,7 +19,7 @@ workflow star_example {
       reference_gtf = download_ref_data.gtf,
       sjdb_overhang = 100,
       genome_sa_index_nbases = 14,
-      memory_gb = 8,
+      memory_gb = 2,
       cpu_cores = 2
   }
 
@@ -50,7 +50,7 @@ workflow star_example {
       r1 = download_fastq_data.r1_fastq,
       name = "demo_sample_se",
       sjdb_overhang = 100,
-      memory_gb = 8,
+      memory_gb = 2,
       cpu_cores = 2
   }
 
