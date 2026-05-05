@@ -4,10 +4,11 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-cellranger/ww-cellranger.wdl" as ww_cellranger
 
 #### TEST WORKFLOW DEFINITION ####
-# HPC variant of the Cell Ranger testrun. Calls run_count_hpc, which loads
-# Cell Ranger from the host's environment-module system instead of pulling
-# a (non-redistributable) Docker image. Uses the same tiny test data as
-# testrun.wdl so the only thing this run validates is the module-load path.
+# HPC variant of the Cell Ranger testrun. Calls run_count_hpc_sprocket
+# because the monthly HPC test run executes via Sprocket; the Cromwell
+# variant (run_count_hpc_cromwell) is exercised by users running Cromwell
+# on their HPC by hand. Uses the same tiny test data as testrun.wdl so
+# the only thing this run validates is the module-load path.
 
 workflow cellranger_example {
 
@@ -18,7 +19,7 @@ workflow cellranger_example {
     gzip_output = true
   }
 
-  call ww_cellranger.run_count_hpc { input:
+  call ww_cellranger.run_count_hpc_sprocket { input:
     r1_fastqs = [download_fastq_data.r1_fastq],
     r2_fastqs = [download_fastq_data.r2_fastq],
     ref_gex = download_test_cellranger_ref.ref_tar,
@@ -31,15 +32,15 @@ workflow cellranger_example {
 
   call validate_outputs { input:
     sample_id = "testdata",
-    results_tar = run_count_hpc.results_tar,
-    web_summary = run_count_hpc.web_summary,
-    metrics_summary = run_count_hpc.metrics_summary
+    results_tar = run_count_hpc_sprocket.results_tar,
+    web_summary = run_count_hpc_sprocket.web_summary,
+    metrics_summary = run_count_hpc_sprocket.metrics_summary
   }
 
   output {
-    File results_tar = run_count_hpc.results_tar
-    File web_summary = run_count_hpc.web_summary
-    File metrics_summary = run_count_hpc.metrics_summary
+    File results_tar = run_count_hpc_sprocket.results_tar
+    File web_summary = run_count_hpc_sprocket.web_summary
+    File metrics_summary = run_count_hpc_sprocket.metrics_summary
     File validation_report = validate_outputs.report
   }
 }
