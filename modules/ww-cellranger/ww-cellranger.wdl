@@ -396,7 +396,7 @@ task run_count_hpc_sprocket {
   # execute under Apptainer. Cell Ranger itself is not in this image;
   # it comes in via the host bind-mounts in sprocket-hpc.toml.
   runtime {
-    docker: "getwilds/lua:5.4.6"
+    docker: "getwilds/lua:5.3.6"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
