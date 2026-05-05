@@ -131,11 +131,11 @@ task run_count {
   }
 }
 
-task run_count_hpc {
+task run_count_hpc_cromwell {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Run cellranger count on an HPC system using a Cell Ranger binary loaded from the host's environment-module system rather than a Docker image."
+    description: "Cromwell-on-HPC variant of cellranger count: omits the docker runtime key so Cromwell runs the task directly on the compute node, where the host's environment-module system can load Cell Ranger."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cellranger/ww-cellranger.wdl"
     outputs: {
         results_tar: "Compressed tarball of Cell Ranger count output directory",
@@ -170,7 +170,7 @@ task run_count_hpc {
     String cellranger_module = "CellRanger/10.0.0"
   }
 
-  # Keep command block in sync with run_count.
+  # Keep command block in sync with run_count and run_count_hpc_sprocket.
   command <<<
     set -eo pipefail
 
@@ -256,7 +256,147 @@ task run_count_hpc {
     File metrics_summary = "metrics_summary.csv"
   }
 
+  # No docker/container runtime key: Cromwell's HPC backend runs this
+  # task directly on the compute node, where `module load` makes the
+  # licensed Cell Ranger binary available on PATH.
   runtime {
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task run_count_hpc_sprocket {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Sprocket-on-HPC variant of cellranger count: runs inside a minimal Lua container so the host's bind-mounted Lmod can execute, while the Cell Ranger binary itself is bind-mounted in from the host."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cellranger/ww-cellranger.wdl"
+    outputs: {
+        results_tar: "Compressed tarball of Cell Ranger count output directory",
+        web_summary: "Web summary HTML file",
+        metrics_summary: "Metrics summary CSV file"
+    }
+  }
+
+  parameter_meta {
+    r1_fastqs: "Array of R1 FASTQ files (contain cell barcodes and UMIs)"
+    r2_fastqs: "Array of R2 FASTQ files (contain cDNA sequences)"
+    ref_gex: "GEX reference transcriptome tarball"
+    sample_id: "Sample ID for output naming"
+    create_bam: "Generate BAM file (default: true)"
+    cpu_cores: "Number of CPU cores to use"
+    memory_gb: "Memory allocation in GB"
+    expect_cells: "Optional: Expected number of recovered cells"
+    chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
+    cellranger_module: "HPC environment module to load for Cell Ranger (e.g. 'CellRanger/10.0.0')"
+  }
+
+  input {
+    Array[File] r1_fastqs
+    Array[File] r2_fastqs
+    File ref_gex
+    String sample_id
+    Boolean create_bam = true
+    Int cpu_cores = 8
+    Int memory_gb = 64
+    Int? expect_cells
+    String? chemistry
+    String cellranger_module = "CellRanger/10.0.0"
+  }
+
+  # Keep command block in sync with run_count and run_count_hpc_cromwell.
+  command <<<
+    set -eo pipefail
+
+    # Load Cell Ranger from the host's environment-module system
+    # (Lmod tree, modulefiles, and software tree are bind-mounted in
+    # via the Sprocket HPC config; see .github/configs/sprocket-hpc.toml).
+    . /app/lmod/lmod/init/bash
+    module load ~{cellranger_module}
+
+    # Create arrays from WDL inputs
+    R1_FILES=(~{sep=' ' r1_fastqs})
+    R2_FILES=(~{sep=' ' r2_fastqs})
+
+    # Validate that R1 and R2 arrays have the same length
+    if [ "${#R1_FILES[@]}" -ne "${#R2_FILES[@]}" ]; then
+      echo "ERROR: Number of R1 files (${#R1_FILES[@]}) does not match number of R2 files (${#R2_FILES[@]})" >&2
+      exit 1
+    fi
+
+    # Validate FASTQ naming convention
+    # Pattern: SampleName_S[0-9]+_L[0-9]+_R[12]_001.fastq.gz (with lane)
+    # Or: SampleName_S[0-9]+_R[12]_001.fastq.gz (without lane, Cell Ranger v4.0+)
+    PATTERN_WITH_LANE='_S[0-9]+_L[0-9]+_R[12]_001\.fastq\.gz$'
+    PATTERN_WITHOUT_LANE='_S[0-9]+_R[12]_001\.fastq\.gz$'
+
+    validate_fastq_name() {
+      local file="$1"
+      local file_basename
+      file_basename=$(basename "$file")
+      if [[ ! "$file_basename" =~ $PATTERN_WITH_LANE ]] && [[ ! "$file_basename" =~ $PATTERN_WITHOUT_LANE ]]; then
+        echo "ERROR: FASTQ file '$file_basename' does not follow Cell Ranger naming convention." >&2
+        echo "Expected format: SampleName_S1_L001_R1_001.fastq.gz or SampleName_S1_R1_001.fastq.gz" >&2
+        exit 1
+      fi
+    }
+
+    for file in "${R1_FILES[@]}"; do
+      validate_fastq_name "$file"
+    done
+    for file in "${R2_FILES[@]}"; do
+      validate_fastq_name "$file"
+    done
+
+    echo "FASTQ validation passed"
+
+    # Extract GEX reference
+    mkdir -p gex_ref
+    tar xf "~{ref_gex}" -C gex_ref --strip-components 1
+
+    # Create folder and copy FASTQ files
+    mkdir -p gex_fastqs
+    cp ~{sep=' ' r1_fastqs} gex_fastqs/
+    cp ~{sep=' ' r2_fastqs} gex_fastqs/
+    FASTQS=$(pwd)/gex_fastqs
+
+    mkdir -p "~{sample_id}_outs"
+
+    # Run cellranger count
+    cellranger count \
+      --transcriptome=gex_ref \
+      --fastqs="$FASTQS" \
+      --localcores=~{cpu_cores} \
+      --localmem=~{memory_gb} \
+      --output-dir="~{sample_id}" \
+      ~{"--expect-cells=" + expect_cells} \
+      ~{"--chemistry=" + chemistry} \
+      --id="~{sample_id}" \
+      --create-bam="~{create_bam}"
+
+    # Create tarball of output directory
+    tar -czf "~{sample_id}_outs.tar.gz" "~{sample_id}/outs"
+
+    # Move output files to working directory for outputting
+    mv "~{sample_id}/outs/web_summary.html" .
+    mv "~{sample_id}/outs/metrics_summary.csv" .
+
+    # Clean up Cell Ranger output directory for housekeeping
+    # (and to avoid Sprocket symlink validation errors)
+    rm -rf "~{sample_id}"
+  >>>
+
+  output {
+    File results_tar = "~{sample_id}_outs.tar.gz"
+    File web_summary = "web_summary.html"
+    File metrics_summary = "metrics_summary.csv"
+  }
+
+  # Minimal Lua-having container so the host's bind-mounted Lmod can
+  # execute under Apptainer. Cell Ranger itself is not in this image;
+  # it comes in via the host bind-mounts in sprocket-hpc.toml.
+  runtime {
+    docker: "getwilds/lua:5.4.6"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

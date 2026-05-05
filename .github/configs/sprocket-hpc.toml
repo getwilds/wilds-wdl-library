@@ -8,7 +8,7 @@ run.backends.default.type = "slurm_apptainer"
 # Apptainer container so tasks loaded via `module load` find their binaries.
 # Update these paths for your HPC.
 run.backends.default.extra_apptainer_exec_args = [
-    "--bind", "/app/lmod/lmod:/app/lmod/lmod",
+    "--bind", "/app/lmod:/app/lmod",
     "--bind", "/app/modules/all:/app/modules/all",
     "--bind", "/app/software:/app/software",
     "--env", "MODULEPATH=/app/modules/all",
