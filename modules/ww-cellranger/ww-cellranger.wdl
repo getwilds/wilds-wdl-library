@@ -175,7 +175,7 @@ task run_count_hpc {
     set -eo pipefail
 
     # Load Cell Ranger from the host's environment-module system.
-    . /app/lmod/lmod/init/profile
+    . /app/lmod/lmod/init/bash
     module load ~{cellranger_module}
 
     # Create arrays from WDL inputs
