@@ -726,7 +726,7 @@ task generate_pasilla_counts {
     set -eo pipefail
 
     curl -so generate_pasilla_counts.R \
-      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/rnaseq-feedback/modules/ww-deseq2/generate_pasilla_counts.R"
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/generate_pasilla_counts.R"
 
     Rscript generate_pasilla_counts.R \
       --nsamples ~{n_samples} \
