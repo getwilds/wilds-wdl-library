@@ -92,12 +92,27 @@ wilds-wdl-library/
 **The module folder must contain:**
 
 1. **`ww-toolname.wdl`** - Main WDL file containing task definitions for the tool
-2. **`testrun.wdl`** - Test workflow demonstrating module functionality (must be named `testrun.wdl`)
+2. **At least one of `testrun.wdl` or `testrun_hpc.wdl`** - Test workflow demonstrating module functionality (see "Test workflow files" below)
 3. **`README.md`** - Comprehensive documentation
 
 **The module folder may optionally contain:**
 
 - **Custom scripts** (e.g., `.R`, `.py`, `.sh`) - If your task requires a custom script that isn't part of the container image, place it directly in the module directory alongside the WDL files. The script can be fetched at runtime using `curl` or `wget` in the task's command block.
+
+**Test workflow files (`testrun.wdl` and/or `testrun_hpc.wdl`):**
+
+Most modules ship a single `testrun.wdl` that exercises the workflow on a tiny, biologically minimal input — fast enough to run on a GitHub Actions runner. CI/CD always uses `testrun.wdl`, and the monthly HPC test run falls back to it when no HPC-specific file is provided.
+
+For modules where CI execution is impractical (GPU-only tools, license-gated tools that require `module load` on HPC, or workflows that need a more realistic input to be meaningful), you may add a `testrun_hpc.wdl`:
+
+| Files present | CI runs | HPC runs |
+|---|---|---|
+| `testrun.wdl` only | `testrun.wdl` | `testrun.wdl` |
+| both files | `testrun.wdl` | `testrun_hpc.wdl` |
+| `testrun_hpc.wdl` only | (skipped — HPC-only module) | `testrun_hpc.wdl` |
+| neither | not allowed — discovery will fail | same |
+
+`ww-esmfold` is the canonical HPC-only example; pair it with `testrun_hpc.wdl` when adding similar GPU/licensed tools.
 
 
 **Your main WDL file (`ww-toolname.wdl`) must include:**
@@ -106,7 +121,7 @@ wilds-wdl-library/
 - **Task definitions**: Individual tasks with proper resource requirements
 - **Metadata documentation**: Describe properties of tasks (e.g. inputs, outputs) using `meta` and `parameter_meta` blocks
 
-**Your test workflow file (`testrun.wdl`) must include:**
+**Your test workflow file (`testrun.wdl` or `testrun_hpc.wdl`) must include:**
 
 - **Version declaration**: Use WDL version 1.0
 - **Module imports**: Import the module being tested and the `ww-testdata` module using GitHub URLs
@@ -253,6 +268,11 @@ make run_miniwdl MODULE=ww-toolname   # Run miniwdl
 # Test all modules
 make lint    # Lint all modules
 make run     # Run all modules with both sprocket and miniwdl
+
+# By default, the run targets use testrun.wdl. To exercise an HPC-only
+# variant locally (e.g. on a system with GPUs and the right module
+# environment), pass TARGET=hpc:
+make run_sprocket NAME=ww-toolname TARGET=hpc
 ```
 
 The Makefile automatically handles:

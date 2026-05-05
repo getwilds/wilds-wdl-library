@@ -3,13 +3,16 @@ version 1.0
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/pipelines/ww-sra-cellranger/ww-sra-cellranger.wdl" as sra_cellranger_workflow
 
+#### TEST WORKFLOW DEFINITION ####
+# HPC variant of the ww-sra-cellranger pipeline testrun. Dispatches via
+# execution_mode = "hpc_sprocket" so the monthly HPC test run exercises
+# the Sprocket + module-load path. Uses the same tiny SRA download and
+# Cell Ranger reference as testrun.wdl so the only thing this run
+# validates is the HPC dispatch path.
+
 workflow sra_cellranger_example {
-  # Download a small GEX reference for Cell Ranger
   call ww_testdata.download_test_cellranger_ref { }
 
-  # Call the actual sra_cellranger workflow with test data
-  # Using SRR9169219: Human PBMC 10x Chromium 3' v2 scRNA-seq (GSE132044)
-  # Limiting to 100k reads for fast testing while retaining enough for barcode detection
   call sra_cellranger_workflow.sra_cellranger { input:
     sra_id_list = ["SRR9169219"],
     ref_gex = download_test_cellranger_ref.ref_tar,
@@ -17,7 +20,8 @@ workflow sra_cellranger_example {
     memory_gb = 6,
     max_reads = 100000,
     create_bam = false,
-    chemistry = "SC3Pv2"
+    chemistry = "SC3Pv2",
+    execution_mode = "hpc_sprocket"
   }
 
   output {

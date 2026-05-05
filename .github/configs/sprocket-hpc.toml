@@ -3,3 +3,14 @@ run.experimental_features_enabled = true
 
 # Set the default backend to Slurm + Apptainer.
 run.backends.default.type = "slurm_apptainer"
+
+# Bind-mount the host's Lmod, modulefile tree, and software tree into the
+# Apptainer container so tasks loaded via `module load` find their binaries.
+# Update these paths for your HPC.
+run.backends.default.extra_apptainer_exec_args = [
+    "--bind", "/app/lmod:/app/lmod",
+    "--bind", "/app/modules/all:/app/modules/all",
+    "--bind", "/app/software:/app/software",
+    "--env", "MODULEPATH=/app/modules/all",
+    "--env", "LMOD_CMD=/app/lmod/lmod/libexec/lmod",
+]

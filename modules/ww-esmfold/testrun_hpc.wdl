@@ -1,32 +1,24 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-esmfold/ww-esmfold.wdl" as ww_esmfold
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-esmfold/ww-esmfold.wdl" as ww_esmfold
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
-# Tests ESMFold structure prediction with a tiny protein sequence on CPU.
-# Uses the Trp-cage miniprotein (20 residues) for fast execution.
-# Note: Production use requires GPU; this test demonstrates the workflow on CPU.
+# HPC-only ESMFold test: predicts the structure of human ubiquitin (76 residues)
+# on GPU. ESMFold is impractical to exercise on CPU at realistic input sizes,
+# so this module ships no CI testrun.wdl and is validated only on HPC.
 
 workflow esmfold_example {
-  # Create a minimal test FASTA with a short peptide sequence
-  call ww_testdata.create_test_protein_fasta { }
+  call ww_testdata.create_realistic_protein_fasta { }
 
-  # Run ESMFold prediction with minimal settings for CI testing
   call ww_esmfold.esmfold_predict { input:
-      fasta_file = create_test_protein_fasta.test_fasta,
-      output_prefix = "test_protein",
-      num_recycles = 1,
-      chunk_size = 0,
-      cpu_only = true,
-      cpu_offload = false,
-      max_tokens_per_batch = 0,
-      cpu_cores = 2,
-      memory_gb = 24,
-      gpu_enabled = false
+      fasta_file = create_realistic_protein_fasta.test_fasta,
+      output_prefix = "test_ubiquitin",
+      cpu_cores = 4,
+      memory_gb = 32,
+      gpu_enabled = true
   }
 
-  # Validate that prediction outputs were generated
   call validate_outputs { input:
       results_tarball = esmfold_predict.pdb_output
   }
@@ -59,12 +51,10 @@ task validate_outputs {
     echo "=== ESMFold Prediction Validation Report ===" > validation_report.txt
     echo "" >> validation_report.txt
 
-    # Extract results
     tar -xzf ~{results_tarball}
 
     validation_passed=true
 
-    # Check that the output directory exists and has files
     if [ -d "pdb_output" ]; then
       file_count=$(find pdb_output/ -type f | wc -l)
       echo "Output directory: found ${file_count} files" >> validation_report.txt
@@ -73,7 +63,6 @@ task validate_outputs {
       validation_passed=false
     fi
 
-    # Check for PDB structure files
     pdb_count=$(find pdb_output/ -name "*.pdb" 2>/dev/null | wc -l)
     echo "PDB structure files: ${pdb_count}" >> validation_report.txt
     if [ "${pdb_count}" -eq 0 ]; then
@@ -81,12 +70,10 @@ task validate_outputs {
       validation_passed=false
     fi
 
-    # List all output files
     echo "" >> validation_report.txt
     echo "--- Output Files ---" >> validation_report.txt
     find pdb_output/ -type f -exec ls -lh {} \; >> validation_report.txt 2>/dev/null || true
 
-    # Summary
     echo "" >> validation_report.txt
     echo "=== Validation Summary ===" >> validation_report.txt
     if [ "${validation_passed}" = "true" ]; then
