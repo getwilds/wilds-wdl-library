@@ -196,7 +196,7 @@ task compile_deseq2_results {
     set -eo pipefail
 
     curl -so compile_deseq2_results.py \
-      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/compile_deseq2_results.py"
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/fix-rnaseq-annotations/modules/ww-deseq2/compile_deseq2_results.py"
 
     python compile_deseq2_results.py \
       --results "~{deseq2_results}" \

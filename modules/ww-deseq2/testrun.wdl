@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl" as ww_deseq2
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/fix-rnaseq-annotations/modules/ww-deseq2/ww-deseq2.wdl" as ww_deseq2
 
 workflow deseq2_example {
   # Generate test data
