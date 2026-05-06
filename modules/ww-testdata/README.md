@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `create_diamond_data`, `create_test_protein_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`
+- **Tasks**: `download_ref_data`, `merge_fastas_with_prefix`, `download_rrna_reference`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `inject_synthetic_umis`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `create_diamond_data`, `create_test_protein_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`, `download_pao1_ref`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -241,9 +241,11 @@ call colabfold_tasks.colabfold_predict {
 
 ### download_ref_data
 
+Downloads a UCSC reference chromosome FASTA + GTF + BED + samtools index/dict for the requested assembly. For assemblies that ship per-chromosome FASTAs (hg19, hg38, mm10, etc.) the per-chromosome file is fetched directly. For assemblies that only ship a whole-genome FASTA at `bigZips/<version>.fa.gz` (e.g. dm6, sacCer3), the task transparently falls back to downloading the whole-genome file and extracting the requested chromosome via `samtools faidx`.
+
 **Inputs**:
 - `chromo` (String): Chromosome to download (default: "chr1")
-- `version` (String): Genome version (default: "hg38")
+- `version` (String): Genome version (default: "hg38"). Any UCSC assembly under their goldenPath directory works; per-chromosome FASTAs are used when available with a whole-genome bigZips fallback otherwise.
 - `region` (String, optional): Region coordinates to extract from chromosome in format '1-30000000'. If not specified, uses entire chromosome
 - `output_name` (String, optional): Name for output files (default: uses chromo name)
 - `cpu_cores` (Int): CPU allocation (default: 1)
@@ -257,6 +259,34 @@ call colabfold_tasks.colabfold_predict {
 - `dict` (File): Samtools FASTA dictionary file (.dict) for GATK compatibility
 - `gtf` (File): Chromosome-specific gene annotations (filtered to region if specified)
 - `bed` (File): BED file covering the entire chromosome or specified region
+
+### merge_fastas_with_prefix
+
+Builds a merged FASTA by concatenating two input FASTAs and prepending a configurable prefix to the contig names of the second one. Useful for assembling experimental + spike-in references where the spike-in contigs need a distinguishing name prefix (e.g. `hg38` on a dm6+hg38 PRO-seq merged reference, so downstream tools can split reads back out by prefix).
+
+**Inputs**:
+- `first_fasta` (File): FASTA whose contig names are kept as-is in the merged output
+- `second_fasta` (File): FASTA whose contig names get the prefix prepended in the merged output
+- `second_prefix` (String): String to prepend to every contig name in `second_fasta` (e.g. `"hg38"`)
+- `output_name` (String): Output filename prefix (without the `.fa` extension)
+- `cpu_cores` (Int, default=1): CPU allocation
+- `memory_gb` (Int, default=2): Memory allocation in GB
+
+**Outputs**:
+- `merged_fasta` (File): Merged FASTA — first_fasta contigs unchanged, second_fasta contigs renamed with the prefix
+- `merged_fasta_index` (File): samtools `.fai` index for the merged FASTA
+
+### download_rrna_reference
+
+Downloads the human 45S rRNA precursor (NCBI accession `NR_046235.3`, ~13 kb) from NCBI Entrez. Single-sequence FASTA suitable for building a small bowtie2 index for PRO-seq rRNA depletion (or any other workflow that needs to filter reads against rDNA).
+
+**Inputs**:
+- `output_name` (String, default="human_45S_rRNA"): Output filename prefix (without the `.fa` extension)
+- `cpu_cores` (Int, default=1): CPU allocation
+- `memory_gb` (Int, default=2): Memory allocation in GB
+
+**Outputs**:
+- `fasta` (File): Human 45S rRNA precursor FASTA
 
 ### download_fastq_data
 
@@ -355,6 +385,40 @@ Downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-
 **Outputs**:
 - `bam` (File): Processed BAM alignment file (chr1 only, primary alignments, 10% subsampled)
 - `bai` (File): BAM index file
+
+### inject_synthetic_umis
+
+Appends a deterministic synthetic 6-mer UMI to each read name in a BAM, mimicking the format produced by `fastp --umi` (`read_id<separator>UMI`). Both mates of a pair receive the same UMI so paired-end UMI dedup tools (e.g., `umi_tools dedup`) can run end-to-end against a BAM that has no real UMIs.
+
+**Use Case**: Test data BAMs from public sources rarely carry UMIs in their read names. This task lets WILDS modules and pipelines that consume UMI-tagged BAMs (e.g., `ww-umi-tools`, the upcoming `ww-proseq` pipeline) run zero-config testruns without needing custom UMI-bearing test data.
+
+**Inputs**:
+- `input_bam` (File): BAM whose read names lack UMIs
+- `input_bai` (File): Index for the input BAM
+- `sample_name` (String): Sample name used for output file naming
+- `umi_separator` (String): Character separating the read ID from the appended UMI in the read name (default: `":"`)
+- `cpu_cores` (Int): CPU allocation (default: 2)
+- `memory_gb` (Int): Memory allocation in GB (default: 4)
+
+**Outputs**:
+- `umi_bam` (File): Coordinate-sorted BAM with synthetic UMIs appended to read names
+- `umi_bai` (File): Index for the UMI-tagged BAM
+
+**Example Usage**:
+```wdl
+call testdata.download_bam_data { }
+call testdata.inject_synthetic_umis { input:
+  input_bam = download_bam_data.bam,
+  input_bai = download_bam_data.bai,
+  sample_name = "demo"
+}
+call umi_tools_tasks.dedup { input:
+  input_bam = inject_synthetic_umis.umi_bam,
+  input_bai = inject_synthetic_umis.umi_bai,
+  sample_name = "demo",
+  paired = true
+}
+```
 
 ### download_ichor_data
 
@@ -774,6 +838,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-consensus**: Consensus variant calling (uses gnomAD VCF from `download_gnomad_vcf`)
 - **ww-sjl / ww-jetlag**: Solar Jetlag tile processing (uses synthetic tile and border points from `generate_sjl_data`)
 - **ww-jcast**: Alternative splicing proteomics (uses rMATS test data from `download_jcast_test_data`)
+- **ww-umi-tools**: UMI-aware deduplication (uses synthetic UMI-tagged BAMs from `inject_synthetic_umis` for zero-config testing)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:

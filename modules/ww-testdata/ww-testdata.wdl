@@ -8,7 +8,7 @@ task download_ref_data {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Downloads reference genome and index files for WILDS WDL test runs"
+    description: "Downloads chromosome or whole-genome FASTA + GTF + BED + samtools index/dict from a UCSC assembly."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         fasta: "Reference genome FASTA file",
@@ -21,7 +21,7 @@ task download_ref_data {
 
   parameter_meta {
     chromo: "Chromosome to download (e.g., chr1, chr2, etc.)"
-    version: "Reference genome version (e.g., hg38, hg19)"
+    version: "UCSC reference genome version (e.g., hg38, mm10, dm6, sacCer3)"
     region: "Optional region coordinates to extract from chromosome in format '1-30000000'. If not specified, uses entire chromosome."
     output_name: "Optional name for output files (default: uses chromo name)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
@@ -42,10 +42,22 @@ task download_ref_data {
   command <<<
     set -euo pipefail
 
-    # Download chromosome fasta
-    wget -q -O "~{chromo}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"
-    gunzip "~{chromo}.fa.gz"
-    mv "~{chromo}.fa" temp.fa
+    # Try the per-chromosome FASTA first (available for hg19/hg38/mm10/etc.).
+    # Fall back to the whole-genome bigZips FASTA for assemblies that don't ship
+    # per-chromosome files (e.g. dm6, sacCer3) — extract the requested chromosome
+    # via samtools faidx after downloading.
+    if wget -q --spider "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"; then
+      wget -q -O "~{chromo}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"
+      gunzip "~{chromo}.fa.gz"
+      mv "~{chromo}.fa" temp.fa
+    else
+      echo "No per-chromosome FASTA for ~{version}/~{chromo}; falling back to whole-genome bigZips download"
+      wget -q -O "~{version}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/bigZips/~{version}.fa.gz"
+      gunzip "~{version}.fa.gz"
+      samtools faidx "~{version}.fa"
+      samtools faidx "~{version}.fa" "~{chromo}" > temp.fa
+      rm "~{version}.fa" "~{version}.fa.fai"
+    fi
 
     # Subset to specified region if provided
     REGION="~{if defined(region) then region else ""}"
@@ -94,6 +106,105 @@ task download_ref_data {
     File dict = "~{final_output_name}.dict"
     File gtf = "~{final_output_name}.gtf"
     File bed = "~{final_output_name}.bed"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task merge_fastas_with_prefix {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Concatenates two FASTAs, prepending a configurable prefix to the second one's contig names. Used to assemble experimental + spike-in references with a distinguishing prefix on the spike-in contigs."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        merged_fasta: "Merged FASTA: first_fasta contigs unchanged, second_fasta contigs renamed with the prefix",
+        merged_fasta_index: "samtools .fai index for the merged FASTA"
+    }
+  }
+
+  parameter_meta {
+    first_fasta: "FASTA whose contig names are kept as-is in the merged output"
+    second_fasta: "FASTA whose contig names get the prefix prepended in the merged output"
+    second_prefix: "String to prepend to every contig name in second_fasta (e.g. 'hg38')"
+    output_name: "Output filename prefix (without the .fa extension)"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+  }
+
+  input {
+    File first_fasta
+    File second_fasta
+    String second_prefix
+    String output_name
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    cat "~{first_fasta}" > "~{output_name}.fa"
+    sed "s/^>/>~{second_prefix}/" "~{second_fasta}" >> "~{output_name}.fa"
+
+    samtools faidx "~{output_name}.fa"
+  >>>
+
+  output {
+    File merged_fasta = "~{output_name}.fa"
+    File merged_fasta_index = "~{output_name}.fa.fai"
+  }
+
+  runtime {
+    docker: "getwilds/samtools:1.11"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_rrna_reference {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Downloads the human 45S rRNA precursor (NR_046235.3, ~13 kb) from NCBI Entrez. Single-sequence FASTA suitable for building a small bowtie2 index for PRO-seq rRNA depletion."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        fasta: "Human 45S rRNA precursor FASTA"
+    }
+  }
+
+  parameter_meta {
+    output_name: "Output filename prefix (without the .fa extension)"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+  }
+
+  input {
+    String output_name = "human_45S_rRNA"
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # NR_046235.3: Homo sapiens RNA, 45S pre-ribosomal N5 (RNA45SN5)
+    wget -q --no-check-certificate -O "~{output_name}.fa" \
+      "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NR_046235.3&rettype=fasta&retmode=text"
+
+    # Sanity check: the fetch must produce a non-empty FASTA with at least one record.
+    if ! grep -q "^>" "~{output_name}.fa"; then
+      echo "ERROR: NCBI efetch did not return a valid FASTA" >&2
+      exit 1
+    fi
+  >>>
+
+  output {
+    File fasta = "~{output_name}.fa"
   }
 
   runtime {
@@ -355,6 +466,69 @@ task download_bam_data {
   output {
     File bam = "~{filename}"
     File bai = "~{filename}.bai"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task inject_synthetic_umis {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Appends a deterministic synthetic 6-mer UMI to each read name in a BAM, mimicking the format produced by fastp --umi. Mates of a pair share a UMI so paired-end UMI dedup tools can run end-to-end without real UMI data."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        umi_bam: "Coordinate-sorted BAM with synthetic UMIs appended to read names",
+        umi_bai: "Index for the UMI-tagged BAM"
+    }
+  }
+
+  parameter_meta {
+    input_bam: "BAM whose read names lack UMIs"
+    input_bai: "Index for the input BAM"
+    sample_name: "Sample name used for output file naming"
+    umi_separator: "Character separating the read ID from the appended UMI in the read name"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+  }
+
+  input {
+    File input_bam
+    File input_bai
+    String sample_name
+    String umi_separator = ":"
+    Int cpu_cores = 2
+    Int memory_gb = 4
+  }
+
+  command <<<
+    set -eo pipefail
+
+    samtools view -h "~{input_bam}" | awk -v sep="~{umi_separator}" 'BEGIN{OFS="\t"}
+      /^@/ {print; next}
+      {
+        n = $1
+        bases = "ACGT"
+        umi = ""
+        for (i = 1; i <= 6; i++) {
+          c = substr(n, length(n) - i + 1, 1)
+          idx = index(bases, c)
+          if (idx == 0) idx = i
+          umi = umi substr(bases, ((idx - 1) % 4) + 1, 1)
+        }
+        $1 = n sep umi
+        print
+      }' | samtools sort -@ ~{cpu_cores} -o "~{sample_name}.umi.bam" -
+    samtools index -@ ~{cpu_cores} "~{sample_name}.umi.bam"
+  >>>
+
+  output {
+    File umi_bam = "~{sample_name}.umi.bam"
+    File umi_bai = "~{sample_name}.umi.bam.bai"
   }
 
   runtime {

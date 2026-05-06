@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl" as ww_samtools
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-proseq/modules/ww-samtools/ww-samtools.wdl" as ww_samtools
 
 workflow samtools_example {
   # Download test data
@@ -47,13 +47,24 @@ workflow samtools_example {
       memory_gb = 8
   }
 
+  # Test filter_bam_by_chrom_prefix on the chr1 BAM (all reads match the 'chr' prefix
+  # so this is a smoke test of the filter+sort+index path, not the dropping of reads).
+  call ww_samtools.filter_bam_by_chrom_prefix { input:
+      input_bam = download_bam_1.bam,
+      input_bai = download_bam_1.bai,
+      chrom_prefix = "chr",
+      sample_name = "test_filtered"
+  }
+
   # Validate outputs
   call validate_outputs { input:
       r1_fastq = crams_to_fastq.r1_fastq,
       r2_fastq = crams_to_fastq.r2_fastq,
       merged_cram = merge_bams_to_cram.cram,
       merged_crai = merge_bams_to_cram.crai,
-      pileup = mpileup.pileup
+      pileup = mpileup.pileup,
+      filtered_bam = filter_bam_by_chrom_prefix.filtered_bam,
+      filtered_bai = filter_bam_by_chrom_prefix.filtered_bai
   }
 
   output {
@@ -61,6 +72,8 @@ workflow samtools_example {
     File r2_fastqs = crams_to_fastq.r2_fastq
     File merged_cram = merge_bams_to_cram.cram
     File pileup_file = mpileup.pileup
+    File filtered_bam = filter_bam_by_chrom_prefix.filtered_bam
+    File filtered_bai = filter_bam_by_chrom_prefix.filtered_bai
     File validation_report = validate_outputs.report
   }
 }
@@ -79,6 +92,8 @@ task validate_outputs {
     merged_cram: "Merged CRAM file to validate"
     merged_crai: "Merged CRAM index file to validate"
     pileup: "Pileup file to validate"
+    filtered_bam: "Chromosome-prefix-filtered BAM to validate"
+    filtered_bai: "Index for the chromosome-prefix-filtered BAM to validate"
   }
 
   input {
@@ -87,6 +102,8 @@ task validate_outputs {
     File merged_cram
     File merged_crai
     File pileup
+    File filtered_bam
+    File filtered_bai
   }
 
   command <<<
@@ -149,6 +166,24 @@ task validate_outputs {
       echo "Pileup file: ~{pileup} (${pileup_size} bytes)" >> validation_report.txt
     else
       echo "Pileup file: ~{pileup} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+    echo "" >> validation_report.txt
+
+    # Check chromosome-prefix-filtered BAM
+    echo "--- Chromosome-prefix-filtered BAM ---" >> validation_report.txt
+    if [[ -f "~{filtered_bam}" && -s "~{filtered_bam}" ]]; then
+      filtered_size=$(wc -c < "~{filtered_bam}")
+      echo "Filtered BAM: ~{filtered_bam} (${filtered_size} bytes)" >> validation_report.txt
+    else
+      echo "Filtered BAM: ~{filtered_bam} - MISSING OR EMPTY" >> validation_report.txt
+      validation_passed=false
+    fi
+    if [[ -f "~{filtered_bai}" && -s "~{filtered_bai}" ]]; then
+      filtered_bai_size=$(wc -c < "~{filtered_bai}")
+      echo "Filtered BAM index: ~{filtered_bai} (${filtered_bai_size} bytes)" >> validation_report.txt
+    else
+      echo "Filtered BAM index: ~{filtered_bai} - MISSING OR EMPTY" >> validation_report.txt
       validation_passed=false
     fi
     echo "" >> validation_report.txt

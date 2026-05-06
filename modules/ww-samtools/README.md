@@ -63,6 +63,22 @@ Generates a pileup file from a BAM file using samtools mpileup. The pileup forma
 **Outputs:**
 - `pileup` (File): Pileup file
 
+### `filter_bam_by_chrom_prefix`
+
+Filters a coordinate-sorted, indexed BAM down to reads on contigs whose names start with the given prefix. Useful for splitting a BAM aligned to a merged reference (e.g. an experimental + spike-in genome) into per-organism BAMs.
+
+**Inputs:**
+- `input_bam` (File): Coordinate-sorted BAM
+- `input_bai` (File): Index for the input BAM
+- `chrom_prefix` (String): Contig-name prefix to retain (e.g. `"hg38"` to keep contigs named `hg38chr1`, `hg38chr2`, ...)
+- `sample_name` (String): Sample name used for output file naming
+- `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
+- `memory_gb` (Int, default=4): Memory allocated for the task in GB
+
+**Outputs:**
+- `filtered_bam` (File): Coordinate-sorted BAM containing only reads on contigs matching the prefix
+- `filtered_bai` (File): Index for the filtered BAM
+
 ## Usage as a Module
 
 ### Importing into Your Workflow
