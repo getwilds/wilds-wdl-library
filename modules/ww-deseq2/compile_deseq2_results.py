@@ -44,35 +44,52 @@ def extract_attr(attributes, key):
     return None
 
 
+ATTR_KEYS = ["gene_name", "gene", "gene_biotype", "product", "locus_tag", "db_xref"]
+
+
 def parse_gtf_annotations(gtf_path):
-    """Parse gene annotations from a GTF file."""
-    records = []
+    """Parse gene annotations from a GTF file.
+
+    Walks every feature row (gene/transcript/exon/CDS/etc.), keys by gene_id,
+    and takes the first non-null value seen per attribute. Handles GTFs that
+    lack `gene` rows (e.g. UCSC ncbiRefSeq) and NCBI's `gene "name"` attribute
+    (used in place of Ensembl's `gene_name`).
+    """
+    by_gene = {}
     with open(gtf_path, "r") as f:
         for line in f:
             if line.startswith("#"):
                 continue
-            fields = line.strip().split("\t")
-            if len(fields) < 9 or fields[2] != "gene":
+            fields = line.rstrip("\n").split("\t")
+            if len(fields) < 9:
                 continue
             attrs = fields[8]
-            record = {
-                "gene_id": extract_attr(attrs, "gene_id"),
-                "gene_name": extract_attr(attrs, "gene_name"),
-                "gene_biotype": extract_attr(attrs, "gene_biotype"),
-                "product": extract_attr(attrs, "product"),
-            }
-            records.append(record)
+            gene_id = extract_attr(attrs, "gene_id")
+            if not gene_id:
+                continue
+            if gene_id not in by_gene:
+                by_gene[gene_id] = {"gene_id": gene_id}
+            for key in ATTR_KEYS:
+                if by_gene[gene_id].get(key):
+                    continue
+                value = extract_attr(attrs, key)
+                if value:
+                    by_gene[gene_id][key] = value
 
-    if not records:
+    if not by_gene:
         return pd.DataFrame(columns=["gene_id"])
 
-    annotations = pd.DataFrame(records)
+    # NCBI GTFs use `gene "name"` instead of `gene_name "name"`; promote it.
+    for gene_id in by_gene:
+        if not by_gene[gene_id].get("gene_name") and by_gene[gene_id].get("gene"):
+            by_gene[gene_id]["gene_name"] = by_gene[gene_id]["gene"]
+
+    annotations = pd.DataFrame(list(by_gene.values()))
+    annotations = annotations.drop(columns=["gene"], errors="ignore")
     # Remove columns that are entirely empty, but always keep gene_id
     keep_cols = [c for c in annotations.columns
                  if c == "gene_id" or annotations[c].notna().any()]
     annotations = annotations[keep_cols]
-    # Deduplicate by gene_id
-    annotations = annotations.drop_duplicates(subset="gene_id")
     return annotations
 
 
