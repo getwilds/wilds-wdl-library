@@ -16,6 +16,15 @@ task rmats {
     outputs: {
         output_directory: "Tarball containing all rMATS output files including splice event tables and summary statistics"
     }
+    topic: "transcriptomics,rna_splicing"
+    species: "human,eukaryote"
+    operation: "alternative_splicing_prediction"
+    input_sample_required: "sample1_bams:nucleic_acid_sequence_alignment:bam,sample2_bams:nucleic_acid_sequence_alignment:bam"
+    input_sample_optional: "none"
+    input_reference_required: "gtf_file:sequence_features:gtf"
+    input_reference_optional: "none"
+    output_sample: "output_directory:report:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -143,6 +152,15 @@ task rmats_prep {
     outputs: {
         prep_output: "Tarball containing .rmats intermediate files from preprocessing"
     }
+    topic: "transcriptomics,rna_splicing"
+    species: "human,eukaryote"
+    operation: "statistical_calculation"
+    input_sample_required: "sample_bams:nucleic_acid_sequence_alignment:bam"
+    input_sample_optional: "none"
+    input_reference_required: "gtf_file:sequence_features:gtf"
+    input_reference_optional: "none"
+    output_sample: "prep_output:report:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -243,6 +261,15 @@ task rmats_post {
     outputs: {
         output_directory: "Tarball containing all rMATS output files including splice event tables and summary statistics"
     }
+    topic: "transcriptomics,rna_splicing"
+    species: "human,eukaryote"
+    operation: "alternative_splicing_prediction"
+    input_sample_required: "prep_outputs:report:tar_format"
+    input_sample_optional: "none"
+    input_reference_required: "gtf_file:sequence_features:gtf"
+    input_reference_optional: "none"
+    output_sample: "output_directory:report:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -341,6 +368,15 @@ task rmats_stat {
     outputs: {
         output_directory: "Tarball containing rMATS output files with updated statistical results"
     }
+    topic: "transcriptomics,rna_splicing"
+    species: "human,eukaryote"
+    operation: "statistical_calculation"
+    input_sample_required: "existing_output:report:tar_format"
+    input_sample_optional: "none"
+    input_reference_required: "gtf_file:sequence_features:gtf"
+    input_reference_optional: "none"
+    output_sample: "output_directory:report:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {

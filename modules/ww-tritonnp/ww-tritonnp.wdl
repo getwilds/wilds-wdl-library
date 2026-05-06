@@ -12,6 +12,15 @@ task triton_main {
     outputs: {
         fm_file: "Array of outputs from TritonNP"
     }
+    topic: "epigenomics,dna_packaging"
+    species: "human"
+    operation: "statistical_calculation"
+    input_sample_required: "bam_path:nucleic_acid_sequence_alignment:bam,bam_index_path:data_index:bai,annotation:annotation_track:bed,plot_list:gene_name:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "bias_path:sequence_report:textual_format,reference_genome:nucleic_acid_sequence:fasta,reference_genome_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "fm_file:sequence_features:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -89,6 +98,15 @@ task combine_fms {
     outputs: {
         final: "Aggregrated output file from TritonNP."
     }
+    topic: "epigenomics,dna_packaging"
+    species: "human"
+    operation: "aggregation"
+    input_sample_required: "fm_files:sequence_features:tsv"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "final:sequence_features:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {

@@ -13,6 +13,15 @@ task bowtie2_build {
     outputs: {
         bowtie2_index_tar: "Compressed tarball containing Bowtie 2 genome index files"
     }
+    topic: "genomics,transcriptomics,mapping"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "indexing"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "bowtie2_index_tar:data_index:tar_format"
   }
 
   parameter_meta {
@@ -67,6 +76,15 @@ task bowtie2_align {
         sorted_bam: "Sorted Bowtie 2 alignment output BAM file",
         sorted_bai: "Index file for the sorted Bowtie 2 alignment BAM file"
     }
+    topic: "genomics,transcriptomics,mapping"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequence_alignment"
+    input_sample_required: "reads:nucleic_acid_sequence:fastq"
+    input_sample_optional: "mates:nucleic_acid_sequence:fastq"
+    input_reference_required: "bowtie2_index_tar:data_index:tar_format"
+    input_reference_optional: "none"
+    output_sample: "sorted_bam:nucleic_acid_sequence_alignment:bam,sorted_bai:data_index:bai"
+    output_reference: "none"
   }
 
   parameter_meta {

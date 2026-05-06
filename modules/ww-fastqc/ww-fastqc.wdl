@@ -15,6 +15,15 @@ task run_fastqc {
         html_reports: "FastQC HTML quality control reports",
         zip_reports: "FastQC ZIP archives containing all report data"
     }
+    topic: "genomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "quality_control"
+    input_sample_required: "none"
+    input_sample_optional: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq,adapters:sequence_record:textual_format,limits:report:textual_format,contaminants:report:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "html_reports:quality_control_report:html,zip_reports:quality_control_report:zip"
+    output_reference: "none"
   }
 
   parameter_meta {

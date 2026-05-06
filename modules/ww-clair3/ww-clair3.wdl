@@ -19,6 +19,15 @@ task run_clair3 {
         output_gvcf: "Array containing the gVCF file for downstream joint genotyping (empty when gvcf_enabled is false)",
         output_gvcf_index: "Array containing the gVCF index file (empty when gvcf_enabled is false)"
     }
+    topic: "genomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "variant_calling"
+    input_sample_required: "input_bam:nucleic_acid_sequence_alignment:bam,input_bam_index:data_index:bai"
+    input_sample_optional: "bed_file:annotation_track:bed"
+    input_reference_required: "ref_fasta:nucleic_acid_sequence:fasta,ref_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "output_vcf:sequence_variations:vcf,output_vcf_index:data_index:tbi,output_gvcf:sequence_variations:gvcf,output_gvcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {

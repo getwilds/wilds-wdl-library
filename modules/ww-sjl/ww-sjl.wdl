@@ -17,6 +17,15 @@ task sjl_tiles {
       matched_points: "RDS file containing points with sunrise/sunset difference values",
       missing_points: "RDS file containing points that could not be matched to border points (may be empty)"
     }
+    topic: "public_health_and_epidemiology"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "tile_path:accession:binary_format,border_points_path:accession:csv"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "matched_points:report:binary_format,missing_points:report:binary_format"
+    output_reference: "none"
   }
 
   parameter_meta {

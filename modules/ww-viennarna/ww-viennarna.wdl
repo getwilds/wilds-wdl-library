@@ -17,6 +17,15 @@ task rnafold {
         structure_output: "Text file containing predicted MFE structures in dot-bracket notation with free energies",
         postscript_plots: "Array of PostScript secondary structure plots (one per sequence)"
     }
+    topic: "transcriptomics,nucleic_acid_structure_analysis"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "rna_secondary_structure_prediction"
+    input_sample_required: "input_fasta:rna_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "structure_output:rna_secondary_structure:dot_bracket_format,postscript_plots:rna_secondary_structure_image:eps"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -72,6 +81,15 @@ task rnasubopt {
     outputs: {
         subopt_output: "Text file containing suboptimal structures in dot-bracket notation with energies"
     }
+    topic: "transcriptomics,nucleic_acid_structure_analysis"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "rna_secondary_structure_prediction"
+    input_sample_required: "input_fasta:rna_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "subopt_output:rna_secondary_structure:dot_bracket_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -127,6 +145,15 @@ task rnacofold {
         cofold_output: "Text file containing predicted joint MFE structure with interaction energy",
         postscript_plots: "Array of PostScript plots of the joint secondary structure"
     }
+    topic: "transcriptomics,nucleic_acid_structure_analysis"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "rna_secondary_structure_prediction"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "cofold_output:rna_secondary_structure:dot_bracket_format,postscript_plots:rna_secondary_structure_image:eps"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -182,6 +209,15 @@ task rnaplfold {
         accessibility_profiles: "Array of accessibility profile files with unpaired probabilities",
         dp_plots: "Array of dot plot PostScript files with local pair probabilities"
     }
+    topic: "transcriptomics,nucleic_acid_structure_analysis"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "rna_secondary_structure_prediction"
+    input_sample_required: "input_fasta:rna_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "accessibility_profiles:rna_secondary_structure:textual_format,dp_plots:rna_secondary_structure_image:eps"
+    output_reference: "none"
   }
 
   parameter_meta {

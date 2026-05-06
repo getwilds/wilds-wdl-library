@@ -15,6 +15,15 @@ task delly_call {
         vcf_index: "Index file for the VCF output",
         summary: "Summary text file with Delly run details and statistics"
     }
+    topic: "genomics,structural_variation"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "variant_calling"
+    input_sample_required: "aligned_bam:nucleic_acid_sequence_alignment:bam,aligned_bam_index:data_index:bai"
+    input_sample_optional: "target_regions_bed:annotation_track:bed,exclude_regions_bed:annotation_track:bed"
+    input_reference_required: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:csi,summary:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {

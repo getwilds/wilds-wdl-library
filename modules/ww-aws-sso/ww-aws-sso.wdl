@@ -19,6 +19,15 @@ task s3_download_file {
     outputs: {
         downloaded_file: "Downloaded file from S3"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_retrieval"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "downloaded_file:any:any"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -90,6 +99,15 @@ task s3_upload_file {
     outputs: {
         s3_uri: "S3 URI of the uploaded file"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_deposition"
+    input_sample_required: "file_to_upload:any:any,aws_config_file:resource_metadata:configuration_file_format"
+    input_sample_optional: "aws_credentials_file:account_authentication:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -155,6 +173,15 @@ task s3_list_bucket {
         file_list: "Text file containing list of S3 objects",
         object_count: "Number of objects found"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_retrieval"
+    input_sample_required: "none"
+    input_sample_optional: "aws_config_file:resource_metadata:configuration_file_format,aws_credentials_file:account_authentication:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "none"
   }
 
   parameter_meta {

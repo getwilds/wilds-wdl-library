@@ -14,6 +14,15 @@ task crams_to_fastq {
         r2_fastq: "R2 FASTQ file generated from merged CRAM/BAM/SAM file",
         sample_name: "Sample name that was processed"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_formatting"
+    input_sample_required: "cram_files:nucleic_acid_sequence_alignment:cram|bam|sam"
+    input_sample_optional: "none"
+    input_reference_required: "ref:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -75,6 +84,15 @@ task merge_bams_to_cram {
         cram: "Merged CRAM file containing all reads from input BAMs",
         crai: "Index file for the merged CRAM"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "aggregation"
+    input_sample_required: "bams_to_merge:nucleic_acid_sequence_alignment:bam"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "cram:nucleic_acid_sequence_alignment:cram,crai:data_index:crai"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -120,6 +138,15 @@ task mpileup {
     outputs: {
         pileup: "Pileup file"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "quantification"
+    input_sample_required: "bamfile:nucleic_acid_sequence_alignment:bam|cram"
+    input_sample_optional: "none"
+    input_reference_required: "ref_fasta:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "pileup:nucleic_acid_sequence_alignment:pileup"
+    output_reference: "none"
   }
 
   parameter_meta {

@@ -14,6 +14,15 @@ task run_count {
         web_summary: "Web summary HTML file",
         metrics_summary: "Metrics summary CSV file"
     }
+    topic: "transcriptomics,gene_expression"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "rna_seq_quantification"
+    input_sample_required: "r1_fastqs:rna_sequence:fastq,r2_fastqs:rna_sequence:fastq"
+    input_sample_optional: "none"
+    input_reference_required: "ref_gex:data_index:tar_format"
+    input_reference_optional: "none"
+    output_sample: "results_tar:gene_expression_matrix:tar_format,web_summary:quality_control_report:html,metrics_summary:quality_control_report:csv"
+    output_reference: "none"
   }
 
   parameter_meta {

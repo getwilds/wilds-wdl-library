@@ -14,6 +14,15 @@ task build_index {
     outputs: {
         salmon_index: "Compressed tarball containing the Salmon index for quantification"
     }
+    topic: "transcriptomics,mapping,gene_expression"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "indexing"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "transcriptome_fasta:rna_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "salmon_index:data_index:tar_format"
   }
 
   parameter_meta {
@@ -72,6 +81,15 @@ task quantify {
         salmon_quant_dir: "Compressed tarball containing Salmon quantification results including abundance estimates",
         output_sample_name: "Sample name used for output files"
     }
+    topic: "transcriptomics,gene_expression"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "rna_seq_quantification"
+    input_sample_required: "fastq_r1:rna_sequence:fastq"
+    input_sample_optional: "fastq_r2:rna_sequence:fastq"
+    input_reference_required: "salmon_index_dir:data_index:tar_format"
+    input_reference_optional: "none"
+    output_sample: "salmon_quant_dir:gene_expression_matrix:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -145,6 +163,15 @@ task merge_results {
         counts_matrix: "Tab-separated matrix of estimated read counts for all samples",
         sample_list: "Text file listing all sample names included in the matrices"
     }
+    topic: "transcriptomics,gene_expression"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "aggregation"
+    input_sample_required: "salmon_quant_dirs:gene_expression_matrix:tar_format"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "tpm_matrix:gene_expression_matrix:tsv,counts_matrix:gene_expression_matrix:tsv,sample_list:sample_id:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {

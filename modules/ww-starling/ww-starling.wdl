@@ -18,6 +18,15 @@ task generate_ensemble {
         pdb_file: "PDB topology file converted from the STARLING ensemble",
         xtc_file: "XTC trajectory file converted from the STARLING ensemble"
     }
+    topic: "proteomics,protein_disordered_structure"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "protein_structure_prediction"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "starling_file:structure_prediction:binary_format,pdb_file:topology_data:pdb,xtc_file:trajectory_data:xtc"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -84,6 +93,15 @@ task generate_ensemble_batch {
         pdb_files: "Array of PDB topology files converted from the STARLING ensembles",
         xtc_files: "Array of XTC trajectory files converted from the STARLING ensembles"
     }
+    topic: "proteomics,protein_disordered_structure"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "protein_structure_prediction"
+    input_sample_required: "fasta_file:protein_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "starling_files:structure_prediction:binary_format,pdb_files:topology_data:pdb,xtc_files:trajectory_data:xtc"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -147,6 +165,15 @@ task split_fasta {
     outputs: {
         batch_files: "Array of FASTA files, each containing up to sequences_per_batch sequences"
     }
+    topic: "proteomics,protein_disordered_structure"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "splitting"
+    input_sample_required: "fasta_file:protein_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "batch_files:protein_sequence:fasta"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -199,6 +226,15 @@ task ensemble_info {
     outputs: {
         info_file: "Text file containing ensemble metadata and summary statistics"
     }
+    topic: "proteomics,protein_disordered_structure"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "starling_file:structure_prediction:binary_format"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "info_file:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {

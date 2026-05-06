@@ -13,6 +13,15 @@ task create_sequence_dictionary {
     outputs: {
         sequence_dict: "Sequence dictionary file (.dict) for the reference genome"
     }
+    topic: "genomics,transcriptomics,mapping,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "indexing"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "sequence_dict:data_index:dict"
   }
 
   parameter_meta {
@@ -61,6 +70,15 @@ task mark_duplicates {
         markdup_bai: "Index file for the duplicate-marked BAM",
         duplicate_metrics: "Metrics file containing duplicate marking statistics"
     }
+    topic: "genomics,transcriptomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequencing_quality_control"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "markdup_bam:nucleic_acid_sequence_alignment:bam,markdup_bai:data_index:bai,duplicate_metrics:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -116,6 +134,15 @@ task base_recalibrator {
         recalibrated_bai: "Index file for the recalibrated BAM",
         recalibration_report: "Base recalibration report table"
     }
+    topic: "genomics,transcriptomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequencing_quality_control"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "dbsnp_vcf:sequence_variations:vcf,reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict,known_indels_sites_vcfs:sequence_variations:vcf"
+    input_reference_optional: "none"
+    output_sample: "recalibrated_bam:nucleic_acid_sequence_alignment:bam,recalibrated_bai:data_index:bai,recalibration_report:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -215,6 +242,15 @@ task collect_wgs_metrics {
     outputs: {
         metrics_file: "Comprehensive WGS metrics file with coverage and quality statistics"
     }
+    topic: "genomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "metrics_file:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -284,6 +320,15 @@ task markdup_recal_metrics {
         duplicate_metrics: "Metrics file containing duplicate marking statistics",
         wgs_metrics: "Comprehensive WGS metrics file with coverage and quality statistics"
     }
+    topic: "genomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequencing_quality_control"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "dbsnp_vcf:sequence_variations:vcf,reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict,known_indels_sites_vcfs:sequence_variations:vcf"
+    input_reference_optional: "none"
+    output_sample: "recalibrated_bam:nucleic_acid_sequence_alignment:bam,recalibrated_bai:data_index:bai,recalibration_report:quality_control_report:textual_format,duplicate_metrics:quality_control_report:textual_format,wgs_metrics:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -418,6 +463,15 @@ task split_intervals {
     outputs: {
         interval_files: "Array of interval files optimized for parallel processing"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "splitting"
+    input_sample_required: "none"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "interval_files:sequence_coordinates:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -522,6 +576,15 @@ task print_reads {
         interval_bams: "Array of BAM files containing reads from specified intervals",
         interval_bam_indices: "Array of index files for the interval BAMs"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_handling"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "interval_bams:nucleic_acid_sequence_alignment:bam,interval_bam_indices:data_index:bai"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -607,6 +670,15 @@ task haplotype_caller {
         vcf: "Compressed VCF file containing germline variant calls",
         vcf_index: "Index file for the VCF output"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "variant_calling"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "dbsnp_vcf:sequence_variations:vcf,reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -686,6 +758,15 @@ task mutect2 {
         stats_file: "Mutect2 statistics file",
         f1r2_counts: "F1R2 counts for filtering"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "variant_calling"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "gnomad_vcf:sequence_variations:vcf,reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi,unfiltered_vcf:sequence_variations:vcf,unfiltered_vcf_index:data_index:tbi,stats_file:report:vcf,f1r2_counts:report:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -778,6 +859,15 @@ task merge_vcfs {
         merged_vcf: "Merged VCF file",
         merged_vcf_index: "Index for merged VCF file"
     }
+    topic: "genomics,dna_polymorphism,structural_variation"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "aggregation"
+    input_sample_required: "vcfs:sequence_variations:vcf,vcf_indices:data_index:tbi"
+    input_sample_optional: "none"
+    input_reference_required: "reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "merged_vcf:sequence_variations:vcf,merged_vcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -830,6 +920,15 @@ task merge_mutect_stats {
     outputs: {
         merged_stats: "Merged Mutect2 statistics file"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "aggregation"
+    input_sample_required: "stats:report:vcf"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "merged_stats:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -877,6 +976,15 @@ task haplotype_caller_parallel {
         vcf: "Compressed VCF file containing germline variant calls",
         vcf_index: "Index file for the VCF output"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "variant_calling"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai,intervals:sequence_coordinates:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "dbsnp_vcf:sequence_variations:vcf,reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -991,6 +1099,15 @@ task mutect2_parallel {
         unfiltered_vcf_index: "Index file for the unfiltered Mutect2 VCF output",
         stats_file: "Merged Mutect2 statistics file"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "variant_calling"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai,intervals:sequence_coordinates:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "gnomad_vcf:sequence_variations:vcf,reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi,unfiltered_vcf:sequence_variations:vcf,unfiltered_vcf_index:data_index:tbi,stats_file:report:vcf"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -1141,6 +1258,15 @@ task fastq_to_bam {
     outputs: {
         unmapped_bam: "Unmapped BAM file containing reads from input FASTQ files"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_formatting"
+    input_sample_required: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "unmapped_bam:nucleic_acid_sequence_alignment:bam"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -1208,6 +1334,15 @@ task validate_sam_file {
     outputs: {
         validation_report: "Text file containing validation statistics and any errors/warnings"
     }
+    topic: "genomics,transcriptomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequencing_quality_control"
+    input_sample_required: "input_file:nucleic_acid_sequence_alignment:bam|sam|cram"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "reference_fasta:nucleic_acid_sequence:fasta"
+    output_sample: "validation_report:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -1268,6 +1403,15 @@ task analyze_saturation_mutagenesis {
         ref_coverage: "Reference coverage table",
         variant_counts: "Variant count table"
     }
+    topic: "genomics,dna_mutation"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "aa_counts:report:textual_format,aa_fractions:report:textual_format,codon_counts:report:textual_format,codon_fractions:report:textual_format,cov_length_counts:report:textual_format,read_counts:report:textual_format,ref_coverage:report:textual_format,variant_counts:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -1343,6 +1487,15 @@ task create_somatic_pon {
         pon_vcf: "Gzipped VCF file containing the panel of normals",
         pon_vcf_index: "Index file for the panel of normals VCF"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "aggregation"
+    input_sample_required: "normal_vcfs:sequence_variations:vcf,normal_vcf_indices:data_index:tbi,intervals:sequence_coordinates:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "germline_resource:sequence_variations:vcf"
+    output_sample: "none"
+    output_reference: "pon_vcf:sequence_variations:vcf,pon_vcf_index:data_index:tbi"
   }
 
   parameter_meta {

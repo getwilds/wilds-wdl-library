@@ -12,6 +12,15 @@ task sketch {
     outputs: {
       sig: "Sourmash sketch (.sig) file"
     }
+    topic: "genomics,proteomics,metagenomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "indexing"
+    input_sample_required: "infile:nucleic_acid_sequence:bam|fasta"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "sig:data_index:sig"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -72,6 +81,15 @@ task gather {
     outputs: {
       result: "CSV file of sourmash gather results"
     }
+    topic: "genomics,proteomics,metagenomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequence_classification,quantification,statistical_calculation"
+    input_sample_required: "query_sig:data_index:sig,reference_databases_sigs:data_index:sig"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "result:genome_report:csv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -126,6 +144,15 @@ task compare {
       npy: "Numpy binary matrix file of angular similarity matrix",
       csv: "CSV file of angular similarity matrix"
     }
+    topic: "genomics,proteomics,metagenomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "sig_inputs:data_index:sig"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "npy:comparison_matrix:binary_format,csv:comparison_matrix:csv"
+    output_reference: "none"
   }
 
   parameter_meta {

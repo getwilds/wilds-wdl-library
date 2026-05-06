@@ -19,6 +19,15 @@ task fastp_paired {
         html_report: "HTML quality control report",
         json_report: "JSON quality control report"
     }
+    topic: "genomics,transcriptomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequence_trimming,data_filtering"
+    input_sample_required: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "r1_trimmed:nucleic_acid_sequence:fastq,r2_trimmed:nucleic_acid_sequence:fastq,html_report:quality_control_report:html,json_report:quality_control_report:json"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -96,6 +105,15 @@ task fastp_single {
         html_report: "HTML quality control report",
         json_report: "JSON quality control report"
     }
+    topic: "genomics,transcriptomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequence_trimming,data_filtering"
+    input_sample_required: "fastq:nucleic_acid_sequence:fastq"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "trimmed_fastq:nucleic_acid_sequence:fastq,html_report:quality_control_report:html,json_report:quality_control_report:json"
+    output_reference: "none"
   }
 
   parameter_meta {

@@ -15,6 +15,15 @@ task somatic {
         somatic_snvs_vcf: "VCF file containing somatic SNV calls",
         somatic_indels_vcf: "VCF file containing somatic indel calls"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "variant_calling,indel_detection"
+    input_sample_required: "normal_pileup:nucleic_acid_sequence_alignment:pileup,tumor_pileup:nucleic_acid_sequence_alignment:pileup"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "somatic_snvs_vcf:sequence_variations:vcf,somatic_indels_vcf:sequence_variations:vcf"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -65,6 +74,15 @@ task mpileup2cns {
     outputs: {
         vcf: "VCF file containing SNV and indel calls"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "variant_calling,indel_detection"
+    input_sample_required: "pileup:nucleic_acid_sequence_alignment:pileup"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf"
+    output_reference: "none"
   }
 
   parameter_meta {

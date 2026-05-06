@@ -14,6 +14,15 @@ task mpileup_call {
         mpileup_vcf: "Compressed VCF file containing variants called by mpileup",
         mpileup_vcf_index: "Index file for the mpileup VCF"
     }
+    topic: "genomics,transcriptomics,dna_polymorphism,structural_variation"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "variant_calling"
+    input_sample_required: "bam_file:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "regions_bed:annotation_track:bed"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "mpileup_vcf:sequence_variations:vcf,mpileup_vcf_index:data_index:csi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -106,6 +115,15 @@ task concat {
         concatenated_vcf: "Concatenated VCF/BCF file",
         concatenated_vcf_index: "Index file for concatenated VCF"
     }
+    topic: "genomics,transcriptomics,dna_polymorphism,structural_variation"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "aggregation"
+    input_sample_required: "vcf_files:sequence_variations:vcf,vcf_indices:data_index:csi"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "concatenated_vcf:sequence_variations:vcf,concatenated_vcf_index:data_index:csi"
+    output_reference: "none"
   }
 
   parameter_meta {
