@@ -34,7 +34,7 @@ Builds Bowtie 2 index files from a reference FASTA file.
 
 ### `bowtie2_align`
 
-Aligns sequence reads to a reference genome using Bowtie 2. Supports named sensitivity presets, post-alignment MAPQ + SAM-flag filtering, capture of unaligned reads (e.g. for rRNA depletion), and an extra-args escape hatch for tool-specific flags.
+Aligns reads to a reference using Bowtie 2, optionally filtering the output using Samtools
 
 **Inputs:**
 - `bowtie2_index_tar` (File): Compressed tarball containing Bowtie 2 genome index files

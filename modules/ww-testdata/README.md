@@ -245,7 +245,7 @@ Downloads a UCSC reference chromosome FASTA + GTF + BED + samtools index/dict fo
 
 **Inputs**:
 - `chromo` (String): Chromosome to download (default: "chr1")
-- `version` (String): Genome version (default: "hg38"). Any UCSC golden-path assembly works; per-chromosome FASTAs are used when available with a whole-genome bigZips fallback otherwise.
+- `version` (String): Genome version (default: "hg38"). Any UCSC assembly under their goldenPath directory works; per-chromosome FASTAs are used when available with a whole-genome bigZips fallback otherwise.
 - `region` (String, optional): Region coordinates to extract from chromosome in format '1-30000000'. If not specified, uses entire chromosome
 - `output_name` (String, optional): Name for output files (default: uses chromo name)
 - `cpu_cores` (Int): CPU allocation (default: 1)

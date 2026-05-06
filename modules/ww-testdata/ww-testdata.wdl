@@ -8,7 +8,7 @@ task download_ref_data {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Downloads chromosome FASTA + GTF + BED + samtools index/dict from a UCSC assembly. Falls back to the whole-genome bigZips FASTA for assemblies without per-chromosome files (e.g. dm6, sacCer3)."
+    description: "Downloads chromosome or whole-genome FASTA + GTF + BED + samtools index/dict from a UCSC assembly."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         fasta: "Reference genome FASTA file",

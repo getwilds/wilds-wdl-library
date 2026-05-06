@@ -3,7 +3,7 @@
 [![Project Status: Prototype – Useable, some support, open to feedback, unstable API.](https://getwilds.org/badges/badges/prototype.svg)](https://getwilds.org/badges/#prototype)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL module for [UMI-tools](https://github.com/CGATOxford/UMI-tools), a suite for handling Unique Molecular Identifiers (UMIs) in NGS data. This module focuses on PCR-duplicate removal from coordinate-sorted BAMs whose reads carry UMIs in the read name (the format produced by `fastp --umi`, `umi_tools extract`, and similar tools).
+A WILDS WDL module for [UMI-tools](https://github.com/CGATOxford/UMI-tools), a suite for handling Unique Molecular Identifiers (UMIs) in NGS data.
 
 ## Overview
 

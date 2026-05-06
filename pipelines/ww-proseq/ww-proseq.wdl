@@ -51,9 +51,9 @@ workflow proseq {
   parameter_meta {
     samples: "List of paired-end PRO-seq samples (name + R1 + R2)"
     references: "PRO-seq reference set: experimental genome FASTA, spike-in-merged FASTA, rDNA FASTA, and the chromosome-name prefix used to flag spike-in contigs in the merged reference"
-    umi_loc: "fastp UMI location. Use 'per_read' (the qPRO-seq default — UMIs on both 5' and 3' ends), 'read1', or 'read2'. Set to empty string to disable UMI extraction."
-    umi_len: "UMI length in basepairs (default 6 to match qPRO-seq library prep)"
-    mapq_threshold: "Minimum MAPQ score for retained alignments (post-bowtie2 samtools view -q filter)"
+    umi_loc: "fastp UMI location. 'per_read', 'read1', 'read2', or '' to disable UMI extraction (default: 'per_read')."
+    umi_len: "UMI length in basepairs (default: 6)"
+    mapq_threshold: "Minimum MAPQ score for retained alignments"
     align_cpu: "CPU cores allocated to bowtie2 alignment tasks"
     align_memory_gb: "Memory (GB) allocated to bowtie2 alignment tasks"
   }
