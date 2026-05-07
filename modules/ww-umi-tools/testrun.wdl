@@ -1,8 +1,7 @@
 version 1.0
 
-# Local relative imports — flip to GitHub raw URLs at merge time.
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-proseq/modules/ww-umi-tools/ww-umi-tools.wdl" as ww_umi_tools
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-proseq/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-umi-tools/ww-umi-tools.wdl" as ww_umi_tools
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct DedupSample {
   String name
