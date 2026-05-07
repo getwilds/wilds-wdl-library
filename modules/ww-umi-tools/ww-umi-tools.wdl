@@ -26,7 +26,7 @@ task dedup {
     input_bai: "Index for the input BAM file"
     sample_name: "Sample name used for output file naming"
     paired: "If true, pass --paired to umi_tools dedup (required for paired-end data)"
-    umi_separator: "Character separating the read ID from the UMI in the read name (default ':' to match fastp --umi output)"
+    umi_separator: "Character separating the read ID from the UMI in the read name (default ':')"
     method: "umi_tools dedup method (unique, percentile, cluster, adjacency, directional)"
     extra_args: "Additional arguments to pass to umi_tools dedup"
     cpu_cores: "Number of CPU cores allocated for the task"

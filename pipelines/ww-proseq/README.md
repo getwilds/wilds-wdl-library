@@ -149,16 +149,16 @@ Aggregated:
 
 | Step | CPU | Memory | Notes |
 |------|-----|--------|-------|
-| `bowtie2_build` × 3 | 4 cores | 16 GB | Once per pipeline run |
+| `bowtie2_build` × 3 | 4 cores | 16 GB | Runs once per pipeline run for each reference FASTA |
 | `bowtie2_align` × 3 per sample | 4-8 cores | 8-16 GB | Memory scales with reference size, especially the spike-in-merged reference |
 | `umi_tools dedup` × 2 per sample | 2 cores | 8 GB | Single-threaded; memory scales with read density |
-| `bam_coverage` × 2 per sample | 4 cores | 8 GB | Two strand-specific bigWigs per sample |
+| `bam_coverage` × 2 per sample | 4 cores | 8 GB | Runs on two strand-specific bigWigs per sample |
 
 ### Optimization Tips
 
 - The spike-in alignment is run against the **merged** reference (experimental + spike-in concatenated), then filtered. This matches the original PROseq_alignment.sh script and ensures spike-in normalization factors are computed on reads that are unambiguously spike-in.
 - For very deep PRO-seq runs (>100M reads/sample), bump `align_memory_gb` to 32 GB.
-- The bigWig step is the only place that does any biological math — `--Offset 1` is what makes this PRO-seq specific (3' read end = active site of Pol II).
+- The `bam_coverage` bigWig step is the only place that does any biological math — `--Offset 1` is what makes this PRO-seq specific (3' read end = active site of RNA Polymerase II).
 
 ## Testing the Pipeline
 

@@ -61,7 +61,7 @@ task bowtie2_align {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Aligns reads to a reference using Bowtie 2. Supports sensitivity presets, post-alignment MAPQ + SAM-flag filtering, capture of unaligned reads, and an extra-args escape hatch."
+    description: "Aligns reads to a reference using Bowtie 2, optionally filtering the output using Samtools"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bowtie2/ww-bowtie2.wdl"
     outputs: {
         sorted_bam: "Sorted Bowtie 2 alignment output BAM file",

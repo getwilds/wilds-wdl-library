@@ -21,16 +21,14 @@ struct ProseqReferences {
 }
 
 workflow proseq_example {
-  # Pull a small slice of a real qPRO-seq run (Judd et al. 2020, Drosophila S2 cells,
-  # GSE149332). Same lab/protocol as the JAJ256/PROseq_alignment.sh source script —
-  # 6 bp UMIs on both 5' and 3' ends, fastp + umi_tools dedup workflow.
+  # Pull a slice of a real qPRO-seq run
   call ww_sra.fastqdump as proseq_rep1 { input:
       sra_id = "SRR11607571",
       ncpu = 2,
       max_reads = 50000
   }
 
-  # Experimental genome: a small slice of dm6 (matches the S2-cell biology).
+  # Experimental reference genome: Same species as the qPRO-seq data
   call ww_testdata.download_ref_data as download_dm6 { input:
       version = "dm6",
       chromo = "chr2L",
@@ -38,8 +36,7 @@ workflow proseq_example {
       output_name = "dm6_chr2L_1M"
   }
 
-  # Spike-in source: a small slice of hg38. The pipeline expects spike-in contigs
-  # in the merged reference to share a configurable name prefix.
+  # Spike-in source: a small slice of hg38.
   call ww_testdata.download_ref_data as download_hg38 { input:
       version = "hg38",
       chromo = "chr1",
