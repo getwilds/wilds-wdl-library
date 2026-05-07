@@ -7,7 +7,7 @@ A WILDS WDL module for [UMI-tools](https://github.com/CGATOxford/UMI-tools), a s
 
 ## Overview
 
-Library prep methods like PRO-seq, single-cell RNA-seq, and many capture protocols use random UMIs to distinguish PCR duplicates from independent molecules that happen to map to the same position. After alignment, `umi_tools dedup` collapses reads that share both a mapping position and a UMI, leaving one representative read per unique molecule.
+Library prep methods like PRO-seq, single-cell RNA-seq, and many capture protocols use random UMIs to distinguish PCR duplicates from independent molecules that happen to map to the same position.
 
 This module wraps `umi_tools dedup` so it can be plugged into WILDS pipelines downstream of any aligner module (`ww-bowtie2`, `ww-bwa`, `ww-star`, etc.) whose upstream FASTQ trimming step encoded UMIs into read names.
 
