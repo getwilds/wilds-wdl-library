@@ -113,18 +113,8 @@ call fastp_tasks.fastp_paired {
 }
 ```
 
-**UMI extraction (e.g., PRO-seq, single-cell):**
+**UMI extraction (e.g. single-cell):**
 ```wdl
-# UMIs on both ends of the read (PRO-seq with 5' and 3' UMIs)
-call fastp_tasks.fastp_paired {
-  input:
-    sample_name = "proseq_sample",
-    r1_fastq = r1_file,
-    r2_fastq = r2_file,
-    umi_loc = "per_read",
-    umi_len = 6
-}
-
 # UMI only on R1 (e.g., 3' end of fragment for many small-RNA protocols)
 call fastp_tasks.fastp_paired {
   input:
