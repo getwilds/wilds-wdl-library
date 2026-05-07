@@ -508,18 +508,27 @@ task inject_synthetic_umis {
   command <<<
     set -eo pipefail
 
+    # Stream the BAM as SAM and append a deterministic synthetic 6-mer UMI to each read name.
+    # The UMI is derived from the read name itself, so paired mates (which share a name)
+    # automatically receive the same UMI -- a requirement for paired-end UMI dedup tools.
     samtools view -h "~{input_bam}" | awk -v sep="~{umi_separator}" 'BEGIN{OFS="\t"}
+      # Pass SAM header lines through unchanged
       /^@/ {print; next}
       {
         n = $1
         bases = "ACGT"
         umi = ""
+        # Build a 6-base UMI by walking the last 6 characters of the read name in reverse.
+        # Each character is mapped to a base in {A,C,G,T} via its position in "ACGT";
+        # non-base characters fall back to the loop index so the mapping stays deterministic.
         for (i = 1; i <= 6; i++) {
           c = substr(n, length(n) - i + 1, 1)
           idx = index(bases, c)
           if (idx == 0) idx = i
           umi = umi substr(bases, ((idx - 1) % 4) + 1, 1)
         }
+        # Append the UMI to the read name using the configured separator (e.g. "READID:ACGTAC"),
+        # matching the format that fastp --umi produces so downstream tools work unchanged.
         $1 = n sep umi
         print
       }' | samtools sort -@ ~{cpu_cores} -o "~{sample_name}.umi.bam" -
