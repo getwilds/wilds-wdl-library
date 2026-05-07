@@ -84,13 +84,10 @@ task esmfold_predict {
 
   runtime {
     docker: "getwilds/esmfold:2.0.0"
+    cpu: cpu_cores
+    gpu: gpu_enabled
     # For use in PROOF, switch to using the 'gpus' parameter
     # gpus: if gpu_enabled then "1" else "0"
-    cpu: cpu_cores
     memory: "~{memory_gb} GB"
-  }
-
-  hints {
-    gpu: gpu_enabled
   }
 }
