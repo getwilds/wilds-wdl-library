@@ -4,7 +4,7 @@
 ## Designed to be a modular component within the WILDS ecosystem that can be used
 ## independently or integrated with other WILDS workflows.
 
-version 1.0
+version 1.2
 
 #### TASK DEFINITIONS ####
 
@@ -75,8 +75,10 @@ task esmfold_predict {
 
   runtime {
     docker: "getwilds/esmfold:2.0.0"
+    gpu: if gpu_enabled then true else false
+    # For use in PROOF, switch to using the 'gpus' parameter
+    # gpus: if gpu_enabled then "1" else "0"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    gpus: if gpu_enabled then "1" else "0"
   }
 }
