@@ -14,3 +14,6 @@ run.backends.default.extra_apptainer_exec_args = [
     "--env", "MODULEPATH=/app/modules/all",
     "--env", "LMOD_CMD=/app/lmod/lmod/libexec/lmod",
 ]
+
+# Define CPU slurm partition as necessary ("campus-new" or "short" for FH users)
+run.backends.default.default_slurm_partition.name = "campus-new"
