@@ -99,8 +99,8 @@ java -jar cromwell.jar run ww-proseq.wdl --inputs inputs.json
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `samples` | `Array[ProseqSample]` | required | Per-sample name + R1 + R2 |
-| `references` | `ProseqReferences` | required | Three FASTAs + spike-in chromosome prefix |
+| `samples` | `Array[ProseqSample]` | required | Per-sample name + R1 + R2 (see [`ProseqSample` struct](#proseqsample-structure) below) |
+| `references` | `ProseqReferences` | required | Three FASTAs + spike-in chromosome prefix (see [`ProseqReferences` struct](#proseqreferences-structure) below) |
 | `umi_loc` | `String` | `"per_read"` | fastp UMI location. `per_read` for qPRO-seq (UMIs on both ends), `read1` / `read2` for one-sided UMIs, `""` to disable |
 | `umi_len` | `Int` | `6` | UMI length in basepairs |
 | `mapq_threshold` | `Int` | `10` | Minimum MAPQ for retained alignments |
@@ -127,6 +127,11 @@ struct ProseqReferences {
     String spikein_chrom_prefix
 }
 ```
+
+- `experimental_fasta` — experimental organism's genome FASTA
+- `spikein_merged_fasta` — experimental + spike-in genomes concatenated, with a prefix on spike-in contigs
+- `rdna_fasta` — rRNA reference for rRNA depletion (typically the host's 45S precursor)
+- `spikein_chrom_prefix` — prefix used on spike-in contig names in the merged FASTA
 
 ## Output Files
 
