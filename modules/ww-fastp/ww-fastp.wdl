@@ -38,6 +38,8 @@ task fastp_paired {
     length_required: "Minimum read length after trimming (default: 15)"
     detect_adapter_for_pe: "Enable auto-detection of adapters for paired-end data (default: true)"
     adapter_fasta: "Optional FASTA file with custom adapter sequences"
+    umi_loc: "fastp --umi_loc value (read1, read2, per_read, index1, index2, per_index). Leave unset to disable UMI extraction. When set, the UMI is moved into the read name with a ':' separator."
+    umi_len: "Length of the UMI in basepairs. Required when umi_loc is set; ignored otherwise (default: 6)"
     cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
     memory_gb: "Memory allocated for the task in GB (default: 8)"
   }
@@ -50,6 +52,8 @@ task fastp_paired {
     Int length_required = 15
     Boolean detect_adapter_for_pe = true
     File? adapter_fasta
+    String? umi_loc
+    Int umi_len = 6
     Int cpu_cores = 4
     Int memory_gb = 8
   }
@@ -74,6 +78,10 @@ task fastp_paired {
 
     if [ ! -z "~{adapter_fasta}" ]; then
       FASTP_CMD="${FASTP_CMD} --adapter_fasta ~{adapter_fasta}"
+    fi
+
+    if [ ! -z "~{umi_loc}" ]; then
+      FASTP_CMD="${FASTP_CMD} --umi --umi_loc=~{umi_loc} --umi_len=~{umi_len}"
     fi
 
     echo "Running: ${FASTP_CMD}"
@@ -122,6 +130,8 @@ task fastp_single {
     qualified_quality_phred: "Minimum base quality score for a base to be qualified (default: 15)"
     length_required: "Minimum read length after trimming (default: 15)"
     adapter_fasta: "Optional FASTA file with custom adapter sequences"
+    umi_loc: "fastp --umi_loc value (read1, index1, index2, per_index). Leave unset to disable UMI extraction. When set, the UMI is moved into the read name with a ':' separator."
+    umi_len: "Length of the UMI in basepairs. Required when umi_loc is set; ignored otherwise (default: 6)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
@@ -132,6 +142,8 @@ task fastp_single {
     Int qualified_quality_phred = 15
     Int length_required = 15
     File? adapter_fasta
+    String? umi_loc
+    Int umi_len = 6
     Int cpu_cores = 4
     Int memory_gb = 8
   }
@@ -150,6 +162,10 @@ task fastp_single {
 
     if [ ! -z "~{adapter_fasta}" ]; then
       FASTP_CMD="${FASTP_CMD} --adapter_fasta ~{adapter_fasta}"
+    fi
+
+    if [ ! -z "~{umi_loc}" ]; then
+      FASTP_CMD="${FASTP_CMD} --umi --umi_loc=~{umi_loc} --umi_len=~{umi_len}"
     fi
 
     echo "Running: ${FASTP_CMD}"
