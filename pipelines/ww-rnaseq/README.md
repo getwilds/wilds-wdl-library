@@ -60,7 +60,8 @@ This pipeline extends the simpler `ww-star-deseq2` pipeline with upstream read Q
 
 10. **DESeq2 — Compiled Results** (using `ww-deseq2` module):
     - Merges differential expression results with normalized counts
-    - Annotates genes with descriptions from the GTF (gene_name, gene_biotype, product)
+    - Annotates genes with descriptions from the original (non-normalized) GTF (gene_name, gene_biotype, product, locus_tag, db_xref where available)
+    - Walks every feature row and aggregates per gene_id, so it works on GTFs without `gene` rows (e.g. UCSC ncbiRefSeq) and on NCBI GTFs that use the `gene "name"` attribute instead of `gene_name`
     - Produces a single comprehensive CSV for downstream use
 
 11. **MultiQC — Aggregated Reporting** (using `ww-multiqc` module):
@@ -241,7 +242,7 @@ The pipeline produces comprehensive outputs from all modules:
 | `deseq2_ma_plot` | MA plot of log fold change vs. mean expression | ww-deseq2 |
 | `deseq2_ma_plot_shrunk` | MA plot with shrunken LFC (empty if shrinkage not applied) | ww-deseq2 |
 | `deseq2_results_shrunk` | DESeq2 results with shrunken LFC (empty if shrinkage not applied) | ww-deseq2 |
-| `deseq2_compiled_results` | Combined CSV with DESeq2 stats, normalized counts, and gene annotations | ww-deseq2 |
+| `deseq2_compiled_results` | Combined CSV with DESeq2 stats, normalized counts, and gene annotations (gene_name, gene_biotype, product, locus_tag, db_xref where available) | ww-deseq2 |
 | `multiqc_report` | Aggregated interactive HTML QC report | ww-multiqc |
 | `multiqc_data` | MultiQC parsed metrics data directory | ww-multiqc |
 | `organized_results` | (Optional) Tarball with all outputs organized by step and sample | pipeline-local |

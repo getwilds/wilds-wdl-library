@@ -29,7 +29,7 @@ All scripts are fetched from this repository at runtime via `curl`. This keeps t
 |--------|---------|----------|-------------|
 | [`combine_star_counts.py`](combine_star_counts.py) | `combine_count_matrices` | Python | Reads individual STAR `ReadsPerGene.out.tab` files, extracts the specified count column (unstranded, forward, or reverse), merges them into a single gene-by-sample count matrix, and writes a sample metadata file for DESeq2 |
 | [`deseq2_analysis.R`](deseq2_analysis.R) | `run_deseq2` | R | Runs the full DESeq2 pipeline: reads counts and metadata, applies configurable gene filtering, fits the DESeq2 model, extracts results with optional log fold change shrinkage, generates MA/PCA/volcano/heatmap plots, and writes results CSVs |
-| [`compile_deseq2_results.py`](compile_deseq2_results.py) | `compile_deseq2_results` | Python | Merges the all-genes results CSV with normalized counts on gene ID, parses GTF annotations (gene_name, gene_biotype, product), and joins them into a single comprehensive output CSV |
+| [`compile_deseq2_results.py`](compile_deseq2_results.py) | `compile_deseq2_results` | Python | Merges the all-genes results CSV with normalized counts on gene ID, parses GTF annotations (gene_name, gene_biotype, product, locus_tag, db_xref) by walking every feature row and aggregating per gene_id, and joins them into a single comprehensive output CSV. Handles GTFs without `gene` rows (e.g. UCSC ncbiRefSeq) and NCBI's `gene "name"` attribute (promoted to `gene_name`). |
 | [`generate_pasilla_counts.R`](generate_pasilla_counts.R) | `generate_pasilla_counts` (in ww-testdata) | R | Generates synthetic STAR-format count files from the Bioconductor Pasilla dataset for testing; creates individual `ReadsPerGene.out.tab` files with realistic header statistics |
 
 ## Tasks
@@ -90,13 +90,13 @@ Merges DESeq2 differential expression results with normalized counts and gene an
 **Inputs:**
 - `deseq2_results` (File): DESeq2 all-genes results CSV (output of `run_deseq2`)
 - `normalized_counts` (File): DESeq2 normalized counts CSV (output of `run_deseq2`)
-- `gtf_file` (File): GTF annotation file for extracting gene descriptions
+- `gtf_file` (File): GTF annotation file for extracting gene descriptions. Use the original (non-normalized) GTF so NCBI/Ensembl-specific attributes like `gene_biotype`, `product`, and `locus_tag` are preserved.
 - `output_name` (String): Name for the output CSV file (default: "deseq2_compiled_results.csv")
 - `memory_gb` (Int): Memory allocation in GB (default: 4)
 - `cpu_cores` (Int): Number of CPU cores (default: 1)
 
 **Outputs:**
-- `compiled_results` (File): Combined CSV with DESeq2 statistics, normalized counts, and gene annotations (gene_name, gene_biotype, product where available)
+- `compiled_results` (File): Combined CSV with DESeq2 statistics, normalized counts, and gene annotations (gene_name, gene_biotype, product, locus_tag, db_xref where available; columns that are entirely empty are dropped)
 
 ## Usage as a Module
 
