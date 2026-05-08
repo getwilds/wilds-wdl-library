@@ -174,6 +174,7 @@ To use this template for a new tool:
 4. **Update documentation**:
    - Customize README.md with your tool's information
    - Update meta descriptions and parameter documentation in the WDL files
+    - Optional: Update the EDAM ontology tags (`topic`, `operation`, `species`, `input_sample_required`, `input_sample_optional`, `input_reference_required`, `input_reference_optional`, `output_sample`, `output_reference`). These describe what the tool does as well as `File`-type parameters using the format `param_name:EDAM_data_type:EDAM_format_type`. See [CONTRIBUTING.md](../../.github/CONTRIBUTING.md) for full guidance.
    - Add tool-specific usage examples
    - Add citation information if applicable
 

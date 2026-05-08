@@ -215,7 +215,7 @@ workflow rnaseq {
   call deseq2_tasks.compile_deseq2_results as step08_compile_results { input:
       deseq2_results = step07_deseq2.deseq2_results,
       normalized_counts = step07_deseq2.deseq2_normalized_counts,
-      gtf_file = normalize_gtf.normalized_gtf
+      gtf_file = reference_genome.gtf
   }
 
   # Step 9: MultiQC aggregation of all QC reports

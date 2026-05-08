@@ -15,6 +15,15 @@ task metaspades {
         contigs_fasta: "Assembled contigs in compressed FASTA format",
         log_file: "SPAdes log file"
     }
+    topic: "genomics,metagenomics,sequence_assembly"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequence_assembly"
+    input_sample_required: "none"
+    input_sample_optional: "r1_fastq:dna_sequence:fastq,r2_fastq:dna_sequence:fastq,interleaved_fastq:dna_sequence:fastq"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "scaffolds_fasta:dna_sequence:fasta,contigs_fasta:dna_sequence:fasta,log_file:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {

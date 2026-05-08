@@ -19,6 +19,15 @@ task run_rseqc {
         junction_log: "Junction annotation analysis log",
         rseqc_summary: "Summary report of all RSeQC metrics"
     }
+    topic: "transcriptomics,data_quality_management"
+    species: "human,eukaryote"
+    operation: "quality_control"
+    input_sample_required: "bam_file:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "none"
+    input_reference_required: "ref_bed:annotation_track:bed"
+    input_reference_optional: "none"
+    output_sample: "read_distribution:sequence_report:textual_format,gene_body_coverage:sequence_report:textual_format,infer_experiment:sequence_report:textual_format,bam_stat:report:textual_format,junction_xls:sequence_report:xls,junction_log:sequence_report:textual_format,rseqc_summary:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {

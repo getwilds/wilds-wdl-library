@@ -19,6 +19,15 @@ task process_sample {
     outputs: {
         output_file: "Simple text file with hello world message and sample information"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_parsing"
+    input_sample_required: "input_file:any:any"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "output_file:text_data:textual_format"
+    output_reference: "none"
   }
 
   # Provide parameter metadata for clarity on each input

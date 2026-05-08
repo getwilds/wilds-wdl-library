@@ -13,6 +13,15 @@ task megahit {
     outputs: {
         contigs: "Assembled contigs in compressed FASTA format"
     }
+    topic: "metagenomics,sequence_assembly"
+    species: "prokaryote"
+    operation: "sequence_assembly"
+    input_sample_required: "input_fastq:nucleic_acid_sequence:fastq"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "contigs:nucleic_acid_sequence:fasta"
+    output_reference: "none"
   }
 
   parameter_meta {

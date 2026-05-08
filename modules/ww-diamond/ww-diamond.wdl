@@ -14,6 +14,15 @@ task make_database {
     outputs: {
         diamond_db: "DIAMOND database file (.dmnd) created from input FASTA"
     }
+    topic: "proteomics,mapping"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "indexing"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "fasta:protein_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "diamond_db:data_index:dmnd"
   }
 
   parameter_meta {
@@ -56,6 +65,15 @@ task diamond_blastp {
     outputs: {
         aln: "Compressed alignment file in tabular format (outfmt 6)"
     }
+    topic: "proteomics,mapping"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequence_alignment"
+    input_sample_required: "query:protein_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "diamond_db:data_index:dmnda"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "aln:sequence_alignment:tsv"
   }
 
   parameter_meta {

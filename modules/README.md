@@ -44,7 +44,7 @@ modules/module-name/
 
 ### **Required Components**
 
-- **WDL File**: Contains all task definitions for the module
+- **WDL File**: Contains all task definitions for the module, each with `meta` and `parameter_meta` blocks for documentation. Tasks optionally include [EDAM ontology](https://www.ebi.ac.uk/ols4/ontologies/edam) tags and file input/output descriptors. See the [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details.
 - **Test Workflow**: At least one of `testrun.wdl` (used in CI) or `testrun_hpc.wdl` (used in monthly HPC test runs). Most modules ship just `testrun.wdl`; modules whose tools require GPUs, an HPC environment module, or more memory than GitHub Actions provides may add a `testrun_hpc.wdl`, and modules that cannot run in CI at all may ship only `testrun_hpc.wdl` (e.g. `ww-esmfold`). See the [contributing guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for the full table of file combinations.
 - **README**: Module-specific documentation with usage examples
 

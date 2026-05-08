@@ -13,6 +13,15 @@ task gtf2bed {
     outputs: {
         bed_file: "BED12-formatted annotation file"
     }
+    topic: "genomics,sequence_features"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_formatting"
+    input_sample_required: "gtf_file:sequence_features:gtf"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "bed_file:annotation_track:bed"
+    output_reference: "none"
   }
 
   parameter_meta {

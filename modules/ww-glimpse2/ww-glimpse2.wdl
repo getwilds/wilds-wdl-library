@@ -14,6 +14,15 @@ task glimpse2_chunk {
     outputs: {
       chunks_file: "Text file containing chunk definitions with input/output regions"
     }
+    topic: "genomics,sequencing"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "splitting"
+    input_sample_required: "reference_vcf:sequence_variations:vcf|bcf,reference_vcf_index:data_index:tbi|csi"
+    input_sample_optional: "none"
+    input_reference_required: "genetic_map:sequence_coordinates:textual_format"
+    input_reference_optional: "none"
+    output_sample: "chunks_file:sequence_coordinates:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -81,6 +90,15 @@ task glimpse2_split_reference {
     outputs: {
       reference_chunk: "Binary reference chunk file for imputation"
     }
+    topic: "genomics,mapping,sequencing"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "splitting,indexing"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "reference_vcf:sequence_variations:vcf|bcf,reference_vcf_index:data_index:tbi|csi,genetic_map:sequence_coordinates:textual_format"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "reference_chunk:sequence_coordinates:binary_format"
   }
 
   parameter_meta {
@@ -147,6 +165,15 @@ task glimpse2_phase {
       imputed_chunk: "Imputed and phased BCF file for the chunk",
       imputed_chunk_index: "Index file for imputed BCF"
     }
+    topic: "genomics,sequencing"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "input_vcf:sequence_variations:vcf|bcf,input_vcf_index:data_index:tbi|csi"
+    input_sample_optional: "none"
+    input_reference_required: "reference_chunk:sequence_coordinates:binary_format"
+    input_reference_optional: "none"
+    output_sample: "imputed_chunk:sequence_variations:bcf,imputed_chunk_index:data_index:csi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -218,6 +245,15 @@ task glimpse2_phase_cram {
       imputed_chunk: "Imputed and phased BCF file for the chunk",
       imputed_chunk_index: "Index file for imputed BCF"
     }
+    topic: "genomics,sequencing"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "input_bams:nucleic_acid_sequence_alignment:bam|cram,input_bam_indices:data_index:bai|crai"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai,reference_chunk:sequence_coordinates:binary_format"
+    input_reference_optional: "none"
+    output_sample: "imputed_chunk:sequence_variations:bcf,imputed_chunk_index:data_index:csi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -307,6 +343,15 @@ task glimpse2_ligate {
       ligated_vcf: "Ligated VCF/BCF file containing all imputed variants",
       ligated_vcf_index: "Index file for ligated VCF"
     }
+    topic: "genomics,sequencing"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "aggregation"
+    input_sample_required: "imputed_chunks:sequence_variations:bcf,imputed_chunks_indices:data_index:csi"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "ligated_vcf:sequence_variations:vcf|bcf,ligated_vcf_index:data_index:tbi|csi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -381,6 +426,15 @@ task glimpse2_concordance {
     outputs: {
       concordance_output: "Concordance metrics output file"
     }
+    topic: "genomics,sequencing,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "imputed_vcf:sequence_variations:bcf,imputed_vcf_index:data_index:csi,truth_vcf:sequence_variations:bcf,truth_vcf_index:data_index:csi"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "allele_frequencies:sequence_variations:vcf"
+    output_sample: "concordance_output:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -453,6 +507,15 @@ task parse_chunks_file {
       output_regions: "Array of output regions from chunks file",
       chunk_ids: "Array of chunk identifiers"
     }
+    topic: "genomics,sequencing"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "mapping,splitting"
+    input_sample_required: "chunks_file:sequence_coordinates:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "none"
   }
 
   parameter_meta {

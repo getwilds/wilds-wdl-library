@@ -34,7 +34,7 @@ Builds Bowtie 2 index files from a reference FASTA file.
 
 ### `bowtie2_align`
 
-Aligns sequence reads to a reference genome using Bowtie 2.
+Aligns reads to a reference using Bowtie 2, optionally filtering the output using Samtools
 
 **Inputs:**
 - `bowtie2_index_tar` (File): Compressed tarball containing Bowtie 2 genome index files
@@ -42,12 +42,20 @@ Aligns sequence reads to a reference genome using Bowtie 2.
 - `reads` (File): FASTQ file for forward (R1) reads
 - `name` (String): Sample name for output file naming and read group information
 - `mates` (File, optional): FASTQ file for reverse (R2) reads for paired-end alignment
+- `preset` (String, optional): Bowtie 2 sensitivity preset. One of `fast`, `sensitive`, `very-sensitive`, `fast-local`, `sensitive-local`, `very-sensitive-local`. Unset means bowtie2's default end-to-end `--sensitive` preset.
+- `capture_unaligned` (Boolean, default=false): If true, write reads that fail to align concordantly to gzipped FASTQ outputs (`--un-gz` / `--un-conc-gz`). Used for e.g. rRNA depletion upstream of a second alignment step.
+- `min_mapq` (Int, default=0): Minimum MAPQ score for `samtools view -q` post-alignment filter. 0 disables.
+- `samtools_filter_flags` (String, default=""): Extra flags passed to `samtools view` for post-alignment filtering (e.g. `-f 2` to keep only proper pairs).
+- `extra_bowtie2_args` (String, default=""): Additional arguments forwarded verbatim to bowtie2 (e.g. `--no-mixed --no-discordant`).
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
 **Outputs:**
 - `sorted_bam` (File): Sorted Bowtie 2 alignment output BAM file
 - `sorted_bai` (File): Index file for the sorted Bowtie 2 alignment BAM file
+- `unaligned_se` (File?, optional): FASTQ of unaligned reads. Only produced when `capture_unaligned` is true and `mates` is unset (single-end input).
+- `unaligned_r1` (File?, optional): FASTQ of R1 reads that failed to align concordantly. Only produced when `capture_unaligned` is true and `mates` is set (paired-end input).
+- `unaligned_r2` (File?, optional): FASTQ of R2 reads that failed to align concordantly. Only produced when `capture_unaligned` is true and `mates` is set (paired-end input).
 
 ## Usage as a Module
 
@@ -102,12 +110,42 @@ call bowtie2_tasks.bowtie2_align {
 }
 ```
 
+**rRNA depletion (capture unaligned reads for a second alignment step):**
+```wdl
+call bowtie2_tasks.bowtie2_align as deplete_rrna {
+  input:
+    bowtie2_index_tar = rrna_index_tar,
+    reads = r1, mates = r2,
+    name = "sample",
+    preset = "fast-local",
+    capture_unaligned = true
+}
+# Pass deplete_rrna.unaligned_r1 / unaligned_r2 into the next bowtie2_align call
+# against the experimental genome.
+```
+
+**PRO-seq spike-in alignment (sensitive local + proper-pair + MAPQ filter):**
+```wdl
+call bowtie2_tasks.bowtie2_align as align_spikein {
+  input:
+    bowtie2_index_tar = spikein_index_tar,
+    reads = trimmed_r1, mates = trimmed_r2,
+    name = "sample_spikein",
+    preset = "very-sensitive-local",
+    min_mapq = 10,
+    samtools_filter_flags = "-f 2",
+    extra_bowtie2_args = "--no-mixed --no-discordant"
+}
+```
+
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
 - **ww-testdata**: Automatic provisioning of test data for demonstrations
 - **ww-samtools**: Post-alignment BAM processing and statistics
 - **ww-fastqc**: Pre-alignment quality control of FASTQ files
+- **ww-fastp**: Adapter trimming and (optionally) UMI extraction; trimmed reads feed directly into `bowtie2_align`
+- **ww-umi-tools**: Downstream PCR-duplicate removal when fastp encoded UMIs into read names
 
 ## Testing the Module
 

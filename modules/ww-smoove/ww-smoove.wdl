@@ -14,6 +14,15 @@ task smoove_call {
         vcf: "Structural variant calls in compressed VCF format",
         vcf_index: "Index file for the VCF output"
     }
+    topic: "genomics,structural_variation"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "variant_calling"
+    input_sample_required: "aligned_bam:nucleic_acid_sequence_alignment:bam,aligned_bam_index:data_index:bai"
+    input_sample_optional: "target_regions_bed:annotation_track:bed,exclude_bed:annotation_track:bed"
+    input_reference_required: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {

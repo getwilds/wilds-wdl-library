@@ -16,6 +16,15 @@ task download_files {
         download_summary: "Summary report of the download operation",
         accessions_used: "The accession numbers that were processed"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_retrieval"
+    input_sample_required: "none"
+    input_sample_optional: "accessions_file:accession:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "downloaded_files:nucleic_acid_sequence:fastq,download_summary:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -122,6 +131,15 @@ task download_by_query {
         download_log: "Log file containing download status and details",
         download_summary: "Summary report of the download operation"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_retrieval"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "downloaded_files:nucleic_acid_sequence:fastq,download_log:report:textual_format,download_summary:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -203,6 +221,15 @@ task extract_fastq_pairs {
         accessions: "Array of ENA accession IDs extracted from filenames, parallel with r1_files and r2_files",
         is_paired_end_list: "Array of booleans indicating whether each sample is paired-end"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "file_handling"
+    input_sample_required: "downloaded_files:nucleic_acid_sequence:fastq"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "r1_files:nucleic_acid_sequence:fastq,r2_files:nucleic_acid_sequence:fastq"
+    output_reference: "none"
   }
 
   parameter_meta {

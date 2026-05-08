@@ -14,6 +14,15 @@ task annovar_annotate {
         annotated_vcf: "VCF file with Annovar annotations added",
         annotated_table: "Tab-delimited table with variant annotations"
     }
+    topic: "genomics,structural_variation"
+    species: "human"
+    operation: "annotation"
+    input_sample_required: "vcf_to_annotate:sequence_variations:vcf"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "annotated_vcf:sequence_variations:vcf,annotated_table:sequence_features:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {

@@ -19,6 +19,15 @@ task trimgalore_paired {
         r1_report: "Trimming report for R1",
         r2_report: "Trimming report for R2"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequence_trimming"
+    input_sample_required: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "r1_trimmed:nucleic_acid_sequence:fastq,r2_trimmed:nucleic_acid_sequence:fastq,r1_report:quality_control_report:textual_format,r2_report:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -104,6 +113,15 @@ task trimgalore_single {
         trimmed_fastq: "Trimmed FASTQ file",
         trimming_report: "Trimming report"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequence_trimming"
+    input_sample_required: "fastq:nucleic_acid_sequence:fastq"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "trimmed_fastq:nucleic_acid_sequence:fastq,trimming_report:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {

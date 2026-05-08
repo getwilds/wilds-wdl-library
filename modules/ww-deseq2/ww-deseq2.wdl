@@ -15,6 +15,15 @@ task combine_count_matrices {
         counts_matrix: "Combined matrix of gene-level counts from all samples",
         sample_metadata: "Metadata file containing sample names and conditions"
     }
+    topic: "transcriptomics,gene_expression"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "aggregation"
+    input_sample_required: "gene_count_files:gene_expression_matrix:tsv"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "counts_matrix:gene_expression_matrix:matrix,sample_metadata:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -90,6 +99,15 @@ task run_deseq2 {
         deseq2_ma_plot_shrunk: "MA plot with shrunken log fold changes (empty if shrinkage not applied)",
         deseq2_results_shrunk: "DESeq2 results with shrunken log fold changes (empty if shrinkage not applied)"
     }
+    topic: "transcriptomics,gene_expression"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "counts_matrix:gene_expression_matrix:matrix,sample_metadata:report:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "deseq2_results:report:csv,deseq2_significant:report:csv,deseq2_normalized_counts:report:csv,deseq2_pca_plot:plot:pdf,deseq2_volcano_plot:plot:pdf,deseq2_heatmap:plot:pdf"
+    output_reference: "none"
   }
 
   parameter_meta {
