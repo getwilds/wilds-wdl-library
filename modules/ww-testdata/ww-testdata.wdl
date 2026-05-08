@@ -1886,3 +1886,44 @@ task download_pao1_ref {
     memory: "~{memory_gb} GB"
   }
 }
+
+task download_10x_h5_data {
+  meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
+    description: "Downloads a 10x Genomics filtered feature-barcode matrix H5 file for testing single-cell analysis workflows"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        h5_matrix: "Filtered feature-barcode matrix in HDF5 format from 10x Genomics Cell Ranger"
+    }
+  }
+
+  parameter_meta {
+    sample_name: "Sample name used as the output filename prefix"
+    cpu_cores: "Number of CPU cores to use for downloading"
+    memory_gb: "Memory allocation in GB for the task"
+  }
+
+  input {
+    String sample_name = "2500_Wistar_Rat_PBMCs_Singleplex"
+    Int cpu_cores = 1
+    Int memory_gb = 2
+  }
+
+  command <<<
+    set -eo pipefail
+
+    curl -L -o "~{sample_name}_filtered_feature_bc_matrix.h5" \
+      "https://cf.10xgenomics.com/samples/cell-exp/9.0.0/2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal_2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal/2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal_2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal_count_sample_filtered_feature_bc_matrix.h5"
+  >>>
+
+  output {
+    File h5_matrix = "~{sample_name}_filtered_feature_bc_matrix.h5"
+  }
+
+  runtime {
+    docker: "getwilds/awscli:2.27.49"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
