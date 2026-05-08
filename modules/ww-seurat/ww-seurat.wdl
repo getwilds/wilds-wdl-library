@@ -18,12 +18,12 @@ task run_seurat {
     }
     topic: "transcriptomics,single_cell"
     species: "human,eukaryote"
-    operation: "clustering"
+    operation: "expression_analysis"
     input_sample_required: "input_h5:gene_expression_matrix:h5"
     input_sample_optional: "none"
     input_reference_required: "none"
     input_reference_optional: "none"
-    output_sample: "seurat_object:gene_expression_matrix:rds_format,qc_plot:quality_control_report:png,umap_plot:visualisation:png,heatmap_plot:visualisation:png,cluster_markers:gene_expression:csv"
+    output_sample: "seurat_object:gene_expression_matrix:rds_format,qc_plot:quality_control_report:png,umap_plot:plot:png,heatmap_plot:plot:png,cluster_markers:gene_report:csv"
     output_reference: "none"
   }
 
@@ -75,7 +75,7 @@ task run_seurat {
   }
 
   runtime {
-    docker: "getwilds/seurat:TODO"
+    docker: "getwilds/seurat:5.2.1"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
