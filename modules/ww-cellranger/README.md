@@ -13,9 +13,9 @@ This module provides reusable WDL tasks for preparing and processing single-cell
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `run_count`, `run_count_hpc`, `rename_fastqs`
-- **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
-- **Container**: Cell Ranger is not redistributable, so the WILDS Docker Library does not publish a public Cell Ranger image. A [Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) is provided so users can build their own private image. Fred Hutch users running on institutional HPC can instead use `run_count_hpc` with the `CellRanger/10.0.0` environment module under Fred Hutch's institutional Cell Ranger license.
+- **Tasks**: `run_count`, `run_count_hpc_cromwell`, `run_count_hpc_sprocket`, `rename_fastqs`
+- **Test workflows**: `testrun.wdl` for CI/CD; `testrun_hpc.wdl` for monthly HPC validation of the Sprocket module-load path
+- **Container**: Cell Ranger is not redistributable, so the WILDS Docker Library does not publish a public Cell Ranger image. A [Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) is provided so users can build their own private image. Fred Hutch users running on institutional HPC can instead use `run_count_hpc_cromwell` or `run_count_hpc_sprocket` with the `CellRanger/10.0.0` environment module under Fred Hutch's institutional Cell Ranger license.
 
 ## Important Requirements
 
@@ -26,7 +26,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 - Intel-based Macs (via Docker)
 - Cloud platforms and HPC clusters (GitHub Actions, AWS, Google Cloud, etc.)
 
-When using `run_count_hpc`, the same architecture requirement applies to the HPC compute nodes that load the Cell Ranger environment module.
+When using either `run_count_hpc_cromwell` or `run_count_hpc_sprocket`, the same architecture requirement applies to the HPC compute nodes that load the Cell Ranger environment module.
 
 **Note for Apple Silicon (M1/M2/M3) Mac users:** Local testing is not supported. Docker's x86_64 emulation on Apple Silicon does not support the AVX instructions that Cell Ranger requires. The CI/CD pipeline will test this module on compatible infrastructure.
 
@@ -48,14 +48,15 @@ If you need support for feature barcoding or other Cell Ranger features, please 
 
 ### Picking a `run_count` variant
 
-Cell Ranger's license prevents WILDS from publishing a public Docker image, and WDL's runtime block does not let a single task cleanly toggle between the `docker` and `modules` runtime attributes. This module therefore exposes two near-identical tasks; pick the one that matches your environment:
+Cell Ranger's license prevents WILDS from publishing a public Docker image, and the two HPC engines this library supports (Cromwell and Sprocket) load host environment modules in different ways. This module therefore exposes three near-identical tasks; pick the one that matches your environment:
 
-| Task | Use when | Runtime attribute |
+| Task | Use when | How Cell Ranger is obtained |
 | --- | --- | --- |
-| `run_count` | You have a private Cell Ranger Docker image (built locally from the [WILDS Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) or supplied by your organization). Right choice for cloud, CI, and most local runs. | `docker` |
-| `run_count_hpc` | You are running on an institutional HPC where Cell Ranger is provided as an environment module under an institutional license (e.g., Fred Hutch HPC via PROOF). | `modules` |
+| `run_count` | You have a private Cell Ranger Docker image (built locally from the [WILDS Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) or supplied by your organization). Right choice for cloud, CI, and most local runs. | `docker` runtime key pulls a private Cell Ranger image |
+| `run_count_hpc_cromwell` | You are running on an institutional HPC via Cromwell (e.g., Fred Hutch HPC via PROOF), and your Cromwell backend executes tasks directly on the compute node. | No `docker` runtime key; the task runs on the host and `module load` makes the licensed Cell Ranger binary available on `PATH` |
+| `run_count_hpc_sprocket` | You are running on an institutional HPC via Sprocket, where tasks always run inside a container under Apptainer. | Runs inside a minimal Lua container (`getwilds/lua:5.3.6`); the host's Lmod tree, modulefiles, and Cell Ranger software tree are bind-mounted in via the Sprocket HPC config so `module load` works inside the container |
 
-Both tasks produce identical outputs and accept the same scientific parameters; they differ only in how they obtain the Cell Ranger binary.
+All three tasks produce identical outputs and accept the same scientific parameters; they differ only in how they obtain the Cell Ranger binary. The Sprocket variant requires a Sprocket configuration that bind-mounts the host's Lmod and Cell Ranger software trees into the container — see [`.github/configs/sprocket-hpc.toml`](../../.github/configs/sprocket-hpc.toml) for the reference setup used in the monthly HPC test run.
 
 ### `run_count`
 
@@ -80,26 +81,48 @@ Run `cellranger count` on gene expression reads from one GEM well using a privat
 - `web_summary` (File): Web summary HTML file with QC metrics
 - `metrics_summary` (File): Metrics summary CSV file with key statistics
 
-### `run_count_hpc`
+### `run_count_hpc_cromwell`
 
-Run `cellranger count` on gene expression reads from one GEM well using an HPC environment module instead of a Docker image. Honored only by backends whose Cromwell configuration registers a `modules` runtime attribute (e.g., the Fred Hutch HPC via PROOF); on container-based backends the `modules` runtime attribute is ignored, no Cell Ranger binary will be on `PATH`, and the task will fail.
+Run `cellranger count` on gene expression reads from one GEM well using the host's environment-module system instead of a Docker image. The task omits the `docker` runtime key entirely so that Cromwell's HPC backend executes it directly on the compute node, where `module load` makes the licensed Cell Ranger binary available on `PATH`. Intended for Cromwell-on-HPC deployments such as the Fred Hutch HPC via PROOF; on container-based backends, no Cell Ranger binary will be on `PATH` and the task will fail.
 
 **Inputs:** Same as `run_count`, except `docker_image` is replaced by:
-- `environment_modules` (String, default=`"CellRanger/10.0.0"`): Space-separated list of HPC environment modules to load before invoking `cellranger count`.
+- `cellranger_module` (String, default=`"CellRanger/10.0.0"`): HPC environment module to load before invoking `cellranger count`.
 
 **Outputs:** Same as `run_count`.
 
-Example, HPC with environment modules:
+Example, Cromwell-on-HPC with environment modules:
 ```wdl
-call cellranger_tasks.run_count_hpc {
+call cellranger_tasks.run_count_hpc_cromwell {
   input:
     r1_fastqs = r1_fastqs,
     r2_fastqs = r2_fastqs,
     ref_gex = reference,
     sample_id = "my_sample",
-    environment_modules = "CellRanger/10.0.0"
+    cellranger_module = "CellRanger/10.0.0"
 }
 ```
+
+### `run_count_hpc_sprocket`
+
+Run `cellranger count` on gene expression reads from one GEM well from inside a minimal Lua container, with the host's Lmod tree and Cell Ranger software tree bind-mounted in. Sprocket always runs tasks inside a container under Apptainer, so this variant cannot omit the `docker` runtime key the way `run_count_hpc_cromwell` does; instead the container ships only the bits needed to execute `module load` (Lua) and the Cell Ranger binary itself comes in via host bind-mounts configured in the Sprocket HPC config.
+
+**Inputs:** Same as `run_count_hpc_cromwell`.
+
+**Outputs:** Same as `run_count`.
+
+Example, Sprocket-on-HPC with environment modules:
+```wdl
+call cellranger_tasks.run_count_hpc_sprocket {
+  input:
+    r1_fastqs = r1_fastqs,
+    r2_fastqs = r2_fastqs,
+    ref_gex = reference,
+    sample_id = "my_sample",
+    cellranger_module = "CellRanger/10.0.0"
+}
+```
+
+> **Sprocket configuration note:** This task assumes a Sprocket config that bind-mounts `/app/lmod`, the host's modulefiles, and the host's Cell Ranger software tree into the container. The reference setup used by the monthly HPC test run lives in [`.github/configs/sprocket-hpc.toml`](../../.github/configs/sprocket-hpc.toml).
 
 ### `rename_fastqs`
 
@@ -212,6 +235,10 @@ The test workflow (`cellranger_example`) automatically:
 3. Runs Cell Ranger count analysis
 4. Validates all outputs
 
+### HPC Test Workflow
+
+`testrun_hpc.wdl` mirrors the regular testrun's coverage but dispatches to `run_count_hpc_sprocket` instead of `run_count`. It is intended to be exercised on Fred Hutch HPC via Sprocket on a monthly basis to validate the module-load path; the Cromwell variant (`run_count_hpc_cromwell`) is exercised by users running Cromwell on their HPC by hand. Uses the same tiny test data as `testrun.wdl` so the only thing this run validates is the HPC dispatch path.
+
 ## Configuration Guidelines
 
 ### Resource Allocation
@@ -236,7 +263,7 @@ The module supports flexible resource configuration:
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- One of: Docker/Apptainer support with a private Cell Ranger image (for `run_count`), or an HPC backend configured with a `modules` runtime attribute and a Cell Ranger environment module (for `run_count_hpc`)
+- One of: Docker/Apptainer support with a private Cell Ranger image (for `run_count`), a Cromwell-on-HPC backend that runs tasks directly on the compute node and provides Cell Ranger via Lmod (for `run_count_hpc_cromwell`), or a Sprocket-on-HPC config that bind-mounts the host's Lmod and Cell Ranger software trees into the container (for `run_count_hpc_sprocket`)
 - Sufficient computational resources (Cell Ranger can be memory-intensive)
 - 10x Genomics reference transcriptome (available from [10x Genomics Download Center](https://www.10xgenomics.com/support/software/cell-ranger/downloads#reference-downloads))
 
