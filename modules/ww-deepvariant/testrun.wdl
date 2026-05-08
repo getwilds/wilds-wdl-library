@@ -46,7 +46,7 @@ workflow deepvariant_example {
       ref_fasta = download_reference.fasta,
       ref_fasta_index = download_reference.fasta_index,
       model_type = "WGS",
-      regions = "chr1",
+      regions = "chr1:1000000-2000000",
       cpu_cores = 2,
       memory_gb = 8
     }
@@ -61,7 +61,7 @@ workflow deepvariant_example {
     ref_fasta_index = download_reference.fasta_index,
     model_type = "WGS",
     output_gvcf_enabled = true,
-    regions = "chr1",
+    regions = "chr1:1000000-2000000",
     cpu_cores = 2,
     memory_gb = 8
   }
