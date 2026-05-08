@@ -29,32 +29,33 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
    - Converts `{sra_id}_1.fastq.gz` to `{sra_id}_S1_R1_001.fastq.gz`
 
 3. **Cell Ranger Count** (using `ww-cellranger` module):
-   - Runs `cellranger count` on each sample via either `run_count` (private Docker image) or `run_count_hpc` (HPC environment module), selected by the `use_hpc_modules` flag
+   - Runs `cellranger count` on each sample via one of `run_count` (private Docker image), `run_count_hpc_cromwell` (HPC environment module on a Cromwell-on-HPC backend), or `run_count_hpc_sprocket` (HPC environment module inside a Sprocket-managed Lua container), selected by the `execution_mode` input
    - Generates gene expression matrices, web summaries, and metrics
 
 ## Module Dependencies
 
 This pipeline imports and uses:
 - **ww-sra module**: For SRA data download (`fastqdump` task, with optional dbGaP/NGC support)
-- **ww-cellranger module**: For FASTQ renaming (`rename_fastqs` task) and gene expression quantification (either `run_count` or `run_count_hpc`, selected per run via the `use_hpc_modules` input)
+- **ww-cellranger module**: For FASTQ renaming (`rename_fastqs` task) and gene expression quantification (one of `run_count`, `run_count_hpc_cromwell`, or `run_count_hpc_sprocket`, selected per run via the `execution_mode` input)
 
 ## Cell Ranger Software Environment
 
-Cell Ranger is not redistributable, so the WILDS Docker Library does not publish a public Cell Ranger image. This pipeline therefore exposes two execution paths and a boolean to pick between them:
+Cell Ranger is not redistributable, so the WILDS Docker Library does not publish a public Cell Ranger image. This pipeline therefore exposes three execution paths and a string input to pick between them:
 
-| `use_hpc_modules` | Task called | Use when |
+| `execution_mode` | Task called | Use when |
 | --- | --- | --- |
-| `false` (default) | `run_count` | You have a private Cell Ranger Docker image (built from the [WILDS Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) or supplied by your organization). Override `docker_image` to point at it. |
-| `true` | `run_count_hpc` | You are running on an institutional HPC backend configured with a `modules` runtime attribute and a Cell Ranger environment module (e.g., Fred Hutch HPC via PROOF). Override `environment_modules` if your site uses a different module name/version. |
+| `"docker"` (default) | `run_count` | You have a private Cell Ranger Docker image (built from the [WILDS Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) or supplied by your organization). Override `docker_image` to point at it. |
+| `"hpc_cromwell"` | `run_count_hpc_cromwell` | You are running on a Cromwell-on-HPC backend that executes tasks directly on the compute node (e.g., Fred Hutch HPC via PROOF). Cell Ranger is loaded via `module load` on the host and made available on `PATH`. Override `cellranger_module` if your site uses a different module name/version. |
+| `"hpc_sprocket"` | `run_count_hpc_sprocket` | You are running on a Sprocket-on-HPC backend, which always runs tasks inside a container under Apptainer. Cell Ranger is loaded inside a minimal Lua container with the host's Lmod and Cell Ranger software trees bind-mounted in (see [`.github/configs/sprocket-hpc.toml`](../../.github/configs/sprocket-hpc.toml)). Override `cellranger_module` if your site uses a different module name/version. |
 
-The unused input is ignored — e.g., `docker_image` has no effect when `use_hpc_modules = true`. See the [ww-cellranger module README](../../modules/ww-cellranger/README.md) for more detail on the two task variants.
+Unused inputs are ignored — e.g., `docker_image` has no effect when `execution_mode = "hpc_sprocket"`. An invalid `execution_mode` causes all dispatch branches to skip and the pipeline's `select_first` calls to fail loudly. See the [ww-cellranger module README](../../modules/ww-cellranger/README.md) for more detail on the three task variants.
 
 ## Usage
 
 ### Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- One of: Docker/Apptainer support with a private Cell Ranger image (default path), or an HPC backend configured with a `modules` runtime attribute and a Cell Ranger environment module (when `use_hpc_modules = true`)
+- One of: Docker/Apptainer support with a private Cell Ranger image (default `execution_mode = "docker"`), a Cromwell-on-HPC backend that runs tasks directly on the compute node and provides Cell Ranger via Lmod (`execution_mode = "hpc_cromwell"`), or a Sprocket-on-HPC config that bind-mounts the host's Lmod and Cell Ranger software trees into the container (`execution_mode = "hpc_sprocket"`)
 - Internet access for SRA downloads
 - Sufficient compute resources for Cell Ranger (64GB+ RAM recommended)
 - **Platform**: Cell Ranger requires Linux x86_64 with AVX support (not compatible with Apple Silicon)
@@ -69,13 +70,13 @@ Create an inputs JSON file with your SRA accessions and Cell Ranger reference:
   "sra_cellranger.ref_gex": "/path/to/cellranger/reference.tar.gz",
   "sra_cellranger.ncpu": 8,
   "sra_cellranger.memory_gb": 64,
-  "sra_cellranger.use_hpc_modules": true,
+  "sra_cellranger.execution_mode": "hpc_cromwell",
   "sra_cellranger.docker_image": "ghcr.io/getwilds/cellranger:10.0.0",
-  "sra_cellranger.environment_modules": "CellRanger/10.0.0"
+  "sra_cellranger.cellranger_module": "CellRanger/10.0.0"
 }
 ```
 
-> **Note:** This template sets `use_hpc_modules: true` so it works out of the box for Fred Hutch users on PROOF (where Cell Ranger is provided as the `CellRanger/10.0.0` environment module). The WDL default for `use_hpc_modules` is `false` — if you are running on a container-based backend, flip it to `false` and override `docker_image` to point at your private Cell Ranger image. See [Cell Ranger Software Environment](#cell-ranger-software-environment) above for details.
+> **Note:** This template sets `execution_mode: "hpc_cromwell"` so it works out of the box for Fred Hutch users on PROOF (where Cell Ranger is provided as the `CellRanger/10.0.0` environment module under Cromwell). The WDL default is `"docker"` — if you are running on a container-based backend, change it to `"docker"` and override `docker_image` to point at your private Cell Ranger image. If you are submitting to Sprocket-on-HPC instead of Cromwell-on-HPC, change it to `"hpc_sprocket"`. See [Cell Ranger Software Environment](#cell-ranger-software-environment) above for details.
 >
 > The `ngc_file` parameter is optional. Include it when downloading controlled-access dbGaP data.
 
@@ -109,9 +110,9 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `create_bam` | Whether Cell Ranger should generate a BAM file | Boolean | No | true |
 | `expect_cells` | Expected number of recovered cells per sample | Int | No | - |
 | `chemistry` | Assay configuration (e.g., SC3Pv2, SC3Pv3) | String | No | auto-detect |
-| `use_hpc_modules` | Dispatch to `run_count_hpc` (HPC environment modules) instead of `run_count` (private Docker image). See [Cell Ranger Software Environment](#cell-ranger-software-environment). | Boolean | No | false |
-| `docker_image` | Private Cell Ranger Docker image used by `run_count`. Ignored when `use_hpc_modules = true`. | String | No | `ghcr.io/getwilds/cellranger:10.0.0` |
-| `environment_modules` | HPC environment module(s) used by `run_count_hpc`. Ignored when `use_hpc_modules = false`. | String | No | `CellRanger/10.0.0` |
+| `execution_mode` | Which Cell Ranger task to dispatch to: `"docker"`, `"hpc_cromwell"`, or `"hpc_sprocket"`. See [Cell Ranger Software Environment](#cell-ranger-software-environment). | String | No | `"docker"` |
+| `docker_image` | Private Cell Ranger Docker image used by `run_count`. Ignored unless `execution_mode = "docker"`. | String | No | `ghcr.io/getwilds/cellranger:10.0.0` |
+| `cellranger_module` | HPC environment module used by the `run_count_hpc_*` tasks. Ignored unless `execution_mode` starts with `hpc_`. | String | No | `CellRanger/10.0.0` |
 
 ### Cell Ranger Reference
 
@@ -162,6 +163,10 @@ The test workflow automatically:
 3. Renames FASTQs for Cell Ranger compatibility
 4. Runs Cell Ranger count
 5. Outputs results, web summary, and metrics
+
+### HPC Test Workflow
+
+`testrun_hpc.wdl` mirrors the regular testrun's coverage but dispatches with `execution_mode = "hpc_sprocket"` so it exercises the Sprocket + module-load path end-to-end. It is intended to be exercised on Fred Hutch HPC via Sprocket on a monthly basis to validate the HPC dispatch path; the Cromwell-on-HPC path (`execution_mode = "hpc_cromwell"`) is exercised by users running Cromwell on their HPC by hand. Uses the same tiny SRA download and Cell Ranger reference as `testrun.wdl`.
 
 ## Related WILDS Components
 
