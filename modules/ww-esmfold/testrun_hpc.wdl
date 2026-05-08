@@ -1,4 +1,4 @@
-version 1.0
+version 1.2
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-esmfold/ww-esmfold.wdl" as ww_esmfold
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata

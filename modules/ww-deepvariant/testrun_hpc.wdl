@@ -1,4 +1,4 @@
-version 1.0
+version 1.2
 
 # HPC test workflow for ww-deepvariant. Mirrors testrun.wdl coverage with
 # GPU acceleration enabled — intended to validate end-to-end behavior on

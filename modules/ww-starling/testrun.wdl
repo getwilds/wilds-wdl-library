@@ -1,4 +1,4 @@
-version 1.0
+version 1.2
 
 # Import module under test and testdata module using relative paths for local development
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-starling/ww-starling.wdl" as ww_starling
