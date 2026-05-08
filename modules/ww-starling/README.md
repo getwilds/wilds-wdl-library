@@ -27,7 +27,7 @@ Generate a structural ensemble for an intrinsically disordered protein sequence.
 - `sequence` (String): Amino acid sequence string for the disordered protein region
 - `sample_name` (String): Name identifier for the output files
 - `num_conformations` (Int, default=400): Number of conformations to generate in the ensemble
-- `gpu_enabled` (Boolean, default=true): Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime)
+- `gpu_enabled` (Boolean, default=true): Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime). See [GPU Execution Across Environments](#gpu-execution-across-environments) for backend-specific configuration.
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
@@ -43,7 +43,7 @@ Generate structural ensembles for multiple protein sequences from a FASTA file.
 **Inputs:**
 - `fasta_file` (File): FASTA file containing one or more protein sequences
 - `num_conformations` (Int, default=400): Number of conformations to generate per sequence in the ensemble
-- `gpu_enabled` (Boolean, default=true): Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime)
+- `gpu_enabled` (Boolean, default=true): Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime). See [GPU Execution Across Environments](#gpu-execution-across-environments) for backend-specific configuration.
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
 
@@ -81,6 +81,8 @@ Query metadata and summary information from a STARLING ensemble file.
 ## Usage as a Module
 
 ### Importing into Your Workflow
+
+The example below imports from `refs/heads/main`, which always points at the latest version of the module. For reproducible workflows, you can pin the import to a specific release tag (`refs/tags/v0.3.0`) or commit SHA (`<full-sha>`) by swapping `refs/heads/main` in the URL — just make sure the tag or commit you pin to actually contains this module.
 
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-starling/ww-starling.wdl" as starling_tasks
@@ -176,6 +178,31 @@ This module uses the `getwilds/starling:2.0.0a3` container image, which should i
 - `cpu_cores`: Increase for longer sequences or larger ensembles
 - `memory_gb`: Increase for very long disordered regions (>200 residues)
 - `num_conformations`: More conformations provide better sampling but take longer
+
+## GPU Execution Across Environments
+
+The `gpu_enabled` input controls two things in the GPU-using tasks (`generate_ensemble` and `generate_ensemble_batch`):
+1. **STARLING device selection**: When `true`, passes `-d cuda` to STARLING; when `false`, passes `-d cpu`.
+2. **WDL runtime GPU attribute**: Translates to the standard `gpu: Boolean` key in the `runtime` block.
+
+GPU scheduling is not standardized across WDL executors, so the way GPUs are requested in the `runtime` section depends on where the workflow is run. This module ships configured for the standard `gpu: Boolean` key under WDL 1.2, which works with recent versions of miniWDL, Sprocket, and Cromwell in cloud/local environments — and with Sprocket on the Fred Hutch HPC.
+
+If you'd rather run through PROOF (the Fred Hutch point-and-click interface for Cromwell on HPC), two modifications are required because PROOF's Cromwell deployment targets WDL 1.0:
+
+1. **Downgrade the WDL version** from `version 1.2` to `version 1.0` at the top of `ww-starling.wdl`.
+2. **Switch the runtime key** from `gpu` to `gpus` (an integer count passed as a string) in both `generate_ensemble` and `generate_ensemble_batch`. Each task already includes the alternate line as a comment for convenience:
+
+   ```wdl
+   runtime {
+     docker: "getwilds/starling:2.0.0a3"
+     # gpu: gpu_enabled
+     gpus: if gpu_enabled then "1" else "0"
+     cpu: cpu_cores
+     memory: "~{memory_gb} GB"
+   }
+   ```
+
+If you're on Fred Hutch HPC and don't need the PROOF UI, you can keep the module as-is and submit via Sprocket. For other HPC or cloud backends, check that backend's documentation for its expected GPU runtime attribute — some engines also accept `gpuCount`, `gpuType`, or backend-specific keys via `hints`.
 
 ## Contributing
 

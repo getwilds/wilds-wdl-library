@@ -3,7 +3,7 @@
 ## disordered protein regions using a latent-space probabilistic denoising
 ## diffusion model with a Vision Transformer architecture.
 
-version 1.0
+version 1.2
 
 #### TASK DEFINITIONS ####
 
@@ -67,9 +67,11 @@ task generate_ensemble {
 
   runtime {
     docker: "getwilds/starling:2.0.0a3"
+    gpu: gpu_enabled
+    # For use in PROOF, switch to using the 'gpus' parameter
+    # gpus: if gpu_enabled then "1" else "0"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    gpus: if gpu_enabled then "1" else "0"
   }
 }
 
@@ -132,9 +134,11 @@ task generate_ensemble_batch {
 
   runtime {
     docker: "getwilds/starling:2.0.0a3"
+    gpu: gpu_enabled
+    # For use in PROOF, switch to using the 'gpus' parameter
+    # gpus: if gpu_enabled then "1" else "0"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    gpus: if gpu_enabled then "1" else "0"
   }
 }
 
