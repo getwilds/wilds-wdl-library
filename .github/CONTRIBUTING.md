@@ -266,20 +266,24 @@ miniwdl run testrun.wdl
 Use our automated Makefile from the repository root for easier testing:
 
 ```bash
-# Test a specific module (replace ww-toolname with your module name)
-make lint MODULE=ww-toolname          # Run all linting checks
-make lint_sprocket MODULE=ww-toolname # Run only sprocket linting
-make lint_miniwdl MODULE=ww-toolname  # Run only miniwdl linting
-make run_sprocket MODULE=ww-toolname  # Run sprocket with proper entrypoint
-make run_miniwdl MODULE=ww-toolname   # Run miniwdl
+# Test a specific module or pipeline (replace ww-toolname with your module/pipeline name)
+make lint NAME=ww-toolname          # Run all linting checks
+make lint_sprocket NAME=ww-toolname # Run only sprocket linting
+make lint_miniwdl NAME=ww-toolname  # Run only miniwdl linting
+make run_sprocket NAME=ww-toolname  # Run sprocket with proper entrypoint
+make run_miniwdl NAME=ww-toolname   # Run miniwdl
 
-# Test all modules
-make lint    # Lint all modules
-make run     # Run all modules with both sprocket and miniwdl
+# Test all modules and pipelines
+make lint    # Lint everything
+make run     # Run everything with both sprocket and miniwdl
 
-# By default, the run targets use testrun.wdl. To exercise an HPC-only
-# variant locally (e.g. on a system with GPUs and the right module
-# environment), pass TARGET=hpc:
+# Scope by tier with TYPE=modules or TYPE=pipelines
+make run_sprocket TYPE=modules
+
+# By default, the run targets use testrun.wdl (TARGET=ci). To exercise
+# the HPC variant locally instead — useful on a system with GPUs and the
+# right module environment — pass TARGET=hpc; the run will prefer
+# testrun_hpc.wdl when present and fall back to testrun.wdl otherwise:
 make run_sprocket NAME=ww-toolname TARGET=hpc
 ```
 
@@ -331,10 +335,10 @@ export WORK_DIR=/hpc/temp/your-username/wilds-testrun
 sbatch /path/to/hpc-testrun.sbatch
 ```
 
-You can also run the test suite manually on the HPC without the SLURM script:
+You can also run the test suite manually on the HPC without the SLURM script. Pass `TARGET=hpc` so each module/pipeline runs its `testrun_hpc.wdl` when present (with `testrun.wdl` as the fallback):
 
 ```bash
-make run_sprocket SPROCKET_CONFIG=/path/to/your/sprocket-slurm-config.toml
+make run_sprocket TARGET=hpc SPROCKET_CONFIG=/path/to/your/sprocket-slurm-config.toml
 ```
 
 ## Documentation Website
