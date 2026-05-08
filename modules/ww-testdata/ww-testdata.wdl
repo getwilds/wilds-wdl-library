@@ -1891,10 +1891,10 @@ task download_10x_h5_data {
   meta {
     author: "Emma Bishop"
     email: "ebishop@fredhutch.org"
-    description: "Downloads a 10x Genomics filtered feature-barcode matrix H5 file for testing single-cell analysis workflows"
+    description: "Downloads a 10X example data H5 file (2500 rat cells)"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
-        h5_matrix: "Filtered feature-barcode matrix in HDF5 format from 10x Genomics Cell Ranger"
+        h5_matrix: "Filtered feature-barcode matrix in HDF5 format"
     }
   }
 
