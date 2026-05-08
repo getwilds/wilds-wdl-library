@@ -14,7 +14,7 @@ This module wraps Clair3's variant calling functionality for use in WILDS WDL wo
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
 
 - **Main WDL file**: `ww-clair3.wdl` - Contains task definitions for the module
-- **Test workflow**: `testrun.wdl` - Demonstration workflow for testing and examples
+- **Test workflows**: `testrun.wdl` for CI/CD; `testrun_hpc.wdl` for monthly HPC validation with GPU enabled
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
@@ -171,6 +171,10 @@ The test workflow automatically:
    - **Pileup-only mode**: Fast variant calling producing a VCF
    - **Full-alignment mode with gVCF**: Complete pipeline producing both VCF and gVCF outputs
 3. Outputs VCF and gVCF files with germline variant calls
+
+### HPC Test Workflow
+
+`testrun_hpc.wdl` mirrors the regular testrun's coverage but enables GPU on both Clair3 invocations and downloads the full chr1 reference. It is intended to be exercised on Fred Hutch HPC (via Sprocket directly or via PROOF after applying the WDL 1.0 / `gpus` swap described above), and includes a small validation task that confirms non-empty VCF and gVCF outputs.
 
 ## Docker Container
 
