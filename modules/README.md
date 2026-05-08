@@ -37,14 +37,15 @@ Each module directory contains the following standard components:
 ```
 modules/module-name/
 ├── module-name.wdl         # Main WDL file with task definitions
-├── testrun.wdl             # Zero-configuration test workflow
+├── testrun.wdl             # Zero-configuration test workflow used in CI
+├── testrun_hpc.wdl         # Optional HPC-only test workflow (see below)
 └── README.md               # Module-specific documentation
 ```
 
 ### **Required Components**
 
 - **WDL File**: Contains all task definitions for the module
-- **Test Workflow**: `testrun.wdl` - Zero-configuration demonstration workflow that exercises all tasks
+- **Test Workflow**: At least one of `testrun.wdl` (used in CI) or `testrun_hpc.wdl` (used in monthly HPC test runs). Most modules ship just `testrun.wdl`; modules whose tools require GPUs, an HPC environment module, or more memory than GitHub Actions provides may add a `testrun_hpc.wdl`, and modules that cannot run in CI at all may ship only `testrun_hpc.wdl` (e.g. `ww-esmfold`). See the [contributing guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for the full table of file combinations.
 - **README**: Module-specific documentation with usage examples
 
 ## Available Modules
@@ -135,6 +136,8 @@ sprocket run testrun.wdl
 
 The test workflows automatically download test data and use hardcoded settings optimized for testing.
 
+If a module ships a `testrun_hpc.wdl`, that file is exercised on the monthly Fred Hutch HPC test run instead of (or in addition to) `testrun.wdl`. You can run it locally too if your environment supports it (e.g. a system with GPUs and the right environment modules) — invoke it the same way as `testrun.wdl`, or pass `TARGET=hpc` to the Makefile to have it picked up automatically.
+
 ## Testing and Validation
 
 ### **Automated Testing**
@@ -142,6 +145,8 @@ All modules are automatically tested through GitHub Actions:
 - **Multi-executor testing**: Cromwell, miniWDL, and Sprocket
 - **Real data validation**: Uses actual bioinformatics datasets
 - **Output verification**: Comprehensive validation of all outputs
+
+Modules that exceed GitHub Actions resource limits (e.g. `ww-esmfold`) are excluded from CI and validated instead on the Fred Hutch HPC on a monthly basis. See the [contributing guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details.
 
 ## Integration with Pipelines
 
