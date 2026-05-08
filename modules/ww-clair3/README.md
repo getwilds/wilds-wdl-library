@@ -50,7 +50,7 @@ Runs Clair3 to call germline variants from aligned reads using deep learning pil
 - `ctg_name` (String?, optional): Contig/chromosome name to restrict calling
 - `include_all_ctgs` (Boolean, default=false): Call on all contigs (required for non-human species)
 - `pileup_only` (Boolean, default=false): Use only the pileup model for faster variant calling (skips full-alignment stage)
-- `gpu_enabled` (Boolean, default=false): Enable GPU acceleration for Clair3 inference. Note: the `gpus` runtime attribute is specified as a string (e.g., `"1"`) rather than an integer, as required by Fred Hutch PROOF/Cromwell configuration, but can be adjusted as necessary.
+- `gpu_enabled` (Boolean, default=false): Enable GPU acceleration for Clair3 inference (requests GPU in runtime). See [GPU Execution Across Environments](#gpu-execution-across-environments) for backend-specific configuration.
 - `cpu_cores` (Int, default=8): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=32): Memory allocated for the task in GB
 
@@ -63,6 +63,8 @@ Runs Clair3 to call germline variants from aligned reads using deep learning pil
 ## Usage as a Module
 
 ### Importing into Your Workflow
+
+The example below imports from `refs/heads/main`, which always points at the latest version of the module. For reproducible workflows, you can pin the import to a specific release tag (`refs/tags/v0.3.0`) or commit SHA (`<full-sha>`) by swapping `refs/heads/main` in the URL — just make sure the tag or commit you pin to actually contains this module.
 
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-clair3/ww-clair3.wdl" as clair3_tasks
@@ -199,6 +201,27 @@ This module uses the `getwilds/clair3:2.0.0` container image, which includes:
 - `cpu_cores`: Clair3 parallelizes by splitting chromosomes into chunks (4 threads each)
 - `memory_gb`: Increase for high-coverage samples or when calling on many contigs
 - For targeted sequencing with BED files, lower resources may be sufficient
+
+## GPU Execution Across Environments
+
+GPU scheduling is not standardized across WDL executors, so the way GPUs are requested in the `runtime` section depends on where the workflow is run. This module ships configured for the standard `gpu: Boolean` key under WDL 1.2, which works with recent versions of miniWDL, Sprocket, and Cromwell in cloud/local environments — and with Sprocket on the Fred Hutch HPC.
+
+If you'd rather run through PROOF (the Fred Hutch point-and-click interface for Cromwell on HPC), two modifications are required because PROOF's Cromwell deployment targets WDL 1.0:
+
+1. **Downgrade the WDL version** from `version 1.2` to `version 1.0` at the top of `ww-clair3.wdl`.
+2. **Switch the runtime key** from `gpu` to `gpus` (an integer count passed as a string) in the `run_clair3` task. The task already includes the alternate line as a comment for convenience:
+
+   ```wdl
+   runtime {
+     docker: "getwilds/clair3:2.0.0"
+     # gpu: gpu_enabled
+     gpus: if gpu_enabled then "1" else "0"
+     cpu: cpu_cores
+     memory: "~{memory_gb} GB"
+   }
+   ```
+
+If you're on Fred Hutch HPC and don't need the PROOF UI, you can keep the module as-is and submit via Sprocket. For other HPC or cloud backends, check that backend's documentation for its expected GPU runtime attribute — some engines also accept `gpuCount`, `gpuType`, or backend-specific keys via `hints`.
 
 ## Contributing
 

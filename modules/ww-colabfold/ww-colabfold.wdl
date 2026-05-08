@@ -3,7 +3,7 @@
 ## Designed to be a modular component within the WILDS ecosystem that can be used
 ## independently or integrated with other WILDS workflows.
 
-version 1.0
+version 1.2
 
 #### TASK DEFINITIONS ####
 
@@ -164,8 +164,10 @@ task colabfold_predict {
 
   runtime {
     docker: "getwilds/colabfold:1.5.5"
+    gpu: gpu_enabled
+    # For use in PROOF, switch to using the 'gpus' parameter
+    # gpus: if gpu_enabled then "1" else "0"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    gpus: if gpu_enabled then "1" else "0"
   }
 }
