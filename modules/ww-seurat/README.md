@@ -6,7 +6,13 @@ A WILDS WDL module for single-cell RNA-seq analysis using Seurat.
 
 ## Overview
 
-TODO: Add overview description.
+This module provides a reusable WDL task for QC, normalization, clustering, and marker gene identification of single-cell RNA-seq data using [Seurat](https://satijalab.org/seurat/). It accepts a Cell Ranger HDF5 output file and runs the following steps:
+
+1. **Load data** — reads the filtered feature-barcode matrix from a `.h5` file
+2. **QC filtering** — calculates mitochondrial gene percentage and filters cells by minimum feature count and maximum mitochondrial percentage
+3. **Normalization** — runs SCTransform (regressing out mitochondrial percentage) followed by PCA and UMAP (top 30 PCs)
+4. **Clustering** — Louvain clustering at a user-specified resolution
+5. **Marker genes** — runs `FindAllMarkers` (positive markers only) and saves the top 30 markers per cluster; generates a heatmap of the top 8 markers per cluster
 
 ## Module Structure
 
@@ -15,7 +21,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 - **Tasks**: `run_seurat`
 - **Scripts**: `seurat_analysis.R` (fetched via curl at runtime)
 - **Test workflow**: `testrun.wdl`
-- **Containers**: `getwilds/seurat:TODO`
+- **Container**: `getwilds/seurat:5.2.1`
 
 ## Scripts
 
@@ -23,31 +29,36 @@ All scripts are fetched from this repository at runtime via `curl`.
 
 | Script | Used by | Language | Description |
 |--------|---------|----------|-------------|
-| [`seurat_analysis.R`](seurat_analysis.R) | `run_seurat` | R | TODO |
+| [`seurat_analysis.R`](seurat_analysis.R) | `run_seurat` | R | Loads a Cell Ranger `.h5` matrix, filters cells by QC thresholds, normalizes with SCTransform, runs PCA/UMAP, performs Louvain clustering, and identifies marker genes per cluster |
 
 ## Tasks
 
 ### `run_seurat`
 
-Performs single-cell RNA-seq analysis using Seurat.
+Performs QC, normalization, clustering, and marker gene identification on a Cell Ranger HDF5 matrix file.
 
 **Inputs:**
-- `input_matrix_dir` (Directory): Cell Ranger output directory (matrix.mtx.gz, barcodes.tsv.gz, features.tsv.gz)
-- `sample_name` (String): Sample name used for output file prefixes
-- `min_cells` (Int): Minimum number of cells a gene must be detected in (default: 3)
-- `min_features` (Int): Minimum number of features per cell (default: 200)
-- `max_features` (Int): Maximum number of features per cell (default: 2500)
-- `max_percent_mt` (Float): Maximum mitochondrial gene percentage per cell (default: 5.0)
-- `n_variable_features` (Int): Number of highly variable features for PCA (default: 2000)
-- `n_dims` (Int): Number of PCA dimensions for clustering and UMAP (default: 10)
-- `resolution` (Float): Clustering resolution (default: 0.5)
-- `memory_gb` (Int): Memory allocation in GB (default: 16)
-- `cpu_cores` (Int): Number of CPU cores (default: 4)
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `input_h5` | File | — | Cell Ranger filtered feature-barcode matrix HDF5 file (`filtered_feature_bc_matrix.h5`) |
+| `sample_name` | String | — | Sample name used for output file prefixes |
+| `min_cells` | Int | 3 | Minimum number of cells a gene must be detected in to be retained |
+| `min_features` | Int | 200 | Minimum number of features (genes) a cell must have to pass QC |
+| `max_percent_mt` | Float | 10.0 | Maximum mitochondrial gene percentage allowed per cell |
+| `resolution` | Float | 0.5 | Louvain clustering resolution (higher values produce more clusters) |
+| `memory_gb` | Int | 16 | Memory allocated for the task in GB |
+| `cpu_cores` | Int | 4 | Number of CPU cores allocated for the task |
 
 **Outputs:**
-- `seurat_object` (File): Processed Seurat RDS object
-- `umap_plot` (File): UMAP plot showing cell clusters
-- `cluster_markers` (File): Marker genes identified for each cluster
+
+| Name | Type | Description |
+|------|------|-------------|
+| `seurat_object` | File | Processed Seurat RDS object |
+| `qc_plot` | File | QC violin plot showing nFeature_RNA, nCount_RNA, and percent.mt (pre-filtering) |
+| `umap_plot` | File | UMAP plot colored by Louvain cluster |
+| `heatmap_plot` | File | Heatmap of top 8 marker genes per cluster |
+| `cluster_markers` | File | CSV of top 30 marker genes per cluster from `FindAllMarkers` |
 
 ## Usage as a Module
 
@@ -58,19 +69,21 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow my_scrna_analysis {
   input {
-    Directory cellranger_output
+    File cellranger_h5
     String sample_name
   }
 
   call seurat_tasks.run_seurat {
     input:
-      input_matrix_dir = cellranger_output,
+      input_h5    = cellranger_h5,
       sample_name = sample_name
   }
 
   output {
     File seurat_object   = run_seurat.seurat_object
+    File qc_plot         = run_seurat.qc_plot
     File umap_plot       = run_seurat.umap_plot
+    File heatmap_plot    = run_seurat.heatmap_plot
     File cluster_markers = run_seurat.cluster_markers
   }
 }
@@ -78,12 +91,14 @@ workflow my_scrna_analysis {
 
 ## Testing the Module
 
+The test workflow (`testrun.wdl`) automatically downloads a public 10x Genomics PBMC dataset via `ww-testdata` and runs `run_seurat` on it, then validates all output files.
+
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run testrun.wdl --inputs testrun_inputs.json
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run testrun.wdl input_matrix_dir=<path>
+miniwdl run testrun.wdl
 
 # Using Sprocket
 sprocket run testrun.wdl --entrypoint seurat_example
@@ -93,7 +108,7 @@ sprocket run testrun.wdl --entrypoint seurat_example
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
 - Internet access for fetching scripts from GitHub at runtime
-- R environment with Seurat package (provided by `getwilds/seurat:TODO` container)
+- R environment with Seurat and supporting packages (provided by `getwilds/seurat:5.2.1` container)
 
 ## Support
 
