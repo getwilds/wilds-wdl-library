@@ -53,7 +53,7 @@ Predict protein structures from amino acid sequences using ColabFold (AlphaFold2
 - `extra_flags` (String, default=""): Additional colabfold_batch flags
 - `cpu_cores` (Int, default=8): CPU cores
 - `memory_gb` (Int, default=48): Memory in GB
-- `gpu_enabled` (Boolean, default=true): Enable GPU for prediction (controls JAX CPU/GPU mode and PROOF GPU allocation)
+- `gpu_enabled` (Boolean, default=true): Enable GPU for prediction (controls JAX CPU/GPU mode and the GPU runtime attribute). See [GPU Execution Across Environments](#gpu-execution-across-environments) for backend-specific configuration.
 
 **Outputs:**
 - `results_tarball` (File): Compressed tarball containing all ColabFold outputs (PDB files, PAE/pLDDT plots, coverage plots, prediction metrics)
@@ -61,6 +61,8 @@ Predict protein structures from amino acid sequences using ColabFold (AlphaFold2
 ## Usage as a Module
 
 ### Importing into Your Workflow
+
+The example below imports from `refs/heads/main`, which always points at the latest version of the module. For reproducible workflows, you can pin the import to a specific release tag (`refs/tags/v0.3.0`) or commit SHA (`<full-sha>`) by swapping `refs/heads/main` in the URL — just make sure the tag or commit you pin to actually contains this module.
 
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-colabfold/ww-colabfold.wdl" as colabfold_tasks
@@ -182,17 +184,30 @@ java -jar cromwell.jar run modules/ww-colabfold/testrun.wdl
 
 The test workflow runs on CPU (`gpu_enabled = false`) with minimal settings for CI compatibility. Production use should always enable GPU for practical performance. A single protein prediction that takes minutes on GPU can take hours on CPU.
 
-## GPU Configuration
+## GPU Execution Across Environments
 
 The `gpu_enabled` input controls two things:
-1. **JAX execution mode**: When `false`, sets `JAX_PLATFORMS=cpu` to force CPU-only execution
-2. **PROOF GPU allocation**: Translates to the `gpus` runtime attribute (`"1"` or `"0"`), which is specific to PROOF's Cromwell configuration. Other executors like miniWDL and Sprocket silently ignore this attribute.
+1. **JAX execution mode**: When `false`, sets `JAX_PLATFORMS=cpu` to force CPU-only execution.
+2. **WDL runtime GPU attribute**: Translates to the standard `gpu: Boolean` key in the `runtime` block.
 
-### For PROOF Users
-GPU allocation works automatically with the default (`gpu_enabled = true`). ColabFold only supports a single GPU for structure prediction.
+GPU scheduling is not standardized across WDL executors, so the way GPUs are requested in the `runtime` section depends on where the workflow is run. This module ships configured for the standard `gpu: Boolean` key under WDL 1.2, which works with recent versions of miniWDL, Sprocket, and Cromwell in cloud/local environments — and with Sprocket on the Fred Hutch HPC. ColabFold only supports a single GPU for structure prediction.
 
-### For Other Executors
-Configure GPU passthrough at the engine level (e.g., Docker `--gpus` flag). Set `gpu_enabled = true` to ensure ColabFold uses the GPU via JAX.
+If you'd rather run through PROOF (the Fred Hutch point-and-click interface for Cromwell on HPC), two modifications are required because PROOF's Cromwell deployment targets WDL 1.0:
+
+1. **Downgrade the WDL version** from `version 1.2` to `version 1.0` at the top of `ww-colabfold.wdl`.
+2. **Switch the runtime key** from `gpu` to `gpus` (an integer count passed as a string) in the `colabfold_predict` task. The task already includes the alternate line as a comment for convenience:
+
+   ```wdl
+   runtime {
+     docker: "getwilds/colabfold:1.5.5"
+     # gpu: gpu_enabled
+     gpus: if gpu_enabled then "1" else "0"
+     cpu: cpu_cores
+     memory: "~{memory_gb} GB"
+   }
+   ```
+
+If you're on Fred Hutch HPC and don't need the PROOF UI, you can keep the module as-is and submit via Sprocket. For other HPC or cloud backends, check that backend's documentation for its expected GPU runtime attribute — some engines also accept `gpuCount`, `gpuType`, or backend-specific keys via `hints`.
 
 ### CPU-Only Mode
 Set `gpu_enabled = false` to force CPU execution via `JAX_PLATFORMS=cpu`. This is functional but significantly slower and intended primarily for testing.

@@ -3,7 +3,7 @@
 ## sequencing data. Uses a two-stage pileup and full-alignment approach
 ## for high-accuracy SNP and indel calling from ONT, PacBio, and Illumina reads.
 
-version 1.0
+version 1.2
 
 #### TASK DEFINITIONS ####
 
@@ -100,8 +100,10 @@ task run_clair3 {
 
   runtime {
     docker: "getwilds/clair3:2.0.0"
+    gpu: gpu_enabled
+    # For use in PROOF, switch to using the 'gpus' parameter
+    # gpus: if gpu_enabled then "1" else "0"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    gpus: if gpu_enabled then "1" else "0"
   }
 }

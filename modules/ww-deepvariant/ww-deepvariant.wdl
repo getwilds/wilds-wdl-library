@@ -2,7 +2,7 @@
 ## Google's deep-learning-based germline variant caller for next-generation
 ## DNA sequencing data. Supports WGS, WES, PacBio, and ONT sequencing technologies.
 
-version 1.0
+version 1.2
 
 #### TASK DEFINITIONS ####
 
@@ -29,6 +29,7 @@ task run_deepvariant {
     model_type: "Sequencing model type: WGS, WES, PACBIO, ONT_R104, HYBRID_PACBIO_ILLUMINA, or MASSEQ"
     output_gvcf_enabled: "Whether to also produce a gVCF file for downstream joint genotyping"
     regions: "Optional genomic regions to restrict variant calling (e.g., chr1)"
+    gpu_enabled: "Enable GPU acceleration for the call_variants stage (uses the GPU-tagged DeepVariant image and requests GPU in runtime)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
   }
@@ -42,6 +43,7 @@ task run_deepvariant {
     String model_type = "WGS"
     Boolean output_gvcf_enabled = false
     String? regions
+    Boolean gpu_enabled = false
     Int cpu_cores = 8
     Int memory_gb = 32
   }
@@ -67,7 +69,10 @@ task run_deepvariant {
   }
 
   runtime {
-    docker: "google/deepvariant:1.10.0"
+    docker: if gpu_enabled then "google/deepvariant:1.10.0-gpu" else "google/deepvariant:1.10.0"
+    gpu: gpu_enabled
+    # For use in PROOF, switch to using the 'gpus' parameter
+    # gpus: if gpu_enabled then "1" else "0"
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

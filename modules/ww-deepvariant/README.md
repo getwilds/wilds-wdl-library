@@ -35,6 +35,7 @@ Runs DeepVariant to call germline variants from aligned reads. Optionally produc
 - `model_type` (String, default="WGS"): Sequencing model type (WGS, WES, PACBIO, ONT_R104, HYBRID_PACBIO_ILLUMINA, MASSEQ)
 - `output_gvcf_enabled` (Boolean, default=false): Whether to also produce a gVCF file for downstream joint genotyping
 - `regions` (String?, optional): Genomic regions to restrict variant calling
+- `gpu_enabled` (Boolean, default=false): Enable GPU acceleration for the `call_variants` stage. Switches the Docker image to the GPU-tagged build and requests a GPU in runtime. See [GPU Execution Across Environments](#gpu-execution-across-environments) for backend-specific configuration.
 - `cpu_cores` (Int, default=8): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=32): Memory allocated for the task in GB
 
@@ -47,6 +48,8 @@ Runs DeepVariant to call germline variants from aligned reads. Optionally produc
 ## Usage as a Module
 
 ### Importing into Your Workflow
+
+The example below imports from `refs/heads/main`, which always points at the latest version of the module. For reproducible workflows, you can pin the import to a specific release tag (`refs/tags/v0.3.0`) or commit SHA (`<full-sha>`) by swapping `refs/heads/main` in the URL — just make sure the tag or commit you pin to actually contains this module.
 
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deepvariant/ww-deepvariant.wdl" as deepvariant_tasks
@@ -112,6 +115,19 @@ call deepvariant_tasks.run_deepvariant {
 }
 ```
 
+**GPU-accelerated variant calling:**
+```wdl
+call deepvariant_tasks.run_deepvariant {
+  input:
+    sample_name = "gpu_sample",
+    input_bam = wgs_bam,
+    input_bam_index = wgs_bai,
+    ref_fasta = ref_fasta,
+    ref_fasta_index = ref_fasta_index,
+    gpu_enabled = true
+}
+```
+
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
@@ -144,7 +160,11 @@ The test workflow automatically:
 
 ## Docker Container
 
-This module uses the `google/deepvariant:1.10.0` container image, which includes:
+This module uses Google's official DeepVariant container images (CPU and GPU variants are selected automatically based on `gpu_enabled`):
+- `google/deepvariant:1.10.0` — CPU build (default)
+- `google/deepvariant:1.10.0-gpu` — GPU build, used when `gpu_enabled = true`
+
+Both images include:
 - DeepVariant variant caller (v1.10.0)
 - Pre-trained CNN models for WGS, WES, PacBio, and ONT
 - All necessary dependencies for variant calling
@@ -167,6 +187,29 @@ This module uses the `google/deepvariant:1.10.0` container image, which includes
 - `cpu_cores`: DeepVariant benefits significantly from multi-core processing via `--num_shards`
 - `memory_gb`: WGS typically needs 32+ GB; WES can use less (16 GB)
 - For production WGS at 30x coverage, consider 16+ cores and 64 GB memory
+
+## GPU Execution Across Environments
+
+DeepVariant's `call_variants` stage (the CNN inference step) supports GPU acceleration, with reported speedups of ~5x for that stage. The other stages (`make_examples`, `postprocess_variants`) remain CPU-bound regardless. GPU acceleration is opt-in via `gpu_enabled = true`, which both selects the GPU-tagged Docker image and requests a GPU in the runtime block.
+
+GPU scheduling is not standardized across WDL executors, so the way GPUs are requested in the `runtime` section depends on where the workflow is run. This module ships configured for the standard `gpu: Boolean` key under WDL 1.2, which works with recent versions of miniWDL, Sprocket, and Cromwell in cloud/local environments — and with Sprocket on the Fred Hutch HPC.
+
+If you'd rather run through PROOF (the Fred Hutch point-and-click interface for Cromwell on HPC), two modifications are required because PROOF's Cromwell deployment targets WDL 1.0:
+
+1. **Downgrade the WDL version** from `version 1.2` to `version 1.0` at the top of `ww-deepvariant.wdl`.
+2. **Switch the runtime key** from `gpu` to `gpus` (an integer count passed as a string) in the `run_deepvariant` task. The task already includes the alternate line as a comment for convenience:
+
+   ```wdl
+   runtime {
+     docker: if gpu_enabled then "google/deepvariant:1.10.0-gpu" else "google/deepvariant:1.10.0"
+     # gpu: gpu_enabled
+     gpus: if gpu_enabled then "1" else "0"
+     cpu: cpu_cores
+     memory: "~{memory_gb} GB"
+   }
+   ```
+
+If you're on Fred Hutch HPC and don't need the PROOF UI, you can keep the module as-is and submit via Sprocket. For other HPC or cloud backends, check that backend's documentation for its expected GPU runtime attribute — some engines also accept `gpuCount`, `gpuType`, or backend-specific keys via `hints`.
 
 ## Contributing
 
