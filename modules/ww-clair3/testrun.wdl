@@ -1,4 +1,4 @@
-version 1.0
+version 1.2
 
 # Import module in question as well as the testdata module for automatic demo functionality
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-clair3/ww-clair3.wdl" as ww_clair3

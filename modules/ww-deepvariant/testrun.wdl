@@ -1,4 +1,4 @@
-version 1.0
+version 1.2
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deepvariant/ww-deepvariant.wdl" as ww_deepvariant
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata

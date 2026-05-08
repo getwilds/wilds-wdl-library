@@ -1,4 +1,4 @@
-version 1.0
+version 1.2
 
 # HPC test workflow for ww-starling. Mirrors testrun.wdl coverage with GPU
 # enabled on the inference tasks and the module's default 400 conformations

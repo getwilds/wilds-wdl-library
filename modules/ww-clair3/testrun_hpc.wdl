@@ -1,4 +1,4 @@
-version 1.0
+version 1.2
 
 # HPC test workflow for ww-clair3. Mirrors testrun.wdl coverage but exercises
 # the GPU code path on realistic input data — intended to validate end-to-end

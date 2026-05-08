@@ -1,4 +1,4 @@
-version 1.0
+version 1.2
 
 # HPC test workflow for ww-colabfold. Mirrors testrun.wdl coverage but uses
 # realistic protein input and full GPU + AMBER settings — intended to validate
