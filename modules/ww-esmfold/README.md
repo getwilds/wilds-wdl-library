@@ -42,6 +42,8 @@ Predict protein 3D structures from amino acid sequences using ESMFold.
 
 ### Importing into Your Workflow
 
+The example below imports from `refs/heads/main`, which always points at the latest version of the module. For reproducible workflows, you can pin the import to a specific release tag (`refs/tags/v0.3.0`) or commit SHA (`<full-sha>`) by swapping `refs/heads/main` in the URL — just make sure the tag or commit you pin to actually contains this module.
+
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-esmfold/ww-esmfold.wdl" as esmfold_tasks
 
@@ -144,6 +146,27 @@ This module uses the `getwilds/esmfold:2.0.0` container image, which includes:
 - `gpu_enabled`: Set to `true` for production use; `false` for testing
 - `chunk_size`: Reduce (64 or 32) for very long sequences to manage memory usage
 - `cpu_offload`: Enable for sequences that exceed GPU memory
+
+## GPU Execution Across Environments
+
+GPU scheduling is not standardized across WDL executors, so the way GPUs are requested in the `runtime` section depends on where the workflow is run. This module ships configured for the standard `gpu: Boolean` key under WDL 1.2, which works with recent versions of miniWDL, Sprocket, and Cromwell in cloud/local environments.
+
+For execution on the Fred Hutch HPC (PROOF), two modifications are required:
+
+1. **Downgrade the WDL version** from `version 1.2` to `version 1.0` at the top of `ww-esmfold.wdl`. PROOF's Cromwell configuration targets WDL 1.0.
+2. **Switch the runtime key** from `gpu` to `gpus` (an integer count) in the `esmfold_predict` task. The task already includes the alternate line as a comment for convenience:
+
+   ```wdl
+   runtime {
+     docker: "getwilds/esmfold:2.0.0"
+     # gpu: if gpu_enabled then true else false
+     gpus: if gpu_enabled then "1" else "0"
+     cpu: cpu_cores
+     memory: "~{memory_gb} GB"
+   }
+   ```
+
+If you're running on a different HPC or cloud backend, check that backend's documentation for its expected GPU runtime attribute — some engines also accept `gpuCount`, `gpuType`, or backend-specific keys via `hints`.
 
 ## Support and Feedback
 
