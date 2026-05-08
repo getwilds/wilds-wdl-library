@@ -5,6 +5,7 @@
 ## independently or integrated with other WILDS workflows.
 
 version 1.2
+# For use in PROOF, downgrade to version 1.0
 
 #### TASK DEFINITIONS ####
 
