@@ -17,7 +17,7 @@ This module wraps DeepVariant's `run_deepvariant` pipeline, which internally per
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
 
 - **Main WDL file**: `ww-deepvariant.wdl` - Contains task definitions for the module
-- **Test workflow**: `testrun.wdl` - Demonstration workflow for testing and examples
+- **Test workflows**: `testrun.wdl` for CI/CD; `testrun_hpc.wdl` for monthly HPC validation with GPU enabled
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
@@ -141,6 +141,10 @@ The test workflow automatically:
 2. Downloads test BAM files using `ww-testdata`
 3. Calls variants on each sample using DeepVariant (VCF only)
 4. Runs an additional call with `output_gvcf_enabled = true` to test gVCF output
+
+### HPC Test Workflow
+
+`testrun_hpc.wdl` mirrors the regular testrun's coverage but enables GPU on every DeepVariant invocation (which also switches to the GPU-tagged Docker image). It is intended to be exercised on Fred Hutch HPC (via Sprocket directly or via PROOF after applying the WDL 1.0 / `gpus` swap described above), and includes a validation task that confirms non-empty per-sample VCFs and gVCF outputs.
 
 ## Docker Container
 
