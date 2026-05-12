@@ -52,7 +52,7 @@ task run_seurat {
   command <<<
     set -eo pipefail
 
-    Rscript seurat_analysis.R \
+    Rscript /usr/local/bin/seurat_analysis.R \
       --input_h5="~{input_h5}" \
       --sample_name="~{sample_name}" \
       --min_cells=~{min_cells} \
