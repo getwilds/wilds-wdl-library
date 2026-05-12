@@ -139,6 +139,10 @@ lint_womtool: check_java check_womtool check_name ## Run WOMtool validate on mod
 	@echo "Running WOMtool validate..."
 	@set -e; for file in modules/$(NAME)/*.wdl pipelines/$(NAME)/*.wdl; do \
 		if [ -f "$$file" ]; then \
+			if grep -qE '^version 1\.2' "$$file"; then \
+				echo "Skipping $$file (WDL 1.2 not supported by WOMtool)"; \
+				continue; \
+			fi; \
 			echo "Validating $$file"; \
 			java -jar $(WOMTOOL_JAR) validate "$$file"; \
 		fi; \
