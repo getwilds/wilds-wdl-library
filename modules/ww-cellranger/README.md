@@ -14,7 +14,7 @@ This module provides reusable WDL tasks for preparing and processing single-cell
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
 - **Tasks**: `run_count`, `run_count_hpc`, `rename_fastqs`, `extract_h5`
-- **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
+- **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support, assume using HPC)
 - **Container**: Cell Ranger is not redistributable, so the WILDS Docker Library does not publish a public Cell Ranger image. A [Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) is provided so users can build their own private image. Fred Hutch users running on institutional HPC can instead use `run_count_hpc` with the `CellRanger/10.0.0` environment module under Fred Hutch's institutional Cell Ranger license.
 
 ## Important Requirements
@@ -205,6 +205,8 @@ This module integrates seamlessly with other WILDS components:
 - **ww-sra**: Download public single-cell sequencing data before analysis
 
 ## Testing the Module
+
+**Ensure you have a Cell Ranger module available** before running this script. For example, the `CellRanger/10.0.0` environment module under Fred Hutch's institutional Cell Ranger license.
 
 The module includes a demonstration workflow that can be tested independently. The workflow in `testrun.wdl` automatically downloads test data and runs without requiring input files:
 

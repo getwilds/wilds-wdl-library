@@ -14,8 +14,8 @@ workflow cellranger_example {
     gzip_output = true
   }
 
-  # Run cellranger count
-  call ww_cellranger.run_count { input:
+  # Run cellranger count (use HPC because a public Docker isn't available)
+  call ww_cellranger.run_count_hpc as run_count { input:
     r1_fastqs = [download_fastq_data.r1_fastq],
     r2_fastqs = [download_fastq_data.r2_fastq],
     ref_gex = download_test_cellranger_ref.ref_tar,
