@@ -45,8 +45,8 @@ task run_seurat {
     Int min_features = 200
     Float max_percent_mt = 10.0
     Float resolution = 0.5
-    Int memory_gb = 16
-    Int cpu_cores = 4
+    Int memory_gb = 4
+    Int cpu_cores = 2
   }
 
   command <<<
