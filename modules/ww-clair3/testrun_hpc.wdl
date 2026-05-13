@@ -4,8 +4,8 @@ version 1.2
 # the GPU code path on realistic input data — intended to validate end-to-end
 # behavior on Fred Hutch HPC infrastructure (Sprocket or PROOF).
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-clair3/ww-clair3.wdl" as ww_clair3
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/wdl-v1.2-support/modules/ww-clair3/ww-clair3.wdl" as ww_clair3
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
 

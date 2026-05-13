@@ -4,8 +4,8 @@ version 1.2
 # GPU acceleration enabled — intended to validate end-to-end behavior on
 # Fred Hutch HPC infrastructure (Sprocket or PROOF).
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-deepvariant/ww-deepvariant.wdl" as ww_deepvariant
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/wdl-v1.2-support/modules/ww-deepvariant/ww-deepvariant.wdl" as ww_deepvariant
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct DeepVariantSample {
     String name

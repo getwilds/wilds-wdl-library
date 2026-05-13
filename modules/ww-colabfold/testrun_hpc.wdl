@@ -4,8 +4,8 @@ version 1.2
 # realistic protein input and full GPU + AMBER settings — intended to validate
 # end-to-end ColabFold behavior on Fred Hutch HPC infrastructure.
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-colabfold/ww-colabfold.wdl" as ww_colabfold
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/wdl-v1.2-support/modules/ww-colabfold/ww-colabfold.wdl" as ww_colabfold
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
 

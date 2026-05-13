@@ -4,8 +4,8 @@ version 1.2
 # enabled on the inference tasks and the module's default 400 conformations
 # — intended to validate end-to-end behavior on Fred Hutch HPC infrastructure.
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-starling/ww-starling.wdl" as ww_starling
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/wdl-v1.2-support/modules/ww-starling/ww-starling.wdl" as ww_starling
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
 

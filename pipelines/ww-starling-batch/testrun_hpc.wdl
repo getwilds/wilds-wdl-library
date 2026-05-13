@@ -5,8 +5,8 @@ version 1.0
 # default 400 conformations — intended to validate end-to-end behavior on
 # Fred Hutch HPC infrastructure (Sprocket or PROOF).
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/split-cicd-hpc-testruns/pipelines/ww-starling-batch/ww-starling-batch.wdl" as starling_batch_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-starling-batch/ww-starling-batch.wdl" as starling_batch_workflow
 
 workflow starling_batch_example {
   call ww_testdata.create_test_idp_fasta { }
