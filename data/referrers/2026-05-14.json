@@ -1,0 +1,22 @@
+[
+  {
+    "referrer": "github.com",
+    "count": 10,
+    "uniques": 4
+  },
+  {
+    "referrer": "Google",
+    "count": 2,
+    "uniques": 2
+  },
+  {
+    "referrer": "getwilds.org",
+    "count": 2,
+    "uniques": 2
+  },
+  {
+    "referrer": "linkedin.com",
+    "count": 1,
+    "uniques": 1
+  }
+]
