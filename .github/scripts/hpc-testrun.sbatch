@@ -25,6 +25,8 @@
 #   TYPE=modules|pipelines    # Defaults to "all"
 #   NAME=ww-toolname          # Run a single module/pipeline (defaults to all)
 #   NUM_RETRIES=N             # Retry failed testruns up to N times (defaults to 0)
+#   APPTAINER_CACHEDIR=/path  # Defaults to ${WORK_DIR}/.apptainer_cache
+#   APPTAINER_TMPDIR=/path    # Defaults to ${WORK_DIR}/.apptainer_tmp
 #
 # To create the tracking issue (one-time setup):
 #   gh issue create \
@@ -46,6 +48,14 @@ REPO="getwilds/wilds-wdl-library"
 # Update these module versions as needed for your HPC
 module purge
 module load sprocket/0.23.0 Apptainer/1.1.6 gh/2.86.0
+
+# Apptainer cache and tmp directories — defaults under WORK_DIR so the cache
+# lives on the same filesystem as the run (avoids filling $HOME) and is scoped
+# per user. Override with APPTAINER_CACHEDIR / APPTAINER_TMPDIR if you have a
+# shared cache location.
+export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-${WORK_DIR}/.apptainer_cache}"
+export APPTAINER_TMPDIR="${APPTAINER_TMPDIR:-${WORK_DIR}/.apptainer_tmp}"
+mkdir -p "${APPTAINER_CACHEDIR}" "${APPTAINER_TMPDIR}"
 
 # ---- Clone fresh copy of the repo ----
 BRANCH="${BRANCH:-main}"
