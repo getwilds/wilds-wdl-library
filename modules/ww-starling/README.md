@@ -14,7 +14,7 @@ STARLING uses a Vision Transformer architecture operating in VAE latent space to
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
 
 - **Main WDL file**: `ww-starling.wdl` - Contains task definitions for ensemble generation and metadata querying
-- **Test workflows**: `testrun.wdl` for CI/CD (CPU-only); `testrun_hpc.wdl` for monthly HPC validation with GPU enabled and the module's default 400 conformations
+- **Test workflow**: `testrun.wdl` - Demonstration workflow using the p53 N-terminal disordered region
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
@@ -151,10 +151,6 @@ The test workflow exercises all four module tasks:
 2. Queries ensemble metadata with `ensemble_info`
 3. Creates a multi-sequence IDP FASTA (4 sequences) using `ww-testdata` and processes it with `generate_ensemble_batch`
 4. Splits the multi-sequence FASTA into batches of 2 using `split_fasta`
-
-### HPC Test Workflow
-
-`testrun_hpc.wdl` mirrors the regular testrun's coverage but enables GPU on the inference tasks (`generate_ensemble`, `generate_ensemble_batch`) and uses the module's default 400 conformations instead of the CI-trimmed 50. It is intended to be exercised on Fred Hutch HPC (via Sprocket directly or via PROOF after applying the WDL 1.0 / `gpus` swap described above) and includes a validation task that confirms expected ensemble, conversion, info, and split outputs are present.
 
 ## Docker Container
 

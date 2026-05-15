@@ -14,7 +14,7 @@ ESMFold predicts protein structures directly from amino acid sequences using a l
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
 
 - **Main WDL file**: `ww-esmfold.wdl` - Contains task definitions for ESMFold prediction
-- **Test workflow**: `testrun_hpc.wdl` for monthly HPC validation with GPU enabled (this module ships no CI testrun — see "Testing the Module" below)
+- **Test workflow**: `testrun_hpc.wdl` for monthly HPC validation (this module ships no CI testrun — see "Testing the Module" below)
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
@@ -97,7 +97,7 @@ This module integrates seamlessly with other WILDS components:
 
 > **Note:** ESMFold requires **24 GB of memory** to load the full 3B-parameter ESM-2 model, which exceeds the resources available on GitHub Actions runners (~16 GB). Because even minimal CPU runs crashed CI, this module ships **no `testrun.wdl`** — only an HPC variant. Linting checks still run in CI as normal.
 
-The module includes an HPC test workflow (`testrun_hpc.wdl`) that can be run on Fred Hutch HPC or any environment with sufficient GPU memory:
+The module includes an HPC test workflow (`testrun_hpc.wdl`) that can be run on Fred Hutch HPC or any environment with sufficient memory:
 
 ```bash
 # Using miniWDL
@@ -114,7 +114,7 @@ java -jar cromwell.jar run testrun_hpc.wdl
 
 The HPC test workflow automatically:
 1. Creates a realistic test protein FASTA (human ubiquitin, 76 residues) using `ww-testdata`
-2. Runs ESMFold prediction with `gpu_enabled = true`
+2. Runs ESMFold prediction
 3. Validates that PDB output files were generated
 
 ## Docker Container

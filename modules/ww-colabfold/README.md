@@ -18,7 +18,7 @@ This module wraps the `colabfold_batch` command-line tool for protein structure 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
 
 - **Main WDL file**: `ww-colabfold.wdl` - Contains task definitions for the module
-- **Test workflows**: `testrun.wdl` for CI/CD (CPU-only); `testrun_hpc.wdl` for monthly HPC validation with full GPU + AMBER settings
+- **Test workflow**: `testrun.wdl` - Demonstration workflow for testing and examples
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
@@ -180,11 +180,7 @@ java -jar cromwell.jar run modules/ww-colabfold/testrun.wdl
 
 ### GPU Note
 
-The CI test workflow (`testrun.wdl`) runs on CPU (`gpu_enabled = false`) with minimal settings for CI compatibility. Production use should always enable GPU for practical performance — a single protein prediction that takes minutes on GPU can take hours on CPU.
-
-### HPC Test Workflow
-
-`testrun_hpc.wdl` mirrors the regular testrun's structure but uses a realistic-size protein (76-residue ubiquitin via `ww-testdata.create_realistic_protein_fasta`) and full production settings: GPU enabled, AMBER relaxation on, 5 models, 3 recycles. It is intended to be exercised on Fred Hutch HPC (via Sprocket directly or via PROOF after applying the WDL 1.0 / `gpus` swap described above) and includes a validation task that confirms PDB output files are present.
+The test workflow runs on CPU (`gpu_enabled = false`) with minimal settings for CI compatibility. Production use should always enable GPU for practical performance. A single protein prediction that takes minutes on GPU can take hours on CPU.
 
 ## GPU Configuration
 

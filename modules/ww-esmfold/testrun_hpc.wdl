@@ -4,9 +4,11 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
-# HPC-only ESMFold test: predicts the structure of human ubiquitin (76 residues)
-# on GPU. ESMFold is impractical to exercise on CPU at realistic input sizes,
-# so this module ships no CI testrun.wdl and is validated only on HPC.
+# HPC-only ESMFold test: predicts the structure of human ubiquitin (76 residues).
+# ESMFold's 24 GB model footprint exceeds GitHub Actions runner memory, so this
+# module ships no CI testrun.wdl and is validated only on HPC. GPU is left
+# disabled for now and will be enabled in a follow-up PR alongside the Cromwell
+# default switch (gpu_enabled only takes effect under HPC Cromwell).
 
 workflow esmfold_example {
   call ww_testdata.create_realistic_protein_fasta { }
@@ -16,7 +18,7 @@ workflow esmfold_example {
       output_prefix = "test_ubiquitin",
       cpu_cores = 4,
       memory_gb = 32,
-      gpu_enabled = true
+      gpu_enabled = false
   }
 
   call validate_outputs { input:
