@@ -126,10 +126,6 @@ The test workflow automatically:
 2. Calls the `starling_batch` pipeline with batches of 2, 50 conformations, and GPU disabled for CI compatibility
 3. The pipeline splits the FASTA and scatters ensemble generation across 2 batches in parallel
 
-### HPC Test Workflow
-
-`testrun_hpc.wdl` mirrors the regular testrun's structure but enables GPU on the underlying STARLING calls and uses the module's default 400 conformations instead of the CI-trimmed 50. It is intended to be exercised on Fred Hutch HPC (via Sprocket directly or via PROOF after applying the WDL 1.0 / `gpus` swap described in the [ww-starling module README](../../modules/ww-starling/README.md#gpu-execution-across-environments)).
-
 ## Citation
 
 > Lotthammer, J.M., Ginell, G.M., Griffith, D., Emenecker, R.J., & Holehouse, A.S. (2024)
