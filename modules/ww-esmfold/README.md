@@ -113,7 +113,7 @@ java -jar cromwell.jar run testrun_hpc.wdl
 ### Automatic Demo Mode
 
 The HPC test workflow automatically:
-1. Creates a realistic test protein FASTA (human ubiquitin, 76 residues) using `ww-testdata`
+1. Creates a minimal test protein FASTA (Trp-cage miniprotein, 20 residues) using `ww-testdata`
 2. Runs ESMFold prediction
 3. Validates that PDB output files were generated
 
