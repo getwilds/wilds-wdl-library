@@ -162,8 +162,8 @@ run_sprocket: check_sprocket check_name ## Run sprocket on testrun WDLs (use NAM
 	@failed=""; \
 	dirs=""; \
 	max_attempts=$$(($(NUM_RETRIES) + 1)); \
-	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)/"; fi; \
-	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)/"; fi; \
+	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)"; fi; \
+	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)"; fi; \
 	for dir in $$dirs; do \
 		if [ ! -d "$$dir" ]; then continue; fi; \
 		wdl=""; \
@@ -205,8 +205,8 @@ run_miniwdl: check_uv check_name ## Run miniwdl on testrun WDLs (use NAME=foo, T
 	@echo "Running miniwdl on test-run WDLs (target: $(TARGET))..."
 	@failed=""; \
 	dirs=""; \
-	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)/"; fi; \
-	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)/"; fi; \
+	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)"; fi; \
+	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)"; fi; \
 	for dir in $$dirs; do \
 		if [ ! -d "$$dir" ]; then continue; fi; \
 		wdl=""; \
@@ -235,8 +235,8 @@ run_cromwell: check_java check_cromwell check_name ## Run Cromwell on testrun WD
 	@echo "Running Cromwell on test-run WDLs (target: $(TARGET))..."
 	@failed=""; \
 	dirs=""; \
-	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)/"; fi; \
-	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)/"; fi; \
+	if [ "$(TYPE)" = "modules" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs modules/$(NAME)"; fi; \
+	if [ "$(TYPE)" = "pipelines" ] || [ "$(TYPE)" = "all" ]; then dirs="$$dirs pipelines/$(NAME)"; fi; \
 	for dir in $$dirs; do \
 		if [ ! -d "$$dir" ]; then continue; fi; \
 		wdl=""; \
