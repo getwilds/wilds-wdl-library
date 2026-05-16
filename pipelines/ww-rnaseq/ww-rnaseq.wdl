@@ -452,7 +452,7 @@ task organize_outputs {
   }
 
   runtime {
-    docker: "ubuntu:24.04"
+    docker: "ubuntu:22.04"
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
