@@ -28,7 +28,6 @@ Predict protein 3D structures from amino acid sequences using ESMFold.
 - `output_prefix` (String): Prefix for naming the output tarball
 - `num_recycles` (Int, default=4): Number of recycling iterations for structure refinement
 - `chunk_size` (Int, default=128): Chunk size for memory-efficient inference on long sequences (0 to disable)
-- `cpu_only` (Boolean, default=false): Run inference on CPU instead of GPU
 - `cpu_offload` (Boolean, default=false): Enable CPU offloading for longer sequences with limited GPU memory
 - `max_tokens_per_batch` (Int, default=0): Maximum tokens per batch for GPU inference (0 for automatic)
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
@@ -68,7 +67,6 @@ workflow my_structure_prediction {
 call esmfold_tasks.esmfold_predict { input:
     fasta_file = protein_fasta,
     output_prefix = "cpu_test",
-    cpu_only = true,
     gpu_enabled = false,
     num_recycles = 1,
     cpu_cores = 4,

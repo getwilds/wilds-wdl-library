@@ -33,7 +33,6 @@ task esmfold_predict {
     output_prefix: "Prefix for naming the output tarball"
     num_recycles: "Number of recycling iterations for structure refinement (higher may improve accuracy)"
     chunk_size: "Chunk size for memory-efficient inference on long sequences (e.g., 128, 64, 32). Set to 0 to disable chunking."
-    cpu_only: "Run inference on CPU instead of GPU"
     cpu_offload: "Enable CPU offloading to handle longer sequences with limited GPU memory"
     max_tokens_per_batch: "Maximum tokens per batch for GPU inference (0 for automatic batching)"
     cpu_cores: "Number of CPU cores allocated for the task"
@@ -46,7 +45,6 @@ task esmfold_predict {
     String output_prefix
     Int num_recycles = 4
     Int chunk_size = 128
-    Boolean cpu_only = false
     Boolean cpu_offload = false
     Int max_tokens_per_batch = 0
     Int cpu_cores = 4
@@ -70,7 +68,7 @@ task esmfold_predict {
       -o pdb_output/ \
       --num-recycles ~{num_recycles} \
       ~{if chunk_size > 0 then "--chunk-size " + chunk_size else ""} \
-      ~{if cpu_only then "--cpu-only" else ""} \
+      ~{if !gpu_enabled then "--cpu-only" else ""} \
       ~{if cpu_offload then "--cpu-offload" else ""} \
       ~{if max_tokens_per_batch > 0 then "--max-tokens-per-batch " + max_tokens_per_batch else ""}
 
