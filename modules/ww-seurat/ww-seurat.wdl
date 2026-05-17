@@ -52,7 +52,10 @@ task run_seurat {
   command <<<
     set -eo pipefail
 
-    Rscript /usr/local/bin/seurat_analysis.R \
+    curl -so seurat_analysis.R \
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-seurat/seurat_analysis.R"
+
+    Rscript seurat_analysis.R \
       --input_h5="~{input_h5}" \
       --sample_name="~{sample_name}" \
       --min_cells=~{min_cells} \
