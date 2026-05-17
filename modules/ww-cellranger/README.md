@@ -79,6 +79,7 @@ Run `cellranger count` on gene expression reads from one GEM well using a privat
 - `results_tar` (File): Compressed tarball of Cell Ranger count output directory
 - `web_summary` (File): Web summary HTML file with QC metrics
 - `metrics_summary` (File): Metrics summary CSV file with key statistics
+- `filtered_h5` (File): Filtered feature-barcode matrix HDF5 file
 
 ### `run_count_hpc`
 
@@ -155,6 +156,7 @@ workflow my_single_cell_pipeline {
     File results = run_count.results_tar
     File web_summary = run_count.web_summary
     File metrics = run_count.metrics_summary
+    File filtered_h5 = run_count.filtered_h5
   }
 }
 ```
