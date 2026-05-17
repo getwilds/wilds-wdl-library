@@ -14,7 +14,7 @@ This module provides reusable WDL tasks for preparing and processing single-cell
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
 - **Tasks**: `run_count`, `run_count_hpc`, `rename_fastqs`
-- **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support, assume using HPC)
+- **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
 - **Container**: Cell Ranger is not redistributable, so the WILDS Docker Library does not publish a public Cell Ranger image. A [Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) is provided so users can build their own private image. Fred Hutch users running on institutional HPC can instead use `run_count_hpc` with the `CellRanger/10.0.0` environment module under Fred Hutch's institutional Cell Ranger license.
 
 ## Important Requirements
@@ -195,27 +195,15 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-**Ensure you have a Cell Ranger module available** before running this script. For example, the `CellRanger/10.0.0` environment module under Fred Hutch's institutional Cell Ranger license.
+The module includes a demonstration workflow that can be tested independently. The workflow in `testrun.wdl` automatically downloads test data and runs without requiring input files.
 
-The module includes a demonstration workflow that can be tested independently. The workflow in `testrun.wdl` automatically downloads test data and runs without requiring input files:
-
-```bash
-# Using Cromwell
-java -jar cromwell.jar run testrun.wdl
-
-# Using miniWDL
-miniwdl run testrun.wdl
-
-# Using Sprocket
-sprocket run testrun.wdl
-```
+**Fred Hutch users**: If you would like run `testrun.wdl` on PROOF, first edit it to use the `run_count_hpc` task instead of `run_count`. That way the Cell Ranger module will be used instead of the private Docker image used by CI/CD.
 
 The test workflow (`cellranger_example`) automatically:
 1. Downloads a small GEX reference using `ww-testdata`
 2. Downloads test FASTQ data with proper naming convention using `ww-testdata`
 3. Runs Cell Ranger count analysis
-4. Extracts the filtered h5 from the results tarball
-5. Validates all outputs
+4. Validates all outputs
 
 ## Configuration Guidelines
 
