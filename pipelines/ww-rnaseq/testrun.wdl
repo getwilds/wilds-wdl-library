@@ -48,7 +48,7 @@ workflow rnaseq_example {
       star_cpu = 2,
       star_memory_gb = 6,
       genome_sa_index_nbases = 10,
-      organize_results = true,
+      organize_results = false,
       include_bams = true,
       include_trimmed_fastqs = true
   }
