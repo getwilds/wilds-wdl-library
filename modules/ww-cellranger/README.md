@@ -13,7 +13,7 @@ This module provides reusable WDL tasks for preparing and processing single-cell
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `run_count`, `run_count_hpc`, `rename_fastqs`, `extract_h5`
+- **Tasks**: `run_count`, `run_count_hpc`, `rename_fastqs`
 - **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support, assume using HPC)
 - **Container**: Cell Ranger is not redistributable, so the WILDS Docker Library does not publish a public Cell Ranger image. A [Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) is provided so users can build their own private image. Fred Hutch users running on institutional HPC can instead use `run_count_hpc` with the `CellRanger/10.0.0` environment module under Fred Hutch's institutional Cell Ranger license.
 
@@ -114,19 +114,6 @@ Renames FASTQ files to match the Cell Ranger naming convention. Useful for prepa
 **Outputs:**
 - `r1_renamed` (File): R1 FASTQ file renamed to `{sample_id}_S1_R1_001.fastq.gz`
 - `r2_renamed` (File): R2 FASTQ file renamed to `{sample_id}_S1_R2_001.fastq.gz`
-
-### `extract_h5`
-
-Extracts the `filtered_feature_bc_matrix.h5` file from a Cell Ranger results tarball. Useful when downstream tools (e.g., Seurat) need the h5 file directly without consuming the full results tarball.
-
-**Inputs:**
-- `results_tar` (File): Tarball of Cell Ranger count output folder (contains `outs/` subfolder)
-- `sample_id` (String): Sample ID used to run Cell Ranger count (name of the top-level folder inside the tarball)
-- `memory_gb` (Int, default=4): Memory allocation in GB
-- `cpu_cores` (Int, default=1): Number of CPU cores to use
-
-**Outputs:**
-- `filtered_h5` (File): Filtered feature-barcode matrix HDF5 file
 
 ## Usage as a Module
 
