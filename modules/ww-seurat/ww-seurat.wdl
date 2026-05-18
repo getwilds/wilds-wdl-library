@@ -53,7 +53,7 @@ task run_seurat {
     set -eo pipefail
 
     curl -so seurat_analysis.R \
-      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-seurat-module/modules/ww-seurat/seurat_analysis.R"
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-seurat/seurat_analysis.R"
 
     Rscript seurat_analysis.R \
       --input_h5="~{input_h5}" \
