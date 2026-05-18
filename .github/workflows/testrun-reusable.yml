@@ -155,14 +155,11 @@ jobs:
     -
       name: Install Sprocket
       run: |
-        cargo-binstall sprocket --version 0.24.0 -y
-        cargo install --git https://github.com/getwilds/wdlparse --tag v0.0.5
+        cargo-binstall sprocket --version 0.25.0 -y
     -
       name: Run workflow with Sprocket
       run: |
         item_dir="${{ inputs.item_type }}/${{ matrix.item }}"
         wdl_file="$item_dir/testrun.wdl"
-        # Extract entrypoint from the WDL file
-        entrypoint=$(wdlparse parse --format json "$wdl_file" | jq -r '.wdl.workflows[].name')
-        echo "Running ${{ inputs.item_type }}/${{ matrix.item }} with Sprocket using entrypoint: $entrypoint"
-        sprocket run "$wdl_file" --target "$entrypoint"
+        echo "Running ${{ inputs.item_type }}/${{ matrix.item }} with Sprocket"
+        sprocket run "$wdl_file"

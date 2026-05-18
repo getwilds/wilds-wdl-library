@@ -8,7 +8,7 @@ WOMTOOL_JAR ?= womtool-$(WOMTOOL).jar
 CROMWELL ?= 92
 CROMWELL_JAR ?= cromwell-$(CROMWELL).jar
 MINIWDL ?= 1.13.0
-SPROCKET_MIN ?= 0.22.0
+SPROCKET_MIN ?= 0.25.0
 SPROCKET_CONFIG ?=
 SPROCKET_CONFIG_FLAG := $(if $(SPROCKET_CONFIG),-c $(SPROCKET_CONFIG),)
 TYPE ?= all
@@ -164,12 +164,10 @@ run_sprocket: check_sprocket check_name ## Run sprocket on testrun.wdl files (us
 		if [ -d "$$dir" ] && [ -f "$$dir/testrun.wdl" ]; then \
 			name=$$(basename $$dir); \
 			echo "... Running $$name"; \
-			entrypoint=$$(grep '^workflow ' "$$dir/testrun.wdl" | awk '{print $$2}' | tr -d '{'); \
-			echo "... Using entrypoint: $$entrypoint"; \
 			attempt=1; passed=0; \
 			while [ $$attempt -le $$max_attempts ]; do \
 				if [ $$attempt -gt 1 ]; then echo "[retry] Attempt $$attempt/$$max_attempts for $$name"; fi; \
-				if sprocket run $(SPROCKET_CONFIG_FLAG) "$$dir/testrun.wdl" --target $$entrypoint; then \
+				if sprocket run $(SPROCKET_CONFIG_FLAG) "$$dir/testrun.wdl"; then \
 					passed=1; break; \
 				fi; \
 				attempt=$$((attempt + 1)); \
