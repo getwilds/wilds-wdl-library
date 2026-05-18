@@ -270,7 +270,7 @@ docs-preview: check_sprocket check_uv ## Build and serve documentation preview l
 	@echo "Step 4/7: Creating .sprocketignore..."
 	@printf '%s\n' '# Excluding test run WDL'\''s from documentation builds' 'modules/**/testrun.wdl' 'pipelines/**/testrun.wdl' > .sprocketignore
 	@echo "Step 5/7: Building docs with sprocket..."
-	@sprocket dev doc -v --homepage docs-README.md --logo WILDSWDLNameLogo.svg .
+	@sprocket dev doc -v .
 	@echo "Step 6/7: Post-processing documentation..."
 	@uv run --python 3.13 .github/scripts/postprocess_docs.py
 	@echo "Step 7/7: Restoring original state..."
