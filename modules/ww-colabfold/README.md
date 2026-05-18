@@ -172,7 +172,7 @@ The module includes a test workflow (`testrun.wdl`) that downloads weights and p
 miniwdl run modules/ww-colabfold/testrun.wdl
 
 # Using Sprocket
-sprocket run modules/ww-colabfold/testrun.wdl --entrypoint colabfold_example
+sprocket run modules/ww-colabfold/testrun.wdl
 
 # Using Cromwell
 java -jar cromwell.jar run modules/ww-colabfold/testrun.wdl

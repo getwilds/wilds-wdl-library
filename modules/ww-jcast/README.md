@@ -121,7 +121,7 @@ The module includes a test workflow (`testrun.wdl`) that can be run independentl
 
 ```bash
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint jcast_example
+sprocket run testrun.wdl
 
 # Using miniWDL
 miniwdl run testrun.wdl

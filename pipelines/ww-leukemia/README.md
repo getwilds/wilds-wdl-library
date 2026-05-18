@@ -97,7 +97,7 @@ java -jar cromwell.jar run ww-leukemia.wdl --inputs inputs.json --options option
 miniwdl run ww-leukemia.wdl -i inputs.json
 
 # Sprocket
-sprocket run ww-leukemia.wdl inputs.json
+sprocket run ww-leukemia.wdl @inputs.json
 ```
 
 ### Input Parameters
@@ -320,7 +320,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint leukemia_example
+sprocket run testrun.wdl
 ```
 
 The test workflow automatically:

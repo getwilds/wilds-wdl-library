@@ -242,7 +242,7 @@ The `aws_sso_example` test workflow requires no input parameters and automatical
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint aws_sso_example
+sprocket run testrun.wdl
 
 # Using Cromwell
 java -jar cromwell.jar run testrun.wdl

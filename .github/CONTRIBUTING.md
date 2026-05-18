@@ -242,7 +242,7 @@ sprocket lint \
   testrun.wdl
 
 # Test running (use testrun.wdl for execution tests)
-sprocket run testrun.wdl --entrypoint toolname_example
+sprocket run testrun.wdl
 miniwdl run testrun.wdl
 ```
 

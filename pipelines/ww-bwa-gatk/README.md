@@ -75,7 +75,7 @@ java -jar cromwell.jar run ww-bwa-gatk.wdl --inputs inputs.json --options option
 miniwdl run ww-bwa-gatk.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-bwa-gatk.wdl inputs.json
+sprocket run ww-bwa-gatk.wdl @inputs.json
 ```
 
 ### For Fred Hutch Users

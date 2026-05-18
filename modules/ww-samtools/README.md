@@ -130,7 +130,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint samtools_example
+sprocket run testrun.wdl
 ```
 
 ## Requirements

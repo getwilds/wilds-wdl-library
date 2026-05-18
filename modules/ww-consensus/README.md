@@ -84,7 +84,7 @@ java -jar cromwell.jar run testrun.wdl -i inputs-test.json
 miniwdl run testrun.wdl -i inputs-test.json
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint consensus_example -i inputs-test.json
+sprocket run testrun.wdl @inputs-test.json
 ```
 
 Note: Testing requires annotated variant tables from the three callers as input.

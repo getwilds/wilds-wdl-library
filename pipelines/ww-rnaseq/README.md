@@ -162,7 +162,7 @@ java -jar cromwell.jar run ww-rnaseq.wdl --inputs inputs.json --options options.
 miniwdl run ww-rnaseq.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-rnaseq.wdl inputs.json
+sprocket run ww-rnaseq.wdl @inputs.json
 ```
 
 ### For Fred Hutch Users
@@ -271,7 +271,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint rnaseq_example
+sprocket run testrun.wdl
 ```
 
 The test workflow automatically:
