@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cellranger/ww-cellranger.wdl" as ww_cellranger
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-seurat-module/modules/ww-cellranger/ww-cellranger.wdl" as ww_cellranger
 
 workflow cellranger_example {
 
@@ -31,13 +31,15 @@ workflow cellranger_example {
     sample_id = "testdata",
     results_tar = run_count.results_tar,
     web_summary = run_count.web_summary,
-    metrics_summary = run_count.metrics_summary
+    metrics_summary = run_count.metrics_summary,
+    filtered_h5 = run_count.filtered_h5
   }
 
   output {
     File results_tar = run_count.results_tar
     File web_summary = run_count.web_summary
     File metrics_summary = run_count.metrics_summary
+    File filtered_h5 = run_count.filtered_h5
     File validation_report = validate_outputs.report
   }
 }
@@ -56,6 +58,7 @@ task validate_outputs {
     results_tar: "Compressed tarball of Cell Ranger count output directory"
     web_summary: "Web summary HTML file"
     metrics_summary: "Metrics summary CSV file"
+    filtered_h5: "Filtered feature-barcode matrix HDF5 file"
   }
 
   input {
@@ -63,6 +66,7 @@ task validate_outputs {
     File results_tar
     File web_summary
     File metrics_summary
+    File filtered_h5
   }
 
   command <<<
@@ -92,12 +96,13 @@ task validate_outputs {
     validate_file "~{results_tar}" "Results tarball" || validation_passed=false
     validate_file "~{web_summary}" "Web summary" || validation_passed=false
     validate_file "~{metrics_summary}" "Metrics summary" || validation_passed=false
+    validate_file "~{filtered_h5}" "Filtered h5" || validation_passed=false
 
     # Final validation summary
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 3"
+      echo "Total files validated: 4"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `merge_fastas_with_prefix`, `download_rrna_reference`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `inject_synthetic_umis`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `create_diamond_data`, `create_test_protein_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`, `download_pao1_ref`
+- **Tasks**: `download_ref_data`, `merge_fastas_with_prefix`, `download_rrna_reference`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `inject_synthetic_umis`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_10x_h5_data`, `create_diamond_data`, `create_test_protein_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`, `download_pao1_ref`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -57,7 +57,7 @@ The `testrun.wdl` workflow requires no input parameters and automatically downlo
 
 - **Chromosome**: chr1 only (for efficient testing)
 - **Reference version**: hg38 (latest standard)
-- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), Pasilla counts, ShapeMapper data, Cell Ranger reference, DIAMOND data, test protein FASTA, GLIMPSE2 imputation data, and JCAST rMATS test data
+- **All test data types**: Reference genome, transcriptome, FASTQ, interleaved FASTQ, CRAM, BAM, ichorCNA files, VCF files (dbSNP, known indels, gnomAD, AnnotSV), Pasilla counts, ShapeMapper data, Cell Ranger reference, 10X H5 matrix, DIAMOND data, test protein FASTA, GLIMPSE2 imputation data, and JCAST rMATS test data
 
 ### Running the Test Workflow
 
@@ -557,6 +557,32 @@ call cellranger_tasks.run_count {
 }
 ```
 
+### download_10x_h5_data
+
+Downloads a 10X Genomics example filtered feature-barcode matrix in HDF5 format (2,500 Wistar Rat PBMCs, Singleplex, Cell Ranger 9.0.0).
+
+**Use Case**: When testing single-cell RNA-seq analysis tools (e.g., Seurat) that consume Cell Ranger HDF5 output, you need a real `.h5` matrix file. This task downloads the official 10X example dataset, which is small enough for CI testing while containing valid gene expression data.
+
+**Inputs**:
+- `sample_name` (String): Output filename prefix (default: "2500_Wistar_Rat_PBMCs_Singleplex")
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+
+**Outputs**:
+- `h5_matrix` (File): Filtered feature-barcode matrix in HDF5 format (`<sample_name>_filtered_feature_bc_matrix.h5`)
+
+**Data Source**: https://www.10xgenomics.com/datasets/2500-wistar-rat-pbmcs-singleplex-3p-gem-x-universal-protocol
+
+**Example Usage**:
+```wdl
+call testdata.download_10x_h5_data { }
+call seurat_tasks.seurat_analysis {
+  input:
+    h5_matrix = download_10x_h5_data.h5_matrix,
+    sample_name = "rat_pbmcs"
+}
+```
+
 ### create_diamond_data
 
 Downloads E. coli Swiss-Prot reference proteome and creates a small subset for testing DIAMOND protein alignment workflows.
@@ -804,6 +830,7 @@ All reference data is downloaded from authoritative public repositories:
 - **UniProt**: E. coli K-12 reference proteome for DIAMOND protein alignment testing
 - **JCAST Repository**: rMATS output test files for alternative splicing proteomics testing
 - **NCBI RefSeq**: Pseudomonas aeruginosa PAO1 reference assembly (GCF_000006765.1) for bacterial RNA-seq testing
+- **10X Genomics**: 2,500 Wistar Rat PBMC example HDF5 matrix for single-cell analysis testing
 
 Data integrity is maintained through the use of stable URLs and version-pinned resources.
 
@@ -839,6 +866,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-sjl / ww-jetlag**: Solar Jetlag tile processing (uses synthetic tile and border points from `generate_sjl_data`)
 - **ww-jcast**: Alternative splicing proteomics (uses rMATS test data from `download_jcast_test_data`)
 - **ww-umi-tools**: UMI-aware deduplication (uses synthetic UMI-tagged BAMs from `inject_synthetic_umis` for zero-config testing)
+- **ww-seurat**: Single-cell RNA-seq analysis (uses 10X H5 matrix from `download_10x_h5_data`)
 - **Variant calling workflows**: GATK best practices (requires dbSNP, known indels, gnomAD)
 
 By centralizing test data downloads, `ww-testdata` enables:
