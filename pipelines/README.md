@@ -42,7 +42,7 @@ Each pipeline directory contains the following required components:
 pipelines/pipeline-name/
 ├── pipeline-name.wdl    # Main workflow importing multiple modules
 ├── testrun.wdl          # Zero-configuration test workflow used in CI
-├── testrun_hpc.wdl      # Optional HPC-only test workflow (see below)
+├── testrun_hpc.wdl      # Zero-configuration test workflow used in HPC (optional, see below)
 ├── inputs.json          # Example inputs for the complete pipeline
 └── README.md            # Pipeline-specific documentation
 ```

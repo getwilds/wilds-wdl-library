@@ -40,7 +40,7 @@ This pipeline imports and uses:
 
 ## Cell Ranger Software Environment
 
-Cell Ranger is not redistributable, so the WILDS Docker Library does not publish a public Cell Ranger image. This pipeline therefore exposes three execution paths and a string input to pick between them:
+Cell Ranger is not redistributable, so the WILDS Docker Library does not publish a public Cell Ranger image. This pipeline has three `execution_mode` options that run a corresponding version of the `ww-cellranger/run_count` task:
 
 | `execution_mode` | Task called | Use when |
 | --- | --- | --- |

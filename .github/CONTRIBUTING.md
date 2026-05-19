@@ -101,9 +101,9 @@ wilds-wdl-library/
 
 **Test workflow files (`testrun.wdl` and/or `testrun_hpc.wdl`):**
 
-Most modules ship a single `testrun.wdl` that exercises the workflow on a tiny, biologically minimal input — fast enough to run on a GitHub Actions runner. CI/CD always uses `testrun.wdl`, and the monthly HPC test run falls back to it when no HPC-specific file is provided.
+Most modules ship with a single `testrun.wdl` that exercises the workflow on a tiny, biologically minimal input — fast enough to run on a GitHub Actions runner. CI/CD always uses `testrun.wdl`, and the monthly HPC test run falls back to it when no HPC-specific file is provided.
 
-For modules where CI execution is impractical (GPU-only tools, license-gated tools that require `module load` on HPC, or workflows that need a more realistic input to be meaningful), you may add a `testrun_hpc.wdl`:
+For modules where CI execution is impractical (GPU-only tools, license-gated tools that require `module load` on HPC, or workflows that need a much larger, more realistic input to be meaningful), you may add a `testrun_hpc.wdl`:
 
 | Files present | CI runs | HPC runs |
 |---|---|---|
