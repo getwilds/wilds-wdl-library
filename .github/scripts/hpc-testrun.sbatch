@@ -47,7 +47,7 @@ REPO="getwilds/wilds-wdl-library"
 # ---- Environment setup ----
 # Update these module versions as needed for your HPC
 module purge
-module load sprocket/0.23.0 Apptainer/1.1.6 gh/2.86.0
+module load sprocket/0.25.0 Apptainer/1.1.6 gh/2.86.0
 
 # Apptainer cache and tmp directories — defaults under WORK_DIR so the cache
 # lives on the same filesystem as the run (avoids filling $HOME) and is scoped
