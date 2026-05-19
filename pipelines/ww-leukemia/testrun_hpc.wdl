@@ -6,7 +6,7 @@ version 1.0
 # this end-to-end variant is intended to be exercised on Fred Hutch HPC
 # infrastructure (Sprocket or PROOF).
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/hpc-testruns/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-leukemia/ww-leukemia.wdl" as leukemia
 
 workflow leukemia_test {
