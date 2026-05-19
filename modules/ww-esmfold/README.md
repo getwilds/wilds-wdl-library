@@ -14,7 +14,7 @@ ESMFold predicts protein structures directly from amino acid sequences using a l
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
 
 - **Main WDL file**: `ww-esmfold.wdl` - Contains task definitions for ESMFold prediction
-- **Test workflow**: `testrun.wdl` - Demonstration workflow for testing and examples
+- **Test workflow**: `testrun_hpc.wdl` for monthly HPC validation (this module ships no CI testrun — see "Testing the Module" below)
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
@@ -28,7 +28,6 @@ Predict protein 3D structures from amino acid sequences using ESMFold.
 - `output_prefix` (String): Prefix for naming the output tarball
 - `num_recycles` (Int, default=4): Number of recycling iterations for structure refinement
 - `chunk_size` (Int, default=128): Chunk size for memory-efficient inference on long sequences (0 to disable)
-- `cpu_only` (Boolean, default=false): Run inference on CPU instead of GPU
 - `cpu_offload` (Boolean, default=false): Enable CPU offloading for longer sequences with limited GPU memory
 - `max_tokens_per_batch` (Int, default=0): Maximum tokens per batch for GPU inference (0 for automatic)
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
@@ -68,7 +67,6 @@ workflow my_structure_prediction {
 call esmfold_tasks.esmfold_predict { input:
     fasta_file = protein_fasta,
     output_prefix = "cpu_test",
-    cpu_only = true,
     gpu_enabled = false,
     num_recycles = 1,
     cpu_cores = 4,
@@ -95,26 +93,26 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-> **Note:** The ESMFold test workflow requires **24 GB of memory** to load the full 3B-parameter ESM-2 model, which exceeds the resources available on GitHub Actions runners (~16 GB). As a result, **this module's `testrun.wdl` is excluded from GitHub CI/CD** and is instead validated on the Fred Hutch HPC on a monthly basis. Linting checks still run in CI as normal.
+> **Note:** ESMFold requires **24 GB of memory** to load the full 3B-parameter ESM-2 model, which exceeds the resources available on GitHub Actions runners (~16 GB). Because even minimal CPU runs crashed CI, this module ships **no `testrun.wdl`** — only an HPC variant. Linting checks still run in CI as normal.
 
-The module includes a test workflow (`testrun.wdl`) that can be run on an HPC or local machine with sufficient memory:
+The module includes an HPC test workflow (`testrun_hpc.wdl`) that can be run on Fred Hutch HPC or any environment with sufficient memory:
 
 ```bash
 # Using miniWDL
-miniwdl run testrun.wdl
+miniwdl run testrun_hpc.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl
+sprocket run testrun_hpc.wdl
 
 # Using Cromwell
-java -jar cromwell.jar run testrun.wdl
+java -jar cromwell.jar run testrun_hpc.wdl
 ```
 
 ### Automatic Demo Mode
 
-The test workflow automatically:
+The HPC test workflow automatically:
 1. Creates a minimal test protein FASTA (Trp-cage miniprotein, 20 residues) using `ww-testdata`
-2. Runs ESMFold prediction with minimal settings (CPU-only, 1 recycle)
+2. Runs ESMFold prediction
 3. Validates that PDB output files were generated
 
 ## Docker Container

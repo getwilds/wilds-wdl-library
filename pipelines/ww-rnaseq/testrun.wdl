@@ -2,7 +2,7 @@ version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-rnaseq/ww-rnaseq.wdl" as rnaseq_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/hpc-testruns/pipelines/ww-rnaseq/ww-rnaseq.wdl" as rnaseq_workflow
 
 struct RefGenome {
     String name
@@ -48,7 +48,7 @@ workflow rnaseq_example {
       star_cpu = 2,
       star_memory_gb = 6,
       genome_sa_index_nbases = 10,
-      organize_results = true,
+      organize_results = false,
       include_bams = true,
       include_trimmed_fastqs = true
   }

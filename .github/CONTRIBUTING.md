@@ -92,12 +92,27 @@ wilds-wdl-library/
 **The module folder must contain:**
 
 1. **`ww-toolname.wdl`** - Main WDL file containing task definitions for the tool
-2. **`testrun.wdl`** - Test workflow demonstrating module functionality (must be named `testrun.wdl`)
+2. **At least one of `testrun.wdl` or `testrun_hpc.wdl`** - Test workflow demonstrating module functionality (see "Test workflow files" below)
 3. **`README.md`** - Comprehensive documentation
 
 **The module folder may optionally contain:**
 
 - **Custom scripts** (e.g., `.R`, `.py`, `.sh`) - If your task requires a custom script that isn't part of the container image, place it directly in the module directory alongside the WDL files. The script can be fetched at runtime using `curl` or `wget` in the task's command block.
+
+**Test workflow files (`testrun.wdl` and/or `testrun_hpc.wdl`):**
+
+Most modules ship with a single `testrun.wdl` that exercises the workflow on a tiny, biologically minimal input — fast enough to run on a GitHub Actions runner. CI/CD always uses `testrun.wdl`, and the monthly HPC test run falls back to it when no HPC-specific file is provided.
+
+For modules where CI execution is impractical (GPU-only tools, license-gated tools that require `module load` on HPC, or workflows that need a much larger, more realistic input to be meaningful), you may add a `testrun_hpc.wdl`:
+
+| Files present | CI runs | HPC runs |
+|---|---|---|
+| `testrun.wdl` only | `testrun.wdl` | `testrun.wdl` |
+| both files | `testrun.wdl` | `testrun_hpc.wdl` |
+| `testrun_hpc.wdl` only | (skipped — HPC-only module) | `testrun_hpc.wdl` |
+| neither | not allowed — discovery will fail | same |
+
+`ww-esmfold` is the canonical HPC-only example; pair it with `testrun_hpc.wdl` when adding similar GPU/licensed tools.
 
 
 **Your main WDL file (`ww-toolname.wdl`) must include:**
@@ -114,7 +129,7 @@ wilds-wdl-library/
     - Reference data (e.g. allele frequencies, reference genome)`input_reference_required`, `input_reference_optional`
     - Output files (e.g. sample BAM, reference genome index)`output_sample`, `output_reference`
 
-**Your test workflow file (`testrun.wdl`) must include:**
+**Your test workflow file (`testrun.wdl` or `testrun_hpc.wdl`) must include:**
 
 - **Version declaration**: Use WDL version 1.0
 - **Module imports**: Import the module being tested and the `ww-testdata` module using GitHub URLs
@@ -251,16 +266,25 @@ miniwdl run testrun.wdl
 Use our automated Makefile from the repository root for easier testing:
 
 ```bash
-# Test a specific module (replace ww-toolname with your module name)
-make lint MODULE=ww-toolname          # Run all linting checks
-make lint_sprocket MODULE=ww-toolname # Run only sprocket linting
-make lint_miniwdl MODULE=ww-toolname  # Run only miniwdl linting
-make run_sprocket MODULE=ww-toolname  # Run sprocket with proper entrypoint
-make run_miniwdl MODULE=ww-toolname   # Run miniwdl
+# Test a specific module or pipeline (replace ww-toolname with your module/pipeline name)
+make lint NAME=ww-toolname          # Run all linting checks
+make lint_sprocket NAME=ww-toolname # Run only sprocket linting
+make lint_miniwdl NAME=ww-toolname  # Run only miniwdl linting
+make run_sprocket NAME=ww-toolname  # Run sprocket with proper entrypoint
+make run_miniwdl NAME=ww-toolname   # Run miniwdl
 
-# Test all modules
-make lint    # Lint all modules
-make run     # Run all modules with both sprocket and miniwdl
+# Test all modules and pipelines
+make lint    # Lint everything
+make run     # Run everything with both sprocket and miniwdl
+
+# Scope by tier with TYPE=modules or TYPE=pipelines
+make run_sprocket TYPE=modules
+
+# By default, the run targets use testrun.wdl (TARGET=ci). To exercise
+# the HPC variant locally instead — useful on a system with GPUs and the
+# right module environment — pass TARGET=hpc; the run will prefer
+# testrun_hpc.wdl when present and fall back to testrun.wdl otherwise:
+make run_sprocket NAME=ww-toolname TARGET=hpc
 ```
 
 The Makefile automatically handles:
@@ -311,10 +335,10 @@ export WORK_DIR=/hpc/temp/your-username/wilds-testrun
 sbatch /path/to/hpc-testrun.sbatch
 ```
 
-You can also run the test suite manually on the HPC without the SLURM script:
+You can also run the test suite manually on the HPC without the SLURM script. Pass `TARGET=hpc` so each module/pipeline runs its `testrun_hpc.wdl` when present (with `testrun.wdl` as the fallback):
 
 ```bash
-make run_sprocket SPROCKET_CONFIG=/path/to/your/sprocket-slurm-config.toml
+make run_sprocket TARGET=hpc SPROCKET_CONFIG=/path/to/your/sprocket-slurm-config.toml
 ```
 
 ## Documentation Website

@@ -41,10 +41,13 @@ Each pipeline directory contains the following required components:
 ```
 pipelines/pipeline-name/
 ├── pipeline-name.wdl    # Main workflow importing multiple modules
-├── testrun.wdl          # Zero-configuration test workflow
+├── testrun.wdl          # Zero-configuration test workflow used in CI
+├── testrun_hpc.wdl      # Zero-configuration test workflow used in HPC (optional, see below)
 ├── inputs.json          # Example inputs for the complete pipeline
 └── README.md            # Pipeline-specific documentation
 ```
+
+Pipelines follow the same `testrun.wdl` / `testrun_hpc.wdl` split as modules: most ship just `testrun.wdl` for CI, and pipelines that exercise GPU or HPC-only tasks (e.g. `ww-leukemia`, `ww-starling-batch`, `ww-sra-cellranger`) add a `testrun_hpc.wdl` that the monthly Fred Hutch HPC test run uses instead.
 
 
 ### **Optional Components**
@@ -63,8 +66,10 @@ pipelines/pipeline-name/
 | `ww-imputation` | Intermediate | `ww-glimpse2`, `ww-bcftools` | Genotype imputation from low-coverage WGS data using GLIMPSE2 |
 | `ww-jetlag` | Basic | `ww-sjl` | Solar Jetlag tile processing across an array of geographic tiles |
 | `ww-leukemia` | Advanced | Multiple | Complete leukemia analysis pipeline |
+| `ww-rnaseq` | Advanced | `ww-fastqc`, `ww-trimgalore`, `ww-star`, `ww-bedparse`, `ww-rseqc`, `ww-deseq2`, `ww-multiqc`, `ww-gffread` | Production-ready RNA-seq workflow with QC, trimming, alignment, differential expression, and MultiQC reporting |
 | `ww-saturation` | Intermediate | Multiple | Sequencing saturation analysis |
 | `ww-splicing-proteomics` | Intermediate | `ww-star`, `ww-rmats-turbo`, `ww-jcast` | Alternative splicing proteomics: STAR alignment, rMATS splicing detection, and JCAST protein translation |
+| `ww-sra-cellranger` | Basic | `ww-sra`, `ww-cellranger` | SRA download and single-cell RNA-seq processing with Cell Ranger |
 | `ww-sra-salmon` | Basic | `ww-sra`, `ww-salmon` | SRA download and transcript quantification |
 | `ww-sra-star` | Basic | `ww-sra`, `ww-star` | SRA download and RNA-seq alignment |
 | `ww-star-deseq2` | Intermediate | `ww-star`, `ww-deseq2` | RNA-seq alignment and differential expression |
@@ -145,6 +150,8 @@ Pipelines serve as starting points for custom workflows:
 All pipelines are automatically tested through GitHub Actions:
 - **Multi-executor testing**: Cromwell, miniWDL, and Sprocket
 - **End-to-end validation**: Complete pipeline testing with real data
+
+Pipelines that ship a `testrun_hpc.wdl` are additionally exercised on the Fred Hutch HPC on a monthly basis to validate GPU and HPC-only execution paths. See the [contributing guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for the full picture.
 
 ### **Test Data**
 - Small but realistic datasets for efficient testing

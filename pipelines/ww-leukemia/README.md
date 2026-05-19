@@ -325,12 +325,16 @@ sprocket run testrun.wdl
 
 The test workflow automatically:
 1. Downloads test CRAM files and reference data
-2. Runs the complete analysis pipeline with reduced resources
-3. Tests all major components (variant calling, SV detection, ichorCNA)
+2. Runs the analysis pipeline with reduced resources
+3. Tests variant calling, SV detection, and ichorCNA components
 4. Uses a subset of chromosomes for faster execution (chr1 only)
 5. Validates all outputs
 
-**Note**: The test run uses simplified inputs (single chromosome, reduced scatter count) optimized for CI/CD environments. For production analyses, use the full `ww-leukemia.wdl` pipeline with comprehensive inputs.
+**Note**: The test run uses simplified inputs (single chromosome, reduced scatter count) optimized for CI/CD environments and sets `skip_annotations = true` because the AnnotSV and Annovar Docker images are too large to pull on GitHub Actions runners. For production analyses, use the full `ww-leukemia.wdl` pipeline with comprehensive inputs.
+
+### HPC Test Workflow
+
+`testrun_hpc.wdl` mirrors the regular testrun's input data and resource sizing but runs the full pipeline with `skip_annotations = false`, exercising the AnnotSV and Annovar steps that CI cannot. It is intended to be exercised on Fred Hutch HPC (via Sprocket directly or via PROOF), and exposes the annotation outputs (`mutect_annotated_vcf`, `haplotype_annotated_vcf`, `mpileup_annotated_vcf`, `consensus_variants`, `manta_sv_annotated_tsv`, `smoove_sv_annotated_tsv`, `delly_sv_annotated_tsv`, etc.) for inspection.
 
 The pipeline is automatically tested as part of the WILDS WDL Library CI/CD pipeline using:
 - Multiple WDL executors (Cromwell, miniWDL, Sprocket)
