@@ -138,7 +138,7 @@ The module includes a test workflow (`testrun.wdl`) that can be run independentl
 
 ```bash
 # Using Sprocket (recommended)
-sprocket run testrun.wdl --entrypoint rseqc_example
+sprocket run testrun.wdl
 
 # Using miniWDL
 miniwdl run testrun.wdl

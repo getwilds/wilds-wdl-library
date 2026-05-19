@@ -75,7 +75,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl --entrypoint sjl_example
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint sjl_example
+sprocket run testrun.wdl
 ```
 
 ## Reproducibility

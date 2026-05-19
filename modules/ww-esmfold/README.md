@@ -104,7 +104,7 @@ The module includes a test workflow (`testrun.wdl`) that can be run on an HPC or
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint esmfold_example
+sprocket run testrun.wdl
 
 # Using Cromwell
 java -jar cromwell.jar run testrun.wdl

@@ -103,7 +103,7 @@ java -jar cromwell.jar run ww-star-deseq2.wdl --inputs inputs.json --options opt
 miniwdl run ww-star-deseq2.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-star-deseq2.wdl inputs.json
+sprocket run ww-star-deseq2.wdl @inputs.json
 ```
 
 ### For Fred Hutch Users
@@ -210,7 +210,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint star_deseq2_example
+sprocket run testrun.wdl
 ```
 
 The test workflow automatically:

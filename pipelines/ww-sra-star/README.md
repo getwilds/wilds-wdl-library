@@ -79,7 +79,7 @@ java -jar cromwell.jar run ww-sra-star.wdl --inputs inputs.json --options option
 miniwdl run ww-sra-star.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-sra-star.wdl inputs.json
+sprocket run ww-sra-star.wdl @inputs.json
 ```
 
 ### For Fred Hutch Users
@@ -207,7 +207,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint sra_star_example
+sprocket run testrun.wdl
 ```
 
 The test workflow automatically:

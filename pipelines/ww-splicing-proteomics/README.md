@@ -116,7 +116,7 @@ java -jar cromwell.jar run ww-splicing-proteomics.wdl --inputs inputs.json --opt
 miniwdl run ww-splicing-proteomics.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-splicing-proteomics.wdl inputs.json
+sprocket run ww-splicing-proteomics.wdl @inputs.json
 ```
 
 ### For Fred Hutch Users
@@ -259,7 +259,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint splicing_proteomics_example
+sprocket run testrun.wdl
 ```
 
 The test workflow automatically:

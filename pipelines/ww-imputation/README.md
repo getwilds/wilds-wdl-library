@@ -102,7 +102,7 @@ java -jar cromwell.jar run ww-imputation.wdl --inputs inputs.json
 miniwdl run ww-imputation.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-imputation.wdl inputs.json
+sprocket run ww-imputation.wdl @inputs.json
 ```
 
 ### For Fred Hutch Users

@@ -191,7 +191,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint deseq2_example
+sprocket run testrun.wdl
 ```
 
 ### Test Data Workflow

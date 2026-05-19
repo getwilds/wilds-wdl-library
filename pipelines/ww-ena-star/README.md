@@ -81,7 +81,7 @@ java -jar cromwell.jar run ww-ena-star.wdl --inputs inputs.json --options option
 miniwdl run ww-ena-star.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-ena-star.wdl inputs.json
+sprocket run ww-ena-star.wdl @inputs.json
 ```
 
 ### For Fred Hutch Users
@@ -199,7 +199,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint ena_star_example
+sprocket run testrun.wdl
 ```
 
 The test workflow automatically:

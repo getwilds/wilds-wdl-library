@@ -115,7 +115,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint bedparse_example
+sprocket run testrun.wdl
 ```
 
 The test workflow:
