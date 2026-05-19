@@ -136,7 +136,7 @@ sprocket run testrun.wdl
 
 The test workflows automatically download test data and use hardcoded settings optimized for testing.
 
-If a module ships a `testrun_hpc.wdl`, that file is exercised on the monthly Fred Hutch HPC test run instead of (or in addition to) `testrun.wdl`. You can run it locally too if your environment supports it (e.g. a system with GPUs and the right environment modules) — invoke it the same way as `testrun.wdl`, or pass `TARGET=hpc` to the Makefile to have it picked up automatically.
+If a module ships a `testrun_hpc.wdl`, that file is run on the monthly Fred Hutch HPC test, while CI/CD continues to use `testrun.wdl`. You can run it locally too if your environment supports it (e.g. a system with GPUs and the right environment modules). To do so, invoke it the same way as `testrun.wdl`, or pass `TARGET=hpc` to the Makefile to select it automatically.
 
 ## Testing and Validation
 
