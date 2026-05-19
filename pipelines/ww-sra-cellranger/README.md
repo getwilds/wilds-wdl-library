@@ -90,7 +90,7 @@ java -jar cromwell.jar run ww-sra-cellranger.wdl --inputs inputs.json
 miniwdl run ww-sra-cellranger.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-sra-cellranger.wdl inputs.json
+sprocket run ww-sra-cellranger.wdl @inputs.json
 ```
 
 ### For Fred Hutch Users
@@ -154,7 +154,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint sra_cellranger_example
+sprocket run testrun.wdl
 ```
 
 The test workflow automatically:

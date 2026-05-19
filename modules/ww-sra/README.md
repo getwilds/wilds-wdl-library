@@ -112,7 +112,7 @@ The `sra_example` test workflow in `testrun.wdl` requires no input parameters an
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint sra_example
+sprocket run testrun.wdl
 
 # Using Cromwell
 java -jar cromwell.jar run testrun.wdl

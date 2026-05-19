@@ -102,7 +102,7 @@ The module includes an HPC test workflow (`testrun_hpc.wdl`) that can be run on 
 miniwdl run testrun_hpc.wdl
 
 # Using Sprocket
-sprocket run testrun_hpc.wdl --entrypoint esmfold_example
+sprocket run testrun_hpc.wdl
 
 # Using Cromwell
 java -jar cromwell.jar run testrun_hpc.wdl

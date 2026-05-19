@@ -78,16 +78,14 @@ The module includes a test workflow that demonstrates the consensus processing t
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run testrun.wdl -i inputs-test.json
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run testrun.wdl -i inputs-test.json
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint consensus_example -i inputs-test.json
+sprocket run testrun.wdl
 ```
-
-Note: Testing requires annotated variant tables from the three callers as input.
 
 ## Input Requirements
 

@@ -89,7 +89,7 @@ curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipeli
 # Option 2: Download directly from GitHub by navigating to the file and clicking the download button
 
 # Modify inputs.json as necessary for your data, then run via the command line or PROOF's point-and-click interface
-sprocket run ww-sra-star.wdl inputs.json
+sprocket run ww-sra-star.wdl @inputs.json
 ```
 
 This works because all pipelines import modules using GitHub URLs, so your WDL executor fetches dependencies automatically.
@@ -129,7 +129,7 @@ cd pipelines/ww-sra-star
 
 # Run with your preferred executor using the example inputs.json as a starting point:
 # Sprocket
-sprocket run ww-sra-star.wdl inputs.json
+sprocket run ww-sra-star.wdl @inputs.json
 # Cromwell
 java -jar cromwell.jar run ww-sra-star.wdl --inputs inputs.json
 # miniWDL

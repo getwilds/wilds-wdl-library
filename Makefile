@@ -8,7 +8,7 @@ WOMTOOL_JAR ?= womtool-$(WOMTOOL).jar
 CROMWELL ?= 92
 CROMWELL_JAR ?= cromwell-$(CROMWELL).jar
 MINIWDL ?= 1.13.0
-SPROCKET_MIN ?= 0.22.0
+SPROCKET_MIN ?= 0.25.0
 SPROCKET_CONFIG ?=
 SPROCKET_CONFIG_FLAG := $(if $(SPROCKET_CONFIG),-c $(SPROCKET_CONFIG),)
 TYPE ?= all
@@ -175,12 +175,10 @@ run_sprocket: check_sprocket check_name ## Run sprocket on testrun WDLs (use NAM
 		if [ -z "$$wdl" ]; then continue; fi; \
 		name=$$(basename $$dir); \
 		echo "... Running $$name ($$wdl)"; \
-		entrypoint=$$(grep '^workflow ' "$$wdl" | awk '{print $$2}' | tr -d '{'); \
-		echo "... Using entrypoint: $$entrypoint"; \
 		attempt=1; passed=0; \
 		while [ $$attempt -le $$max_attempts ]; do \
 			if [ $$attempt -gt 1 ]; then echo "[retry] Attempt $$attempt/$$max_attempts for $$name"; fi; \
-			if sprocket run $(SPROCKET_CONFIG_FLAG) "$$wdl" --target $$entrypoint; then \
+			if sprocket run $(SPROCKET_CONFIG_FLAG) "$$wdl"; then \
 				passed=1; break; \
 			fi; \
 			attempt=$$((attempt + 1)); \
@@ -292,7 +290,7 @@ docs-preview: check_sprocket check_uv ## Build and serve documentation preview l
 	@echo "Step 4/7: Creating .sprocketignore..."
 	@printf '%s\n' '# Excluding test run WDL'\''s from documentation builds' 'modules/**/testrun.wdl' 'modules/**/testrun_hpc.wdl' 'pipelines/**/testrun.wdl' 'pipelines/**/testrun_hpc.wdl' > .sprocketignore
 	@echo "Step 5/7: Building docs with sprocket..."
-	@sprocket dev doc -v --homepage docs-README.md --logo WILDSWDLNameLogo.svg .
+	@sprocket dev doc -v .
 	@echo "Step 6/7: Post-processing documentation..."
 	@uv run --python 3.13 .github/scripts/postprocess_docs.py
 	@echo "Step 7/7: Restoring original state..."

@@ -86,7 +86,7 @@ java -jar cromwell.jar run ww-fastq-to-cram.wdl -i inputs.json
 miniwdl run ww-fastq-to-cram.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-fastq-to-cram.wdl -i inputs.json
+sprocket run ww-fastq-to-cram.wdl @inputs.json
 ```
 
 ### Running on Cirro

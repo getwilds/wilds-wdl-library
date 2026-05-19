@@ -119,7 +119,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint bcftools_example
+sprocket run testrun.wdl
 ```
 
 The test workflow automatically downloads test data using the `ww-testdata` module and runs variant calling without requiring any input parameters.

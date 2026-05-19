@@ -71,7 +71,7 @@ curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipeli
 # Option 2: Download directly from GitHub by navigating to the file and clicking the download button
 
 # Modify inputs.json as necessary for your data, then run via the command line or PROOF's point-and-click interface
-sprocket run ww-sra-star.wdl inputs.json
+sprocket run ww-sra-star.wdl @inputs.json
 ```
 
 ### Running Components Locally
@@ -89,7 +89,7 @@ sprocket run testrun.wdl
 
 # Run a pipeline (modify inputs.json as necessary)
 cd ../../pipelines/ww-sra-star
-sprocket run ww-sra-star.wdl inputs.json
+sprocket run ww-sra-star.wdl @inputs.json
 ```
 
 ---

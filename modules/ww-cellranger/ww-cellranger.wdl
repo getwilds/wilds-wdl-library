@@ -12,16 +12,17 @@ task run_count {
     outputs: {
         results_tar: "Compressed tarball of Cell Ranger count output directory",
         web_summary: "Web summary HTML file",
-        metrics_summary: "Metrics summary CSV file"
+        metrics_summary: "Metrics summary CSV file",
+        filtered_h5: "Filtered feature-barcode matrix HDF5 file"
     }
-    topic: "transcriptomics,gene_expression"
+    topic: "transcriptomics,gene_expression,single_cell_sequencing"
     species: "human,eukaryote,prokaryote,virus"
     operation: "rna_seq_quantification"
     input_sample_required: "r1_fastqs:rna_sequence:fastq,r2_fastqs:rna_sequence:fastq"
     input_sample_optional: "none"
     input_reference_required: "ref_gex:data_index:tar_format"
     input_reference_optional: "none"
-    output_sample: "results_tar:gene_expression_matrix:tar_format,web_summary:quality_control_report:html,metrics_summary:quality_control_report:csv"
+    output_sample: "results_tar:gene_expression_matrix:tar_format,web_summary:quality_control_report:html,metrics_summary:quality_control_report:csv,filtered_h5:gene_expression_matrix:h5"
     output_reference: "none"
   }
 
@@ -121,6 +122,7 @@ task run_count {
     # Move output files to working directory for outputting
     mv "~{sample_id}/outs/web_summary.html" .
     mv "~{sample_id}/outs/metrics_summary.csv" .
+    mv "~{sample_id}/outs/filtered_feature_bc_matrix.h5" .
 
     # Clean up Cell Ranger output directory for housekeeping
     # (and to avoid Sprocket symlink validation errors)
@@ -131,6 +133,7 @@ task run_count {
     File results_tar = "~{sample_id}_outs.tar.gz"
     File web_summary = "web_summary.html"
     File metrics_summary = "metrics_summary.csv"
+    File filtered_h5 = "filtered_feature_bc_matrix.h5"
   }
 
   runtime {
@@ -149,7 +152,8 @@ task run_count_hpc_cromwell {
     outputs: {
         results_tar: "Compressed tarball of Cell Ranger count output directory",
         web_summary: "Web summary HTML file",
-        metrics_summary: "Metrics summary CSV file"
+        metrics_summary: "Metrics summary CSV file",
+        filtered_h5: "Filtered feature-barcode matrix HDF5 file"
     }
   }
 
@@ -253,6 +257,7 @@ task run_count_hpc_cromwell {
     # Move output files to working directory for outputting
     mv "~{sample_id}/outs/web_summary.html" .
     mv "~{sample_id}/outs/metrics_summary.csv" .
+    mv "~{sample_id}/outs/filtered_feature_bc_matrix.h5" .
 
     # Clean up Cell Ranger output directory for housekeeping
     # (and to avoid Sprocket symlink validation errors)
@@ -263,6 +268,7 @@ task run_count_hpc_cromwell {
     File results_tar = "~{sample_id}_outs.tar.gz"
     File web_summary = "web_summary.html"
     File metrics_summary = "metrics_summary.csv"
+    File filtered_h5 = "filtered_feature_bc_matrix.h5"
   }
 
   # No docker/container runtime key: Cromwell's HPC backend runs this
@@ -452,3 +458,4 @@ task rename_fastqs {
     memory: "2 GB"
   }
 }
+

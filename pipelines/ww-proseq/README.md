@@ -89,7 +89,7 @@ samtools faidx merged.fa
 miniwdl run ww-proseq.wdl --input inputs.json
 
 # Using Sprocket
-sprocket run ww-proseq.wdl --inputs inputs.json --entrypoint proseq
+sprocket run ww-proseq.wdl @inputs.json
 
 # Using Cromwell
 java -jar cromwell.jar run ww-proseq.wdl --inputs inputs.json
@@ -174,7 +174,7 @@ The `testrun.wdl` is zero-config:
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint proseq_example
+sprocket run testrun.wdl
 ```
 
 It:

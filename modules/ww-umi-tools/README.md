@@ -115,7 +115,7 @@ The module includes a test workflow (`testrun.wdl`) that runs end-to-end with no
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint umi_tools_example
+sprocket run testrun.wdl
 
 # Using Cromwell
 java -jar cromwell.jar run testrun.wdl

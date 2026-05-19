@@ -80,6 +80,7 @@ Run `cellranger count` on gene expression reads from one GEM well using a privat
 - `results_tar` (File): Compressed tarball of Cell Ranger count output directory
 - `web_summary` (File): Web summary HTML file with QC metrics
 - `metrics_summary` (File): Metrics summary CSV file with key statistics
+- `filtered_h5` (File): Filtered feature-barcode matrix HDF5 file
 
 ### `run_count_hpc_cromwell`
 
@@ -165,6 +166,7 @@ workflow my_single_cell_pipeline {
     File results = run_count.results_tar
     File web_summary = run_count.web_summary
     File metrics = run_count.metrics_summary
+    File filtered_h5 = run_count.filtered_h5
   }
 }
 ```
@@ -216,18 +218,9 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that can be tested independently. The workflow in `testrun.wdl` automatically downloads test data and runs without requiring input files:
+The module includes a demonstration workflow that can be tested independently. The workflow in `testrun.wdl` automatically downloads test data and runs without requiring input files.
 
-```bash
-# Using Cromwell
-java -jar cromwell.jar run testrun.wdl
-
-# Using miniWDL
-miniwdl run testrun.wdl
-
-# Using Sprocket
-sprocket run testrun.wdl
-```
+**Fred Hutch users**: If you would like run `testrun.wdl` on PROOF, first edit it to use the `run_count_hpc` task instead of `run_count`. That way the Cell Ranger module will be used instead of the private Docker image used by CI/CD.
 
 The test workflow (`cellranger_example`) automatically:
 1. Downloads a small GEX reference using `ww-testdata`

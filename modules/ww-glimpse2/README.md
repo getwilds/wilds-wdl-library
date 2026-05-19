@@ -255,7 +255,7 @@ miniwdl run testrun.wdl
 java -jar cromwell.jar run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint glimpse2_example
+sprocket run testrun.wdl
 ```
 
 ### Custom Testing with Inputs
