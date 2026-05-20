@@ -56,7 +56,7 @@ Pipelines follow the same `testrun.wdl` / `testrun_hpc.wdl` split as modules: mo
 - **Options JSON**: Workflow execution configuration for different WDL engines
 - **Additional Input Files**: Alternative inputs for different use cases
 - **Platform Configurations**: Platform-specific execution configs in subdirectories (e.g., `.cirro/` for Cirro platform integration)
-- **`module.json` (Experimental)**: In anticipation of the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765), a small set of pipelines (currently `ww-bwa-gatk`) ship a `module.json` declaring metadata like license, version, and module dependencies. These manifests are informational only — no executor reads them at runtime today — and are not required for new pipelines. See the [contributing guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details.
+- **`module.json` (Experimental)**: In anticipation of the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765), a small set of pipelines (currently `ww-bwa-gatk`) ship a `module.json` declaring metadata like license, version, and module dependencies. These manifests are informational only (no executor reads them at runtime today) and are not required for new pipelines. See the [contributing guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details.
 
 ## Available Pipelines
 
