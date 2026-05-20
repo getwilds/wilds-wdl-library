@@ -11,12 +11,12 @@
   "dependencies": {
     "ww_bwa": {
       "git": "https://github.com/getwilds/wilds-wdl-library",
-      "branch": "main",
+      "branch": "add-test-manifest-json",
       "path": "modules/ww-bwa"
     },
     "ww_gatk": {
       "git": "https://github.com/getwilds/wilds-wdl-library",
-      "branch": "main",
+      "branch": "add-test-manifest-json",
       "path": "modules/ww-gatk"
     }
   }
