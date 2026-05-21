@@ -39,6 +39,7 @@ modules/module-name/
 ├── module-name.wdl         # Main WDL file with task definitions
 ├── testrun.wdl             # Zero-configuration test workflow used in CI
 ├── testrun_hpc.wdl         # Optional HPC-only test workflow (see below)
+├── module.json             # Optional, experimental module manifest (see below)
 └── README.md               # Module-specific documentation
 ```
 
@@ -47,6 +48,10 @@ modules/module-name/
 - **WDL File**: Contains all task definitions for the module, each with `meta` and `parameter_meta` blocks for documentation. Tasks optionally include [EDAM ontology](https://www.ebi.ac.uk/ols4/ontologies/edam) tags and file input/output descriptors. See the [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details.
 - **Test Workflow**: At least one of `testrun.wdl` (used in CI) or `testrun_hpc.wdl` (used in monthly HPC test runs). Most modules ship just `testrun.wdl`; modules whose tools require GPUs, an HPC environment module, or more memory than GitHub Actions provides may add a `testrun_hpc.wdl`, and modules that cannot run in CI at all may ship only `testrun_hpc.wdl` (e.g. `ww-esmfold`). See the [contributing guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for the full table of file combinations.
 - **README**: Module-specific documentation with usage examples
+
+### **Optional: `module.json` (Experimental)**
+
+In anticipation of the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765), a small set of modules (currently `ww-bwa` and `ww-gatk`) ship a `module.json` declaring metadata like license, version, and upstream tool provenance. These manifests are informational only (no executor reads them at runtime today) and are not required for new modules. You may choose to ignore these. See the [contributing guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details if you'd like to add one.
 
 ## Available Modules
 

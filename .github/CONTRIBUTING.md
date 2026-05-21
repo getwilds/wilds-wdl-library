@@ -151,6 +151,15 @@ For modules where CI execution is impractical (GPU-only tools, license-gated too
 - Specify exact image versions (avoid `latest` tags)
 - Document image dependencies in the README
 
+**Module manifest (`module.json`), experimental:**
+
+You may notice `module.json` files in a handful of modules (currently `ww-bwa`, `ww-gatk`) and pipelines (`ww-bwa-gatk`). These are an early experiment with the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765), which standardizes module metadata (name, version, license, upstream tool provenance, and dependency declarations). The format has been informally validated against Sprocket's `wdl-modules` crate by collaborators at St. Jude.
+
+A few things to know:
+
+- **Contributors are not required to add `module.json` files.** No executor consumes them at runtime yet, and the upstream spec is still unmerged. We're keeping a small set of examples around so the library is ready when tooling support arrives.
+- **The schema is a moving target.** Field names and constraints may change before the spec is finalized.
+- **If you do add one**, license strings must use current [SPDX identifiers](https://spdx.org/licenses/) (e.g. `GPL-3.0-only`, not `GPL-3.0`). The parser rejects deprecated forms.
 
 ## Pipeline Development Guidelines
 
