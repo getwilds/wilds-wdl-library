@@ -51,7 +51,7 @@ modules/module-name/
 
 ### **Optional: `module.json` (Experimental)**
 
-In anticipation of the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765), a small set of modules (currently `ww-bwa` and `ww-gatk`) ship a `module.json` declaring metadata like license, version, and upstream tool provenance. These manifests are informational only (no executor reads them at runtime today) and are not required for new modules. See the [contributing guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details if you'd like to add one.
+In anticipation of the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765), a small set of modules (currently `ww-bwa` and `ww-gatk`) ship a `module.json` declaring metadata like license, version, and upstream tool provenance. These manifests are informational only (no executor reads them at runtime today) and are not required for new modules. You may choose to ignore these. See the [contributing guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details if you'd like to add one.
 
 ## Available Modules
 
