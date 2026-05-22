@@ -107,9 +107,12 @@ task run_count {
 
     mkdir -p "~{sample_id}_outs"
 
-    # Run cellranger count, capturing stderr so we can detect a
-    # chemistry-detection failure (typically non-single-cell input)
-    # and skip gracefully when skip_on_chemistry_failure=true.
+    # Run cellranger count, capturing both stdout and stderr so we can
+    # detect a chemistry-detection failure (typically non-single-cell
+    # input) and skip gracefully when skip_on_chemistry_failure=true.
+    # Cell Ranger writes most user-facing error text (including the
+    # TXRNGR* codes) to stdout, not stderr, so capturing both is
+    # required.
     set +e
     cellranger count \
       --transcriptome=gex_ref \
@@ -120,10 +123,10 @@ task run_count {
       ~{"--expect-cells=" + expect_cells} \
       ~{"--chemistry=" + chemistry} \
       --id="~{sample_id}" \
-      --create-bam="~{create_bam}" 2> cellranger.stderr
+      --create-bam="~{create_bam}" > cellranger.log 2>&1
     CR_EXIT=$?
     set -e
-    cat cellranger.stderr >&2
+    cat cellranger.log
 
     if [ "$CR_EXIT" -ne 0 ]; then
       # Heuristic chemistry-detection-failure markers (may need tuning
@@ -132,7 +135,7 @@ task run_count {
       # (all symptoms of non-single-cell input or unusable single-cell
       # input).
       if ~{true="true" false="false" skip_on_chemistry_failure} \
-        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10002|TXRNGR10004|read lengths are incompatible|low rate of correct barcodes' cellranger.stderr; then
+        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10002|TXRNGR10004|read lengths are incompatible|low rate of correct barcodes' cellranger.log; then
         echo "Cell Ranger could not assign a chemistry to ~{sample_id} (non-single-cell input, or too few/too short reads); skipping (skip_on_chemistry_failure=true)." >&2
         echo "skipped_non_single_cell" > chemistry_status.txt
         rm -rf "~{sample_id}"
@@ -274,9 +277,12 @@ task run_count_hpc_cromwell {
 
     mkdir -p "~{sample_id}_outs"
 
-    # Run cellranger count, capturing stderr so we can detect a
-    # chemistry-detection failure (typically non-single-cell input)
-    # and skip gracefully when skip_on_chemistry_failure=true.
+    # Run cellranger count, capturing both stdout and stderr so we can
+    # detect a chemistry-detection failure (typically non-single-cell
+    # input) and skip gracefully when skip_on_chemistry_failure=true.
+    # Cell Ranger writes most user-facing error text (including the
+    # TXRNGR* codes) to stdout, not stderr, so capturing both is
+    # required.
     set +e
     cellranger count \
       --transcriptome=gex_ref \
@@ -287,10 +293,10 @@ task run_count_hpc_cromwell {
       ~{"--expect-cells=" + expect_cells} \
       ~{"--chemistry=" + chemistry} \
       --id="~{sample_id}" \
-      --create-bam="~{create_bam}" 2> cellranger.stderr
+      --create-bam="~{create_bam}" > cellranger.log 2>&1
     CR_EXIT=$?
     set -e
-    cat cellranger.stderr >&2
+    cat cellranger.log
 
     if [ "$CR_EXIT" -ne 0 ]; then
       # Heuristic chemistry-detection-failure markers (may need tuning
@@ -299,7 +305,7 @@ task run_count_hpc_cromwell {
       # (all symptoms of non-single-cell input or unusable single-cell
       # input).
       if ~{true="true" false="false" skip_on_chemistry_failure} \
-        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10002|TXRNGR10004|read lengths are incompatible|low rate of correct barcodes' cellranger.stderr; then
+        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10002|TXRNGR10004|read lengths are incompatible|low rate of correct barcodes' cellranger.log; then
         echo "Cell Ranger could not assign a chemistry to ~{sample_id} (non-single-cell input, or too few/too short reads); skipping (skip_on_chemistry_failure=true)." >&2
         echo "skipped_non_single_cell" > chemistry_status.txt
         rm -rf "~{sample_id}"
@@ -445,9 +451,12 @@ task run_count_hpc_sprocket {
 
     mkdir -p "~{sample_id}_outs"
 
-    # Run cellranger count, capturing stderr so we can detect a
-    # chemistry-detection failure (typically non-single-cell input)
-    # and skip gracefully when skip_on_chemistry_failure=true.
+    # Run cellranger count, capturing both stdout and stderr so we can
+    # detect a chemistry-detection failure (typically non-single-cell
+    # input) and skip gracefully when skip_on_chemistry_failure=true.
+    # Cell Ranger writes most user-facing error text (including the
+    # TXRNGR* codes) to stdout, not stderr, so capturing both is
+    # required.
     set +e
     cellranger count \
       --transcriptome=gex_ref \
@@ -458,10 +467,10 @@ task run_count_hpc_sprocket {
       ~{"--expect-cells=" + expect_cells} \
       ~{"--chemistry=" + chemistry} \
       --id="~{sample_id}" \
-      --create-bam="~{create_bam}" 2> cellranger.stderr
+      --create-bam="~{create_bam}" > cellranger.log 2>&1
     CR_EXIT=$?
     set -e
-    cat cellranger.stderr >&2
+    cat cellranger.log
 
     if [ "$CR_EXIT" -ne 0 ]; then
       # Heuristic chemistry-detection-failure markers (may need tuning
@@ -470,7 +479,7 @@ task run_count_hpc_sprocket {
       # (all symptoms of non-single-cell input or unusable single-cell
       # input).
       if ~{true="true" false="false" skip_on_chemistry_failure} \
-        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10002|TXRNGR10004|read lengths are incompatible|low rate of correct barcodes' cellranger.stderr; then
+        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10002|TXRNGR10004|read lengths are incompatible|low rate of correct barcodes' cellranger.log; then
         echo "Cell Ranger could not assign a chemistry to ~{sample_id} (non-single-cell input, or too few/too short reads); skipping (skip_on_chemistry_failure=true)." >&2
         echo "skipped_non_single_cell" > chemistry_status.txt
         rm -rf "~{sample_id}"
