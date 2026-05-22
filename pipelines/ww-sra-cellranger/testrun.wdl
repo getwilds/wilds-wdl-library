@@ -21,8 +21,11 @@ workflow sra_cellranger_example {
   }
 
   output {
+    File single_cell_sample_list = sra_cellranger.single_cell_sample_list
+    File skipped_sample_list = sra_cellranger.skipped_sample_list
     Array[File] cellranger_results = sra_cellranger.cellranger_results
     Array[File] cellranger_web_summaries = sra_cellranger.cellranger_web_summaries
     Array[File] cellranger_metrics = sra_cellranger.cellranger_metrics
+    Array[File] cellranger_filtered_h5s = sra_cellranger.cellranger_filtered_h5s
   }
 }
