@@ -8,8 +8,8 @@ version 1.0
 
 task calculate_depth {
   meta {
-    author: "opencode"
-    email: "opencode@example.com"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Calculates sequencing coverage depth from BAM or CRAM alignments."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-mosdepth/ww-mosdepth.wdl"
     outputs: {

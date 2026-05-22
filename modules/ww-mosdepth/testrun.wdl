@@ -1,7 +1,7 @@
 version 1.0
 
-import "ww-mosdepth.wdl" as ww_mosdepth
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-mosdepth/modules/ww-mosdepth/ww-mosdepth.wdl" as ww_mosdepth
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-mosdepth/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct MosdepthSample {
     String name
