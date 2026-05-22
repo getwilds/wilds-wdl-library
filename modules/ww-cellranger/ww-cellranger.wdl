@@ -10,10 +10,11 @@ task run_count {
     description: "Run cellranger count on gene expression reads from one GEM well using a private Cell Ranger Docker image. Cell Ranger is not redistributable, so no public WILDS image is provided — see https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest for a recipe to build your own."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cellranger/ww-cellranger.wdl"
     outputs: {
-        results_tar: "Compressed tarball of Cell Ranger count output directory",
-        web_summary: "Web summary HTML file",
-        metrics_summary: "Metrics summary CSV file",
-        filtered_h5: "Filtered feature-barcode matrix HDF5 file"
+        chemistry_status: "Marker file: 'ok' or 'skipped_non_single_cell'",
+        results_tar: "Compressed tarball of Cell Ranger count output directory (absent if skipped)",
+        web_summary: "Web summary HTML file (absent if skipped)",
+        metrics_summary: "Metrics summary CSV file (absent if skipped)",
+        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)"
     }
     topic: "transcriptomics,gene_expression,single_cell_sequencing"
     species: "human,eukaryote,prokaryote,virus"
@@ -36,6 +37,7 @@ task run_count {
     memory_gb: "Memory allocation in GB"
     expect_cells: "Optional: Expected number of recovered cells"
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
+    skip_on_chemistry_failure: "If true, samples Cell Ranger can't assign a chemistry to (typically non-single-cell) succeed with absent outputs and chemistry_status='skipped_non_single_cell'. Other failures always re-raise."
     docker_image: "Private Cell Ranger Docker image. No public image is provided because Cell Ranger is not redistributable; build your own from the WILDS Dockerfile recipe."
   }
 
@@ -49,6 +51,7 @@ task run_count {
     Int memory_gb = 64
     Int? expect_cells
     String? chemistry
+    Boolean skip_on_chemistry_failure = false
     String docker_image = "ghcr.io/getwilds/cellranger:10.0.0"
   }
 
@@ -104,7 +107,10 @@ task run_count {
 
     mkdir -p "~{sample_id}_outs"
 
-    # Run cellranger count
+    # Run cellranger count, capturing stderr so we can detect a
+    # chemistry-detection failure (typically non-single-cell input)
+    # and skip gracefully when skip_on_chemistry_failure=true.
+    set +e
     cellranger count \
       --transcriptome=gex_ref \
       --fastqs="$FASTQS" \
@@ -114,7 +120,25 @@ task run_count {
       ~{"--expect-cells=" + expect_cells} \
       ~{"--chemistry=" + chemistry} \
       --id="~{sample_id}" \
-      --create-bam="~{create_bam}"
+      --create-bam="~{create_bam}" 2> cellranger.stderr
+    CR_EXIT=$?
+    set -e
+    cat cellranger.stderr >&2
+
+    if [ "$CR_EXIT" -ne 0 ]; then
+      # Heuristic chemistry-detection-failure markers (may need tuning
+      # across Cell Ranger versions).
+      if ~{true="true" false="false" skip_on_chemistry_failure} \
+        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS' cellranger.stderr; then
+        echo "Cell Ranger could not detect a chemistry for ~{sample_id}; skipping (skip_on_chemistry_failure=true)." >&2
+        echo "skipped_non_single_cell" > chemistry_status.txt
+        rm -rf "~{sample_id}"
+        exit 0
+      fi
+      exit "$CR_EXIT"
+    fi
+
+    echo "ok" > chemistry_status.txt
 
     # Create tarball of output directory
     tar -czf "~{sample_id}_outs.tar.gz" "~{sample_id}/outs"
@@ -130,10 +154,11 @@ task run_count {
   >>>
 
   output {
-    File results_tar = "~{sample_id}_outs.tar.gz"
-    File web_summary = "web_summary.html"
-    File metrics_summary = "metrics_summary.csv"
-    File filtered_h5 = "filtered_feature_bc_matrix.h5"
+    File chemistry_status = "chemistry_status.txt"
+    File? results_tar = "~{sample_id}_outs.tar.gz"
+    File? web_summary = "web_summary.html"
+    File? metrics_summary = "metrics_summary.csv"
+    File? filtered_h5 = "filtered_feature_bc_matrix.h5"
   }
 
   runtime {
@@ -150,10 +175,11 @@ task run_count_hpc_cromwell {
     description: "Cromwell-on-HPC variant of cellranger count: omits the docker runtime key so Cromwell runs the task directly on the compute node, where the host's environment-module system can load Cell Ranger."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cellranger/ww-cellranger.wdl"
     outputs: {
-        results_tar: "Compressed tarball of Cell Ranger count output directory",
-        web_summary: "Web summary HTML file",
-        metrics_summary: "Metrics summary CSV file",
-        filtered_h5: "Filtered feature-barcode matrix HDF5 file"
+        chemistry_status: "Marker file: 'ok' or 'skipped_non_single_cell'",
+        results_tar: "Compressed tarball of Cell Ranger count output directory (absent if skipped)",
+        web_summary: "Web summary HTML file (absent if skipped)",
+        metrics_summary: "Metrics summary CSV file (absent if skipped)",
+        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)"
     }
   }
 
@@ -167,6 +193,7 @@ task run_count_hpc_cromwell {
     memory_gb: "Memory allocation in GB"
     expect_cells: "Optional: Expected number of recovered cells"
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
+    skip_on_chemistry_failure: "If true, samples Cell Ranger can't assign a chemistry to (typically non-single-cell) succeed with absent outputs and chemistry_status='skipped_non_single_cell'. Other failures always re-raise."
     cellranger_module: "HPC environment module to load for Cell Ranger (e.g. 'CellRanger/10.0.0')"
   }
 
@@ -180,6 +207,7 @@ task run_count_hpc_cromwell {
     Int memory_gb = 64
     Int? expect_cells
     String? chemistry
+    Boolean skip_on_chemistry_failure = false
     String cellranger_module = "CellRanger/10.0.0"
   }
 
@@ -239,7 +267,10 @@ task run_count_hpc_cromwell {
 
     mkdir -p "~{sample_id}_outs"
 
-    # Run cellranger count
+    # Run cellranger count, capturing stderr so we can detect a
+    # chemistry-detection failure (typically non-single-cell input)
+    # and skip gracefully when skip_on_chemistry_failure=true.
+    set +e
     cellranger count \
       --transcriptome=gex_ref \
       --fastqs="$FASTQS" \
@@ -249,7 +280,25 @@ task run_count_hpc_cromwell {
       ~{"--expect-cells=" + expect_cells} \
       ~{"--chemistry=" + chemistry} \
       --id="~{sample_id}" \
-      --create-bam="~{create_bam}"
+      --create-bam="~{create_bam}" 2> cellranger.stderr
+    CR_EXIT=$?
+    set -e
+    cat cellranger.stderr >&2
+
+    if [ "$CR_EXIT" -ne 0 ]; then
+      # Heuristic chemistry-detection-failure markers (may need tuning
+      # across Cell Ranger versions).
+      if ~{true="true" false="false" skip_on_chemistry_failure} \
+        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS' cellranger.stderr; then
+        echo "Cell Ranger could not detect a chemistry for ~{sample_id}; skipping (skip_on_chemistry_failure=true)." >&2
+        echo "skipped_non_single_cell" > chemistry_status.txt
+        rm -rf "~{sample_id}"
+        exit 0
+      fi
+      exit "$CR_EXIT"
+    fi
+
+    echo "ok" > chemistry_status.txt
 
     # Create tarball of output directory
     tar -czf "~{sample_id}_outs.tar.gz" "~{sample_id}/outs"
@@ -265,10 +314,11 @@ task run_count_hpc_cromwell {
   >>>
 
   output {
-    File results_tar = "~{sample_id}_outs.tar.gz"
-    File web_summary = "web_summary.html"
-    File metrics_summary = "metrics_summary.csv"
-    File filtered_h5 = "filtered_feature_bc_matrix.h5"
+    File chemistry_status = "chemistry_status.txt"
+    File? results_tar = "~{sample_id}_outs.tar.gz"
+    File? web_summary = "web_summary.html"
+    File? metrics_summary = "metrics_summary.csv"
+    File? filtered_h5 = "filtered_feature_bc_matrix.h5"
   }
 
   # No docker/container runtime key: Cromwell's HPC backend runs this
@@ -287,9 +337,11 @@ task run_count_hpc_sprocket {
     description: "Sprocket-on-HPC variant of cellranger count: runs inside a minimal Lua container so the host's bind-mounted Lmod can execute, while the Cell Ranger binary itself is bind-mounted in from the host."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cellranger/ww-cellranger.wdl"
     outputs: {
-        results_tar: "Compressed tarball of Cell Ranger count output directory",
-        web_summary: "Web summary HTML file",
-        metrics_summary: "Metrics summary CSV file"
+        chemistry_status: "Marker file: 'ok' or 'skipped_non_single_cell'",
+        results_tar: "Compressed tarball of Cell Ranger count output directory (absent if skipped)",
+        web_summary: "Web summary HTML file (absent if skipped)",
+        metrics_summary: "Metrics summary CSV file (absent if skipped)",
+        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)"
     }
   }
 
@@ -303,6 +355,7 @@ task run_count_hpc_sprocket {
     memory_gb: "Memory allocation in GB"
     expect_cells: "Optional: Expected number of recovered cells"
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
+    skip_on_chemistry_failure: "If true, samples Cell Ranger can't assign a chemistry to (typically non-single-cell) succeed with absent outputs and chemistry_status='skipped_non_single_cell'. Other failures always re-raise."
     cellranger_module: "HPC environment module to load for Cell Ranger (e.g. 'CellRanger/10.0.0')"
   }
 
@@ -316,6 +369,7 @@ task run_count_hpc_sprocket {
     Int memory_gb = 64
     Int? expect_cells
     String? chemistry
+    Boolean skip_on_chemistry_failure = false
     String cellranger_module = "CellRanger/10.0.0"
   }
 
@@ -377,7 +431,10 @@ task run_count_hpc_sprocket {
 
     mkdir -p "~{sample_id}_outs"
 
-    # Run cellranger count
+    # Run cellranger count, capturing stderr so we can detect a
+    # chemistry-detection failure (typically non-single-cell input)
+    # and skip gracefully when skip_on_chemistry_failure=true.
+    set +e
     cellranger count \
       --transcriptome=gex_ref \
       --fastqs="$FASTQS" \
@@ -387,7 +444,25 @@ task run_count_hpc_sprocket {
       ~{"--expect-cells=" + expect_cells} \
       ~{"--chemistry=" + chemistry} \
       --id="~{sample_id}" \
-      --create-bam="~{create_bam}"
+      --create-bam="~{create_bam}" 2> cellranger.stderr
+    CR_EXIT=$?
+    set -e
+    cat cellranger.stderr >&2
+
+    if [ "$CR_EXIT" -ne 0 ]; then
+      # Heuristic chemistry-detection-failure markers (may need tuning
+      # across Cell Ranger versions).
+      if ~{true="true" false="false" skip_on_chemistry_failure} \
+        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS' cellranger.stderr; then
+        echo "Cell Ranger could not detect a chemistry for ~{sample_id}; skipping (skip_on_chemistry_failure=true)." >&2
+        echo "skipped_non_single_cell" > chemistry_status.txt
+        rm -rf "~{sample_id}"
+        exit 0
+      fi
+      exit "$CR_EXIT"
+    fi
+
+    echo "ok" > chemistry_status.txt
 
     # Create tarball of output directory
     tar -czf "~{sample_id}_outs.tar.gz" "~{sample_id}/outs"
@@ -395,6 +470,7 @@ task run_count_hpc_sprocket {
     # Move output files to working directory for outputting
     mv "~{sample_id}/outs/web_summary.html" .
     mv "~{sample_id}/outs/metrics_summary.csv" .
+    mv "~{sample_id}/outs/filtered_feature_bc_matrix.h5" .
 
     # Clean up Cell Ranger output directory for housekeeping
     # (and to avoid Sprocket symlink validation errors)
@@ -402,9 +478,11 @@ task run_count_hpc_sprocket {
   >>>
 
   output {
-    File results_tar = "~{sample_id}_outs.tar.gz"
-    File web_summary = "web_summary.html"
-    File metrics_summary = "metrics_summary.csv"
+    File chemistry_status = "chemistry_status.txt"
+    File? results_tar = "~{sample_id}_outs.tar.gz"
+    File? web_summary = "web_summary.html"
+    File? metrics_summary = "metrics_summary.csv"
+    File? filtered_h5 = "filtered_feature_bc_matrix.h5"
   }
 
   # Minimal Lua-having container so the host's bind-mounted Lmod can
