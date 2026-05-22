@@ -173,7 +173,7 @@ sprocket run testrun.wdl
 
 The test workflow automatically:
 1. Downloads a small Cell Ranger reference
-2. Downloads a 10x Chromium 3' v2 scRNA-seq dataset from SRA (SRR9169219, limited to 100k reads)
+2. Downloads two SRA datasets, limited to 1M reads each: SRR8526555 (10x Chromium 3' v2 scRNA-seq, expected to run successfully) and SRR1039508 (bulk RNA-seq, expected to trigger the `skip_on_chemistry_failure` path)
 3. Renames FASTQs for Cell Ranger compatibility
 4. Runs Cell Ranger count
 5. Outputs results, web summary, and metrics

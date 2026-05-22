@@ -8,24 +8,22 @@ workflow sra_cellranger_example {
   call ww_testdata.download_test_cellranger_ref { }
 
   # Call the actual sra_cellranger workflow with two test samples:
-  #   - SRR9169219: Human PBMC 10x Chromium 3' v2 scRNA-seq (single-cell,
-  #     should run through Cell Ranger successfully)
+  #   - SRR8526555: Human PBMC 10x Chromium 3' v2 scRNA-seq from Ding
+  #     et al. 2020 (single-cell, should run through Cell Ranger
+  #     successfully).
   #   - SRR1039508: Airway smooth muscle bulk RNA-seq (non-single-cell;
   #     Cell Ranger can't detect a chemistry, so with
   #     skip_on_chemistry_failure=true this sample should land in
   #     skipped_sample_list and be absent from cellranger_*).
-  # Limiting to 1M reads each: enough for the single-cell sample's
-  # chemistry detection to succeed (100k was too few — R2 reads got
-  # truncated below the 25bp minimum for every 10x chemistry, which
-  # made the heuristic skip *both* samples instead of just the bulk
-  # one).
+  # Limiting to 1M reads each for fast testing while leaving enough
+  # for chemistry detection on the single-cell sample.
   # Intentionally omit `chemistry` here: skip_on_chemistry_failure only
   # triggers when Cell Ranger is allowed to auto-detect the chemistry
   # and fails to do so. Specifying chemistry would short-circuit
   # detection and the bulk sample would fail with a different error
   # that our heuristic doesn't catch.
   call sra_cellranger_workflow.sra_cellranger { input:
-    sra_id_list = ["SRR9169219", "SRR1039508"],
+    sra_id_list = ["SRR8526555", "SRR1039508"],
     ref_gex = download_test_cellranger_ref.ref_tar,
     ncpu = 2,
     memory_gb = 6,
@@ -40,7 +38,7 @@ workflow sra_cellranger_example {
     single_cell_sample_list = sra_cellranger.single_cell_sample_list,
     skipped_sample_list = sra_cellranger.skipped_sample_list,
     n_results = n_results,
-    expected_single_cell_id = "SRR9169219",
+    expected_single_cell_id = "SRR8526555",
     expected_skipped_id = "SRR1039508"
   }
 
