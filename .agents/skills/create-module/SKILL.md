@@ -42,6 +42,7 @@ Create three files in `modules/ww-$ARGUMENTS/`:
 - Define task(s) with the tool's core functionality
 - Every task MUST have:
   - `meta` block with: author, email, description, url, outputs
+    - Use `author: "WILDS Team"` and `email: "wilds@fredhutch.org"` as placeholders — the actual contributor will replace these in review
   - `parameter_meta` block describing every input
   - `input` block with typed parameters; include `cpu_cores` (Int, default sensible) and `memory_gb` (Int, default sensible)
   - `command <<<` block starting with `set -eo pipefail`, using `~{var}` interpolation

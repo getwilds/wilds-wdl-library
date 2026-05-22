@@ -53,6 +53,8 @@ Create four files in `pipelines/ww-$0/`:
   ```
 - Define structs for grouped inputs (samples, references)
 - Workflow name: use the pipeline name with hyphens converted to underscores (e.g., `bwa_gatk`)
+- Workflow MUST have a `meta` block with: author, email, description, url, outputs (same shape as task `meta` blocks in modules)
+  - Use `author: "WILDS Team"` and `email: "wilds@fredhutch.org"` as placeholders — the actual contributor will replace these in review
 - Wire module task outputs to downstream task inputs
 - Include `cpu_cores` and `memory_gb` as workflow-level inputs with sensible defaults
 - Collect final outputs at workflow level
