@@ -16,6 +16,11 @@ workflow sra_cellranger_example {
   #     skipped_sample_list and be absent from cellranger_*).
   # Limiting to 100k reads each for fast testing while retaining enough
   # for barcode detection on the single-cell sample.
+  # Intentionally omit `chemistry` here: skip_on_chemistry_failure only
+  # triggers when Cell Ranger is allowed to auto-detect the chemistry
+  # and fails to do so. Specifying chemistry would short-circuit
+  # detection and the bulk sample would fail with a different error
+  # that our heuristic doesn't catch.
   call sra_cellranger_workflow.sra_cellranger { input:
     sra_id_list = ["SRR9169219", "SRR1039508"],
     ref_gex = download_test_cellranger_ref.ref_tar,
@@ -23,14 +28,15 @@ workflow sra_cellranger_example {
     memory_gb = 6,
     max_reads = 100000,
     create_bam = false,
-    chemistry = "SC3Pv2",
     skip_on_chemistry_failure = true
   }
+
+  Int n_results = length(sra_cellranger.cellranger_results)
 
   call validate_outputs { input:
     single_cell_sample_list = sra_cellranger.single_cell_sample_list,
     skipped_sample_list = sra_cellranger.skipped_sample_list,
-    cellranger_results = sra_cellranger.cellranger_results,
+    n_results = n_results,
     expected_single_cell_id = "SRR9169219",
     expected_skipped_id = "SRR1039508"
   }
@@ -57,7 +63,7 @@ task validate_outputs {
   parameter_meta {
     single_cell_sample_list: "single_cell_sample_list.txt produced by ww-sra-cellranger"
     skipped_sample_list: "skipped_sample_list.txt produced by ww-sra-cellranger"
-    cellranger_results: "Filtered cellranger_results array (should contain only the single-cell sample)"
+    n_results: "Length of the filtered cellranger_results array (should be 1)"
     expected_single_cell_id: "Sample ID expected in single_cell_sample_list"
     expected_skipped_id: "Sample ID expected in skipped_sample_list"
   }
@@ -65,7 +71,7 @@ task validate_outputs {
   input {
     File single_cell_sample_list
     File skipped_sample_list
-    Array[File] cellranger_results
+    Int n_results
     String expected_single_cell_id
     String expected_skipped_id
   }
@@ -97,9 +103,8 @@ task validate_outputs {
       echo "skipped_sample_list = $expected_skipped - PASSED" >> validation_report.txt
     fi
 
-    n_results=~{length(cellranger_results)}
-    if [ "$n_results" -ne 1 ]; then
-      echo "cellranger_results length: expected 1, got $n_results" >> validation_report.txt
+    if [ "~{n_results}" -ne 1 ]; then
+      echo "cellranger_results length: expected 1, got ~{n_results}" >> validation_report.txt
       status=FAILED
     else
       echo "cellranger_results length = 1 - PASSED" >> validation_report.txt

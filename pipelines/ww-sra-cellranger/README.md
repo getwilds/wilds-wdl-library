@@ -138,6 +138,8 @@ It's not uncommon for an SRA study to contain a mix of single-cell and bulk RNA-
 
 Setting `skip_on_chemistry_failure = true` (default `false`) makes such samples succeed with no count outputs instead. Their IDs are written to `skipped_sample_list`, the IDs of samples that completed normally go to `single_cell_sample_list`, and the `cellranger_*` output arrays contain results only for the successful samples. Other Cell Ranger failures (OOM, corrupt reference, etc.) always re-raise regardless of this flag — see [the module README](../../modules/ww-cellranger/README.md#graceful-chemistry-detection-skip) for detection details.
 
+> **Important:** `skip_on_chemistry_failure` only works when `chemistry` is left unset. Specifying `chemistry` (e.g. `"SC3Pv3"`) tells Cell Ranger to skip auto-detection, so a non-single-cell sample will fail with a different error that the graceful-skip heuristic does not catch. If you have a mixed scatter, leave `chemistry` unset so Cell Ranger auto-detects per sample.
+
 ## Resource Considerations
 
 ### Compute Requirements

@@ -90,6 +90,8 @@ When `cellranger count` cannot determine which single-cell chemistry an input ca
 
 The detection is heuristic — it greps Cell Ranger's stderr for substrings like "could not detect", "ambiguous chemistry", and `NO_INPUT_ANTIBODY_READS`. Any failure that doesn't match these markers (OOM, corrupt reference, malformed FASTQ, etc.) still re-raises so real bugs aren't silently swallowed. The marker list may need tuning across Cell Ranger versions; this module has been validated against Cell Ranger 10.0.0.
 
+> **Important:** `skip_on_chemistry_failure` only triggers when Cell Ranger is allowed to auto-detect the chemistry. If you also pass `chemistry` (e.g. `chemistry = "SC3Pv3"`), Cell Ranger skips detection entirely and a non-single-cell sample will fail with a different error (typically barcode-validation related) that this heuristic does not catch. Leave `chemistry` unset when you want the graceful-skip path to be available.
+
 ### `run_count_hpc_cromwell`
 
 Run `cellranger count` on gene expression reads from one GEM well using the host's environment-module system instead of a Docker image. The task omits the `docker` runtime key entirely so that Cromwell's HPC backend executes it directly on the compute node, where `module load` makes the licensed Cell Ranger binary available on `PATH`. Intended for Cromwell-on-HPC deployments such as the Fred Hutch HPC via PROOF; on container-based backends, no Cell Ranger binary will be on `PATH` and the task will fail.
