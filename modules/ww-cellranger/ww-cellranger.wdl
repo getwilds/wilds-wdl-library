@@ -127,14 +127,21 @@ task run_count {
 
     if [ "$CR_EXIT" -ne 0 ]; then
       # Heuristic chemistry-detection-failure markers (may need tuning
-      # across Cell Ranger versions).
+      # across Cell Ranger versions): can't pick a chemistry, read
+      # lengths too short, or barcodes don't match the 10x whitelist
+      # (all symptoms of non-single-cell input or unusable single-cell
+      # input).
       if ~{true="true" false="false" skip_on_chemistry_failure} \
-        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10004|read lengths are incompatible' cellranger.stderr; then
+        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10002|TXRNGR10004|read lengths are incompatible|low rate of correct barcodes' cellranger.stderr; then
         echo "Cell Ranger could not assign a chemistry to ~{sample_id} (non-single-cell input, or too few/too short reads); skipping (skip_on_chemistry_failure=true)." >&2
         echo "skipped_non_single_cell" > chemistry_status.txt
         rm -rf "~{sample_id}"
         exit 0
       fi
+      # Real failure: write a marker so the chemistry_status output is
+      # always present (Cromwell's output-collection phase requires it),
+      # then re-raise the original exit code.
+      echo "failed" > chemistry_status.txt
       exit "$CR_EXIT"
     fi
 
@@ -287,14 +294,21 @@ task run_count_hpc_cromwell {
 
     if [ "$CR_EXIT" -ne 0 ]; then
       # Heuristic chemistry-detection-failure markers (may need tuning
-      # across Cell Ranger versions).
+      # across Cell Ranger versions): can't pick a chemistry, read
+      # lengths too short, or barcodes don't match the 10x whitelist
+      # (all symptoms of non-single-cell input or unusable single-cell
+      # input).
       if ~{true="true" false="false" skip_on_chemistry_failure} \
-        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10004|read lengths are incompatible' cellranger.stderr; then
+        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10002|TXRNGR10004|read lengths are incompatible|low rate of correct barcodes' cellranger.stderr; then
         echo "Cell Ranger could not assign a chemistry to ~{sample_id} (non-single-cell input, or too few/too short reads); skipping (skip_on_chemistry_failure=true)." >&2
         echo "skipped_non_single_cell" > chemistry_status.txt
         rm -rf "~{sample_id}"
         exit 0
       fi
+      # Real failure: write a marker so the chemistry_status output is
+      # always present (Cromwell's output-collection phase requires it),
+      # then re-raise the original exit code.
+      echo "failed" > chemistry_status.txt
       exit "$CR_EXIT"
     fi
 
@@ -451,14 +465,21 @@ task run_count_hpc_sprocket {
 
     if [ "$CR_EXIT" -ne 0 ]; then
       # Heuristic chemistry-detection-failure markers (may need tuning
-      # across Cell Ranger versions).
+      # across Cell Ranger versions): can't pick a chemistry, read
+      # lengths too short, or barcodes don't match the 10x whitelist
+      # (all symptoms of non-single-cell input or unusable single-cell
+      # input).
       if ~{true="true" false="false" skip_on_chemistry_failure} \
-        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10004|read lengths are incompatible' cellranger.stderr; then
+        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10002|TXRNGR10004|read lengths are incompatible|low rate of correct barcodes' cellranger.stderr; then
         echo "Cell Ranger could not assign a chemistry to ~{sample_id} (non-single-cell input, or too few/too short reads); skipping (skip_on_chemistry_failure=true)." >&2
         echo "skipped_non_single_cell" > chemistry_status.txt
         rm -rf "~{sample_id}"
         exit 0
       fi
+      # Real failure: write a marker so the chemistry_status output is
+      # always present (Cromwell's output-collection phase requires it),
+      # then re-raise the original exit code.
+      echo "failed" > chemistry_status.txt
       exit "$CR_EXIT"
     fi
 
