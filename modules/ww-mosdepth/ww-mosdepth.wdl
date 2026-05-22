@@ -75,7 +75,7 @@ task calculate_depth {
   output {
     File depth_per_base = "~{sample_name}.per-base.bed.gz"
     File depth_summary = "~{sample_name}.mosdepth.gz"
-    File region_depth = if (defined(regions_bed)) then "~{sample_name}.regions.bed.gz" else "~{sample_name}.regions.bed.gz"
+    File region_depth = "~{sample_name}.regions.bed.gz"
   }
 
   runtime {
