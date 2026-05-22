@@ -14,8 +14,11 @@ workflow sra_cellranger_example {
   #     Cell Ranger can't detect a chemistry, so with
   #     skip_on_chemistry_failure=true this sample should land in
   #     skipped_sample_list and be absent from cellranger_*).
-  # Limiting to 100k reads each for fast testing while retaining enough
-  # for barcode detection on the single-cell sample.
+  # Limiting to 1M reads each: enough for the single-cell sample's
+  # chemistry detection to succeed (100k was too few — R2 reads got
+  # truncated below the 25bp minimum for every 10x chemistry, which
+  # made the heuristic skip *both* samples instead of just the bulk
+  # one).
   # Intentionally omit `chemistry` here: skip_on_chemistry_failure only
   # triggers when Cell Ranger is allowed to auto-detect the chemistry
   # and fails to do so. Specifying chemistry would short-circuit
@@ -26,7 +29,7 @@ workflow sra_cellranger_example {
     ref_gex = download_test_cellranger_ref.ref_tar,
     ncpu = 2,
     memory_gb = 6,
-    max_reads = 100000,
+    max_reads = 1000000,
     create_bam = false,
     skip_on_chemistry_failure = true
   }

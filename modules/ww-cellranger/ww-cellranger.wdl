@@ -37,7 +37,7 @@ task run_count {
     memory_gb: "Memory allocation in GB"
     expect_cells: "Optional: Expected number of recovered cells"
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
-    skip_on_chemistry_failure: "If true, samples Cell Ranger can't assign a chemistry to (typically non-single-cell) succeed with absent outputs and chemistry_status='skipped_non_single_cell'. Other failures always re-raise."
+    skip_on_chemistry_failure: "If true, samples for which Cell Ranger can't assign a chemistry (non-single-cell input, or single-cell input with too few/too short reads) succeed with absent outputs and chemistry_status='skipped_non_single_cell'. Other failures always re-raise."
     docker_image: "Private Cell Ranger Docker image. No public image is provided because Cell Ranger is not redistributable; build your own from the WILDS Dockerfile recipe."
   }
 
@@ -129,8 +129,8 @@ task run_count {
       # Heuristic chemistry-detection-failure markers (may need tuning
       # across Cell Ranger versions).
       if ~{true="true" false="false" skip_on_chemistry_failure} \
-        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS' cellranger.stderr; then
-        echo "Cell Ranger could not detect a chemistry for ~{sample_id}; skipping (skip_on_chemistry_failure=true)." >&2
+        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10004|read lengths are incompatible' cellranger.stderr; then
+        echo "Cell Ranger could not assign a chemistry to ~{sample_id} (non-single-cell input, or too few/too short reads); skipping (skip_on_chemistry_failure=true)." >&2
         echo "skipped_non_single_cell" > chemistry_status.txt
         rm -rf "~{sample_id}"
         exit 0
@@ -193,7 +193,7 @@ task run_count_hpc_cromwell {
     memory_gb: "Memory allocation in GB"
     expect_cells: "Optional: Expected number of recovered cells"
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
-    skip_on_chemistry_failure: "If true, samples Cell Ranger can't assign a chemistry to (typically non-single-cell) succeed with absent outputs and chemistry_status='skipped_non_single_cell'. Other failures always re-raise."
+    skip_on_chemistry_failure: "If true, samples for which Cell Ranger can't assign a chemistry (non-single-cell input, or single-cell input with too few/too short reads) succeed with absent outputs and chemistry_status='skipped_non_single_cell'. Other failures always re-raise."
     cellranger_module: "HPC environment module to load for Cell Ranger (e.g. 'CellRanger/10.0.0')"
   }
 
@@ -289,8 +289,8 @@ task run_count_hpc_cromwell {
       # Heuristic chemistry-detection-failure markers (may need tuning
       # across Cell Ranger versions).
       if ~{true="true" false="false" skip_on_chemistry_failure} \
-        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS' cellranger.stderr; then
-        echo "Cell Ranger could not detect a chemistry for ~{sample_id}; skipping (skip_on_chemistry_failure=true)." >&2
+        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10004|read lengths are incompatible' cellranger.stderr; then
+        echo "Cell Ranger could not assign a chemistry to ~{sample_id} (non-single-cell input, or too few/too short reads); skipping (skip_on_chemistry_failure=true)." >&2
         echo "skipped_non_single_cell" > chemistry_status.txt
         rm -rf "~{sample_id}"
         exit 0
@@ -355,7 +355,7 @@ task run_count_hpc_sprocket {
     memory_gb: "Memory allocation in GB"
     expect_cells: "Optional: Expected number of recovered cells"
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
-    skip_on_chemistry_failure: "If true, samples Cell Ranger can't assign a chemistry to (typically non-single-cell) succeed with absent outputs and chemistry_status='skipped_non_single_cell'. Other failures always re-raise."
+    skip_on_chemistry_failure: "If true, samples for which Cell Ranger can't assign a chemistry (non-single-cell input, or single-cell input with too few/too short reads) succeed with absent outputs and chemistry_status='skipped_non_single_cell'. Other failures always re-raise."
     cellranger_module: "HPC environment module to load for Cell Ranger (e.g. 'CellRanger/10.0.0')"
   }
 
@@ -453,8 +453,8 @@ task run_count_hpc_sprocket {
       # Heuristic chemistry-detection-failure markers (may need tuning
       # across Cell Ranger versions).
       if ~{true="true" false="false" skip_on_chemistry_failure} \
-        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS' cellranger.stderr; then
-        echo "Cell Ranger could not detect a chemistry for ~{sample_id}; skipping (skip_on_chemistry_failure=true)." >&2
+        && grep -qE -i 'could not (auto)?detect|ambiguous chemistry|chemistry .* could not be|NO_INPUT_ANTIBODY_READS|TXRNGR10004|read lengths are incompatible' cellranger.stderr; then
+        echo "Cell Ranger could not assign a chemistry to ~{sample_id} (non-single-cell input, or too few/too short reads); skipping (skip_on_chemistry_failure=true)." >&2
         echo "skipped_non_single_cell" > chemistry_status.txt
         rm -rf "~{sample_id}"
         exit 0
