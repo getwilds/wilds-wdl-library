@@ -7,17 +7,32 @@ workflow sra_cellranger_example {
   # Download a small GEX reference for Cell Ranger
   call ww_testdata.download_test_cellranger_ref { }
 
-  # Call the actual sra_cellranger workflow with test data
-  # Using SRR9169219: Human PBMC 10x Chromium 3' v2 scRNA-seq (GSE132044)
-  # Limiting to 100k reads for fast testing while retaining enough for barcode detection
+  # Call the actual sra_cellranger workflow with two test samples:
+  #   - SRR9169219: Human PBMC 10x Chromium 3' v2 scRNA-seq (single-cell,
+  #     should run through Cell Ranger successfully)
+  #   - SRR1039508: Airway smooth muscle bulk RNA-seq (non-single-cell;
+  #     Cell Ranger can't detect a chemistry, so with
+  #     skip_on_chemistry_failure=true this sample should land in
+  #     skipped_sample_list and be absent from cellranger_*).
+  # Limiting to 100k reads each for fast testing while retaining enough
+  # for barcode detection on the single-cell sample.
   call sra_cellranger_workflow.sra_cellranger { input:
-    sra_id_list = ["SRR9169219"],
+    sra_id_list = ["SRR9169219", "SRR1039508"],
     ref_gex = download_test_cellranger_ref.ref_tar,
     ncpu = 2,
     memory_gb = 6,
     max_reads = 100000,
     create_bam = false,
-    chemistry = "SC3Pv2"
+    chemistry = "SC3Pv2",
+    skip_on_chemistry_failure = true
+  }
+
+  call validate_outputs { input:
+    single_cell_sample_list = sra_cellranger.single_cell_sample_list,
+    skipped_sample_list = sra_cellranger.skipped_sample_list,
+    cellranger_results = sra_cellranger.cellranger_results,
+    expected_single_cell_id = "SRR9169219",
+    expected_skipped_id = "SRR1039508"
   }
 
   output {
@@ -27,5 +42,85 @@ workflow sra_cellranger_example {
     Array[File] cellranger_web_summaries = sra_cellranger.cellranger_web_summaries
     Array[File] cellranger_metrics = sra_cellranger.cellranger_metrics
     Array[File] cellranger_filtered_h5s = sra_cellranger.cellranger_filtered_h5s
+    File validation_report = validate_outputs.report
+  }
+}
+
+task validate_outputs {
+  meta {
+    description: "Assert that the skip_on_chemistry_failure=true scatter correctly partitioned the single-cell and non-single-cell samples."
+    outputs: {
+        report: "Validation report"
+    }
+  }
+
+  parameter_meta {
+    single_cell_sample_list: "single_cell_sample_list.txt produced by ww-sra-cellranger"
+    skipped_sample_list: "skipped_sample_list.txt produced by ww-sra-cellranger"
+    cellranger_results: "Filtered cellranger_results array (should contain only the single-cell sample)"
+    expected_single_cell_id: "Sample ID expected in single_cell_sample_list"
+    expected_skipped_id: "Sample ID expected in skipped_sample_list"
+  }
+
+  input {
+    File single_cell_sample_list
+    File skipped_sample_list
+    Array[File] cellranger_results
+    String expected_single_cell_id
+    String expected_skipped_id
+  }
+
+  command <<<
+    set -eo pipefail
+
+    echo "=== ww-sra-cellranger skip-behavior validation ===" > validation_report.txt
+
+    expected_single_cell="~{expected_single_cell_id}"
+    expected_skipped="~{expected_skipped_id}"
+
+    actual_single_cell=$(tr -d '[:space:]' < "~{single_cell_sample_list}")
+    actual_skipped=$(tr -d '[:space:]' < "~{skipped_sample_list}")
+
+    status=PASSED
+
+    if [ "$actual_single_cell" != "$expected_single_cell" ]; then
+      echo "single_cell_sample_list mismatch: expected '$expected_single_cell', got '$actual_single_cell'" >> validation_report.txt
+      status=FAILED
+    else
+      echo "single_cell_sample_list = $expected_single_cell - PASSED" >> validation_report.txt
+    fi
+
+    if [ "$actual_skipped" != "$expected_skipped" ]; then
+      echo "skipped_sample_list mismatch: expected '$expected_skipped', got '$actual_skipped'" >> validation_report.txt
+      status=FAILED
+    else
+      echo "skipped_sample_list = $expected_skipped - PASSED" >> validation_report.txt
+    fi
+
+    n_results=~{length(cellranger_results)}
+    if [ "$n_results" -ne 1 ]; then
+      echo "cellranger_results length: expected 1, got $n_results" >> validation_report.txt
+      status=FAILED
+    else
+      echo "cellranger_results length = 1 - PASSED" >> validation_report.txt
+    fi
+
+    echo "" >> validation_report.txt
+    echo "Overall Status: $status" >> validation_report.txt
+    cat validation_report.txt
+
+    if [ "$status" != "PASSED" ]; then
+      exit 1
+    fi
+  >>>
+
+  output {
+    File report = "validation_report.txt"
+  }
+
+  runtime {
+    docker: "ubuntu:22.04"
+    cpu: 1
+    memory: "2 GB"
   }
 }
