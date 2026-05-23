@@ -128,12 +128,21 @@ workflow sra_cellranger {
     File chemistry_status_file = select_first([run_count.chemistry_status, run_count_hpc_cromwell.chemistry_status, run_count_hpc_sprocket.chemistry_status])
 
     # Count outputs are File? within each branch (absent on skip).
-    # select_first on a list of File? returns a File? — present iff
-    # the chosen branch's value was present.
-    File? results_tar = select_first([run_count.results_tar, run_count_hpc_cromwell.results_tar, run_count_hpc_sprocket.results_tar])
-    File? web_summary = select_first([run_count.web_summary, run_count_hpc_cromwell.web_summary, run_count_hpc_sprocket.web_summary])
-    File? metrics_summary = select_first([run_count.metrics_summary, run_count_hpc_cromwell.metrics_summary, run_count_hpc_sprocket.metrics_summary])
-    File? filtered_h5 = select_first([run_count.filtered_h5, run_count_hpc_cromwell.filtered_h5, run_count_hpc_sprocket.filtered_h5])
+    # We can't use select_first here: Cromwell errors when every
+    # element is None even when the result type is File?. Pick the
+    # value from whichever branch ran, defaulting to None.
+    File? results_tar = if defined(run_count.results_tar) then run_count.results_tar
+                       else if defined(run_count_hpc_cromwell.results_tar) then run_count_hpc_cromwell.results_tar
+                       else run_count_hpc_sprocket.results_tar
+    File? web_summary = if defined(run_count.web_summary) then run_count.web_summary
+                       else if defined(run_count_hpc_cromwell.web_summary) then run_count_hpc_cromwell.web_summary
+                       else run_count_hpc_sprocket.web_summary
+    File? metrics_summary = if defined(run_count.metrics_summary) then run_count.metrics_summary
+                           else if defined(run_count_hpc_cromwell.metrics_summary) then run_count_hpc_cromwell.metrics_summary
+                           else run_count_hpc_sprocket.metrics_summary
+    File? filtered_h5 = if defined(run_count.filtered_h5) then run_count.filtered_h5
+                       else if defined(run_count_hpc_cromwell.filtered_h5) then run_count_hpc_cromwell.filtered_h5
+                       else run_count_hpc_sprocket.filtered_h5
   }
 
   # Partition sample_ids into "ran" vs "skipped" based on each
