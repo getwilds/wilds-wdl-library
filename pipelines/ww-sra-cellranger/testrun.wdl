@@ -8,9 +8,10 @@ workflow sra_cellranger_example {
   call ww_testdata.download_test_cellranger_ref { }
 
   # Call the actual sra_cellranger workflow with two test samples:
-  #   - SRR8526555: Human PBMC 10x Chromium 3' v2 scRNA-seq from Ding
-  #     et al. 2020 (single-cell, should run through Cell Ranger
-  #     successfully).
+  #   - SRR7722937: 10x's own "1k PBMCs from a Healthy Donor" 10x
+  #     Chromium 3' v3 demo dataset (single-cell, should run through
+  #     Cell Ranger successfully). Picked specifically because the
+  #     SRA archive is small enough to fit on a GitHub Actions runner.
   #   - SRR1039508: Airway smooth muscle bulk RNA-seq (non-single-cell;
   #     Cell Ranger can't detect a chemistry, so with
   #     skip_on_chemistry_failure=true this sample should land in
@@ -23,7 +24,7 @@ workflow sra_cellranger_example {
   # detection and the bulk sample would fail with a different error
   # that our heuristic doesn't catch.
   call sra_cellranger_workflow.sra_cellranger { input:
-    sra_id_list = ["SRR8526555", "SRR1039508"],
+    sra_id_list = ["SRR7722937", "SRR1039508"],
     ref_gex = download_test_cellranger_ref.ref_tar,
     ncpu = 2,
     memory_gb = 6,
@@ -38,7 +39,7 @@ workflow sra_cellranger_example {
     single_cell_sample_list = sra_cellranger.single_cell_sample_list,
     skipped_sample_list = sra_cellranger.skipped_sample_list,
     n_results = n_results,
-    expected_single_cell_id = "SRR8526555",
+    expected_single_cell_id = "SRR7722937",
     expected_skipped_id = "SRR1039508"
   }
 

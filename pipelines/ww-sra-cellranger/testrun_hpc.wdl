@@ -18,7 +18,7 @@ workflow sra_cellranger_example {
   # triggers when Cell Ranger is allowed to auto-detect the chemistry
   # and fails to do so. See testrun.wdl for the longer explanation.
   call sra_cellranger_workflow.sra_cellranger { input:
-    sra_id_list = ["SRR8526555", "SRR1039508"],
+    sra_id_list = ["SRR7722937", "SRR1039508"],
     ref_gex = download_test_cellranger_ref.ref_tar,
     ncpu = 2,
     memory_gb = 6,
@@ -34,7 +34,7 @@ workflow sra_cellranger_example {
     single_cell_sample_list = sra_cellranger.single_cell_sample_list,
     skipped_sample_list = sra_cellranger.skipped_sample_list,
     n_results = n_results,
-    expected_single_cell_id = "SRR8526555",
+    expected_single_cell_id = "SRR7722937",
     expected_skipped_id = "SRR1039508"
   }
 
