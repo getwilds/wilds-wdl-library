@@ -21,7 +21,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 ## Tasks
 
 ### `fastqdump`
-Downloads FASTQ files from SRA accessions with automatic read structure detection. Handles paired-end data including datasets with index fastqs (e.g., 10x Chromium with barcode, index, and cDNA reads) by including technical reads and reassigning files so that R1 and R2 outputs always contain the biological reads. Supports controlled-access dbGaP data via optional NGC repository key file.
+Downloads FASTQ files from SRA accessions with automatic read structure detection. Handles paired-end data including datasets with index fastqs (e.g., 10x Chromium with barcode, index, and cDNA reads) by including technical reads and then classifying them by length so that R1 and R2 outputs always contain the biological reads (see [Output File Classification](#output-file-classification) below). Supports controlled-access dbGaP data via optional NGC repository key file.
 
 **Inputs:**
 - `sra_id` (String): SRA accession ID
@@ -156,6 +156,17 @@ The module supports flexible resource configuration:
 - **Storage requirements**: FASTQ files can be large; ensure adequate disk space
 - **Memory usage**: Scales automatically with CPU allocation
 - **Downsampling**: Use `max_reads` parameter to limit data download for testing or when working with constrained resources (e.g., CI runners, local development)
+
+## Output File Classification
+
+`fasterq-dump --split-files --include-technical` can produce 2–4 output files per SRA accession depending on what the submitter uploaded. The file ordering is not consistent across submissions: a 10x Chromium dataset, for example, may land as `{R1=28bp, R2=98bp, I1=8bp}` in any file-index order. To return biological reads reliably, `fastqdump` inspects each output file and assigns roles by read length:
+
+- Any file whose median read length is `<= 15bp` is treated as a technical/index read and dropped.
+- Of the remaining biological-read files, the one with the longest median is `R2` and the next is `R1`.
+- Files of equal median length break ties by original file index, preserving the conventional `R1=_1, R2=_2` mapping for plain paired-end submissions.
+- If only one biological-read file survives, the task treats the sample as single-end (overriding `is_paired_end` to `false`) and writes an empty `R2`.
+
+The classification table is echoed to stdout for every run, so the file→role mapping is auditable from task logs.
 
 ## Output Description
 
