@@ -46,25 +46,11 @@ task fastqdump {
     # Prefetch the SRA data (handles both public and dbGaP data)
     prefetch "~{sra_id}" \
       ~{if defined(ngc_file) then "--ngc " + ngc_file else ""}
-    # Diagnostic: report free space and inode usage on the execution dir
-    # before fasterq-dump tries to create its temp directory.
-    echo "=== fastqdump disk diagnostics (pre-fasterq-dump) ==="
-    echo "PWD: $PWD"
-    df -h .
-    df -i .
-    echo "--- existing fasterq.tmp.* dirs (leftovers from prior runs?) ---"
-    ls -la fasterq.tmp.* 2>/dev/null || echo "no leftover fasterq.tmp.* dirs"
-    echo "--- mkdir reproducer ---"
-    test_tmp="fasterq.tmp.diagnostic.$$"
-    if mkdir -v "$test_tmp" 2>&1; then
-      echo "mkdir succeeded; removing"
-      rmdir "$test_tmp"
-    else
-      rc=$?
-      echo "mkdir FAILED with exit $rc"
-      ls -la .
-    fi
-    echo "=== end diagnostics ==="
+    # Pre-create an explicit temp dir for fasterq-dump. Letting it pick
+    # its own path has produced "cannot create this temporary directory"
+    # failures on NFS-backed execution dirs even when the dir is writable
+    # and a shell `mkdir` of the same name succeeds.
+    mkdir -p ./fasterq_tmp
     # Check if paired ended
     numLines=$(fastq-dump -X 1 -Z --split-spot "~{sra_id}" \
       ~{if defined(ngc_file) then "--ngc " + ngc_file else ""} | wc -l)
@@ -73,6 +59,7 @@ task fastqdump {
       fasterq-dump "~{sra_id}" \
         --threads ~{ncpu} \
         --outdir ./ \
+        --temp ./fasterq_tmp \
         --split-files \
         --include-technical \
         ~{if defined(ngc_file) then "--ngc " + ngc_file else ""}
@@ -81,6 +68,7 @@ task fastqdump {
       fasterq-dump "~{sra_id}" \
         --threads ~{ncpu} \
         --outdir ./ \
+        --temp ./fasterq_tmp \
         ~{if defined(ngc_file) then "--ngc " + ngc_file else ""}
       # Rename the file to match the expected output format
       mv "~{sra_id}.fastq" "~{sra_id}_1.fastq"
