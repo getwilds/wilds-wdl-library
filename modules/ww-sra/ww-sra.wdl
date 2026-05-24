@@ -46,6 +46,13 @@ task fastqdump {
     # Prefetch the SRA data (handles both public and dbGaP data)
     prefetch "~{sra_id}" \
       ~{if defined(ngc_file) then "--ngc " + ngc_file else ""}
+    # Diagnostic: report free space and inode usage on the execution dir
+    # before fasterq-dump tries to create its temp directory.
+    echo "=== fastqdump disk diagnostics (pre-fasterq-dump) ==="
+    echo "PWD: $PWD"
+    df -h .
+    df -i .
+    echo "=== end diagnostics ==="
     # Check if paired ended
     numLines=$(fastq-dump -X 1 -Z --split-spot "~{sra_id}" \
       ~{if defined(ngc_file) then "--ngc " + ngc_file else ""} | wc -l)
