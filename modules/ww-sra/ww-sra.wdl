@@ -52,6 +52,18 @@ task fastqdump {
     echo "PWD: $PWD"
     df -h .
     df -i .
+    echo "--- existing fasterq.tmp.* dirs (leftovers from prior runs?) ---"
+    ls -la fasterq.tmp.* 2>/dev/null || echo "no leftover fasterq.tmp.* dirs"
+    echo "--- mkdir reproducer ---"
+    test_tmp="fasterq.tmp.diagnostic.$$"
+    if mkdir -v "$test_tmp" 2>&1; then
+      echo "mkdir succeeded; removing"
+      rmdir "$test_tmp"
+    else
+      rc=$?
+      echo "mkdir FAILED with exit $rc"
+      ls -la .
+    fi
     echo "=== end diagnostics ==="
     # Check if paired ended
     numLines=$(fastq-dump -X 1 -Z --split-spot "~{sra_id}" \
