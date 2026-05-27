@@ -13,10 +13,6 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow sra_cellranger_example {
   call ww_testdata.download_test_cellranger_ref { }
-
-  # Intentionally omit `chemistry` here: skip_on_chemistry_failure only
-  # triggers when Cell Ranger is allowed to auto-detect the chemistry
-  # and fails to do so. See testrun.wdl for the longer explanation.
   call sra_cellranger_workflow.sra_cellranger { input:
     sra_id_list = ["SRR7722937", "SRR1039508"],
     ref_gex = download_test_cellranger_ref.ref_tar,

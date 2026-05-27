@@ -12,10 +12,10 @@ workflow sra_cellranger {
     outputs: {
         single_cell_sample_list: "Sample IDs that ran Cell Ranger successfully (one per line)",
         skipped_sample_list: "Sample IDs skipped due to chemistry-detection failure (one per line)",
-        cellranger_results: "Cell Ranger count output tarballs (successful samples only)",
-        cellranger_web_summaries: "Cell Ranger web summary HTML files (successful samples only)",
-        cellranger_metrics: "Cell Ranger metrics summary CSV files (successful samples only)",
-        cellranger_filtered_h5s: "Cell Ranger filtered feature-barcode matrix HDF5 files (successful samples only)"
+        cellranger_results: "Cell Ranger count output tarballs",
+        cellranger_web_summaries: "Cell Ranger web summary HTML files",
+        cellranger_metrics: "Cell Ranger metrics summary CSV files",
+        cellranger_filtered_h5s: "Cell Ranger filtered feature-barcode matrix HDF5 files"
     }
   }
 
@@ -29,7 +29,7 @@ workflow sra_cellranger {
     create_bam: "Whether Cell Ranger should generate a BAM file (default: true)"
     expect_cells: "Optional expected number of recovered cells per sample"
     chemistry: "Optional assay configuration for Cell Ranger (e.g. SC3Pv2, SC3Pv3)"
-    skip_on_chemistry_failure: "If true, samples Cell Ranger can't assign a chemistry to (non-single-cell input, or too few/too short reads) are skipped (recorded in skipped_sample_list, absent from cellranger_* arrays) instead of failing the workflow. Default: false."
+    skip_on_chemistry_failure: "When `true`, let task succeed with absent outputs if chemistry can't be auto detected."
     execution_mode: "Which Cell Ranger task to dispatch to: 'docker' (default; private Cell Ranger image), 'hpc_cromwell' (loads Cell Ranger via host env-modules under Cromwell-on-HPC), or 'hpc_sprocket' (same module-load approach inside a Lua container under Sprocket-on-HPC). Any other value fails loudly via select_first."
     docker_image: "Private Cell Ranger Docker image used by run_count. Ignored unless execution_mode is 'docker'."
     cellranger_module: "HPC environment module used by the run_count_hpc_* tasks. Ignored unless execution_mode starts with 'hpc_'."

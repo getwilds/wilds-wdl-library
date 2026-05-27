@@ -7,22 +7,11 @@ workflow sra_cellranger_example {
   # Download a small GEX reference for Cell Ranger
   call ww_testdata.download_test_cellranger_ref { }
 
-  # Call the actual sra_cellranger workflow with two test samples:
-  #   - SRR7722937: 10x's own "1k PBMCs from a Healthy Donor" 10x
-  #     Chromium 3' v3 demo dataset (single-cell, should run through
-  #     Cell Ranger successfully). Picked specifically because the
-  #     SRA archive is small enough to fit on a GitHub Actions runner.
-  #   - SRR1039508: Airway smooth muscle bulk RNA-seq (non-single-cell;
-  #     Cell Ranger can't detect a chemistry, so with
-  #     skip_on_chemistry_failure=true this sample should land in
-  #     skipped_sample_list and be absent from cellranger_*).
-  # Limiting to 1M reads each for fast testing while leaving enough
-  # for chemistry detection on the single-cell sample.
-  # Intentionally omit `chemistry` here: skip_on_chemistry_failure only
-  # triggers when Cell Ranger is allowed to auto-detect the chemistry
-  # and fails to do so. Specifying chemistry would short-circuit
-  # detection and the bulk sample would fail with a different error
-  # that our heuristic doesn't catch.
+  # Call the workflow with two test samples:
+  #   - SRR7722937: 10x's own "1k PBMCs from a Healthy Donor"
+  #     demo dataset (should run successfully).
+  #   - SRR1039508: Bulk RNA-seq (should fail and appear in
+  #     skipped_sample_list).
   call sra_cellranger_workflow.sra_cellranger { input:
     sra_id_list = ["SRR7722937", "SRR1039508"],
     ref_gex = download_test_cellranger_ref.ref_tar,
