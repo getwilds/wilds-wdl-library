@@ -71,16 +71,24 @@ Run `cellranger count` on gene expression reads from one GEM well using a privat
 - `cpu_cores` (Int, default=8): Number of CPU cores to use
 - `memory_gb` (Int, default=64): Memory allocation in GB
 - `expect_cells` (Int, optional): Expected number of recovered cells
-- `chemistry` (String, optional): Assay configuration (e.g., SC3Pv3)
+- `chemistry` (String, optional): Assay configuration (e.g., SC3Pv3). Leave unset for automatic chemistry detection (required for `skip_on_chemistry_failure` to work).
+- `skip_on_chemistry_failure` (Boolean, default=false): If true, samples for which Cell Ranger can't automatically detect the chemistry (usually because the data is low quality or not single-cell) succeed with absent count outputs and `chemistry_status="skipped_non_single_cell"` instead of failing. Other Cell Ranger failures will still cause the workflow to quit. Only active when `chemistry` is left unset (auto-detection mode). See [Graceful chemistry-detection skip](#graceful-chemistry-detection-skip) for details.
 - `docker_image` (String, default=`ghcr.io/getwilds/cellranger:10.0.0`): Private Cell Ranger Docker image. Cell Ranger is not redistributable, so you must supply your own image (see the WILDS Dockerfile recipe linked above) and override the default if it is not available in your registry.
 
 **Important:** All input FASTQs must be from one GEM well. If you have multiple GEM wells, use `run_count` separately for each well. The task validates that FASTQ filenames follow Cell Ranger's naming convention and will fail with a helpful error message if they don't.
 
 **Outputs:**
-- `results_tar` (File): Compressed tarball of Cell Ranger count output directory
-- `web_summary` (File): Web summary HTML file with QC metrics
-- `metrics_summary` (File): Metrics summary CSV file with key statistics
-- `filtered_h5` (File): Filtered feature-barcode matrix HDF5 file
+- `chemistry_status` (File): One-line marker file with contents `ok` (Cell Ranger ran to completion) or `skipped_non_single_cell` (chemistry detection failed and `skip_on_chemistry_failure=true`). Always present.
+- `results_tar` (File?): Compressed tarball of Cell Ranger count output directory. Absent when the sample was skipped.
+- `web_summary` (File?): Web summary HTML file with QC metrics. Absent when the sample was skipped.
+- `metrics_summary` (File?): Metrics summary CSV file with key statistics. Absent when the sample was skipped.
+- `filtered_h5` (File?): Filtered feature-barcode matrix HDF5 file. Absent when the sample was skipped.
+
+### Graceful chemistry-detection skip
+
+When `cellranger count` cannot automatically detect the input chemistry (usually because it's low quality or not single-cell) it errors out before producing the usual outputs. By default, the `run_count` WDL task reports the error and quits (`skip_on_chemistry_failure = false`). Setting `skip_on_chemistry_failure = true` makes the task exit cleanly instead and reports `chemistry_status = "skipped_non_single_cell"` (regardless of why chemistry detection failed). This lets you scatter over many samples and skip bad inputs instead of stopping the whole workflow because of the error.
+
+**How it works:** The task searches the `cellranger count` output for terms like "could not detect", "ambiguous chemistry", "NO_INPUT_ANTIBODY_READS" and the error codes "TXRNGR10002" and "TXRNGR10004." This method has been validated against Cell Ranger version 10.0.0.
 
 ### `run_count_hpc_cromwell`
 

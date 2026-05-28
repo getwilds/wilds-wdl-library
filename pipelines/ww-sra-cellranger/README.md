@@ -110,6 +110,7 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `create_bam` | Whether Cell Ranger should generate a BAM file | Boolean | No | true |
 | `expect_cells` | Expected number of recovered cells per sample | Int | No | - |
 | `chemistry` | Assay configuration (e.g., SC3Pv2, SC3Pv3) | String | No | auto-detect |
+| `skip_on_chemistry_failure` | If true, samples Cell Ranger can't auto-detect a chemistry for are skipped instead of failing the workflow. See the module [README](../../modules/ww-cellranger/README.md#graceful-chemistry-detection-skip). | Boolean | No | `false` |
 | `execution_mode` | Which Cell Ranger task to dispatch to: `"docker"`, `"hpc_cromwell"`, or `"hpc_sprocket"`. See [Cell Ranger Software Environment](#cell-ranger-software-environment). | String | No | `"docker"` |
 | `docker_image` | Private Cell Ranger Docker image used by `run_count`. Ignored unless `execution_mode = "docker"`. | String | No | `ghcr.io/getwilds/cellranger:10.0.0` |
 | `cellranger_module` | HPC environment module used by the `run_count_hpc_*` tasks. Ignored unless `execution_mode` starts with `hpc_`. | String | No | `CellRanger/10.0.0` |
@@ -124,9 +125,18 @@ Cell Ranger requires a pre-built reference transcriptome tarball. You can:
 
 | Output | Description | Source Module |
 |--------|-------------|---------------|
+| `single_cell_sample_list` | List of sample IDs that Cell Ranger ran successfully | pipeline |
+| `skipped_sample_list` | List of sample IDs that Cell Ranger failed to auto-detect chemistry for (empty unless `skip_on_chemistry_failure = true`) | pipeline |
 | `cellranger_results` | Compressed tarballs of Cell Ranger count output directories | ww-cellranger |
-| `cellranger_web_summaries` | Web summary HTML files for each sample | ww-cellranger |
-| `cellranger_metrics` | Metrics summary CSV files for each sample | ww-cellranger |
+| `cellranger_web_summaries` | Web summary HTML files | ww-cellranger |
+| `cellranger_metrics` | Metrics summary CSV files | ww-cellranger |
+| `cellranger_filtered_h5s` | Filtered feature-barcode matrix HDF5 files | ww-cellranger |
+
+### Mixed single-cell / non-single-cell input
+
+It's not uncommon for an SRA study to contain a mix of single-cell and bulk RNA-seq samples. When Cell Ranger can't assign a chemistry to a sample — typically because it isn't single-cell at all, but also when the reads are too few or too short for any chemistry's minimum requirements — it exits with an error. By default this fails the workflow for that scatter shard.
+
+Setting `skip_on_chemistry_failure = true` (default `false`) makes such samples succeed with no count outputs instead. Their IDs are written to `skipped_sample_list`, the IDs of samples that completed normally go to `single_cell_sample_list`, and the `cellranger_*` output arrays contain results only for the successful samples. See [the module README](../../modules/ww-cellranger/README.md#graceful-chemistry-detection-skip) for detection details and the `chemistry` interaction. Note that very small `max_reads` values (a few hundred thousand or less) can cause legitimate single-cell samples to be skipped if the downsampled FASTQs fall below Cell Ranger's per-chemistry read-length minimums.
 
 ## Resource Considerations
 
@@ -159,7 +169,7 @@ sprocket run testrun.wdl
 
 The test workflow automatically:
 1. Downloads a small Cell Ranger reference
-2. Downloads a 10x Chromium 3' v2 scRNA-seq dataset from SRA (SRR9169219, limited to 100k reads)
+2. Downloads two SRA datasets, limited to 1M reads each: SRR7722937 (10x Chromium 3' v3 scRNA-seq demo dataset, expected to run successfully) and SRR1039508 (bulk RNA-seq, expected to trigger the `skip_on_chemistry_failure` path)
 3. Renames FASTQs for Cell Ranger compatibility
 4. Runs Cell Ranger count
 5. Outputs results, web summary, and metrics
