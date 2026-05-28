@@ -194,6 +194,8 @@ For questions, bugs, and/or feature requests, reach out to the Fred Hutch Office
 
 ## Contributing
 
+Special thanks to [Hrishi Venkatesh](https://github.com/hvenkat94) for extensive testing of this pipeline on HPC infrastructure and for identifying important edge cases that have shaped its current scope and design. Thank you for your contributions!
+
 If you would like to contribute to this WILDS WDL pipeline, please see our [contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
 
 ## License

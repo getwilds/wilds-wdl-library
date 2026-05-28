@@ -5,8 +5,16 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow sra_cellranger {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Hrishi Venkatesh",
+            email: "hvenkate@fredhutch.org"
+        }
+    ]
     description: "WDL workflow to download single-cell RNA-seq data from SRA and process using Cell Ranger count"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-sra-cellranger/ww-sra-cellranger.wdl"
     outputs: {
