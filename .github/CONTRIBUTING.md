@@ -514,6 +514,17 @@ After meeting the requirements above, submit a PR to merge your forked repo into
 
 We occasionally use large language models (primarily [Claude](https://www.anthropic.com/claude)) to assist with prototyping modules and pipelines, and contributors are welcome to do the same. However, all AI-generated code must go through the same testing, linting, and human review process as any other contribution. Please ensure you review and understand any AI-generated code before submitting it in a PR.
 
+To make AI assistance more consistent with project conventions, the repository ships an [`AGENTS.md`](../AGENTS.md) project-context file (following the vendor-neutral [agents.md](https://agents.md/) convention) and a set of reusable task recipes under [`.agents/skills/`](../.agents/skills/):
+
+- `create-module` — scaffold a new `ww-toolname` module
+- `create-pipeline` — assemble existing modules into a new pipeline
+- `add-testdata` — add a test-data download task to `ww-testdata`
+- `run-tests` — run `testrun.wdl` via Sprocket or miniwdl
+- `lint-module` — run linting and fix issues
+- `pr-description` — draft a PR description from the current branch
+
+Tools that follow the AGENTS.md convention (OpenCode, Claude Code, and others) discover these files automatically. Use of these tools is optional — they are provided as a convenience and do not replace the testing and review requirements above.
+
 ### Review Criteria
 
 Your PR will be evaluated on:

@@ -134,6 +134,8 @@ All tasks use versioned, tested Docker images from the [WILDS Docker Library](ht
 
 Large language models (primarily [Claude](https://www.anthropic.com/claude)) have been used to assist with prototyping new modules and pipelines in this repository, including initial drafts of task scaffolding, command structures, and test workflows. All AI-generated code is reviewed, validated, and modified as necessary by human researchers through linting tools, multi-executor test runs (Cromwell, miniWDL, Sprocket), and peer code review. No architectural or scientific decisions are made by AI tools.
 
+To support contributors who use AI coding assistants, the repository ships an [`AGENTS.md`](https://github.com/getwilds/wilds-wdl-library/blob/main/AGENTS.md) project-context file (following the vendor-neutral [agents.md](https://agents.md/) convention) and a set of reusable task recipes under [`.agents/skills/`](https://github.com/getwilds/wilds-wdl-library/tree/main/.agents/skills) for common operations like scaffolding a new module, adding test data, and running linting. These are picked up automatically by tools that support the convention (OpenCode, Claude Code, and others). Use of these tools is optional, and the human-review requirement above applies to any AI-assisted contribution regardless of which tool was used.
+
 ---
 
 ## Getting Help
