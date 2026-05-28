@@ -10,6 +10,10 @@ This pipeline combines the `ww-sra` and `ww-cellranger` modules to download scRN
 
 The pipeline automatically handles FASTQ renaming to satisfy Cell Ranger's strict naming convention, so users only need to provide SRA accession IDs and a reference transcriptome.
 
+## Scope and Limitations
+
+This pipeline is scoped as an on-ramp for users who are new to computational workflows, but want Cell Ranger count outputs from SRA samples. To match that scope, BAM output is disabled: the pipeline hardcodes `create_bam = false` on all Cell Ranger calls and does not expose it as a workflow input. This avoids producing the largest Cell Ranger output for users whose downstream tooling (Seurat, Scanpy) reads directly from the `.h5` or matrix files, and avoids accidental persistence of BAMs derived from controlled-access dbGaP data, where redistribution restrictions typically prohibit sharing them.
+
 ## Pipeline Structure
 
 This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and demonstrates:
@@ -107,7 +111,6 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `memory_gb` | Memory allocation in GB | Int | No | 64 |
 | `max_reads` | Maximum reads to download per sample (for testing) | Int | No | all reads |
 | `ngc_file` | NGC repository key file for controlled-access dbGaP data | File | No | - |
-| `create_bam` | Whether Cell Ranger should generate a BAM file | Boolean | No | true |
 | `expect_cells` | Expected number of recovered cells per sample | Int | No | - |
 | `chemistry` | Assay configuration (e.g., SC3Pv2, SC3Pv3) | String | No | auto-detect |
 | `skip_on_chemistry_failure` | If true, samples Cell Ranger can't auto-detect a chemistry for are skipped instead of failing the workflow. See the module [README](../../modules/ww-cellranger/README.md#graceful-chemistry-detection-skip). | Boolean | No | `false` |
