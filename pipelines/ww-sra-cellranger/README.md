@@ -10,9 +10,13 @@ This pipeline combines the `ww-sra` and `ww-cellranger` modules to download scRN
 
 The pipeline automatically handles FASTQ renaming to satisfy Cell Ranger's strict naming convention, so users only need to provide SRA accession IDs and a reference transcriptome.
 
-## Scope and Limitations
+## Scope and Data Governance
 
 This pipeline is scoped as an on-ramp for users who are new to computational workflows, but want Cell Ranger count outputs from SRA samples. To match that scope, BAM output is disabled: the pipeline hardcodes `create_bam = false` on all Cell Ranger calls and does not expose it as a workflow input. This avoids producing the largest Cell Ranger output for users whose downstream tooling (Seurat, Scanpy) reads directly from the `.h5` or matrix files, and avoids accidental persistence of BAMs derived from controlled-access dbGaP data, where redistribution restrictions typically prohibit sharing them.
+
+When pulling controlled-access data from dbGaP via the `ngc_file` input, you are bound by the data use agreement attached to that study, which typically restricts where derived data (FASTQs, count matrices, BAMs, etc.) may be stored. **Make sure to run this pipeline in a location approved for regulated data storage** and avoid persisting outputs to general-purpose or shared filesystems.
+
+**Fred Hutch users:** Use [PROOF Regulated](https://sciwiki.fredhutch.org/datademos/proof-regulated/) to submit this pipeline. PROOF Regulated stages analysis data under `/fh/regulated`, which is set up for compliance with dbGaP and similar data use agreements.
 
 ## Pipeline Structure
 

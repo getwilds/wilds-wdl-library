@@ -10,6 +10,12 @@ This module provides reusable WDL tasks for downloading sequencing data from the
 
 The module uses `prefetch` + `fasterq-dump` for efficient, multi-threaded downloading of FASTQ files from SRA accessions, with optional NGC authentication for downloading controlled-access dbGaP data.
 
+## Data Governance
+
+When pulling controlled-access data from dbGaP via the `ngc_file` input, you are bound by the data use agreement attached to that study, which typically restricts where the downloaded FASTQs (and any data derived from them) may be stored. **Make sure to run any workflow that imports this module in a location approved for regulated data storage** and avoid persisting outputs to general-purpose or shared filesystems.
+
+**Fred Hutch users:** Use [PROOF Regulated](https://sciwiki.fredhutch.org/datademos/proof-regulated/) to submit workflows that use this module. PROOF Regulated stages analysis data under `/fh/regulated`, which is set up for compliance with dbGaP and similar data use agreements.
+
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
