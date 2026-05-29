@@ -596,6 +596,22 @@ tools:
       branches:
         - main
 
+  - name: ww-seurat
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-seurat/ww-seurat.wdl
+    readMePath: /modules/ww-seurat/README.md
+    authors:
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+    topic: WDL module for single-cell RNA-seq QC and clustering using Seurat
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-shapemapper
     subclass: WDL
     primaryDescriptorPath: /modules/ww-shapemapper/ww-shapemapper.wdl
@@ -796,6 +812,22 @@ tools:
       branches:
         - main
 
+  - name: ww-umi-tools
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-umi-tools/ww-umi-tools.wdl
+    readMePath: /modules/ww-umi-tools/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for UMI-aware read deduplication using umi_tools dedup
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-varscan
     subclass: WDL
     primaryDescriptorPath: /modules/ww-varscan/ww-varscan.wdl
@@ -976,6 +1008,25 @@ workflows:
       branches:
         - main
 
+  - name: ww-proseq
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-proseq/ww-proseq.wdl
+    readMePath: /pipelines/ww-proseq/README.md
+    testParameterFiles:
+      - /pipelines/ww-proseq/inputs.json
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    description: "Paired-end PRO-seq pipeline with UMI deduplication and spike-in normalization, adapted from JAJ256/PROseq_alignment.sh"
+    topic: proseq
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-rnaseq
     subclass: WDL
     primaryDescriptorPath: /pipelines/ww-rnaseq/ww-rnaseq.wdl
@@ -1100,18 +1151,17 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0000-0003-4484-3336
+      - name: Hrishi Venkatesh
+        email: hvenkate@fredhutch.org
+        role: Post-Doctoral Research Fellow
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0002-2938-3856
     description: "WDL workflow to download single-cell RNA-seq data from SRA and process using Cell Ranger count"
     topic: single-cell
     enableAutoDois: true
     filters:
       branches:
         - main
-      tags:
-        - genomics
-        - single-cell
-        - rna-seq
-        - cellranger
-        - sra
 
   - name: ww-sra-star
     subclass: WDL

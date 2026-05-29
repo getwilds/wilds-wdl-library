@@ -5,8 +5,16 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow sra_cellranger {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Hrishi Venkatesh",
+            email: "hvenkate@fredhutch.org"
+        }
+    ]
     description: "WDL workflow to download single-cell RNA-seq data from SRA and process using Cell Ranger count"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-sra-cellranger/ww-sra-cellranger.wdl"
     outputs: {
@@ -26,7 +34,6 @@ workflow sra_cellranger {
     memory_gb: "memory allocation in GB for Cell Ranger tasks"
     max_reads: "Optional maximum number of reads to download from SRA (for testing/downsampling). If not specified, downloads all reads."
     ngc_file: "Optional NGC repository key file for downloading controlled-access dbGaP data."
-    create_bam: "Whether Cell Ranger should generate a BAM file (default: true)"
     expect_cells: "Optional expected number of recovered cells per sample"
     chemistry: "Optional assay configuration for Cell Ranger (e.g. SC3Pv2, SC3Pv3)"
     skip_on_chemistry_failure: "When `true`, let task succeed with absent outputs if chemistry can't be auto detected."
@@ -42,7 +49,6 @@ workflow sra_cellranger {
     Int memory_gb = 64
     Int? max_reads
     File? ngc_file
-    Boolean create_bam = true
     Int? expect_cells
     String? chemistry
     Boolean skip_on_chemistry_failure = false
@@ -80,7 +86,7 @@ workflow sra_cellranger {
           r2_fastqs = [rename_fastqs.r2_renamed],
           ref_gex = ref_gex,
           sample_id = id,
-          create_bam = create_bam,
+          create_bam = false,
           cpu_cores = ncpu,
           memory_gb = memory_gb,
           expect_cells = expect_cells,
@@ -96,7 +102,7 @@ workflow sra_cellranger {
           r2_fastqs = [rename_fastqs.r2_renamed],
           ref_gex = ref_gex,
           sample_id = id,
-          create_bam = create_bam,
+          create_bam = false,
           cpu_cores = ncpu,
           memory_gb = memory_gb,
           expect_cells = expect_cells,
@@ -112,7 +118,7 @@ workflow sra_cellranger {
           r2_fastqs = [rename_fastqs.r2_renamed],
           ref_gex = ref_gex,
           sample_id = id,
-          create_bam = create_bam,
+          create_bam = false,
           cpu_cores = ncpu,
           memory_gb = memory_gb,
           expect_cells = expect_cells,

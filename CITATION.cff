@@ -76,3 +76,10 @@ authors:
     given-names: Ethan
     affiliation: "Fred Hutch Cancer Center"
     orcid: "https://orcid.org/0009-0006-6552-2522"
+  - family-names: Venkatesh
+    given-names: Hrishi
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0000-0002-2938-3856"
+  - family-names: McClain
+    given-names: Alexander
+    affiliation: "St. Jude Children's Research Hospital"

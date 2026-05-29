@@ -38,7 +38,7 @@ task run_count {
     expect_cells: "Optional: Expected number of recovered cells"
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
     skip_on_chemistry_failure: "When `true`, let task succeed with absent outputs if chemistry can't be auto detected."
-    docker_image: "Private Cell Ranger Docker image. No public image is provided because Cell Ranger is not redistributable; build your own from the WILDS Dockerfile recipe."
+    docker_image: "Private Cell Ranger Docker image. No public image is provided because Cell Ranger is not redistributable; build your own from the WILDS Dockerfile recipe. Compatible with Cell Ranger 8.x-10.x; v7 and earlier are not supported."
   }
 
   input {
@@ -204,7 +204,7 @@ task run_count_hpc_cromwell {
     expect_cells: "Optional: Expected number of recovered cells"
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
     skip_on_chemistry_failure: "When `true`, let task succeed with absent outputs if chemistry can't be auto detected."
-    cellranger_module: "HPC environment module to load for Cell Ranger (e.g. 'CellRanger/10.0.0')"
+    cellranger_module: "HPC environment module to load for Cell Ranger (e.g. 'CellRanger/10.0.0'). Compatible with Cell Ranger 8.x-10.x; v7 and earlier are not supported."
   }
 
   input {
@@ -376,7 +376,7 @@ task run_count_hpc_sprocket {
     expect_cells: "Optional: Expected number of recovered cells"
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
     skip_on_chemistry_failure: "When `true`, let task succeed with absent outputs if chemistry can't be auto detected."
-    cellranger_module: "HPC environment module to load for Cell Ranger (e.g. 'CellRanger/10.0.0')"
+    cellranger_module: "HPC environment module to load for Cell Ranger (e.g. 'CellRanger/10.0.0'). Compatible with Cell Ranger 8.x-10.x; v7 and earlier are not supported."
   }
 
   input {

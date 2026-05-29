@@ -18,7 +18,6 @@ workflow sra_cellranger_example {
     ncpu = 2,
     memory_gb = 6,
     max_reads = 1000000,
-    create_bam = false,
     skip_on_chemistry_failure = true
   }
 

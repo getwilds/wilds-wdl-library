@@ -38,6 +38,10 @@ When using either `run_count_hpc_cromwell` or `run_count_hpc_sprocket`, the same
 
 If your files don't follow this convention, you can use the `rename_fastqs` task from this module to rename them automatically.
 
+### Supported Cell Ranger Versions
+
+This module's `cellranger count` invocation is compatible with **Cell Ranger 8.x, 9.x, and 10.x**. The CLI for the flags used here (including the required `--create-bam`) has been stable across those releases. To use a specific version, override `docker_image` (for `run_count`) or `cellranger_module` (for the HPC variants) with your preferred release. **Cell Ranger 7.x and earlier are not supported** because they predate the `--create-bam` flag.
+
 ### Current Limitations
 
 **This module currently only accepts samples that are gene expression (GEX) only.** Feature barcoding data (e.g., antibody-derived tags, CRISPR guides) is not supported at this time.
