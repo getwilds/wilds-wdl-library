@@ -1,5 +1,5 @@
 {
-  "sra_cellranger.sra_id_list": ["SRR12345678", "SRR12345679"],
+  "sra_cellranger.sra_id_file": "/path/to/SRR_Acc_List.txt",
   "sra_cellranger.ref_gex": "/path/to/cellranger/reference.tar.gz",
   "sra_cellranger.ncpu": 8,
   "sra_cellranger.memory_gb": 64,
