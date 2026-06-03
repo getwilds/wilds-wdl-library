@@ -90,7 +90,15 @@ Create an inputs JSON file with your SRA accessions and Cell Ranger reference. P
 
 ### Selecting Samples with SRA Run Selector
 
-`sra_id_file` is the one-accession-per-line text file produced by the **Accession List** button in NCBI's [SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/). For any study with more than a handful of samples, this is the recommended way to provide inputs.
+`sra_id_file` is the one-accession-per-line text file produced by the **Accession List** button in NCBI's [SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/). For any study with more than a handful of samples, this is the recommended way to provide inputs. It should look like this:
+
+```
+SRR7722937
+SRR1039508
+SRR13777504
+```
+
+One accession per line, with no header row, commas, or quotes: exactly what the **Accession List** button exports. (Be careful not to grab the adjacent **Metadata** button instead, which downloads a multi-column CSV rather than a bare accession list.)
 
 **Curate your list in Run Selector before running.** This is a manual step, and an important one. Many SRA studies group multiple assay types under a single project: it is common to find single-cell RNA-seq, multiome RNA and ATAC, bulk RNA-seq, and whole-exome runs all under one accession. The SRA metadata does not reliably flag which runs are single-cell. `library_strategy` is `RNA-Seq` for both single-cell and bulk transcriptomic runs, and the only single-cell signal is often a submitter-specific naming convention in the free-text `library_name` field. There is no automated rule that picks the correct Cell Ranger inputs across studies, so the pipeline does not attempt one. Use Run Selector's filters and the per-run library names to select only the runs you intend to feed to Cell Ranger, then export that subset as your accession list.
 
