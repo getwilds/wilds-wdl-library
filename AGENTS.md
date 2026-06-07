@@ -1,6 +1,5 @@
 # AGENTS.md - WILDS WDL Library
 
-
 ## Project Overview
 Centralized bioinformatics WDL library with two tiers: **modules** (tool-specific task collections) and **pipelines** (workflows combining modules). All WDL uses version 1.0.
 
@@ -78,14 +77,3 @@ Reusable task-specific instructions live in [.agents/skills/](.agents/skills/). 
 - `run-tests` — run `testrun.wdl` via sprocket or miniwdl
 - `lint-module` — run linting and fix issues
 - `pr-description` — draft a PR description from the current branch
-
-OpenCode discovers these automatically. Other tools may need a pointer or a config entry — see your tool's docs for how it picks up `SKILL.md` files.
-
-## Model Capability Notes
-
-The skills above vary in how much model capability they need:
-
-- **Smaller models handle well:** `lint-module`, `run-tests`, `pr-description`, `add-testdata`.
-- **Larger / frontier models recommended for:** `create-module` and `create-pipeline` — these reason across many files and make 10+ tool calls. Pipeline creation has been demonstrated with smaller local models in early experiments; module creation remains harder.
-
-When in doubt, start with a smaller model and escalate if it stalls. For data-sensitive work, local models via Ollama (or similar) are a good fit for the lighter skills and keep the codebase off third-party servers entirely.
