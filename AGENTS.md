@@ -1,6 +1,5 @@
 # AGENTS.md - WILDS WDL Library
 
-This file provides project context for AI coding agents. It follows the [AGENTS.md](https://agents.md/) convention and is read by any agent tool that supports it (OpenCode, Claude Code, Aider, Cursor, Cline, and others). The conventions documented here are vendor-neutral — bring whichever tool and model your team approves.
 
 ## Project Overview
 Centralized bioinformatics WDL library with two tiers: **modules** (tool-specific task collections) and **pipelines** (workflows combining modules). All WDL uses version 1.0.
