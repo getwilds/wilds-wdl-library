@@ -2,7 +2,6 @@
 name: add-testdata
 description: Add a new test data download task to the ww-testdata module for use in module/pipeline testruns
 argument-hint: <task-name>
-allowed-tools: Bash, Edit, Read, Write, Glob, Grep, WebSearch, WebFetch
 ---
 
 # Add a New Test Data Task to ww-testdata
