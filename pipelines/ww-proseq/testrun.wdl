@@ -58,17 +58,17 @@ workflow proseq_example {
   # rDNA reference for rRNA depletion.
   call ww_testdata.download_rrna_reference { }
 
-  ProseqReferences references = {
-      "experimental_fasta": download_dm6.fasta,
-      "spikein_merged_fasta": build_merged.merged_fasta,
-      "rdna_fasta": download_rrna_reference.fasta,
-      "spikein_chrom_prefix": "hg38"
+  ProseqReferences references = object {
+      experimental_fasta: download_dm6.fasta,
+      spikein_merged_fasta: build_merged.merged_fasta,
+      rdna_fasta: download_rrna_reference.fasta,
+      spikein_chrom_prefix: "hg38"
   }
 
-  ProseqSample sample1 = {
-      "name": "proseq_demo",
-      "r1": proseq_rep1.r1_end,
-      "r2": proseq_rep1.r2_end
+  ProseqSample sample1 = object {
+      name: "proseq_demo",
+      r1: proseq_rep1.r1_end,
+      r2: proseq_rep1.r2_end
   }
 
   call proseq_workflow.proseq { input:
