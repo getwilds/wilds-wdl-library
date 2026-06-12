@@ -53,7 +53,7 @@ Spike-in alignments are kept (filtered to spike-in contigs only) so downstream a
 
 Three things to configure:
 
-1. **Samples** — array of `ProseqSample` structs (`name`, `r1`, `r2`)
+1. **Samples** — a `samples.tsv` sample sheet (recommended) or an array of `ProseqSample` structs (see [Specifying Samples](#specifying-samples))
 2. **References** — a `ProseqReferences` struct containing:
    - `experimental_fasta` — the experimental organism's genome (e.g., dm6 for Drosophila S2 cells)
    - `spikein_merged_fasta` — experimental + spike-in genomes concatenated, with a distinguishing prefix on spike-in contig names
@@ -99,13 +99,52 @@ java -jar cromwell.jar run ww-proseq.wdl --inputs inputs.json
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `samples` | `Array[ProseqSample]` | required | Per-sample name + R1 + R2 (see [`ProseqSample` struct](#proseqsample-structure) below) |
+| `samples_tsv` | `File` | required* | Tab-separated sample sheet with header `name`, `r1`, `r2` (see [Specifying Samples](#specifying-samples)). Recommended for sequencing-core output |
+| `samples` | `Array[ProseqSample]` | required* | Per-sample name + R1 + R2 (see [`ProseqSample` struct](#proseqsample-structure) below) |
 | `references` | `ProseqReferences` | required | Three FASTAs + spike-in chromosome prefix (see [`ProseqReferences` struct](#proseqreferences-structure) below) |
 | `umi_loc` | `String` | `"per_read"` | fastp UMI location. `per_read` for qPRO-seq (UMIs on both ends), `read1` / `read2` for one-sided UMIs, `""` to disable |
 | `umi_len` | `Int` | `6` | UMI length in basepairs |
 | `mapq_threshold` | `Int` | `10` | Minimum MAPQ for retained alignments |
 | `align_cpu` | `Int` | `4` | CPU cores per bowtie2 alignment task |
 | `align_memory_gb` | `Int` | `8` | Memory per bowtie2 alignment task |
+
+*Provide either `samples_tsv` or `samples`, not both.
+
+### Specifying Samples
+
+Samples can be supplied two ways. Provide exactly one of the two.
+
+#### Option 1: TSV File (Recommended)
+
+Create a tab-separated file (`samples.tsv`) with a header row and one row per sample:
+
+```tsv
+name	r1	r2
+sample1	/path/to/sample1_R1.fastq.gz	/path/to/sample1_R2.fastq.gz
+sample2	/path/to/sample2_R1.fastq.gz	/path/to/sample2_R2.fastq.gz
+```
+
+Then reference it in your inputs JSON:
+
+```json
+{
+  "proseq.samples_tsv": "/path/to/samples.tsv"
+}
+```
+
+An example `samples.tsv` template is included in this directory.
+
+#### Option 2: `samples` Struct Array
+
+Provide the samples directly as an array of `ProseqSample` structs in the inputs JSON (see the [`ProseqSample` struct](#proseqsample-structure) below). This is the form the `testrun.wdl` test workflow uses, since constructing a TSV within WDL itself is awkward.
+
+```json
+{
+  "proseq.samples": [
+    { "name": "sample1", "r1": "/path/to/sample1_R1.fastq.gz", "r2": "/path/to/sample1_R2.fastq.gz" }
+  ]
+}
+```
 
 ### `ProseqSample` Structure
 
@@ -135,7 +174,7 @@ struct ProseqReferences {
 
 ## Output Files
 
-Per sample (arrays scattered over `samples`):
+Per sample (arrays scattered over the input samples):
 - `fastp_r1_trimmed`, `fastp_r2_trimmed` — UMI-extracted, adapter-trimmed FASTQs
 - `fastp_html`, `fastp_json` — fastp reports
 - `experimental_bam_dedup`, `experimental_bai_dedup` — deduplicated experimental BAM
