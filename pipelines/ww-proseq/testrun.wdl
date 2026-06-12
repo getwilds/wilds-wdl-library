@@ -11,10 +11,16 @@ struct ProseqSample {
 }
 
 struct ProseqReferences {
-    File experimental_fasta
-    File spikein_merged_fasta
-    File rdna_fasta
+    File? experimental_fasta
+    File? spikein_merged_fasta
+    File? rdna_fasta
+    File? experimental_index_tar
+    File? spikein_index_tar
+    File? rdna_index_tar
     String spikein_chrom_prefix
+    String? experimental_index_prefix
+    String? spikein_index_prefix
+    String? rdna_index_prefix
 }
 
 workflow proseq_example {
