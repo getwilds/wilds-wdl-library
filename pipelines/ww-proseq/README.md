@@ -54,11 +54,7 @@ Spike-in alignments are kept (filtered to spike-in contigs only) so downstream a
 Three things to configure:
 
 1. **Samples** — a `samples.tsv` sample sheet (recommended) or an array of `ProseqSample` structs (see [Specifying Samples](#specifying-samples))
-2. **References** — a `ProseqReferences` struct containing:
-   - `experimental_fasta` — the experimental organism's genome (e.g., dm6 for Drosophila S2 cells)
-   - `spikein_merged_fasta` — experimental + spike-in genomes concatenated, with a distinguishing prefix on spike-in contig names
-   - `rdna_fasta` — the rDNA reference for rRNA depletion (typically the host's 45S precursor)
-   - `spikein_chrom_prefix` — the prefix used on spike-in contig names in the merged FASTA
+2. **References** — a `ProseqReferences` struct. For each of the three references (experimental, spike-in-merged, rDNA), provide either a FASTA to index or a prebuilt bowtie2 index tarball (see [`ProseqReferences` struct](#proseqreferences-structure))
 3. **Pipeline parameters** — UMI config, MAPQ threshold, resource allocation
 
 See [`inputs.json`](inputs.json) for a template.
@@ -101,7 +97,7 @@ java -jar cromwell.jar run ww-proseq.wdl --inputs inputs.json
 |-----------|------|---------|-------------|
 | `samples_tsv` | `File` | required* | Tab-separated sample sheet with header `name`, `r1`, `r2` (see [Specifying Samples](#specifying-samples)). Recommended for sequencing-core output |
 | `samples` | `Array[ProseqSample]` | required* | Per-sample name + R1 + R2 (see [`ProseqSample` struct](#proseqsample-structure) below) |
-| `references` | `ProseqReferences` | required | Three FASTAs + spike-in chromosome prefix (see [`ProseqReferences` struct](#proseqreferences-structure) below) |
+| `references` | `ProseqReferences` | required | Per reference, a FASTA to index or a prebuilt bowtie2 tarball, plus the spike-in chromosome prefix (see [`ProseqReferences` struct](#proseqreferences-structure) below) |
 | `umi_loc` | `String` | `"per_read"` | fastp UMI location. `per_read` for qPRO-seq (UMIs on both ends), `read1` / `read2` for one-sided UMIs, `""` to disable |
 | `umi_len` | `Int` | `6` | UMI length in basepairs |
 | `mapq_threshold` | `Int` | `10` | Minimum MAPQ for retained alignments |
@@ -160,17 +156,28 @@ struct ProseqSample {
 
 ```wdl
 struct ProseqReferences {
-    File experimental_fasta
-    File spikein_merged_fasta
-    File rdna_fasta
+    File? experimental_fasta
+    File? spikein_merged_fasta
+    File? rdna_fasta
+    File? experimental_index_tar
+    File? spikein_index_tar
+    File? rdna_index_tar
     String spikein_chrom_prefix
+    String? experimental_index_prefix
+    String? spikein_index_prefix
+    String? rdna_index_prefix
 }
 ```
 
-- `experimental_fasta` — experimental organism's genome FASTA
-- `spikein_merged_fasta` — experimental + spike-in genomes concatenated, with a prefix on spike-in contigs
-- `rdna_fasta` — rRNA reference for rRNA depletion (typically the host's 45S precursor)
-- `spikein_chrom_prefix` — prefix used on spike-in contig names in the merged FASTA
+For each of the three references, provide **either** the FASTA (the pipeline builds the bowtie2 index) **or** a prebuilt index tarball (the build is skipped, saving time on repeat runs). The choices are independent, so you can mix built and prebuilt references.
+
+Providing the FASTAs is recommended: the pipeline builds each index from scratch with a known prefix and layout, which avoids the version and naming mismatches a prebuilt tarball can introduce. Reach for the tarball inputs when build time is a real concern and you already have indices in hand.
+
+- `experimental_fasta`/`experimental_index_tar`: experimental organism's genome (e.g., dm6 for Drosophila S2 cells)
+- `spikein_merged_fasta`/`spikein_index_tar`: experimental + spike-in genomes concatenated, with a prefix on spike-in contigs
+- `rdna_fasta`/`rdna_index_tar`: rRNA reference for rRNA depletion (typically the host's 45S precursor)
+- `spikein_chrom_prefix`: prefix used on spike-in contig names in the merged FASTA
+- `experimental_index_prefix`/`spikein_index_prefix`/`rdna_index_prefix`: optional. The name prefix of the index files inside each tarball, defaulting to `experimental`, `spikein`, and `rdna`. A tarball must contain a `bowtie2_index/` directory holding files named `<prefix>.*`, exactly as produced by `ww-bowtie2.bowtie2_build`. Set these only if your prebuilt tarball uses different names.
 
 ## Output Files
 
