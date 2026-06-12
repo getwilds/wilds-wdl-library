@@ -49,7 +49,8 @@ workflow proseq {
   }
 
   parameter_meta {
-    samples: "List of paired-end PRO-seq samples (name + R1 + R2)"
+    samples_tsv: "Tab-separated file with columns: name, r1, r2 (header row required). Easy to generate from sequencing-core output with command-line tools. Alternative to providing the samples struct array."
+    samples: "List of paired-end PRO-seq samples (name + R1 + R2). Alternative to samples_tsv; provide exactly one of the two."
     references: "PRO-seq reference set: experimental genome FASTA, spike-in-merged FASTA, rDNA FASTA, and the chromosome-name prefix used to flag spike-in contigs in the merged reference"
     umi_loc: "fastp UMI location. 'per_read', 'read1', 'read2', or '' to disable UMI extraction (default: 'per_read')."
     umi_len: "UMI length in basepairs (default: 6)"
@@ -59,7 +60,9 @@ workflow proseq {
   }
 
   input {
-    Array[ProseqSample] samples
+    # Provide samples either as a TSV file or as the samples struct array directly. Supply exactly one of the two.
+    File? samples_tsv
+    Array[ProseqSample]? samples
     ProseqReferences references
     String umi_loc = "per_read"
     Int umi_len = 6
@@ -67,6 +70,26 @@ workflow proseq {
     Int align_cpu = 4
     Int align_memory_gb = 8
   }
+
+  # Parse the samples TSV (header row: name, r1, r2) when provided.
+  Array[Array[String]] tsv_rows = if defined(samples_tsv) then read_tsv(select_first([samples_tsv])) else []
+
+  # Build structs from each TSV data row, skipping the header.
+  if (defined(samples_tsv)) {
+    scatter (row_idx in range(length(tsv_rows) - 1)) {
+      Int data_idx = row_idx + 1
+      ProseqSample tsv_sample = object {
+        name: tsv_rows[data_idx][0],
+        r1: tsv_rows[data_idx][1],
+        r2: tsv_rows[data_idx][2]
+      }
+    }
+  }
+
+  # Normalize both input methods into the single list the scatter consumes.
+  Array[ProseqSample] all_samples = if defined(samples_tsv)
+    then select_first([tsv_sample])
+    else select_first([samples])
 
   # Build the three bowtie2 indices once, in parallel, before the per-sample scatter.
   call bowtie2_tasks.bowtie2_build as build_experimental { input:
@@ -88,7 +111,7 @@ workflow proseq {
       memory_gb = align_memory_gb
   }
 
-  scatter (sample in samples) {
+  scatter (sample in all_samples) {
     # Step 1 — UMI-aware adapter trimming. fastp moves the UMI from the read sequence
     # into the read name (separated by ':'), the format umi_tools dedup consumes later.
     call fastp_tasks.fastp_paired { input:
