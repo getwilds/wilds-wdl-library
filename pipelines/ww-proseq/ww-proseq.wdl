@@ -14,10 +14,16 @@ struct ProseqSample {
 }
 
 struct ProseqReferences {
-    File experimental_fasta
-    File spikein_merged_fasta
-    File rdna_fasta
+    File? experimental_fasta
+    File? spikein_merged_fasta
+    File? rdna_fasta
+    File? experimental_index_tar
+    File? spikein_index_tar
+    File? rdna_index_tar
     String spikein_chrom_prefix
+    String? experimental_index_prefix
+    String? spikein_index_prefix
+    String? rdna_index_prefix
 }
 
 workflow proseq {
@@ -51,7 +57,7 @@ workflow proseq {
   parameter_meta {
     samples_tsv: "Tab-separated file with columns: name, r1, r2 (header row required). Easy to generate from sequencing-core output with command-line tools. Alternative to providing the samples struct array."
     samples: "List of paired-end PRO-seq samples (name + R1 + R2). Alternative to samples_tsv; provide exactly one of the two."
-    references: "PRO-seq reference set: experimental genome FASTA, spike-in-merged FASTA, rDNA FASTA, and the chromosome-name prefix used to flag spike-in contigs in the merged reference"
+    references: "PRO-seq reference set. For each reference, provide a FASTA to index or a prebuilt bowtie2 tarball to skip the build. Also holds the spike-in contig prefix and per-index name prefixes."
     umi_loc: "fastp UMI location. 'per_read', 'read1', 'read2', or '' to disable UMI extraction (default: 'per_read')."
     umi_len: "UMI length in basepairs (default: 6)"
     mapq_threshold: "Minimum MAPQ score for retained alignments"
@@ -91,25 +97,41 @@ workflow proseq {
     then select_first([tsv_sample])
     else select_first([samples])
 
-  # Build the three bowtie2 indices once, in parallel, before the per-sample scatter.
-  call bowtie2_tasks.bowtie2_build as build_experimental { input:
-      reference_fasta = references.experimental_fasta,
-      index_prefix = "experimental",
-      cpu_cores = align_cpu,
-      memory_gb = align_memory_gb
+  # Index name prefixes default to the reference type when not specified.
+  String experimental_prefix = select_first([references.experimental_index_prefix, "experimental"])
+  String spikein_prefix = select_first([references.spikein_index_prefix, "spikein"])
+  String rdna_prefix = select_first([references.rdna_index_prefix, "rdna"])
+
+  # Build each bowtie2 index only when a prebuilt tarball wasn't supplied.
+  if (!defined(references.experimental_index_tar)) {
+    call bowtie2_tasks.bowtie2_build as build_experimental { input:
+        reference_fasta = select_first([references.experimental_fasta]),
+        index_prefix = experimental_prefix,
+        cpu_cores = align_cpu,
+        memory_gb = align_memory_gb
+    }
   }
-  call bowtie2_tasks.bowtie2_build as build_spikein { input:
-      reference_fasta = references.spikein_merged_fasta,
-      index_prefix = "spikein",
-      cpu_cores = align_cpu,
-      memory_gb = align_memory_gb
+  if (!defined(references.spikein_index_tar)) {
+    call bowtie2_tasks.bowtie2_build as build_spikein { input:
+        reference_fasta = select_first([references.spikein_merged_fasta]),
+        index_prefix = spikein_prefix,
+        cpu_cores = align_cpu,
+        memory_gb = align_memory_gb
+    }
   }
-  call bowtie2_tasks.bowtie2_build as build_rdna { input:
-      reference_fasta = references.rdna_fasta,
-      index_prefix = "rdna",
-      cpu_cores = align_cpu,
-      memory_gb = align_memory_gb
+  if (!defined(references.rdna_index_tar)) {
+    call bowtie2_tasks.bowtie2_build as build_rdna { input:
+        reference_fasta = select_first([references.rdna_fasta]),
+        index_prefix = rdna_prefix,
+        cpu_cores = align_cpu,
+        memory_gb = align_memory_gb
+    }
   }
+
+  # Use the prebuilt tarball when given, otherwise the one just built.
+  File experimental_index_tar = select_first([references.experimental_index_tar, build_experimental.bowtie2_index_tar])
+  File spikein_index_tar = select_first([references.spikein_index_tar, build_spikein.bowtie2_index_tar])
+  File rdna_index_tar = select_first([references.rdna_index_tar, build_rdna.bowtie2_index_tar])
 
   scatter (sample in all_samples) {
     # Step 1 — UMI-aware adapter trimming. fastp moves the UMI from the read sequence
@@ -125,8 +147,8 @@ workflow proseq {
     # Step 2 — rRNA depletion. Align to the rDNA reference; reads that *fail* to align
     # are passed to subsequent alignment steps. The mapped BAM is discarded.
     call bowtie2_tasks.bowtie2_align as deplete_rrna { input:
-        bowtie2_index_tar = build_rdna.bowtie2_index_tar,
-        index_prefix = "rdna",
+        bowtie2_index_tar = rdna_index_tar,
+        index_prefix = rdna_prefix,
         reads = fastp_paired.r1_trimmed,
         mates = fastp_paired.r2_trimmed,
         name = sample.name + ".rrna",
@@ -140,8 +162,8 @@ workflow proseq {
     # experimental+spike-in reference, then keeps only proper pairs above the MAPQ
     # threshold. Concordance flags match the original PROseq_alignment.sh script.
     call bowtie2_tasks.bowtie2_align as align_spikein { input:
-        bowtie2_index_tar = build_spikein.bowtie2_index_tar,
-        index_prefix = "spikein",
+        bowtie2_index_tar = spikein_index_tar,
+        index_prefix = spikein_prefix,
         reads = select_first([deplete_rrna.unaligned_r1]),
         mates = select_first([deplete_rrna.unaligned_r2]),
         name = sample.name + ".spikein_unfiltered",
@@ -163,8 +185,8 @@ workflow proseq {
 
     # Step 4 — Experimental genome alignment with proper-pair + MAPQ filter.
     call bowtie2_tasks.bowtie2_align as align_experimental { input:
-        bowtie2_index_tar = build_experimental.bowtie2_index_tar,
-        index_prefix = "experimental",
+        bowtie2_index_tar = experimental_index_tar,
+        index_prefix = experimental_prefix,
         reads = select_first([deplete_rrna.unaligned_r1]),
         mates = select_first([deplete_rrna.unaligned_r2]),
         name = sample.name + ".experimental",
