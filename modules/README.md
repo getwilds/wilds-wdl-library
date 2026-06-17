@@ -106,24 +106,50 @@ In anticipation of the proposed WDL v1.4 [module manifest spec](https://github.c
 
 ### **Importing Tasks**
 
-Modules are designed to be imported into other workflows:
+Modules are designed to be imported into other workflows. There are two ways to reference a module, and the right choice depends on how you plan to run the workflow.
+
+**Option 1: GitHub URL imports**
 
 ```wdl
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-star/ww-star.wdl" as star_tasks
 
 workflow my_pipeline {
-  call star_tasks.build_star_index { 
-    input: reference_fasta = my_fasta 
+  call star_tasks.build_star_index {
+    input: reference_fasta = my_fasta
   }
 }
 ```
 
-We recommend using GitHub URLs when importing WILDS WDL modules for a few reasons:
+URL imports are convenient for plug-and-play usage:
 
 - **No local cloning required**: Use modules directly without downloading the repository
-- **Version control**: Pin to specific commits or tags for reproducibility
+- **Version control**: Pin to a specific commit or tag for reproducibility (prefer a commit SHA over `refs/heads/main`, which is a moving target)
 - **Easy updates**: Switch between versions by changing the URL
 - **Modular usage**: Import only the modules you need
+
+The tradeoff is that the imported code is fetched from the network at runtime with no integrity check, and some executors (for example, AWS HealthOmics) block remote imports for exactly this reason. See [issue #364](https://github.com/getwilds/wilds-wdl-library/issues/364) for the discussion.
+
+**Option 2: Relative path imports**
+
+```wdl
+import "../ww-star/ww-star.wdl" as star_tasks
+
+workflow my_pipeline {
+  call star_tasks.build_star_index {
+    input: reference_fasta = my_fasta
+  }
+}
+```
+
+Relative imports keep the entire workflow self-contained and inspectable, with nothing fetched at runtime:
+
+- **No runtime fetch**: Every line of code that runs travels with the workflow
+- **Executor compatibility**: Works on executors that block remote imports, such as AWS HealthOmics
+- **Supply-chain safety**: Removes the risk of pulling unverified code from a URL at execution time
+
+The tradeoff is that the surrounding repository layout (`modules/` alongside `pipelines/`) must be present on disk, so you need a clone of the library (or a release bundle) rather than a single downloaded file. Relative paths resolve against the importing file's own location, so the path depends on where the importing file sits relative to the module.
+
+> **Note:** Relative path imports are currently being piloted in the `ww-bwa-gatk` pipeline (see [issue #364](https://github.com/getwilds/wilds-wdl-library/issues/364)). The rest of the library still uses URL imports. Both approaches are valid; pick the one that matches your execution environment.
 
 ### **Running Test Workflows**
 
