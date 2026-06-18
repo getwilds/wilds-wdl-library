@@ -29,6 +29,7 @@ task bowtie_build {
     index_prefix: "Prefix for the Bowtie index files"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -36,6 +37,7 @@ task bowtie_build {
     String index_prefix = "bowtie_index"
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/bowtie:1.3.1"
   }
 
   command <<<
@@ -60,7 +62,7 @@ task bowtie_build {
   }
 
   runtime {
-    docker: "getwilds/bowtie:1.3.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -95,6 +97,7 @@ task bowtie_align {
     mates: "Optional FASTQ file for reverse (R2) reads for paired-end alignment"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -105,6 +108,7 @@ task bowtie_align {
     File? mates
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/bowtie:1.3.1"
   }
 
   command <<<
@@ -154,7 +158,7 @@ task bowtie_align {
   }
 
   runtime {
-    docker: "getwilds/bowtie:1.3.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

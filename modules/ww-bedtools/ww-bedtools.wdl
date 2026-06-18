@@ -31,6 +31,7 @@ task coverage {
     sample_name: "Name of the sample provided for output files"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -39,6 +40,7 @@ task coverage {
     String sample_name
     Int cpu_cores = 2
     Int memory_gb = 16
+    String docker_image = "getwilds/bedtools:2.31.1"
   }
 
   command <<<
@@ -58,7 +60,7 @@ task coverage {
   }
 
   runtime {
-    docker: "getwilds/bedtools:2.31.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -92,6 +94,7 @@ task intersect {
     flags: "BEDTools intersect command flags"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -101,6 +104,7 @@ task intersect {
     String flags = "-header -wo"
     Int cpu_cores = 2
     Int memory_gb = 16
+    String docker_image = "getwilds/bedtools:2.31.1"
   }
 
   command <<<
@@ -114,7 +118,7 @@ task intersect {
   }
 
   runtime {
-    docker: "getwilds/bedtools:2.31.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -152,6 +156,7 @@ task makewindows {
     tmp_dir: "Path to a temporary directory"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -165,6 +170,7 @@ task makewindows {
     String tmp_dir
     Int cpu_cores = 10
     Int memory_gb = 24
+    String docker_image = "getwilds/bedtools:2.31.1"
   }
 
  command <<<
@@ -193,7 +199,7 @@ task makewindows {
   }
 
   runtime {
-    docker: "getwilds/bedtools:2.31.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

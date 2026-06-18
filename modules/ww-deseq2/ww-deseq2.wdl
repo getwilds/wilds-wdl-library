@@ -33,6 +33,7 @@ task combine_count_matrices {
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
     count_column: "Column number in STAR count files to extract (2=unstranded, 3=forward strand, 4=reverse strand)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -41,6 +42,7 @@ task combine_count_matrices {
     Array[String] sample_conditions
     Int memory_gb = 4
     Int cpu_cores = 1
+    String docker_image = "getwilds/python-utils:0.1.0"
     Int count_column = 2
         # Column to extract from ReadsPerGene.out.tab files:
         # 2 = unstranded counts
@@ -68,7 +70,7 @@ task combine_count_matrices {
   }
 
   runtime {
-    docker: "getwilds/python-utils:0.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -121,6 +123,7 @@ task run_deseq2 {
     shrinkage_method: "LFC shrinkage method: apeglm, ashr, or normal (empty = no shrinkage)"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -134,6 +137,7 @@ task run_deseq2 {
     String shrinkage_method = ""
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/deseq2:1.40.2"
   }
 
   command <<<
@@ -167,7 +171,7 @@ task run_deseq2 {
   }
 
   runtime {
-    docker: "getwilds/deseq2:1.40.2"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -199,6 +203,7 @@ task compile_deseq2_results {
     output_name: "Name for the output CSV file"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -208,6 +213,7 @@ task compile_deseq2_results {
     String output_name = "deseq2_compiled_results.csv"
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/python-utils:0.1.0"
   }
 
   command <<<
@@ -228,7 +234,7 @@ task compile_deseq2_results {
   }
 
   runtime {
-    docker: "getwilds/python-utils:0.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }

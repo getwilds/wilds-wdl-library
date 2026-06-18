@@ -46,6 +46,7 @@ task run_clair3 {
     gpu_enabled: "Enable GPU acceleration for Clair3 inference (requests GPU in runtime)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -64,6 +65,7 @@ task run_clair3 {
     Boolean gpu_enabled = false
     Int cpu_cores = 8
     Int memory_gb = 32
+    String docker_image = "getwilds/clair3:2.0.0"
   }
 
   command <<<
@@ -108,7 +110,7 @@ task run_clair3 {
   }
 
   runtime {
-    docker: "getwilds/clair3:2.0.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
     gpus: if gpu_enabled then "1" else "0"

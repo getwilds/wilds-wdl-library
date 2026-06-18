@@ -30,11 +30,13 @@ task download_weights {
   parameter_meta {
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/colabfold:1.5.5"
   }
 
   command <<<
@@ -61,7 +63,7 @@ task download_weights {
   }
 
   runtime {
-    docker: "getwilds/colabfold:1.5.5"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -103,6 +105,7 @@ task colabfold_predict {
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
     gpu_enabled: "Enable GPU for prediction (controls JAX CPU/GPU mode and PROOF GPU allocation)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -121,6 +124,7 @@ task colabfold_predict {
     Int cpu_cores = 8
     Int memory_gb = 48
     Boolean gpu_enabled = true
+    String docker_image = "getwilds/colabfold:1.5.5"
   }
 
   command <<<
@@ -163,7 +167,7 @@ task colabfold_predict {
   }
 
   runtime {
-    docker: "getwilds/colabfold:1.5.5"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
     gpus: if gpu_enabled then "1" else "0"
