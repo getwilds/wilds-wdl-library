@@ -31,6 +31,7 @@ task build_index {
     genome_sa_index_nbases: "Length (bases) of the SA pre-indexing string, typically between 10-15 (scales with genome size)"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -40,6 +41,7 @@ task build_index {
     Int genome_sa_index_nbases = 14
     Int memory_gb = 64
     Int cpu_cores = 8
+    String docker_image = "getwilds/star:2.7.6a"
   }
 
   command <<<
@@ -69,7 +71,7 @@ task build_index {
   }
 
   runtime {
-    docker: "getwilds/star:2.7.6a"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -111,6 +113,7 @@ task align_two_pass {
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Total number of CPU cores allocated for the task"
     star_threads: "Number of threads to use for STAR alignment (subset of cpu_cores)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -123,6 +126,7 @@ task align_two_pass {
     Int memory_gb = 62
     Int cpu_cores = 8
     Int star_threads = 6
+    String docker_image = "getwilds/star:2.7.6a"
   }
 
   command <<<
@@ -177,7 +181,7 @@ task align_two_pass {
   }
 
   runtime {
-    docker: "getwilds/star:2.7.6a"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }

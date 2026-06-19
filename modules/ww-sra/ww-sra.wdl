@@ -32,6 +32,7 @@ task fastqdump {
     ncpu: "number of cpus to use during download"
     max_reads: "Optional maximum number of reads to download (for testing/downsampling). If not specified, downloads all reads."
     ngc_file: "Optional NGC repository key file for downloading controlled-access dbGaP data. Must be obtained through an approved dbGaP project."
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -39,6 +40,7 @@ task fastqdump {
     Int ncpu = 8
     Int? max_reads
     File? ngc_file
+    String docker_image = "getwilds/sra-tools:3.1.1"
   }
 
   command <<<
@@ -183,7 +185,7 @@ task fastqdump {
 
   runtime {
     memory: 2 * ncpu + " GB"
-    docker: "getwilds/sra-tools:3.1.1"
+    docker: docker_image
     cpu: ncpu
   }
 }
