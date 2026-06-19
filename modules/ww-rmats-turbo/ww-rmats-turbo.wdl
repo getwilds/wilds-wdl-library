@@ -47,6 +47,7 @@ task rmats {
     max_exon_length: "Maximum exon length for novel splice site detection (default: 500)"
     cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
     memory_gb: "Memory allocated for the task in GB (default: 16)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -69,6 +70,7 @@ task rmats {
     Int max_exon_length = 500
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/rmats-turbo:latest"
   }
 
   String variable_read_length_flag = if variable_read_length then "--variable-read-length" else ""
@@ -137,7 +139,7 @@ task rmats {
   }
 
   runtime {
-    docker: "getwilds/rmats-turbo:latest"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -176,6 +178,7 @@ task rmats_prep {
     allow_clipping: "Allow alignments with soft or hard clipping (default: false)"
     cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
     memory_gb: "Memory allocated for the task in GB (default: 16)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -191,6 +194,7 @@ task rmats_prep {
     Boolean allow_clipping = false
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/rmats-turbo:latest"
   }
 
   String variable_read_length_flag = if variable_read_length then "--variable-read-length" else ""
@@ -246,7 +250,7 @@ task rmats_prep {
   }
 
   runtime {
-    docker: "getwilds/rmats-turbo:latest"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -284,6 +288,7 @@ task rmats_post {
     individual_counts: "Output individual count files for each sample (default: false)"
     cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
     memory_gb: "Memory allocated for the task in GB (default: 16)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -298,6 +303,7 @@ task rmats_post {
     Boolean individual_counts = false
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/rmats-turbo:latest"
   }
 
   String stat_off_flag = if stat_off then "--statoff" else ""
@@ -353,7 +359,7 @@ task rmats_post {
   }
 
   runtime {
-    docker: "getwilds/rmats-turbo:latest"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -389,6 +395,7 @@ task rmats_stat {
     cstat: "Cutoff splicing difference for null hypothesis test (default: 0.0001)"
     cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
     memory_gb: "Memory allocated for the task in GB (default: 16)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -401,6 +408,7 @@ task rmats_stat {
     Float cstat = 0.0001
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/rmats-turbo:latest"
   }
 
   String paired_stats_flag = if paired_stats then "--paired-stats" else ""
@@ -455,7 +463,7 @@ task rmats_stat {
   }
 
   runtime {
-    docker: "getwilds/rmats-turbo:latest"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
