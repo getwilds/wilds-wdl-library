@@ -55,10 +55,10 @@ In anticipation of the proposed WDL v1.4 [module manifest spec](https://github.c
 
 ## Available Modules
 
-| Module | Tool | Container | Description |
-|--------|------|-----------|-------------|
+| Module | Tool | Container(s) | Description |
+|--------|------|-------------|-------------|
 | `ww-annotsv` | Structural Variant Annotator | `getwilds/annotsv:3.4.4` | Annotate structural variants with AnnotSV |
-| `ww-annovar` | Variant Annotator | `getwilds/annovar:GRCh38` | Annotate genetic variants with ANNOVAR |
+| `ww-annovar` | Variant Annotator | `getwilds/annovar:<ref_name>` | Annotate genetic variants with ANNOVAR (image tag is the reference build, e.g. hg38) |
 | `ww-aws-sso` | AWS Operations | `getwilds/awscli:2.27.49` | AWS S3 operations with SSO and temporary credential support |
 | `ww-bcftools` | Utilities for Variant Calls | `getwilds/bcftools:1.19` | Call and analyze variants with BCFtools |
 | `ww-bedparse` | Bedparse Format Converter | `getwilds/bedparse:0.2.3` | Convert GTF annotation file to BED12 format using bedparse |
@@ -66,41 +66,50 @@ In anticipation of the proposed WDL v1.4 [module manifest spec](https://github.c
 | `ww-bowtie` | Bowtie Short-Read Aligner | `getwilds/bowtie:1.3.1` | Build Bowtie index and align short reads to a reference genome |
 | `ww-bowtie2` | Bowtie 2 Sequence Aligner | `getwilds/bowtie2:2.5.4` | Build Bowtie 2 index and align sequence reads to a reference genome |
 | `ww-bwa` | BWA Aligner | `getwilds/bwa:0.7.17` | Alignment with the Burrows-Wheeler Aligner |
-| `ww-cellranger` | Cell Ranger Gene Expression | `getwilds/cellranger:10.0.0` | Run cellranger count on gene expression reads from one GEM well |
+| `ww-cellranger` | Cell Ranger Gene Expression | See README | Run cellranger count on gene expression reads from one GEM well (Cell Ranger is not redistributable; build your own image or use an environment module) |
+| `ww-clair3` | Clair3 Variant Caller | `getwilds/clair3:2.0.0` | Deep learning-based germline small variant calling from ONT, PacBio HiFi, and Illumina data |
 | `ww-cnvkit` | CNVkit Copy Number Analysis | `getwilds/cnvkit:0.9.10` | Create CNVkit reference and run copy number analysis on tumor samples |
 | `ww-colabfold` | Protein Structure Predictor | `getwilds/colabfold:1.5.5` | Predict protein structures with ColabFold (AlphaFold2 + MMseqs2) |
-| `ww-consensus` | Consensus Variant Caller | `getwilds/consensus:0.1.1` | Multi-caller consensus variant integration |
+| `ww-consensus` | Consensus Variant Caller | `rocker/tidyverse:4.4.2` | Multi-caller consensus variant integration |
 | `ww-deeptools` | deepTools Coverage and Visualization | `getwilds/deeptools:3.5.6` | Analyze and visualize high-throughput sequencing data including coverage tracks and heatmaps |
 | `ww-deepvariant` | DeepVariant Variant Caller | `google/deepvariant:1.10.0` | Call germline variants from aligned reads using deep learning |
 | `ww-delly` | Structural Variant Caller | `getwilds/delly:1.2.9` | Call structural variants with Delly |
 | `ww-deseq2` | DESeq2 Differential Expression | `getwilds/deseq2:1.40.2` | Differential expression analysis using DESeq2 |
 | `ww-diamond` | DIAMOND Protein Aligner | `getwilds/diamond:2.1.16` | Create DIAMOND database and align protein sequences using BLASTP |
 | `ww-ena` | ENA Data Downloader | `getwilds/ena-tools:2.1.1` | Download sequencing data from the European Nucleotide Archive (ENA) |
+| `ww-esmfold` | ESMFold Structure Predictor | `getwilds/esmfold:2.0.0` | Fast single-sequence protein structure prediction using the ESM-2 language model |
 | `ww-fastp` | Fastp Quality Trimmer | `getwilds/fastp:1.1.0` | Quality filtering, adapter trimming, and QC reporting for FASTQ files |
 | `ww-fastqc` | FastQC Quality Control | `getwilds/fastqc:0.12.1` | Run FastQC quality control analysis on FASTQ files |
 | `ww-gatk` | GATK Variant Calling | `getwilds/gatk:4.6.1.0` | Variant calling and processing with GATK |
 | `ww-gdc` | GDC Data Downloader | `getwilds/gdc-client:2.3.0` | Download files from GDC using manifest files or file UUIDs |
-| `ww-glimpse2` | GLIMPSE2 Imputation | `getwilds/glimpse2:2.0.1` | Low-coverage whole genome sequencing imputation including reference panel preparation and phasing |
+| `ww-gffread` | GFFRead Annotation Converter | `getwilds/gffread:0.12.7` | Normalize and convert GTF/GFF3 annotation files for use in RNA-seq pipelines |
+| `ww-glimpse2` | GLIMPSE2 Imputation | `getwilds/glimpse2:2.0.1-infofix` | Low-coverage whole genome sequencing imputation including reference panel preparation and phasing |
 | `ww-ichorcna` | Tumor Fraction Estimator | `getwilds/ichorcna:0.2.0` | Estimate tumor fraction with ichorCNA |
 | `ww-jcast` | JCAST Alternative Splicing | `getwilds/jcast:0.3.5` | Translate alternative splicing events from rMATS output into protein sequences |
 | `ww-manta` | Structural Variant Caller | `getwilds/manta:1.6.0` | Call structural variants with Manta |
 | `ww-megahit` | MEGAHIT Metagenome Assembler | `getwilds/megahit:1.2.9` | De novo metagenome assembly using MEGAHIT |
+| `ww-multiqc` | MultiQC Report Aggregator | `getwilds/multiqc:1.33` | Aggregate results from multiple bioinformatics tools into a single interactive HTML report |
 | `ww-rmats-turbo` | rMATS-turbo Splicing Analysis | `getwilds/rmats-turbo:4.3.0` | Detect and quantify differential alternative splicing events from RNA-seq data |
 | `ww-rseqc` | RSeQC Quality Control | `getwilds/rseqc:5.0.4` | Run comprehensive quality control metrics on aligned RNA-seq data |
 | `ww-salmon` | Salmon Transcript Quantifier | `getwilds/salmon:1.10.3` | Build Salmon index and quantify transcript expression from RNA-seq reads |
-| `ww-samtools` | Utilities for SAM/BAM/CRAM Files | `getwilds/samtools:1.11` | Work with Sequence Alignment/Map (SAM) format files |
+| `ww-samtools` | Utilities for SAM/BAM/CRAM Files | `getwilds/samtools:1.19` | Work with Sequence Alignment/Map (SAM) format files |
+| `ww-seurat` | Seurat Single-Cell Analyzer | `getwilds/seurat:5.2.1` | Single-cell RNA-seq analysis including QC, normalization, dimensionality reduction, and clustering |
 | `ww-shapemapper` | ShapeMapper RNA Structure | `getwilds/shapemapper:2.3` | Analyze RNA structure probing data and generate reactivity profiles |
 | `ww-sjl` | Solar Jetlag Tile Processor | `getwilds/r-utils:0.1.0` | Calculate sunrise/sunset times for geographic tiles as part of the SJL model pipeline |
-| `ww-smoove` | Structural Variant Caller | `brentp/smoove:latest` | Call structural variants with Smoove |
+| `ww-smoove` | Structural Variant Caller | `getwilds/smoove:0.2.8` | Call structural variants with Smoove |
 | `ww-sourmash` | Sourmash K-mer Sketch | `getwilds/sourmash:4.8.2` | Generate sourmash sketches from BAM or FASTA files for sequence comparison |
 | `ww-spades` | SPAdes Genome Assembler | `getwilds/spades:4.2.0` | De novo metagenomic assembly using metaSPAdes |
 | `ww-sra` | SRA Toolkit | `getwilds/sra-tools:3.1.1` | Download sequencing data from NCBI SRA |
 | `ww-star` | STAR Aligner | `getwilds/star:2.7.6a` | RNA-seq alignment with two-pass methodology |
 | `ww-starling` | STARLING Ensemble Generator | `getwilds/starling:2.0.0a3` | Generate structural ensembles for intrinsically disordered proteins |
 | `ww-strelka` | Strelka Variant Caller | `getwilds/strelka:2.9.10` | Run Strelka germline and somatic variant calling |
-| `ww-testdata` | Test Data Downloader | `getwilds/awscli:2.27.49` | Download reference genomes and test datasets |
-| `ww-tritonnp` | TritonNP Nucleosome Positioning | `python:bullseye` | Nucleosome positioning analysis from cfDNA using FFT-based fragment size analysis |
+| `ww-template` | WILDS WDL Template | `getwilds/bwa:0.7.17` | Canonical example module demonstrating WILDS WDL best practices; copy-paste starting point for new modules |
+| `ww-testdata` | Test Data Downloader | Multiple | Download reference genomes and test datasets (uses awscli, samtools, bcftools, and others) |
+| `ww-trimgalore` | Trim Galore Quality Trimmer | `getwilds/trim-galore:0.6.11` | Adapter and quality trimming for paired-end and single-end FASTQ files using Trim Galore |
+| `ww-tritonnp` | TritonNP Nucleosome Positioning | `getwilds/python-utils:0.1.0` | Nucleosome positioning analysis from cfDNA using FFT-based fragment size analysis |
+| `ww-umi-tools` | UMI-tools UMI Handler | `getwilds/umitools:1.1.6` | Deduplicate reads and handle Unique Molecular Identifiers (UMIs) in NGS data |
 | `ww-varscan` | VarScan Variant Caller | `getwilds/varscan:2.4.6` | Run VarScan somatic and germline variant calling |
+| `ww-viennarna` | ViennaRNA Structure Predictor | `getwilds/viennarna:2.7.2` | RNA secondary structure prediction and analysis including folding, suboptimal structures, and cofold |
 
 ## Using Modules
 

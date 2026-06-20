@@ -20,7 +20,7 @@ pipelines/ww-pipeline-name/
 - Use `ww-template` as the canonical example
 - Every task needs `meta` (author, email, description, url, outputs) and `parameter_meta` blocks
 - Command blocks: start with `set -eo pipefail`, use `<<<...>>>` heredoc syntax
-- Docker images: always from `getwilds/` with exact version pins (never `latest`)
+- Docker images: always from `getwilds/` with exact version pins (never `latest`); declared as `String docker_image = "getwilds/tool:version"` in the `input` block and referenced via `docker: docker_image` in `runtime`
 - Resource params: `cpu_cores` and `memory_gb` with sensible defaults
 - Imports use GitHub raw URLs: `https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-*/ww-*.wdl`
 - Modules are self-contained: `ww-<toolname>.wdl` files never import other modules. Cross-module composition happens only in `testrun.wdl` (for test fixtures) and in pipelines. If a task needs another tool's output, add it to the existing module rather than introducing a cross-module import in the source WDL.
