@@ -39,6 +39,7 @@ Translates alternative splicing events from rMATS output into protein sequences 
 | `splice_types` | String | No | `""` | Comma-separated splice types to process (MXE,RI,SE,A3SS,A5SS) |
 | `cpu_cores` | Int | No | `2` | Number of CPU cores allocated |
 | `memory_gb` | Int | No | `8` | Memory allocated in GB |
+| `docker_image` | String | No | `getwilds/jcast:0.3.5` | Docker image to use for this task |
 
 **Outputs:**
 - `output_fasta` (File): Combined FASTA file containing all translated protein sequences from alternative splicing events

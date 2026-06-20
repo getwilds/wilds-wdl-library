@@ -32,6 +32,7 @@ Downloads a single file from an S3 bucket with support for both public and priva
 - `aws_credentials_file` (File?): Path to AWS credentials file (optional)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 1)
 - `memory_gb` (Int): Memory allocation in GB (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs:**
 - `downloaded_file` (File): Downloaded file from S3
@@ -47,6 +48,7 @@ Uploads a single file to an S3 bucket (requires AWS credentials).
 - `aws_credentials_file` (File?): Path to AWS credentials file (optional)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 1)
 - `memory_gb` (Int): Memory allocation in GB (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs:**
 - `s3_uri` (String): S3 URI of the uploaded file
@@ -62,6 +64,7 @@ Lists contents of an S3 bucket or prefix with comprehensive configuration option
 - `human_readable` (Boolean): Use human-readable file sizes (default: true)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 1)
 - `memory_gb` (Int): Memory allocation in GB (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs:**
 - `file_list` (File): Text file containing list of S3 objects

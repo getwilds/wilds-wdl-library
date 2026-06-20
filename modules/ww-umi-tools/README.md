@@ -35,6 +35,7 @@ Deduplicates a coordinate-sorted, indexed BAM using `umi_tools dedup` and re-ind
 - `extra_args` (String, default=`""`): Additional flags passed verbatim to `umi_tools dedup`
 - `cpu_cores` (Int, default=2): CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String, default=`"getwilds/umitools:1.1.6"`): Docker image to use for this task
 
 **Outputs:**
 - `deduped_bam` (File): Deduplicated BAM file

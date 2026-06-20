@@ -23,6 +23,20 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 
 - **gtf2bed**: Converts GTF annotation files to BED12 format
 
+### `gtf2bed`
+
+Converts GTF annotation files to BED12 format.
+
+**Inputs:**
+
+- `gtf_file` (File): GTF annotation file to convert
+- `extra_fields` (String?): Comma-separated list of extra GTF fields to add after column 12 (e.g., "gene_id,gene_name")
+- `filter_key` (String?): GTF extra field on which to apply filtering
+- `filter_type` (String?): Comma-separated list of filterKey field values to retain
+- `cpu_cores` (Int): Number of CPU cores (default: 1)
+- `memory_gb` (Int): Memory allocation in GB (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bedparse:0.2.3`)
+
 ## Usage
 
 ### Requirements
@@ -59,6 +73,7 @@ workflow convert_gtf {
 | `filter_type` | Comma-separated list of filterKey field values to retain | String | No | - |
 | `cpu_cores` | Number of CPU cores | Int | No | 1 |
 | `memory_gb` | Memory allocation in GB | Int | No | 2 |
+| `docker_image` | Docker image to use for this task | String | No | `getwilds/bedparse:0.2.3` |
 
 ### Advanced Usage with Filtering
 

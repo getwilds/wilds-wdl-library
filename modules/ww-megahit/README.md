@@ -27,6 +27,7 @@ Performs de novo metagenomic assembly using MEGAHIT.
 - `sample_name` (String): Sample name for output file naming (default: basename of input FASTQ)
 - `cpu_cores` (Int): Number of CPU cores allocated for the task (default: 2)
 - `memory_gb` (Int): Memory allocated for the task in GB (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/megahit:1.2.9`)
 
 **Outputs:**
 - `contigs` (File): Assembled contigs in compressed FASTA format (`.contigs.fasta.gz`)

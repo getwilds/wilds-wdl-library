@@ -27,6 +27,7 @@ Annotates variants using Annovar with customizable protocols and operations.
 - `annovar_operation` (String): Comma-separated list of operations corresponding to protocols
 - `cpu_cores` (Int, optional): Number of CPU cores to allocate (default: 2)
 - `memory_gb` (Int, optional): Memory in GB to allocate (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/annovar:~{ref_name}`)
 
 **Outputs**:
 - `annotated_vcf` (File): VCF file with Annovar annotations added

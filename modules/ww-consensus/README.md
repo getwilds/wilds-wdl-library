@@ -31,6 +31,7 @@ Generates consensus variant calls by combining annotated variant tables from thr
 - `base_file_name` (String): Base name for output files
 - `cpu_cores` (Int): Number of CPU cores to use (default: 1)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `rocker/tidyverse:4.4.2`)
 
 **Outputs:**
 - `consensus_tsv` (File): Tab-separated file containing consensus variant calls with evidence from all callers

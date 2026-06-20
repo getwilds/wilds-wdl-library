@@ -44,7 +44,7 @@ task consensus_processing {
     String base_file_name
     Int cpu_cores = 1
     Int memory_gb = 8
-    String docker_image = "rocker/tidyverse:4"
+    String docker_image = "rocker/tidyverse:4.4.2"
   }
 
   command <<<

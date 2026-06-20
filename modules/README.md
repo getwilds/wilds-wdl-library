@@ -85,7 +85,7 @@ In anticipation of the proposed WDL v1.4 [module manifest spec](https://github.c
 | `ww-jcast` | JCAST Alternative Splicing | `getwilds/jcast:0.3.5` | Translate alternative splicing events from rMATS output into protein sequences |
 | `ww-manta` | Structural Variant Caller | `getwilds/manta:1.6.0` | Call structural variants with Manta |
 | `ww-megahit` | MEGAHIT Metagenome Assembler | `getwilds/megahit:1.2.9` | De novo metagenome assembly using MEGAHIT |
-| `ww-rmats-turbo` | rMATS-turbo Splicing Analysis | `getwilds/rmats-turbo:latest` | Detect and quantify differential alternative splicing events from RNA-seq data |
+| `ww-rmats-turbo` | rMATS-turbo Splicing Analysis | `getwilds/rmats-turbo:4.3.0` | Detect and quantify differential alternative splicing events from RNA-seq data |
 | `ww-rseqc` | RSeQC Quality Control | `getwilds/rseqc:5.0.4` | Run comprehensive quality control metrics on aligned RNA-seq data |
 | `ww-salmon` | Salmon Transcript Quantifier | `getwilds/salmon:1.10.3` | Build Salmon index and quantify transcript expression from RNA-seq reads |
 | `ww-samtools` | Utilities for SAM/BAM/CRAM Files | `getwilds/samtools:1.11` | Work with Sequence Alignment/Map (SAM) format files |

@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `merge_fastas_with_prefix`, `download_rrna_reference`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `inject_synthetic_umis`, `download_ichor_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_10x_h5_data`, `create_diamond_data`, `create_test_protein_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`, `download_pao1_ref`
+- **Tasks**: `download_ref_data`, `merge_fastas_with_prefix`, `download_rrna_reference`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `inject_synthetic_umis`, `download_ichor_data`, `download_tritonnp_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_10x_h5_data`, `create_diamond_data`, `create_test_protein_fasta`, `create_test_idp_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`, `download_pao1_ref`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -250,6 +250,7 @@ Downloads a UCSC reference chromosome FASTA + GTF + BED + samtools index/dict fo
 - `output_name` (String, optional): Name for output files (default: uses chromo name)
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.11`)
 
 **Note**: In the test workflow, `chromo` is hardcoded to "chr1", `version` to "hg38", and `region` to "1-10000000" for faster testing.
 
@@ -271,6 +272,7 @@ Builds a merged FASTA by concatenating two input FASTAs and prepending a configu
 - `output_name` (String): Output filename prefix (without the `.fa` extension)
 - `cpu_cores` (Int, default=1): CPU allocation
 - `memory_gb` (Int, default=2): Memory allocation in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.11`)
 
 **Outputs**:
 - `merged_fasta` (File): Merged FASTA — first_fasta contigs unchanged, second_fasta contigs renamed with the prefix
@@ -284,6 +286,7 @@ Downloads the human 45S rRNA precursor (NCBI accession `NR_046235.3`, ~13 kb) fr
 - `output_name` (String, default="human_45S_rRNA"): Output filename prefix (without the `.fa` extension)
 - `cpu_cores` (Int, default=1): CPU allocation
 - `memory_gb` (Int, default=2): Memory allocation in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.11`)
 
 **Outputs**:
 - `fasta` (File): Human 45S rRNA precursor FASTA
@@ -297,6 +300,7 @@ Downloads small example FASTQ files for testing. Renames to Illumina naming conv
 - `gzip_output` (Boolean): Compress output files with gzip (default: false)
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs**:
 - `r1_fastq` (File): R1 FASTQ file named `<prefix>_S1_L001_R1_001.fastq[.gz]`
@@ -320,6 +324,7 @@ Downloads protein-coding transcriptome from GENCODE for RNA-seq quantification t
 **Inputs**:
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs**:
 - `transcriptome_fasta` (File): Protein-coding transcriptome FASTA file (~150MB uncompressed, ~20,000 transcripts from GENCODE release 47)
@@ -328,7 +333,8 @@ Downloads protein-coding transcriptome from GENCODE for RNA-seq quantification t
 
 Creates a test GDC manifest file containing small open-access files for testing the ww-gdc module. This task generates a properly formatted tab-separated manifest file with file UUIDs, filenames, MD5 checksums, file sizes, and release status.
 
-**Inputs**: None
+**Inputs**:
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs**:
 - `manifest` (File): GDC manifest file containing 3 small open-access TCGA files (total ~210KB)
@@ -342,6 +348,7 @@ Downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-
 **Inputs**:
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.11`)
 
 **Outputs**:
 - `target_fa` (File): Target RNA FASTA file (TPP riboswitch sequence, ~200 nucleotides)
@@ -359,6 +366,7 @@ Downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-
 - `r2_fq` (File): R2 FASTQ file for paired-end sequencing
 - `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs**:
 - `inter_fastq` (File): Interleaved FASTQ file
@@ -370,6 +378,7 @@ Downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-
 - `chromosome` (String): Chromosome to extract reads for (default: "chr1")
 - `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs**:
 - `cram` (File): Example CRAM alignment file filtered to the specified chromosome
@@ -381,6 +390,7 @@ Downloads the official ShapeMapper example data (TPP riboswitch) from the Weeks-
 - `filename` (String): Filename to save the BAM file as (default: "NA12878_chr1.bam")
 - `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs**:
 - `bam` (File): Processed BAM alignment file (chr1 only, primary alignments, 10% subsampled)
@@ -399,6 +409,7 @@ Appends a deterministic synthetic 6-mer UMI to each read name in a BAM, mimickin
 - `umi_separator` (String): Character separating the read ID from the appended UMI in the read name (default: `":"`)
 - `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation in GB (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs**:
 - `umi_bam` (File): Coordinate-sorted BAM with synthetic UMIs appended to read names
@@ -425,12 +436,31 @@ call umi_tools_tasks.dedup { input:
 **Inputs**:
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.11`)
 
 **Outputs**:
 - `wig_gc` (File): GC content in 500kb bins
 - `wig_map` (File): Mappability in 500kb bins
 - `centromeres` (File): Centromere coordinates
 - `panel_of_norm_rds` (File): Panel of normals for normalization
+
+### download_tritonnp_data
+
+Downloads reference and test data for TritonNP analysis, including a WGS test BAM, GC bias estimates, gene annotations, and the full hg19 reference genome.
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.11`)
+
+**Outputs**:
+- `annotation` (File): BED annotation file
+- `plot_list` (File): Genes to plot
+- `bam` (File): WGS test file
+- `bam_index` (File): WGS test file index
+- `bias` (File): GC bias
+- `reference` (File): hg19 reference genome FASTA
+- `reference_index` (File): Index for hg19 reference genome FASTA
 
 ### download_dbsnp_vcf
 
@@ -439,6 +469,7 @@ call umi_tools_tasks.dedup { input:
 - `filter_name` (String): Filename tag for output (default: "hg38")
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bcftools:1.19`)
 
 **Outputs**:
 - `dbsnp_vcf` (File): Filtered and compressed dbSNP VCF file
@@ -450,6 +481,7 @@ call umi_tools_tasks.dedup { input:
 - `filter_name` (String): Filename tag for output (default: "hg38")
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bcftools:1.19`)
 
 **Outputs**:
 - `known_indels_vcf` (File): Filtered and compressed known indels VCF file
@@ -461,6 +493,7 @@ call umi_tools_tasks.dedup { input:
 - `filter_name` (String): Filename tag for output (default: "hg38")
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bcftools:1.19`)
 
 **Outputs**:
 - `gnomad_vcf` (File): Filtered and compressed gnomAD VCF file
@@ -470,6 +503,7 @@ call umi_tools_tasks.dedup { input:
 **Inputs**:
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.11`)
 
 **Outputs**:
 - `test_vcf` (File): Example VCF file for testing structural variant annotation
@@ -485,6 +519,7 @@ Generates DESeq2 test count matrices using the Pasilla Bioconductor dataset. Use
 - `output_prefix` (String): Prefix for output files (default: "pasilla")
 - `memory_gb` (Int): Memory allocation in GB (default: 4)
 - `cpu_cores` (Int): CPU allocation (default: 1)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/deseq2:1.40.2`)
 
 **Outputs**:
 - `individual_count_files` (Array[File]): Individual STAR-format count files for each sample (*.ReadsPerGene.out.tab)
@@ -505,6 +540,7 @@ Extracts and cleans a reference sequence region for saturation mutagenesis analy
 - `replace_n_with` (String): Base to replace N's with (default: "A"). Use empty string to fail if N's are found.
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.11`)
 
 **Outputs**:
 - `clean_fasta` (File): Cleaned reference FASTA file with no ambiguous bases
@@ -539,6 +575,7 @@ Downloads a minimal Cell Ranger reference transcriptome for testing single-cell 
 **Inputs**:
 - `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs**:
 - `ref_tar` (File): Cell Ranger reference transcriptome tarball containing chromosomes 21 and 22
@@ -567,6 +604,7 @@ Downloads a 10X Genomics example filtered feature-barcode matrix in HDF5 format 
 - `sample_name` (String): Output filename prefix (default: "2500_Wistar_Rat_PBMCs_Singleplex")
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs**:
 - `h5_matrix` (File): Filtered feature-barcode matrix in HDF5 format (`<sample_name>_filtered_feature_bc_matrix.h5`)
@@ -592,6 +630,7 @@ Downloads E. coli Swiss-Prot reference proteome and creates a small subset for t
 **Inputs**:
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs**:
 - `reference` (File): Full E. coli reference proteome FASTA file (ecoli_proteins.fasta, ~4,400 protein sequences)
@@ -623,6 +662,7 @@ Creates a minimal protein FASTA file with a short peptide for testing structure 
 **Inputs**:
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `ubuntu:22.04`)
 
 **Outputs**:
 - `test_fasta` (File): FASTA file containing a short test protein sequence (Trp-cage miniprotein, 20 residues)
@@ -638,6 +678,20 @@ call colabfold_tasks.colabfold_predict {
 }
 ```
 
+### create_test_idp_fasta
+
+Creates a minimal multi-sequence protein FASTA file containing four short, well-characterized intrinsically disordered protein (IDP) regions for testing ensemble generation tools.
+
+**Use Case**: When testing tools that model intrinsically disordered regions (e.g., ensemble generation), you need short, recognizable disordered sequences that run quickly. The included regions (p53 N-terminal transactivation domain, ASH1 IDR, NUPR1, and the p27Kip1 kinase inhibitory domain) are classic IDP examples suitable for CI testing.
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `ubuntu:22.04`)
+
+**Outputs**:
+- `test_fasta` (File): FASTA file containing four short intrinsically disordered protein sequences
+
 ### download_glimpse2_genetic_map
 
 Downloads genetic map files for GLIMPSE2 imputation from the official GLIMPSE repository.
@@ -649,6 +703,7 @@ Downloads genetic map files for GLIMPSE2 imputation from the official GLIMPSE re
 - `genome_build` (String): Genome build version, "b37" or "b38" (default: "b38")
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
 
 **Outputs**:
 - `genetic_map` (File): Compressed genetic map file for the specified chromosome
@@ -667,6 +722,7 @@ Downloads and prepares a 1000 Genomes reference panel subset for GLIMPSE2 testin
 - `exclude_samples` (String): Comma-separated list of samples to exclude, useful for leave-one-out validation (default: "NA12878")
 - `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bcftools:1.19`)
 
 **Outputs**:
 - `reference_vcf` (File): Reference panel BCF file for imputation
@@ -688,6 +744,7 @@ Downloads low-coverage sequencing data from 1000 Genomes and extracts a VCF with
 - `sample_name` (String): Sample to extract from 1000 Genomes (default: "NA12878")
 - `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bcftools:1.19`)
 
 **Outputs**:
 - `gl_vcf` (File): VCF file with genotype likelihoods (GL field) for imputation
@@ -720,6 +777,7 @@ Downloads example rMATS output files and Ensembl reference data for JCAST altern
 **Inputs**:
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.11`)
 
 **Outputs**:
 - `rmats_output` (File): Tarball containing rMATS output files (SE.MATS.JC.txt, MXE.MATS.JC.txt, RI.MATS.JC.txt, A3SS.MATS.JC.txt, A5SS.MATS.JC.txt)
@@ -754,6 +812,7 @@ Downloads high-coverage truth genotypes from 1000 Genomes for GLIMPSE2 concordan
 - `sample_name` (String): Sample to extract as truth (default: "NA12878"). Must be in the high-coverage dataset.
 - `cpu_cores` (Int): CPU allocation (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bcftools:1.19`)
 
 **Outputs**:
 - `truth_vcf` (File): Truth VCF file with high-confidence genotypes for concordance evaluation
@@ -789,6 +848,7 @@ Generates synthetic tile and border points data for testing the `ww-sjl` module 
 - `year` (Int): Year to embed in the synthetic data (default: 2022)
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/r-utils:0.1.0`)
 
 **Outputs**:
 - `tile_rds` (File): Synthetic tile RDS file with 5 geographic points across two timezones
@@ -802,6 +862,7 @@ Downloads the Pseudomonas aeruginosa PAO1 reference genome (FASTA + GTF) from NC
 - `output_prefix` (String): Prefix used for output filenames (default: "pao1")
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.11`)
 
 **Outputs**:
 - `fasta` (File): PAO1 reference genome FASTA (sequence: NC_002516.2)

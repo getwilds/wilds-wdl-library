@@ -31,6 +31,7 @@ Generates tumor WIG file from aligned BAM files using HMMcopy's readCounter.
 - `window_size` (Int): Window size in base pairs for WIG format (default: 500000)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpus` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/hmmcopy:1.0.0`)
 
 **Outputs:**
 - `wig_file` (File): WIG file created from binned read count data
@@ -51,6 +52,7 @@ Estimates cfDNA tumor fraction using ichorCNA.
 - `chrs` (String): Chromosomes to analyze as R vector (default: "c(1:22, 'X', 'Y')")
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
 - `cpus` (Int): Number of CPU cores to use (default: 6)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/ichorcna:0.2.0`)
 
 **Outputs:**
 - `params` (File): Final converged parameters for optimal solution

@@ -30,6 +30,7 @@ Simple template processing task that creates a hello world output file.
 - `input_file` (File): Input file (any file type works for this template)
 - `cpu_cores` (Int, default=1): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=4): Memory allocated for the task in GB
+- `docker_image` (String, default=`getwilds/bwa:0.7.17`): Docker image to use for this task
 
 **Outputs:**
 - `output_file` (File): Simple text file with hello world message and sample information
