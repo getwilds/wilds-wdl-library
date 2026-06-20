@@ -37,8 +37,9 @@ task triton_main {
     size_range: "Size range as a space-delimited string, such as '15 500'"
     ncpus: "Number of CPUs to use"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
-  
+
   input {
     String sample_name
     File bam_path
@@ -53,6 +54,7 @@ task triton_main {
     String size_range = "15 500"
     Int ncpus = 4
     Int memory_gb = 4
+    String docker_image = "getwilds/python-utils:0.1.0"
   }
 
   command <<<
@@ -60,7 +62,7 @@ task triton_main {
 
     # Create results directory if it doesn't exist
     mkdir -p ~{results_dir}
-    
+
     # Download script
     git clone https://github.com/caalo/TritonNP.git
 
@@ -85,7 +87,7 @@ task triton_main {
   runtime {
     cpu: ncpus
     memory: "~{memory_gb} GB"
-    docker: "getwilds/python-utils:0.1.0"
+    docker: docker_image
   }
 }
 
@@ -113,12 +115,14 @@ task combine_fms {
     fm_files: "Array of output files from TritonNP"
     results_dir: "Output directory name"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Array[File] fm_files
     String results_dir
     Int memory_gb = 4
+    String docker_image = "getwilds/python-utils:0.1.0"
   }
 
   command <<<
@@ -143,6 +147,6 @@ task combine_fms {
   runtime {
     cpu: 1
     memory: "~{memory_gb} GB"
-    docker: "getwilds/python-utils:0.1.0"
+    docker: docker_image
   }
 }

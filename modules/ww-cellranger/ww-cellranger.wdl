@@ -377,6 +377,7 @@ task run_count_hpc_sprocket {
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
     skip_on_chemistry_failure: "When `true`, let task succeed with absent outputs if chemistry can't be auto detected."
     cellranger_module: "HPC environment module to load for Cell Ranger (e.g. 'CellRanger/10.0.0'). Compatible with Cell Ranger 8.x-10.x; v7 and earlier are not supported."
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -391,6 +392,7 @@ task run_count_hpc_sprocket {
     String? chemistry
     Boolean skip_on_chemistry_failure = false
     String cellranger_module = "CellRanger/10.0.0"
+    String docker_image = "getwilds/lua:5.3.6"
   }
 
   # Keep command block in sync with run_count and run_count_hpc_cromwell.
@@ -519,7 +521,7 @@ task run_count_hpc_sprocket {
   # execute under Apptainer. Cell Ranger itself is not in this image;
   # it comes in via the host bind-mounts in sprocket-hpc.toml.
   runtime {
-    docker: "getwilds/lua:5.3.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -541,12 +543,14 @@ task rename_fastqs {
     r1_fastq: "R1 FASTQ file to rename"
     r2_fastq: "R2 FASTQ file to rename"
     sample_id: "Sample ID to use as the prefix in the renamed file"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     File r1_fastq
     File r2_fastq
     String sample_id
+    String docker_image = "ubuntu:22.04"
   }
 
   command <<<
@@ -561,7 +565,7 @@ task rename_fastqs {
   }
 
   runtime {
-    docker: "ubuntu:22.04"
+    docker: docker_image
     cpu: 1
     memory: "2 GB"
   }

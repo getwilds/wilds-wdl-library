@@ -70,7 +70,7 @@ task rmats {
     Int max_exon_length = 500
     Int cpu_cores = 4
     Int memory_gb = 16
-    String docker_image = "getwilds/rmats-turbo:latest"
+    String docker_image = "getwilds/rmats-turbo:4.3.0"
   }
 
   String variable_read_length_flag = if variable_read_length then "--variable-read-length" else ""
@@ -194,7 +194,7 @@ task rmats_prep {
     Boolean allow_clipping = false
     Int cpu_cores = 4
     Int memory_gb = 16
-    String docker_image = "getwilds/rmats-turbo:latest"
+    String docker_image = "getwilds/rmats-turbo:4.3.0"
   }
 
   String variable_read_length_flag = if variable_read_length then "--variable-read-length" else ""
@@ -303,7 +303,7 @@ task rmats_post {
     Boolean individual_counts = false
     Int cpu_cores = 4
     Int memory_gb = 16
-    String docker_image = "getwilds/rmats-turbo:latest"
+    String docker_image = "getwilds/rmats-turbo:4.3.0"
   }
 
   String stat_off_flag = if stat_off then "--statoff" else ""
@@ -408,7 +408,7 @@ task rmats_stat {
     Float cstat = 0.0001
     Int cpu_cores = 4
     Int memory_gb = 16
-    String docker_image = "getwilds/rmats-turbo:latest"
+    String docker_image = "getwilds/rmats-turbo:4.3.0"
   }
 
   String paired_stats_flag = if paired_stats then "--paired-stats" else ""
