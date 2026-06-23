@@ -70,11 +70,11 @@ Unused inputs are ignored — e.g., `docker_image` has no effect when `execution
 
 ### Input Configuration
 
-Create an inputs JSON file with your SRA accessions and Cell Ranger reference:
+Create an inputs JSON file with your SRA accessions and Cell Ranger reference. Provide the samples either as a text file of accessions (`sra_id_file`, shown below) or as an inline array (`sra_id_list`):
 
 ```json
 {
-  "sra_cellranger.sra_id_list": ["SRR12345678"],
+  "sra_cellranger.sra_id_file": "/path/to/SRR_Acc_List.txt",
   "sra_cellranger.ref_gex": "/path/to/cellranger/reference.tar.gz",
   "sra_cellranger.ncpu": 8,
   "sra_cellranger.memory_gb": 64,
@@ -87,6 +87,20 @@ Create an inputs JSON file with your SRA accessions and Cell Ranger reference:
 > **Note:** This template sets `execution_mode: "hpc_cromwell"` so it works out of the box for Fred Hutch users on PROOF (where Cell Ranger is provided as the `CellRanger/10.0.0` environment module under Cromwell). The WDL default is `"docker"` — if you are running on a container-based backend, change it to `"docker"` and override `docker_image` to point at your private Cell Ranger image. If you are submitting to Sprocket-on-HPC instead of Cromwell-on-HPC, change it to `"hpc_sprocket"`. See [Cell Ranger Software Environment](#cell-ranger-software-environment) above for details.
 >
 > The `ngc_file` parameter is optional. Include it when downloading controlled-access dbGaP data.
+
+### Selecting Samples with SRA Run Selector
+
+`sra_id_file` is the one-accession-per-line text file produced by the **Accession List** button in NCBI's [SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/). For any study with more than a handful of samples, this is the recommended way to provide inputs. It should look like this:
+
+```
+SRR7722937
+SRR1039508
+SRR13777504
+```
+
+One accession per line, with no header row, commas, or quotes: exactly what the **Accession List** button exports (scroll to the **Select** table > find the **Download** column > click the **Accession List** button).
+
+**Curate your list in Run Selector before running.** Many SRA studies group multiple assay types under a single project: it is common to find single-cell RNA-seq, multiome RNA and ATAC, bulk RNA-seq, and whole-exome runs all under one accession. Use Run Selector's filters to select only the runs you intend to feed to Cell Ranger, then export that subset as your accession list. If a non-single-cell run does slip through, `skip_on_chemistry_failure` is the safety net rather than a substitute for curation. See [Mixed single-cell / non-single-cell input](#mixed-single-cell--non-single-cell-input) below.
 
 ### Running the Pipeline
 
@@ -109,7 +123,8 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 
 | Parameter | Description | Type | Required? | Default |
 |-----------|-------------|------|-----------|---------|
-| `sra_id_list` | List of SRA accession IDs to download | Array[String] | Yes | - |
+| `sra_id_file` | Text file of SRA accession IDs, one per line | File | One of `sra_id_file` / `sra_id_list` | - |
+| `sra_id_list` | List of SRA accession IDs to download. Alternative to `sra_id_file`. | Array[String] | One of `sra_id_file` / `sra_id_list` | - |
 | `ref_gex` | Cell Ranger GEX reference transcriptome tarball | File | Yes | - |
 | `ncpu` | Number of CPU cores | Int | No | 8 |
 | `memory_gb` | Memory allocation in GB | Int | No | 64 |
