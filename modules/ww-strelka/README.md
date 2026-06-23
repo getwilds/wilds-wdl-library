@@ -142,6 +142,9 @@ Performs germline variant calling on individual samples.
 - Reference genome FASTA and index
 - Optional target regions BED file
 - Exome sequencing flag
+- `cpus` (Int): Number of CPU cores (default: 4)
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/strelka:2.9.10`)
 
 **Outputs:**
 - Compressed germline variants VCF
@@ -157,6 +160,9 @@ Performs somatic variant calling on tumor/normal pairs.
 - Reference genome FASTA and index
 - Optional target regions BED file
 - Exome sequencing flag
+- `cpus` (Int): Number of CPU cores (default: 4)
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/strelka:2.9.10`)
 
 **Outputs:**
 - Compressed somatic SNVs VCF

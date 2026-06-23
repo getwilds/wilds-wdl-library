@@ -44,10 +44,10 @@ Create three files in `modules/ww-$ARGUMENTS/`:
   - `meta` block with: author, email, description, url, outputs
     - Use `author: "WILDS Team"` and `email: "wilds@fredhutch.org"` as placeholders — the actual contributor will replace these in review
   - `parameter_meta` block describing every input
-  - `input` block with typed parameters; include `cpu_cores` (Int, default sensible) and `memory_gb` (Int, default sensible)
+  - `input` block with typed parameters; include `cpu_cores` (Int, default sensible), `memory_gb` (Int, default sensible), and `String docker_image = "getwilds/$ARGUMENTS:<version>"` (pinned, never `latest`)
   - `command <<<` block starting with `set -eo pipefail`, using `~{var}` interpolation
   - `output` block with typed outputs
-  - `runtime` block with `docker: "getwilds/$ARGUMENTS:<version>"` (pinned, never `latest`), `cpu: cpu_cores`, `memory: "~{memory_gb} GB"`
+  - `runtime` block with `docker: docker_image`, `cpu: cpu_cores`, `memory: "~{memory_gb} GB"`
 
 #### `testrun.wdl`
 - `version 1.0`

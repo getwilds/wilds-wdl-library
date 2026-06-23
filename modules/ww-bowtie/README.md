@@ -28,6 +28,7 @@ Builds Bowtie index files from a reference FASTA file.
 - `index_prefix` (String, default="bowtie_index"): Prefix for the Bowtie index files
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=16): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bowtie:1.3.1`)
 
 **Outputs:**
 - `bowtie_index_tar` (File): Compressed tarball containing Bowtie genome index files
@@ -44,6 +45,7 @@ Aligns short reads to a reference genome using Bowtie.
 - `mates` (File, optional): FASTQ file for reverse (R2) reads for paired-end alignment
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bowtie:1.3.1`)
 
 **Outputs:**
 - `sorted_bam` (File): Sorted Bowtie alignment output BAM file

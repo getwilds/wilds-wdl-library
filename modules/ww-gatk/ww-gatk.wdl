@@ -28,12 +28,14 @@ task create_sequence_dictionary {
     reference_fasta: "Reference genome FASTA file"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     File reference_fasta
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   String dict_basename = basename(basename(reference_fasta, ".fa"), ".fasta")
@@ -53,7 +55,7 @@ task create_sequence_dictionary {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -87,6 +89,7 @@ task mark_duplicates {
     base_file_name: "Base name for the output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -95,6 +98,7 @@ task mark_duplicates {
     String base_file_name
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -117,7 +121,7 @@ task mark_duplicates {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -157,6 +161,7 @@ task base_recalibrator {
     intervals: "Optional interval list file defining target regions"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -171,6 +176,7 @@ task base_recalibrator {
     File? intervals
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -227,7 +233,7 @@ task base_recalibrator {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -265,6 +271,7 @@ task collect_wgs_metrics {
     minimum_mapping_quality: "Minimum mapping quality for reads to be included"
     minimum_base_quality: "Minimum base quality for bases to be included"
     coverage_cap: "Maximum coverage depth to analyze"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -279,6 +286,7 @@ task collect_wgs_metrics {
     Int minimum_mapping_quality = 20
     Int minimum_base_quality = 20
     Int coverage_cap = 250
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -301,7 +309,7 @@ task collect_wgs_metrics {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -346,6 +354,7 @@ task markdup_recal_metrics {
     minimum_mapping_quality: "Minimum mapping quality for reads to be included"
     minimum_base_quality: "Minimum base quality for bases to be included"
     coverage_cap: "Maximum coverage depth to analyze"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -363,6 +372,7 @@ task markdup_recal_metrics {
     Int minimum_mapping_quality = 20
     Int minimum_base_quality = 20
     Int coverage_cap = 250
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -448,7 +458,7 @@ task markdup_recal_metrics {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -483,6 +493,7 @@ task split_intervals {
     filter_to_canonical_chromosomes: "Whether to restrict analysis to canonical chromosomes (chr1-22,X,Y,M) (default: true)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -494,6 +505,7 @@ task split_intervals {
     Boolean filter_to_canonical_chromosomes = true
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -560,7 +572,7 @@ task split_intervals {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -597,6 +609,7 @@ task print_reads {
     output_basename: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -609,6 +622,7 @@ task print_reads {
     String output_basename
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -654,7 +668,7 @@ task print_reads {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -692,6 +706,7 @@ task haplotype_caller {
     intervals: "Optional interval list file defining target regions"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -705,6 +720,7 @@ task haplotype_caller {
     File? intervals
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -738,7 +754,7 @@ task haplotype_caller {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -781,6 +797,7 @@ task mutect2 {
     max_mnp_distance: "Distance at which to merge MNPs (default: 1)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -795,6 +812,7 @@ task mutect2 {
     Int max_mnp_distance = 1
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -843,7 +861,7 @@ task mutect2 {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -877,6 +895,7 @@ task merge_vcfs {
     reference_dict: "Reference sequence dictionary"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -886,6 +905,7 @@ task merge_vcfs {
     File reference_dict
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -905,7 +925,7 @@ task merge_vcfs {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -936,6 +956,7 @@ task merge_mutect_stats {
     base_file_name: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -943,6 +964,7 @@ task merge_mutect_stats {
     String base_file_name
     Int memory_gb = 4
     Int cpu_cores = 1
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -960,7 +982,7 @@ task merge_mutect_stats {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -998,6 +1020,7 @@ task haplotype_caller_parallel {
     base_file_name: "Base name for output files"
     memory_gb: "Memory allocation in GB (minimum: 8)"
     cpu_cores: "Number of CPU cores to use (should match number of intervals)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1011,6 +1034,7 @@ task haplotype_caller_parallel {
     String base_file_name
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -1080,7 +1104,7 @@ task haplotype_caller_parallel {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -1122,6 +1146,7 @@ task mutect2_parallel {
     max_mnp_distance: "Distance at which to merge MNPs (default: 1)"
     memory_gb: "Memory allocation in GB (minimum: 8)"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1136,6 +1161,7 @@ task mutect2_parallel {
     Int max_mnp_distance = 1
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -1243,7 +1269,7 @@ task mutect2_parallel {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -1280,6 +1306,7 @@ task fastq_to_bam {
     read_group_name: "Read group name (if not provided, defaults to sample_name)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1293,6 +1320,7 @@ task fastq_to_bam {
     String? read_group_name
     Int memory_gb = 8
     Int cpu_cores = 4
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   String rg_name = select_first([read_group_name, sample_name])
@@ -1319,7 +1347,7 @@ task fastq_to_bam {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -1353,6 +1381,7 @@ task validate_sam_file {
     reference_fasta: "Reference genome FASTA (required for CRAM files)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1363,6 +1392,7 @@ task validate_sam_file {
     File? reference_fasta
     Int memory_gb = 4
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -1381,7 +1411,7 @@ task validate_sam_file {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -1424,6 +1454,7 @@ task analyze_saturation_mutagenesis {
     base_file_name: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1436,6 +1467,7 @@ task analyze_saturation_mutagenesis {
     String base_file_name
     Int memory_gb = 16
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -1471,7 +1503,7 @@ task analyze_saturation_mutagenesis {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -1510,6 +1542,7 @@ task create_somatic_pon {
     germline_resource: "Optional gnomAD VCF for additional germline filtering"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1524,6 +1557,7 @@ task create_somatic_pon {
     File? germline_resource
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -1566,7 +1600,7 @@ task create_somatic_pon {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }

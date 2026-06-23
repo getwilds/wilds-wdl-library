@@ -40,6 +40,7 @@ Marks duplicate reads in aligned BAM files to improve variant calling accuracy.
 - `base_file_name` (String): Base name for the output files
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `markdup_bam` (File): BAM file with duplicate reads marked
@@ -61,6 +62,7 @@ Performs Base Quality Score Recalibration (BQSR) to improve the accuracy of base
 - `intervals` (File?): Optional interval list file defining target regions
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `recalibrated_bam` (File): BAM file with recalibrated base quality scores
@@ -82,6 +84,7 @@ Performs duplicate marking, base recalibration, and WGS metrics collection in a 
 - `intervals` (File?): Optional interval list file defining target regions
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 - `minimum_mapping_quality` (Int): Minimum mapping quality for reads (default: 20)
 - `minimum_base_quality` (Int): Minimum base quality for bases (default: 20)
 - `coverage_cap` (Int): Maximum coverage depth to analyze (default: 250)
@@ -109,6 +112,7 @@ Calls germline variants using GATK HaplotypeCaller for individual intervals in s
 - `intervals` (File?): Optional interval list file defining target regions
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `vcf` (File): Compressed VCF file containing germline variant calls
@@ -128,6 +132,7 @@ Calls germline variants using GATK HaplotypeCaller with internal parallelization
 - `base_file_name` (String): Base name for output files
 - `memory_gb` (Int): Memory allocation in GB, minimum 8 (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (should match number of intervals) (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `vcf` (File): Compressed VCF file containing germline variant calls
@@ -148,6 +153,7 @@ Calls somatic variants using GATK Mutect2 in tumor-only mode with filtering for 
 - `max_mnp_distance` (Int): Distance at which to merge MNPs (default: 1, use 0 for PON creation)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `vcf` (File): Compressed VCF file containing filtered somatic variant calls
@@ -172,6 +178,7 @@ Calls somatic variants using GATK Mutect2 with internal parallelization for redu
 - `max_mnp_distance` (Int): Distance at which to merge MNPs (default: 1, use 0 for PON creation)
 - `memory_gb` (Int): Memory allocation in GB, minimum 8 (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `vcf` (File): Compressed VCF file containing filtered somatic variant calls
@@ -199,6 +206,7 @@ Creates a somatic panel of normals (PON) from Mutect2 VCF files for filtering ge
 - `germline_resource` (File?): Optional gnomAD VCF for additional germline filtering
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `pon_vcf` (File): Gzipped VCF file containing the panel of normals
@@ -218,6 +226,7 @@ Automatically splits genome intervals into optimal chunks for parallel processin
 - `filter_to_canonical_chromosomes` (Boolean): Whether to restrict analysis to canonical chromosomes (chr1-22,X,Y,M) (default: true)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `interval_files` (Array[File]): Array of interval files optimized for parallel processing
@@ -235,6 +244,7 @@ Extracts reads from specific intervals using GATK PrintReads for scatter-gather 
 - `output_basename` (String): Base name for output files
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `interval_bams` (Array[File]): Array of BAM files containing reads from specified intervals
@@ -250,6 +260,7 @@ Merges multiple VCF files from parallel processing into a single consolidated VC
 - `reference_dict` (File): Reference sequence dictionary
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `merged_vcf` (File): Merged VCF file
@@ -263,6 +274,7 @@ Merges Mutect2 statistics files from parallel processing.
 - `base_file_name` (String): Base name for output files
 - `memory_gb` (Int): Memory allocation in GB (default: 4)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 1)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `merged_stats` (File): Merged Mutect2 statistics file
@@ -283,6 +295,7 @@ Converts paired FASTQ files to unmapped BAM/SAM format using GATK FastqToSam.
 - `read_group_name` (String?): Read group name (if not provided, defaults to sample_name)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `unmapped_bam` (File): Unmapped BAM file containing reads from input FASTQ files
@@ -300,6 +313,7 @@ Validates BAM/CRAM/SAM files for formatting issues using GATK ValidateSamFile.
 - `reference_fasta` (File?): Reference genome FASTA (required for CRAM files)
 - `memory_gb` (Int): Memory allocation in GB (default: 4)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `validation_report` (File): Text file containing validation statistics and any errors/warnings
@@ -313,6 +327,7 @@ Creates a sequence dictionary file from a reference FASTA file.
 - `reference_fasta` (File): Reference genome FASTA file
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `sequence_dict` (File): Sequence dictionary file (.dict) for the reference genome
@@ -329,6 +344,7 @@ Collects whole genome sequencing metrics using GATK CollectWgsMetrics.
 - `base_file_name` (String): Base name for output files
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 - `minimum_mapping_quality` (Int): Minimum mapping quality for reads (default: 20)
 - `minimum_base_quality` (Int): Minimum base quality for bases (default: 20)
 - `coverage_cap` (Int): Maximum coverage depth to analyze (default: 250)
@@ -354,6 +370,7 @@ Analyzes saturation mutagenesis data using GATK AnalyzeSaturationMutagenesis to 
 - `base_file_name` (String): Base name for output files
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gatk:4.6.1.0`)
 
 **Outputs:**
 - `aa_counts` (File): Amino acid count table

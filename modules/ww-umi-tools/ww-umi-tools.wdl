@@ -31,6 +31,7 @@ task dedup {
     extra_args: "Additional arguments to pass to umi_tools dedup"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -43,6 +44,7 @@ task dedup {
     String extra_args = ""
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/umitools:1.1.6"
   }
 
   command <<<
@@ -71,7 +73,7 @@ task dedup {
   }
 
   runtime {
-    docker: "getwilds/umitools:1.1.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

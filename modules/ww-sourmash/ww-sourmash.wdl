@@ -32,6 +32,7 @@ task sketch {
     cpu_cores: "Number of CPU cores to use (only used for BAM input)"
     memory_gb: "Memory allocated for the task in GB"
     output_name: "Optional custom output name (defaults to input basename)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -42,6 +43,7 @@ task sketch {
     Boolean track_abundance = true
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/sourmash:4.8.2"
     String? output_name
   }
 
@@ -66,7 +68,7 @@ task sketch {
   }
 
   runtime {
-    docker: "getwilds/sourmash:4.8.2"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -99,6 +101,7 @@ task gather {
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores to use"
     output_name: "Optional custom output name (defaults to query basename)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -107,6 +110,7 @@ task gather {
     Int threshold_bp = 50000
     Int memory_gb = 8
     Int cpu_cores = 4
+    String docker_image = "getwilds/sourmash:4.8.2"
     String? output_name
   }
 
@@ -128,7 +132,7 @@ task gather {
   }
 
   runtime {
-    docker: "getwilds/sourmash:4.8.2"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -161,6 +165,7 @@ task compare {
     k_value: "Value of k used for sourmash sketch"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -169,6 +174,7 @@ task compare {
     Int k_value
     Int memory_gb = 8
     Int cpu_cores = 4
+    String docker_image = "getwilds/sourmash:4.8.2"
   }
 
   command <<<
@@ -197,7 +203,7 @@ task compare {
   }
 
   runtime {
-    docker: "getwilds/sourmash:4.8.2"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }

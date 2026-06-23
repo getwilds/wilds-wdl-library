@@ -36,6 +36,7 @@ task process_sample {
     input_file: "Input file (any file type works for this template)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   # Specify inputs required for the task
@@ -44,6 +45,7 @@ task process_sample {
     File input_file
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/bwa:0.7.17"
   }
 
   # Define the command section to execute the task's functionality
@@ -68,7 +70,7 @@ task process_sample {
   # Specify runtime requirements for the task
   runtime {
     # Replace with your tool's Docker image
-    docker: "getwilds/bwa:0.7.17"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

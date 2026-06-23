@@ -40,6 +40,7 @@ task run_deepvariant {
     regions: "Optional genomic regions to restrict variant calling (e.g., chr1)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -53,6 +54,7 @@ task run_deepvariant {
     String? regions
     Int cpu_cores = 8
     Int memory_gb = 32
+    String docker_image = "google/deepvariant:1.10.0"
   }
 
   command <<<
@@ -76,7 +78,7 @@ task run_deepvariant {
   }
 
   runtime {
-    docker: "google/deepvariant:1.10.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

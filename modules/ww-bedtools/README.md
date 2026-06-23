@@ -29,6 +29,7 @@ Calculates mean read coverage across BED intervals using BEDTools coverage.
 - `sample_name` (String): Sample name for output files
 - `cpu_cores` (Int): CPU cores (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 16)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bedtools:2.31.1`)
 
 **Outputs:**
 - `name` (String): Sample name that was processed
@@ -44,6 +45,7 @@ Performs BEDTools intersect between BED intervals and BAM alignments.
 - `flags` (String): BEDTools intersect command flags (default: "-header -wo")
 - `cpu_cores` (Int): CPU cores (default: 2)
 - `memory_gb` (Int): Memory allocation (default: 16)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bedtools:2.31.1`)
 
 **Outputs:**
 - `name` (String): Sample name that was processed
@@ -63,6 +65,7 @@ Creates genomic windows and counts reads per window across specified chromosomes
 - `tmp_dir` (String): Path to temporary directory
 - `cpu_cores` (Int): CPU cores (default: 10)
 - `memory_gb` (Int): Memory allocation (default: 24)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bedtools:2.31.1`)
 
 **Outputs:**
 - `name` (String): Sample name that was processed

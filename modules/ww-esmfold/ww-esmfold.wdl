@@ -38,6 +38,7 @@ task esmfold_predict {
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
     gpu_enabled: "Enable GPU for prediction (recommended for production use)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -50,6 +51,7 @@ task esmfold_predict {
     Int cpu_cores = 4
     Int memory_gb = 16
     Boolean gpu_enabled = true
+    String docker_image = "getwilds/esmfold:2.0.0"
   }
 
   command <<<
@@ -81,7 +83,7 @@ task esmfold_predict {
   }
 
   runtime {
-    docker: "getwilds/esmfold:2.0.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
     gpus: if gpu_enabled then "1" else "0"

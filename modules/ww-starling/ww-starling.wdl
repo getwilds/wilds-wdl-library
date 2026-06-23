@@ -36,6 +36,7 @@ task generate_ensemble {
     gpu_enabled: "Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -45,6 +46,7 @@ task generate_ensemble {
     Boolean gpu_enabled = true
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/starling:2.0.0a3"
   }
 
   String device = if gpu_enabled then "cuda" else "cpu"
@@ -75,7 +77,7 @@ task generate_ensemble {
   }
 
   runtime {
-    docker: "getwilds/starling:2.0.0a3"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
     gpus: if gpu_enabled then "1" else "0"
@@ -110,6 +112,7 @@ task generate_ensemble_batch {
     gpu_enabled: "Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -118,6 +121,7 @@ task generate_ensemble_batch {
     Boolean gpu_enabled = true
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/starling:2.0.0a3"
   }
 
   String device = if gpu_enabled then "cuda" else "cpu"
@@ -149,7 +153,7 @@ task generate_ensemble_batch {
   }
 
   runtime {
-    docker: "getwilds/starling:2.0.0a3"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
     gpus: if gpu_enabled then "1" else "0"
@@ -181,6 +185,7 @@ task split_fasta {
     sequences_per_batch: "Maximum number of sequences per output batch file"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -188,6 +193,7 @@ task split_fasta {
     Int sequences_per_batch = 10
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "ubuntu:22.04"
   }
 
   command <<<
@@ -211,7 +217,7 @@ task split_fasta {
   }
 
   runtime {
-    docker: "ubuntu:22.04"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -242,6 +248,7 @@ task ensemble_info {
     sample_name: "Name identifier for the output file"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -249,6 +256,7 @@ task ensemble_info {
     String sample_name
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/starling:2.0.0a3"
   }
 
   command <<<
@@ -262,7 +270,7 @@ task ensemble_info {
   }
 
   runtime {
-    docker: "getwilds/starling:2.0.0a3"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

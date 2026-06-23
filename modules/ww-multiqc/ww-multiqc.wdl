@@ -35,6 +35,7 @@ task run_multiqc {
     extra_args: "Additional command-line arguments to pass to MultiQC"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -44,6 +45,7 @@ task run_multiqc {
     String extra_args = ""
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/multiqc:1.33"
   }
 
   command <<<
@@ -74,7 +76,7 @@ task run_multiqc {
   }
 
   runtime {
-    docker: "getwilds/multiqc:1.33"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

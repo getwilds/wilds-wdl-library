@@ -47,6 +47,7 @@ Combines STAR gene count files from multiple samples into a single count matrix 
   - 2 = unstranded counts
   - 3 = stranded counts, first read forward
   - 4 = stranded counts, first read reverse
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/python-utils:0.1.0`)
 
 **Outputs:**
 - `counts_matrix` (File): Combined matrix of gene-level counts from all samples
@@ -72,6 +73,7 @@ This ensures the analysis works reliably across diverse dataset sizes, from smal
 - `shrinkage_method` (String): LFC shrinkage method — `apeglm`, `ashr`, or `normal`; empty = no shrinkage (default: "")
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/deseq2:1.40.2`)
 
 **Outputs:**
 - `deseq2_results` (File): Complete DESeq2 differential expression results with statistics (used to make volcano plot)
@@ -92,8 +94,9 @@ Merges DESeq2 differential expression results with normalized counts and gene an
 - `normalized_counts` (File): DESeq2 normalized counts CSV (output of `run_deseq2`)
 - `gtf_file` (File): GTF annotation file for extracting gene descriptions. Use the original (non-normalized) GTF so NCBI/Ensembl-specific attributes like `gene_biotype`, `product`, and `locus_tag` are preserved.
 - `output_name` (String): Name for the output CSV file (default: "deseq2_compiled_results.csv")
-- `memory_gb` (Int): Memory allocation in GB (default: 4)
-- `cpu_cores` (Int): Number of CPU cores (default: 1)
+- `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `cpu_cores` (Int): Number of CPU cores (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/python-utils:0.1.0`)
 
 **Outputs:**
 - `compiled_results` (File): Combined CSV with DESeq2 statistics, normalized counts, and gene annotations (gene_name, gene_biotype, product, locus_tag, db_xref where available; columns that are entirely empty are dropped)
