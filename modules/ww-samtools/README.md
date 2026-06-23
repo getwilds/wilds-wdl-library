@@ -25,8 +25,9 @@ Merges one or more CRAM/BAM/SAM files for a sample, sorts by read name, and conv
 **Inputs:**
 - `cram_files` (Array[String]): List of CRAM/BAM/SAM files to merge and convert
 - `name` (String): Sample name used for output filenames
-- `cpu_cores` (Int): Number of CPU cores to use (default: 23)
-- `memory_gb` (Int): Memory allocation in GB (default: 36)
+- `cpu_cores` (Int): Number of CPU cores to use (default: 2)
+- `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.19`)
 
 **Outputs:**
 - `fastq_file` (File): FASTQ output file (`.fastq.gz`)
@@ -41,6 +42,7 @@ Merges multiple BAM files into a single CRAM file using samtools merge.
 - `base_file_name` (String): Base name for output CRAM file
 - `cpu_cores` (Int): Number of CPU cores to use (threads = cpu_cores - 1) (default: 6)
 - `memory_gb` (Int): Memory allocation in GB (default: 12)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.19`)
 
 **Outputs:**
 - `cram` (File): Merged CRAM file containing all reads from input BAMs
@@ -59,6 +61,7 @@ Generates a pileup file from a BAM file using samtools mpileup. The pileup forma
 - `min_baseq` (Int?): Minimum base quality for bases to be included (default: 13)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 2)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.19`)
 
 **Outputs:**
 - `pileup` (File): Pileup file
@@ -74,6 +77,7 @@ Filters a coordinate-sorted, indexed BAM down to reads on contigs whose names st
 - `sample_name` (String): Sample name used for output file naming
 - `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=4): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/samtools:1.19`)
 
 **Outputs:**
 - `filtered_bam` (File): Coordinate-sorted BAM containing only reads on contigs matching the prefix

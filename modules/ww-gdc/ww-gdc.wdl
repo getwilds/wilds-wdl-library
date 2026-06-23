@@ -34,6 +34,7 @@ task download_by_manifest {
     wait_time: "Seconds to wait between retries (default: 5)"
     cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
     memory_gb: "Memory allocated for the task in GB (default: 8)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -44,6 +45,7 @@ task download_by_manifest {
     Int wait_time = 5
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/gdc-client:2.3.0"
   }
 
   command <<<
@@ -124,7 +126,7 @@ task download_by_manifest {
   }
 
   runtime {
-    docker: "getwilds/gdc-client:2.3.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -159,6 +161,7 @@ task download_by_uuids {
     wait_time: "Seconds to wait between retries (default: 5)"
     cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
     memory_gb: "Memory allocated for the task in GB (default: 8)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -169,6 +172,7 @@ task download_by_uuids {
     Int wait_time = 5
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/gdc-client:2.3.0"
   }
 
   command <<<
@@ -252,7 +256,7 @@ EOL
   }
 
   runtime {
-    docker: "getwilds/gdc-client:2.3.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

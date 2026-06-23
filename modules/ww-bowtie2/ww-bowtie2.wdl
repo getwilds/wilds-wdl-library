@@ -29,6 +29,7 @@ task bowtie2_build {
     index_prefix: "Prefix for the Bowtie 2 index files"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -36,6 +37,7 @@ task bowtie2_build {
     String index_prefix = "bowtie2_index"
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/bowtie2:2.5.4"
   }
 
   command <<<
@@ -60,7 +62,7 @@ task bowtie2_build {
   }
 
   runtime {
-    docker: "getwilds/bowtie2:2.5.4"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -103,6 +105,7 @@ task bowtie2_align {
     extra_bowtie2_args: "Additional arguments forwarded verbatim to bowtie2 (e.g. '--no-mixed --no-discordant'). Empty by default."
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -118,6 +121,7 @@ task bowtie2_align {
     String extra_bowtie2_args = ""
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/bowtie2:2.5.4"
   }
 
   command <<<
@@ -191,7 +195,7 @@ task bowtie2_align {
   }
 
   runtime {
-    docker: "getwilds/bowtie2:2.5.4"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

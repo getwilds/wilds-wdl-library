@@ -39,6 +39,7 @@ Creates a CNVkit reference from normal samples or pooled reference data.
 - `antitarget_bed` (File, optional): Antitarget regions BED file
 - `cpu_cores` (Int, default=4): Number of CPU cores to use
 - `memory_gb` (Int, default=16): Memory allocation in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/cnvkit:0.9.10`)
 
 **Outputs:**
 - `reference_cnn` (File): CNVkit reference file (.cnn)
@@ -58,6 +59,7 @@ Performs CNVkit copy number analysis on tumor samples.
 - `paired_analysis` (Boolean, default=false): Whether to perform paired analysis
 - `cpu_cores` (Int, default=4): Number of CPU cores to use
 - `memory_gb` (Int, default=16): Memory allocation in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/cnvkit:0.9.10`)
 
 **Outputs:**
 - `cnv_segments` (File): CNV segments file (.cnr)

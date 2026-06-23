@@ -36,6 +36,7 @@ task sjl_tiles {
     missing_prefix: "Filename prefix for missing results output (default: 'missing_')"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -46,6 +47,7 @@ task sjl_tiles {
     String missing_prefix = "missing_"
     Int cpu_cores = 1
     Int memory_gb = 8
+    String docker_image = "getwilds/r-utils:0.1.0"
   }
 
   String tile_basename = basename(tile_path, ".rds")
@@ -75,6 +77,6 @@ task sjl_tiles {
   runtime {
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    docker: "getwilds/r-utils:0.1.0"
+    docker: docker_image
   }
 }

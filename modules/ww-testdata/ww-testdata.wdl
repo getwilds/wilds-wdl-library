@@ -26,6 +26,7 @@ task download_ref_data {
     output_name: "Optional name for output files (default: uses chromo name)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -35,6 +36,7 @@ task download_ref_data {
     String? output_name
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   String final_output_name = select_first([output_name, chromo])
@@ -109,7 +111,7 @@ task download_ref_data {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -134,6 +136,7 @@ task merge_fastas_with_prefix {
     output_name: "Output filename prefix (without the .fa extension)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -143,6 +146,7 @@ task merge_fastas_with_prefix {
     String output_name
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -160,7 +164,7 @@ task merge_fastas_with_prefix {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -181,12 +185,14 @@ task download_rrna_reference {
     output_name: "Output filename prefix (without the .fa extension)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     String output_name = "human_45S_rRNA"
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -208,7 +214,7 @@ task download_rrna_reference {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -231,6 +237,7 @@ task download_fastq_data {
     gzip_output: "Compress output files with gzip (default: false)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -238,6 +245,7 @@ task download_fastq_data {
     String prefix = "testdata"
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   # Determine output filenames based on prefix and gzip setting
@@ -267,7 +275,7 @@ task download_fastq_data {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -289,6 +297,7 @@ task interleave_fastq {
     r2_fq: "Reverse (R2) FASTQ file"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -296,6 +305,7 @@ task interleave_fastq {
     File r2_fq
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -311,7 +321,7 @@ task interleave_fastq {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -335,6 +345,7 @@ task download_cram_data {
     output_name: "Optional name for output CRAM file (default: NA12878_{chromosome})"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -343,6 +354,7 @@ task download_cram_data {
     String? output_name
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   String final_name = select_first([output_name, "NA12878_~{chromosome}"])
@@ -399,7 +411,7 @@ task download_cram_data {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -421,12 +433,14 @@ task download_bam_data {
     filename: "Filename to save the BAM file as"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     String filename = "NA12878_chr1.bam"
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -469,7 +483,7 @@ task download_bam_data {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -494,6 +508,7 @@ task inject_synthetic_umis {
     umi_separator: "Character separating the read ID from the appended UMI in the read name"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -503,6 +518,7 @@ task inject_synthetic_umis {
     String umi_separator = ":"
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -541,7 +557,7 @@ task inject_synthetic_umis {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -564,11 +580,13 @@ task download_ichor_data {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -590,7 +608,7 @@ task download_ichor_data {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -616,11 +634,13 @@ task download_tritonnp_data {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -651,7 +671,7 @@ task download_tritonnp_data {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -674,6 +694,7 @@ task download_dbsnp_vcf {
     filter_name: "Filename tag to save the dbSNP vcf with"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -681,6 +702,7 @@ task download_dbsnp_vcf {
     String filter_name = "hg38"
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -731,7 +753,7 @@ task download_dbsnp_vcf {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -754,6 +776,7 @@ task download_known_indels_vcf {
     filter_name: "Filename tag to save the known indels vcf with"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -761,6 +784,7 @@ task download_known_indels_vcf {
     String filter_name = "hg38"
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -780,7 +804,7 @@ task download_known_indels_vcf {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -803,6 +827,7 @@ task download_gnomad_vcf {
     filter_name: "Filename tag to save the gnomad vcf with"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -810,6 +835,7 @@ task download_gnomad_vcf {
     String filter_name = "hg38"
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -828,7 +854,7 @@ task download_gnomad_vcf {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -848,11 +874,13 @@ task download_annotsv_vcf {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -867,7 +895,7 @@ task download_annotsv_vcf {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -894,6 +922,7 @@ task generate_pasilla_counts {
     output_prefix: "Prefix for output files"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -903,6 +932,7 @@ task generate_pasilla_counts {
     String output_prefix = "pasilla"
     Int memory_gb = 4
     Int cpu_cores = 1
+    String docker_image = "getwilds/deseq2:1.40.2"
   }
 
   command <<<
@@ -928,7 +958,7 @@ task generate_pasilla_counts {
   }
 
   runtime {
-    docker: "getwilds/deseq2:1.40.2"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -948,11 +978,13 @@ task download_test_transcriptome {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -972,7 +1004,7 @@ task download_test_transcriptome {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -998,6 +1030,7 @@ task create_clean_amplicon_reference {
     replace_n_with: "Base to replace N's with (default: 'A'). Use empty string to fail if N's are found."
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1007,6 +1040,7 @@ task create_clean_amplicon_reference {
     String replace_n_with = "A"
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -1068,7 +1102,7 @@ task create_clean_amplicon_reference {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -1083,6 +1117,14 @@ task create_gdc_manifest {
     outputs: {
         manifest: "GDC manifest file containing test file UUIDs"
     }
+  }
+
+  parameter_meta {
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -1105,7 +1147,7 @@ EOF
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     memory: "2 GB"
     cpu: 1
   }
@@ -1129,11 +1171,13 @@ task download_shapemapper_data {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -1193,7 +1237,7 @@ task download_shapemapper_data {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1213,11 +1257,13 @@ task download_test_cellranger_ref {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -1239,7 +1285,7 @@ task download_test_cellranger_ref {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -1260,11 +1306,13 @@ task create_diamond_data {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -1327,7 +1375,7 @@ FASTA
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1347,11 +1395,13 @@ task create_test_protein_fasta {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "ubuntu:22.04"
   }
 
   command <<<
@@ -1369,7 +1419,7 @@ FASTA
   }
 
   runtime {
-    docker: "ubuntu:22.04"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1391,6 +1441,7 @@ task download_glimpse2_genetic_map {
     genome_build: "Genome build version (b37 or b38)"
     cpu_cores: "Number of CPU cores to use for downloading"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1398,6 +1449,7 @@ task download_glimpse2_genetic_map {
     String genome_build = "b38"
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -1425,7 +1477,7 @@ task download_glimpse2_genetic_map {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1451,6 +1503,7 @@ task download_glimpse2_reference_panel {
     exclude_samples: "Comma-separated list of samples to exclude (useful for validation)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1459,6 +1512,7 @@ task download_glimpse2_reference_panel {
     String exclude_samples = "NA12878"
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -1503,7 +1557,7 @@ task download_glimpse2_reference_panel {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1527,6 +1581,7 @@ task download_glimpse2_truth_vcf {
     sample_name: "Sample to extract as truth (must be in the high-coverage dataset)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1535,6 +1590,7 @@ task download_glimpse2_truth_vcf {
     String sample_name = "NA12878"
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -1564,7 +1620,7 @@ task download_glimpse2_truth_vcf {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1586,12 +1642,14 @@ task generate_sjl_data {
     year: "Year to embed in the synthetic data"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int year = 2022
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/r-utils:0.1.0"
   }
 
   command <<<
@@ -1630,7 +1688,7 @@ task generate_sjl_data {
   }
 
   runtime {
-    docker: "getwilds/r-utils:0.1.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1654,6 +1712,7 @@ task download_glimpse2_test_gl_vcf {
     sample_name: "Sample to extract from 1000 Genomes (must be in low-coverage dataset)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1662,6 +1721,7 @@ task download_glimpse2_test_gl_vcf {
     String sample_name = "NA12878"
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -1692,7 +1752,7 @@ task download_glimpse2_test_gl_vcf {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1714,11 +1774,13 @@ task download_jcast_test_data {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -1768,7 +1830,7 @@ task download_jcast_test_data {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1788,11 +1850,13 @@ task create_test_idp_fasta {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "ubuntu:22.04"
   }
 
   command <<<
@@ -1815,7 +1879,7 @@ FASTA
   }
 
   runtime {
-    docker: "ubuntu:22.04"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1839,12 +1903,14 @@ task download_pao1_ref {
     output_prefix: "Prefix used for output filenames"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     String output_prefix = "pao1"
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -1881,7 +1947,7 @@ task download_pao1_ref {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1902,12 +1968,14 @@ task download_10x_h5_data {
     sample_name: "Sample name used as the output filename prefix"
     cpu_cores: "Number of CPU cores to use for downloading"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     String sample_name = "2500_Wistar_Rat_PBMCs_Singleplex"
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -1922,7 +1990,7 @@ task download_10x_h5_data {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

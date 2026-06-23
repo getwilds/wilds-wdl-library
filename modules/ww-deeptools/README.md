@@ -37,6 +37,7 @@ Generates a normalized coverage track (bigWig or bedGraph) from a BAM file.
 - `extra_args` (String, default=""): Additional bamCoverage arguments
 - `cpu_cores` (Int, default=4): CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/deeptools:3.5.6`)
 
 **Outputs:**
 - `coverage_file` (File): Normalized coverage track file
@@ -59,6 +60,7 @@ Compares two BAM files (e.g., treatment vs. control) and generates a comparison 
 - `extra_args` (String, default=""): Additional bamCompare arguments
 - `cpu_cores` (Int, default=4): CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/deeptools:3.5.6`)
 
 **Outputs:**
 - `comparison_file` (File): Coverage comparison track file
@@ -79,6 +81,7 @@ Computes a matrix of signal values from bigWig files over genomic regions for vi
 - `extra_args` (String, default=""): Additional computeMatrix arguments
 - `cpu_cores` (Int, default=4): CPU cores
 - `memory_gb` (Int, default=16): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/deeptools:3.5.6`)
 
 **Outputs:**
 - `matrix_gz` (File): Compressed matrix for plotting
@@ -96,6 +99,7 @@ Creates a heatmap visualization of signal enrichment over genomic regions.
 - `extra_args` (String, default=""): Additional plotHeatmap arguments
 - `cpu_cores` (Int, default=1): CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/deeptools:3.5.6`)
 
 **Outputs:**
 - `heatmap` (File): Heatmap image file
@@ -111,6 +115,7 @@ Creates a profile plot of average signal enrichment over genomic regions.
 - `extra_args` (String, default=""): Additional plotProfile arguments
 - `cpu_cores` (Int, default=1): CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/deeptools:3.5.6`)
 
 **Outputs:**
 - `profile` (File): Profile plot image file
@@ -129,6 +134,7 @@ Computes read coverage summary across multiple BAM files for sample comparison.
 - `extra_args` (String, default=""): Additional multiBamSummary arguments
 - `cpu_cores` (Int, default=4): CPU cores
 - `memory_gb` (Int, default=16): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/deeptools:3.5.6`)
 
 **Outputs:**
 - `summary_npz` (File): Compressed numpy array for analysis
@@ -147,6 +153,7 @@ Generates a correlation heatmap or scatterplot from multiBamSummary output.
 - `extra_args` (String, default=""): Additional plotCorrelation arguments
 - `cpu_cores` (Int, default=1): CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/deeptools:3.5.6`)
 
 **Outputs:**
 - `correlation_plot` (File): Correlation plot image
@@ -163,6 +170,7 @@ Generates a PCA plot from multiBamSummary output.
 - `extra_args` (String, default=""): Additional plotPCA arguments
 - `cpu_cores` (Int, default=1): CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/deeptools:3.5.6`)
 
 **Outputs:**
 - `pca_plot` (File): PCA plot image
@@ -181,6 +189,7 @@ Generates a fingerprint plot to assess ChIP enrichment quality.
 - `extra_args` (String, default=""): Additional plotFingerprint arguments
 - `cpu_cores` (Int, default=4): CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/deeptools:3.5.6`)
 
 **Outputs:**
 - `fingerprint_plot` (File): Fingerprint plot image

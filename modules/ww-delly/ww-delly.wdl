@@ -36,6 +36,7 @@ task delly_call {
     sv_type: "Structural variant type to call (DEL, DUP, INV, TRA, INS) or empty for all"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -48,6 +49,7 @@ task delly_call {
     String sv_type = ""
     Int cpu_cores = 8
     Int memory_gb = 16
+    String docker_image = "getwilds/delly:1.2.9"
   }
 
   String sample_name = basename(aligned_bam, ".bam")
@@ -93,7 +95,7 @@ task delly_call {
   }
 
   runtime {
-    docker: "getwilds/delly:1.2.9"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb}GB"
   }

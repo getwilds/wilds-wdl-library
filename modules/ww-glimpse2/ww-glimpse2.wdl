@@ -36,6 +36,7 @@ task glimpse2_chunk {
     uniform_number_variants: "Use uniform number of variants per chunk instead of centiMorgans-based"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -49,6 +50,7 @@ task glimpse2_chunk {
     Boolean uniform_number_variants = false
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -75,7 +77,7 @@ task glimpse2_chunk {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -111,6 +113,7 @@ task glimpse2_split_reference {
     keep_monomorphic_ref_sites: "Keep monomorphic reference sites in output"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -123,6 +126,7 @@ task glimpse2_split_reference {
     Boolean keep_monomorphic_ref_sites = true
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -149,7 +153,7 @@ task glimpse2_split_reference {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -187,6 +191,7 @@ task glimpse2_phase {
     effective_population_size: "Effective population size (default: 15000)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -200,6 +205,7 @@ task glimpse2_phase {
     Int effective_population_size = 15000
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -229,7 +235,7 @@ task glimpse2_phase {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -270,6 +276,7 @@ task glimpse2_phase_cram {
     effective_population_size: "Effective population size (default: 15000)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -286,6 +293,7 @@ task glimpse2_phase_cram {
     Int effective_population_size = 15000
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -327,7 +335,7 @@ task glimpse2_phase_cram {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -361,6 +369,7 @@ task glimpse2_ligate {
     output_format: "Output format: bcf or vcf.gz (default: bcf)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -370,6 +379,7 @@ task glimpse2_ligate {
     String output_format = "bcf"
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -411,7 +421,7 @@ task glimpse2_ligate {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -449,6 +459,7 @@ task glimpse2_concordance {
     min_val_gq: "Minimum genotype quality in validation data (default: 0)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -463,6 +474,7 @@ task glimpse2_concordance {
     Int min_val_gq = 0
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -490,7 +502,7 @@ task glimpse2_concordance {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -520,10 +532,12 @@ task parse_chunks_file {
 
   parameter_meta {
     chunks_file: "Chunks file from glimpse2_chunk task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     File chunks_file
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -544,7 +558,7 @@ task parse_chunks_file {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: 1
     memory: "2 GB"
   }

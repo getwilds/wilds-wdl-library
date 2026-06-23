@@ -36,6 +36,7 @@ task run_seurat {
     resolution: "Louvain clustering resolution (higher = more clusters)"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -47,6 +48,7 @@ task run_seurat {
     Float resolution = 0.5
     Int memory_gb = 4
     Int cpu_cores = 2
+    String docker_image = "getwilds/seurat:5.2.1"
   }
 
   command <<<
@@ -75,7 +77,7 @@ task run_seurat {
   }
 
   runtime {
-    docker: "getwilds/seurat:5.2.1"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }

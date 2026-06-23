@@ -54,6 +54,7 @@ Main task that performs complete differential alternative splicing analysis betw
 | `max_exon_length` | Int | No | `500` | Maximum exon length for novel splice site detection |
 | `cpu_cores` | Int | No | `4` | Number of CPU cores allocated |
 | `memory_gb` | Int | No | `16` | Memory allocated in GB |
+| `docker_image` | String | No | `getwilds/rmats-turbo:4.3.0` | Docker image to use for this task |
 
 **Outputs:**
 - `output_directory` (File): Tarball containing all rMATS output files including splice event tables and summary statistics
@@ -78,6 +79,7 @@ Preprocesses BAM files and generates .rmats intermediate files (runs rMATS `--ta
 | `allow_clipping` | Boolean | No | `false` | Allow alignments with soft or hard clipping |
 | `cpu_cores` | Int | No | `4` | Number of CPU cores allocated |
 | `memory_gb` | Int | No | `16` | Memory allocated in GB |
+| `docker_image` | String | No | `getwilds/rmats-turbo:4.3.0` | Docker image to use for this task |
 
 **Outputs:**
 - `prep_output` (File): Tarball containing .rmats intermediate files
@@ -101,6 +103,7 @@ Loads .rmats files and performs alternative splicing event detection and statist
 | `individual_counts` | Boolean | No | `false` | Output individual count files for each sample |
 | `cpu_cores` | Int | No | `4` | Number of CPU cores allocated |
 | `memory_gb` | Int | No | `16` | Memory allocated in GB |
+| `docker_image` | String | No | `getwilds/rmats-turbo:4.3.0` | Docker image to use for this task |
 
 **Outputs:**
 - `output_directory` (File): Tarball containing all rMATS output files
@@ -122,6 +125,7 @@ Runs statistical analysis on existing rMATS output files. (runs rMATS `--task st
 | `cstat` | Float | No | `0.0001` | Cutoff splicing difference for null hypothesis test |
 | `cpu_cores` | Int | No | `4` | Number of CPU cores allocated |
 | `memory_gb` | Int | No | `16` | Memory allocated in GB |
+| `docker_image` | String | No | `getwilds/rmats-turbo:4.3.0` | Docker image to use for this task |
 
 **Outputs:**
 - `output_directory` (File): Tarball containing rMATS output files with updated statistical results
@@ -247,7 +251,7 @@ The test workflow automatically:
 
 ## Docker Container
 
-This module uses the `getwilds/rmats-turbo:latest` container image from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library), which includes:
+This module uses the `getwilds/rmats-turbo:4.3.0` container image from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library), which includes:
 - rMATS-turbo
 - Python 3.9
 - All required dependencies

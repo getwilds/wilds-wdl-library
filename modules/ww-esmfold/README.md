@@ -33,6 +33,7 @@ Predict protein 3D structures from amino acid sequences using ESMFold.
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=16): Memory allocated for the task in GB
 - `gpu_enabled` (Boolean, default=true): Enable GPU for prediction
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/esmfold:2.0.0`)
 
 **Outputs:**
 - `pdb_output` (File): Compressed tarball containing predicted PDB structure files with pLDDT confidence scores

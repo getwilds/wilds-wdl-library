@@ -32,6 +32,7 @@ task somatic {
     tumor_pileup: "Samtools mpileup file for the tumor sample"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -40,6 +41,7 @@ task somatic {
     File tumor_pileup
     Int memory_gb = 16
     Int cpu_cores = 4
+    String docker_image = "getwilds/varscan:2.4.6"
   }
 
   command <<<
@@ -58,7 +60,7 @@ task somatic {
   }
 
   runtime {
-    docker: "getwilds/varscan:2.4.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -90,6 +92,7 @@ task mpileup2cns {
     pileup: "Samtools mpileup file generated with `--no-BAQ` and reference FASTA"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -97,6 +100,7 @@ task mpileup2cns {
     File pileup
     Int memory_gb = 16
     Int cpu_cores = 4
+    String docker_image = "getwilds/varscan:2.4.6"
   }
 
   command <<<
@@ -115,7 +119,7 @@ task mpileup2cns {
   }
 
   runtime {
-    docker: "getwilds/varscan:2.4.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

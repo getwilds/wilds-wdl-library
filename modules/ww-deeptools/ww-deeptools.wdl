@@ -41,6 +41,7 @@ task bam_coverage {
     extra_args: "Additional arguments to pass to bamCoverage"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -57,6 +58,7 @@ task bam_coverage {
     String extra_args = ""
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/deeptools:3.5.6"
   }
 
   String ext = if output_format == "bigwig" then ".bw" else ".bedgraph"
@@ -83,7 +85,7 @@ task bam_coverage {
   }
 
   runtime {
-    docker: "getwilds/deeptools:3.5.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -123,6 +125,7 @@ task bam_compare {
     extra_args: "Additional arguments to pass to bamCompare"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -139,6 +142,7 @@ task bam_compare {
     String extra_args = ""
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/deeptools:3.5.6"
   }
 
   String ext = if output_format == "bigwig" then ".bw" else ".bedgraph"
@@ -164,7 +168,7 @@ task bam_compare {
   }
 
   runtime {
-    docker: "getwilds/deeptools:3.5.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -203,6 +207,7 @@ task compute_matrix {
     extra_args: "Additional arguments to pass to computeMatrix"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -217,6 +222,7 @@ task compute_matrix {
     String extra_args = ""
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/deeptools:3.5.6"
   }
 
   Boolean is_reference_point = mode == "reference-point"
@@ -244,7 +250,7 @@ task compute_matrix {
   }
 
   runtime {
-    docker: "getwilds/deeptools:3.5.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -278,6 +284,7 @@ task plot_heatmap {
     extra_args: "Additional arguments to pass to plotHeatmap"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -288,6 +295,7 @@ task plot_heatmap {
     String extra_args = ""
     Int cpu_cores = 1
     Int memory_gb = 8
+    String docker_image = "getwilds/deeptools:3.5.6"
   }
 
   command <<<
@@ -305,7 +313,7 @@ task plot_heatmap {
   }
 
   runtime {
-    docker: "getwilds/deeptools:3.5.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -338,6 +346,7 @@ task plot_profile {
     extra_args: "Additional arguments to pass to plotProfile"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -347,6 +356,7 @@ task plot_profile {
     String extra_args = ""
     Int cpu_cores = 1
     Int memory_gb = 8
+    String docker_image = "getwilds/deeptools:3.5.6"
   }
 
   command <<<
@@ -363,7 +373,7 @@ task plot_profile {
   }
 
   runtime {
-    docker: "getwilds/deeptools:3.5.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -400,6 +410,7 @@ task multi_bam_summary {
     extra_args: "Additional arguments to pass to multiBamSummary"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -412,6 +423,7 @@ task multi_bam_summary {
     String extra_args = ""
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/deeptools:3.5.6"
   }
 
   Boolean is_bins_mode = mode == "bins"
@@ -435,7 +447,7 @@ task multi_bam_summary {
   }
 
   runtime {
-    docker: "getwilds/deeptools:3.5.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -471,6 +483,7 @@ task plot_correlation {
     extra_args: "Additional arguments to pass to plotCorrelation"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -482,6 +495,7 @@ task plot_correlation {
     String extra_args = ""
     Int cpu_cores = 1
     Int memory_gb = 8
+    String docker_image = "getwilds/deeptools:3.5.6"
   }
 
   command <<<
@@ -502,7 +516,7 @@ task plot_correlation {
   }
 
   runtime {
-    docker: "getwilds/deeptools:3.5.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -536,6 +550,7 @@ task plot_pca {
     extra_args: "Additional arguments to pass to plotPCA"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -545,6 +560,7 @@ task plot_pca {
     String extra_args = ""
     Int cpu_cores = 1
     Int memory_gb = 8
+    String docker_image = "getwilds/deeptools:3.5.6"
   }
 
   command <<<
@@ -563,7 +579,7 @@ task plot_pca {
   }
 
   runtime {
-    docker: "getwilds/deeptools:3.5.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -599,6 +615,7 @@ task plot_fingerprint {
     extra_args: "Additional arguments to pass to plotFingerprint"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -610,6 +627,7 @@ task plot_fingerprint {
     String extra_args = ""
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/deeptools:3.5.6"
   }
 
   command <<<
@@ -630,7 +648,7 @@ task plot_fingerprint {
   }
 
   runtime {
-    docker: "getwilds/deeptools:3.5.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

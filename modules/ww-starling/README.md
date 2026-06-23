@@ -30,6 +30,7 @@ Generate a structural ensemble for an intrinsically disordered protein sequence.
 - `gpu_enabled` (Boolean, default=true): Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime)
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/starling:2.0.0a3`)
 
 **Outputs:**
 - `starling_file` (File): STARLING ensemble file containing predicted conformations
@@ -46,6 +47,7 @@ Generate structural ensembles for multiple protein sequences from a FASTA file.
 - `gpu_enabled` (Boolean, default=true): Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime)
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/starling:2.0.0a3`)
 
 **Outputs:**
 - `starling_files` (Array[File]): Array of STARLING ensemble files, one per sequence
@@ -61,6 +63,7 @@ Split a multi-sequence FASTA file into smaller batch files for parallel processi
 - `sequences_per_batch` (Int, default=10): Maximum number of sequences per output batch file
 - `cpu_cores` (Int, default=1): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=2): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `ubuntu:22.04`)
 
 **Outputs:**
 - `batch_files` (Array[File]): Array of FASTA files, each containing up to `sequences_per_batch` sequences
@@ -74,6 +77,7 @@ Query metadata and summary information from a STARLING ensemble file.
 - `sample_name` (String): Name identifier for the output file
 - `cpu_cores` (Int, default=1): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=4): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/starling:2.0.0a3`)
 
 **Outputs:**
 - `info_file` (File): Text file containing ensemble metadata and summary statistics

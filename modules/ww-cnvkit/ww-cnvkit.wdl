@@ -34,6 +34,7 @@ task create_reference {
     reference_fasta_index: "Reference genome FASTA index file"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -45,6 +46,7 @@ task create_reference {
     File? antitarget_bed
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/cnvkit:0.9.10"
   }
 
   command <<<
@@ -104,7 +106,7 @@ task create_reference {
   }
 
   runtime {
-    docker: "getwilds/cnvkit:0.9.10"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -143,6 +145,7 @@ task run_cnvkit {
     paired_analysis: "Whether to perform paired tumor/normal analysis"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -156,6 +159,7 @@ task run_cnvkit {
     Boolean paired_analysis = false
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/cnvkit:0.9.10"
   }
 
   command <<<
@@ -206,7 +210,7 @@ task run_cnvkit {
   }
 
   runtime {
-    docker: "getwilds/cnvkit:0.9.10"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

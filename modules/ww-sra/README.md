@@ -34,6 +34,7 @@ Downloads FASTQ files from SRA accessions with automatic read structure detectio
 - `ncpu` (Int): Number of CPUs for parallel download (default: 8)
 - `max_reads` (Int, optional): Maximum number of reads to download for testing/downsampling
 - `ngc_file` (File, optional): NGC repository key file for downloading controlled-access dbGaP data
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/sra-tools:3.1.1`)
 
 **Outputs:**
 - `r1_end` (File): R1 FASTQ file

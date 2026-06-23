@@ -40,6 +40,7 @@ Split a genomic region into chunks for parallel imputation.
 - `uniform_number_variants` (Boolean, default=false): Use uniform variants per chunk
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `chunks_file` (File): Text file containing chunk definitions
@@ -58,6 +59,7 @@ Convert reference panel VCF to binary format for a specific chunk.
 - `keep_monomorphic_ref_sites` (Boolean, default=true): Keep monomorphic reference sites in output
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `reference_chunk` (File): Binary reference chunk file
@@ -77,6 +79,7 @@ Perform imputation and phasing from VCF input.
 - `effective_population_size` (Int, default=15000): Effective population size
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `imputed_chunk` (File): Imputed BCF file
@@ -100,6 +103,7 @@ Perform imputation directly from CRAM/BAM files. Accepts one or more BAM/CRAM fi
 - `effective_population_size` (Int, default=15000): Effective population size
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `imputed_chunk` (File): Imputed BCF file
@@ -116,6 +120,7 @@ Ligate multiple imputed chunks into a single file.
 - `output_format` (String, default="bcf"): Output format (`bcf` or `vcf.gz`)
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `ligated_vcf` (File): Ligated VCF/BCF file
@@ -137,6 +142,7 @@ Compute concordance metrics between imputed and truth genotypes.
 - `min_val_gq` (Int, default=0): Minimum genotype quality
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `concordance_output` (Array[File]): Concordance metrics files
@@ -147,6 +153,7 @@ Utility task to parse chunks file for parallel processing.
 
 **Inputs:**
 - `chunks_file` (File): Chunks file from glimpse2_chunk
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `input_regions` (Array[String]): Input regions

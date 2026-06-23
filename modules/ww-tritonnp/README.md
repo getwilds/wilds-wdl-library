@@ -36,6 +36,8 @@ Runs TritonNP on a single sample to generate phasing feature matrices.
 - `size_range` (String): Size ranges for phasing as a space-delimited string, such as '15 500'
 - `cpus` (Int): Number of CPUs to use
 - `plot_list` (File): File containing names of genes to plot
+- `memory_gb` (Int): Memory allocation in GB (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/python-utils:0.1.0`)
 
 **Outputs:**
 - `fm_file` (File): Phasing feature matrix output file
@@ -47,6 +49,8 @@ Combines phasing feature matrices from multiple samples.
 **Inputs:**
 - `fm_files` (Array[File]): Array of output files from TritonNP
 - `results_dir` (String): Output directory name
+- `memory_gb` (Int): Memory allocation in GB (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/python-utils:0.1.0`)
 
 **Outputs:**
 - `final` (File): Aggregated output file from TritonNP

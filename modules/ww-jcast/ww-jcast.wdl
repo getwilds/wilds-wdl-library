@@ -40,6 +40,7 @@ task jcast {
     splice_types: 'Comma-separated list of splice types to process (MXE,RI,SE,A3SS,A5SS). If empty, process all types (default: "")'
     cpu_cores: "Number of CPU cores allocated for the task (default: 2)"
     memory_gb: "Memory allocated for the task in GB (default: 8)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -55,6 +56,7 @@ task jcast {
     String splice_types = ""
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/jcast:0.3.5"
   }
 
   String gmm_flag = if use_gmm then "-m" else ""
@@ -117,7 +119,7 @@ task jcast {
   }
 
   runtime {
-    docker: "getwilds/jcast:0.3.5"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
