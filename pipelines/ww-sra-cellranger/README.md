@@ -125,7 +125,7 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 
 | Parameter | Description | Type | Required? | Default |
 |-----------|-------------|------|-----------|---------|
-| `sra_id_file` | Text file of SRA accession IDs, one per line (e.g. the "Accession List" export from [SRA Run Selector](https://www.ncbi.nlm.nih.gov/Traces/study/)). See [Selecting Samples with SRA Run Selector](#selecting-samples-with-sra-run-selector) for details. | File | One of `sra_id_file` / `sra_id_list` | - |
+| `sra_id_file` | Text file of SRA accession IDs, one per line | File | One of `sra_id_file` / `sra_id_list` | - |
 | `sra_id_list` | List of SRA accession IDs to download. Alternative to `sra_id_file`. | Array[String] | One of `sra_id_file` / `sra_id_list` | - |
 | `ref_gex` | Cell Ranger GEX reference transcriptome tarball | File | Yes | - |
 | `ncpu` | Number of CPU cores | Int | No | 8 |
