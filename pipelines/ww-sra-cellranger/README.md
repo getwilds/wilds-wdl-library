@@ -98,7 +98,7 @@ SRR1039508
 SRR13777504
 ```
 
-One accession per line, with no header row, commas, or quotes: exactly like the file the **Accession List** button exports (under **Select** > **Download** > **Accession List**).
+One accession per line, with no header row, commas, or quotes: exactly what the **Accession List** button exports (scroll to the **Select** table > find the **Download** column > click the **Accession List** button).
 
 **Curate your list in Run Selector before running.** This is a manual step, and an important one. Many SRA studies group multiple assay types under a single project: it is common to find single-cell RNA-seq, multiome RNA and ATAC, bulk RNA-seq, and whole-exome runs all under one accession. The SRA metadata does not reliably flag which runs are single-cell. `library_strategy` is `RNA-Seq` for both single-cell and bulk transcriptomic runs, and the only single-cell signal is often a submitter-specific naming convention in the free-text `library_name` field. There is no automated rule that picks the correct Cell Ranger inputs across studies, so the pipeline does not attempt one. Use Run Selector's filters and the per-run library names to select only the runs you intend to feed to Cell Ranger, then export that subset as your accession list.
 
