@@ -37,6 +37,8 @@ Runs CellBender `remove-background` on a raw 10x Genomics feature-barcode matrix
 | `model` | String | `"full"` | CellBender model variant: `naive`, `simple`, `ambient`, `swapping`, or `full` |
 | `low_count_threshold` | Int | `5` | Droplets below this UMI count are excluded from analysis |
 | `exclude_feature_types` | String? | none | Space-separated feature types to exclude (e.g. `"Antibody Capture"`) |
+| `checkpoint_mins` | Float | `7.0` | How frequently (in minutes) to save a training checkpoint |
+| `gpu_enabled` | Boolean | `true` | Enable GPU acceleration (`--cuda`); set to `false` for CPU-only execution |
 | `cpu_cores` | Int | `4` | Number of CPU cores allocated for the task |
 | `memory_gb` | Int | `32` | Memory allocated for the task in GB |
 | `docker_image` | String | `getwilds/cellbender:0.3.2` | Docker image to use for this task |
