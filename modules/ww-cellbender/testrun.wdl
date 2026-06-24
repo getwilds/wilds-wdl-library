@@ -19,6 +19,7 @@ workflow cellbender_example {
     expected_cells = 500,
     total_droplets_included = 5000,
     epochs = 10,
+    checkpoint_mins = 0.1,
     gpu_enabled = false,
     cpu_cores = 4,
     memory_gb = 8
