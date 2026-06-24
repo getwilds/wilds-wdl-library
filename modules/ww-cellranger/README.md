@@ -87,6 +87,7 @@ Run `cellranger count` on gene expression reads from one GEM well using a privat
 - `web_summary` (File?): Web summary HTML file with QC metrics. Absent when the sample was skipped.
 - `metrics_summary` (File?): Metrics summary CSV file with key statistics. Absent when the sample was skipped.
 - `filtered_h5` (File?): Filtered feature-barcode matrix HDF5 file. Absent when the sample was skipped.
+- `raw_h5` (File?): Raw feature-barcode matrix HDF5 file. Absent when the sample was skipped.
 
 ### Graceful chemistry-detection skip
 
@@ -181,6 +182,7 @@ workflow my_single_cell_pipeline {
     File web_summary = run_count.web_summary
     File metrics = run_count.metrics_summary
     File filtered_h5 = run_count.filtered_h5
+    File raw_h5 = run_count.raw_h5
   }
 }
 ```

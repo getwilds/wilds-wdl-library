@@ -153,6 +153,7 @@ Cell Ranger requires a pre-built reference transcriptome tarball. You can:
 | `cellranger_web_summaries` | Web summary HTML files | ww-cellranger |
 | `cellranger_metrics` | Metrics summary CSV files | ww-cellranger |
 | `cellranger_filtered_h5s` | Filtered feature-barcode matrix HDF5 files | ww-cellranger |
+| `cellranger_raw_h5s` | Raw feature-barcode matrix HDF5 files | ww-cellranger |
 
 ### Mixed single-cell / non-single-cell input
 

@@ -23,7 +23,8 @@ workflow sra_cellranger {
         cellranger_results: "Cell Ranger count output tarballs",
         cellranger_web_summaries: "Cell Ranger web summary HTML files",
         cellranger_metrics: "Cell Ranger metrics summary CSV files",
-        cellranger_filtered_h5s: "Cell Ranger filtered feature-barcode matrix HDF5 files"
+        cellranger_filtered_h5s: "Cell Ranger filtered feature-barcode matrix HDF5 files",
+        cellranger_raw_h5s: "Cell Ranger raw feature-barcode matrix HDF5 files"
     }
   }
 
@@ -159,6 +160,9 @@ workflow sra_cellranger {
     File? filtered_h5 = if defined(run_count.filtered_h5) then run_count.filtered_h5
                        else if defined(run_count_hpc_cromwell.filtered_h5) then run_count_hpc_cromwell.filtered_h5
                        else run_count_hpc_sprocket.filtered_h5
+    File? raw_h5 = if defined(run_count.raw_h5) then run_count.raw_h5
+                  else if defined(run_count_hpc_cromwell.raw_h5) then run_count_hpc_cromwell.raw_h5
+                  else run_count_hpc_sprocket.raw_h5
   }
 
   # Partition sample_ids into "ran" vs "skipped" based on each
@@ -175,6 +179,7 @@ workflow sra_cellranger {
     Array[File] cellranger_web_summaries = select_all(web_summary)
     Array[File] cellranger_metrics = select_all(metrics_summary)
     Array[File] cellranger_filtered_h5s = select_all(filtered_h5)
+    Array[File] cellranger_raw_h5s = select_all(raw_h5)
   }
 }
 

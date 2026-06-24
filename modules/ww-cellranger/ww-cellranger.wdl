@@ -14,7 +14,8 @@ task run_count {
         results_tar: "Compressed tarball of Cell Ranger count output directory (absent if skipped)",
         web_summary: "Web summary HTML file (absent if skipped)",
         metrics_summary: "Metrics summary CSV file (absent if skipped)",
-        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)"
+        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)",
+        raw_h5: "Raw feature-barcode matrix HDF5 file (absent if skipped)"
     }
     topic: "transcriptomics,gene_expression,single_cell_sequencing"
     species: "human,eukaryote,prokaryote,virus"
@@ -23,7 +24,7 @@ task run_count {
     input_sample_optional: "none"
     input_reference_required: "ref_gex:data_index:tar_format"
     input_reference_optional: "none"
-    output_sample: "results_tar:gene_expression_matrix:tar_format,web_summary:quality_control_report:html,metrics_summary:quality_control_report:csv,filtered_h5:gene_expression_matrix:h5"
+    output_sample: "results_tar:gene_expression_matrix:tar_format,web_summary:quality_control_report:html,metrics_summary:quality_control_report:csv,filtered_h5:gene_expression_matrix:h5,raw_h5:gene_expression_matrix:h5"
     output_reference: "none"
   }
 
@@ -160,6 +161,7 @@ task run_count {
     mv "~{sample_id}/outs/web_summary.html" "~{sample_id}_web_summary.html"
     mv "~{sample_id}/outs/metrics_summary.csv" "~{sample_id}_metrics_summary.csv"
     mv "~{sample_id}/outs/filtered_feature_bc_matrix.h5" "~{sample_id}_filtered_feature_bc_matrix.h5"
+    mv "~{sample_id}/outs/raw_feature_bc_matrix.h5" "~{sample_id}_raw_feature_bc_matrix.h5"
 
     # Clean up Cell Ranger output directory for housekeeping
     # (and to avoid Sprocket symlink validation errors)
@@ -172,6 +174,7 @@ task run_count {
     File? web_summary = "~{sample_id}_web_summary.html"
     File? metrics_summary = "~{sample_id}_metrics_summary.csv"
     File? filtered_h5 = "~{sample_id}_filtered_feature_bc_matrix.h5"
+    File? raw_h5 = "~{sample_id}_raw_feature_bc_matrix.h5"
   }
 
   runtime {
@@ -192,7 +195,8 @@ task run_count_hpc_cromwell {
         results_tar: "Compressed tarball of Cell Ranger count output directory (absent if skipped)",
         web_summary: "Web summary HTML file (absent if skipped)",
         metrics_summary: "Metrics summary CSV file (absent if skipped)",
-        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)"
+        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)",
+        raw_h5: "Raw feature-barcode matrix HDF5 file (absent if skipped)"
     }
   }
 
@@ -333,6 +337,7 @@ task run_count_hpc_cromwell {
     mv "~{sample_id}/outs/web_summary.html" "~{sample_id}_web_summary.html"
     mv "~{sample_id}/outs/metrics_summary.csv" "~{sample_id}_metrics_summary.csv"
     mv "~{sample_id}/outs/filtered_feature_bc_matrix.h5" "~{sample_id}_filtered_feature_bc_matrix.h5"
+    mv "~{sample_id}/outs/raw_feature_bc_matrix.h5" "~{sample_id}_raw_feature_bc_matrix.h5"
 
     # Clean up Cell Ranger output directory for housekeeping
     # (and to avoid Sprocket symlink validation errors)
@@ -345,6 +350,7 @@ task run_count_hpc_cromwell {
     File? web_summary = "~{sample_id}_web_summary.html"
     File? metrics_summary = "~{sample_id}_metrics_summary.csv"
     File? filtered_h5 = "~{sample_id}_filtered_feature_bc_matrix.h5"
+    File? raw_h5 = "~{sample_id}_raw_feature_bc_matrix.h5"
   }
 
   # No docker/container runtime key: Cromwell's HPC backend runs this
@@ -367,7 +373,8 @@ task run_count_hpc_sprocket {
         results_tar: "Compressed tarball of Cell Ranger count output directory (absent if skipped)",
         web_summary: "Web summary HTML file (absent if skipped)",
         metrics_summary: "Metrics summary CSV file (absent if skipped)",
-        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)"
+        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)",
+        raw_h5: "Raw feature-barcode matrix HDF5 file (absent if skipped)"
     }
   }
 
@@ -512,6 +519,7 @@ task run_count_hpc_sprocket {
     mv "~{sample_id}/outs/web_summary.html" "~{sample_id}_web_summary.html"
     mv "~{sample_id}/outs/metrics_summary.csv" "~{sample_id}_metrics_summary.csv"
     mv "~{sample_id}/outs/filtered_feature_bc_matrix.h5" "~{sample_id}_filtered_feature_bc_matrix.h5"
+    mv "~{sample_id}/outs/raw_feature_bc_matrix.h5" "~{sample_id}_raw_feature_bc_matrix.h5"
 
     # Clean up Cell Ranger output directory for housekeeping
     # (and to avoid Sprocket symlink validation errors)
@@ -524,6 +532,7 @@ task run_count_hpc_sprocket {
     File? web_summary = "~{sample_id}_web_summary.html"
     File? metrics_summary = "~{sample_id}_metrics_summary.csv"
     File? filtered_h5 = "~{sample_id}_filtered_feature_bc_matrix.h5"
+    File? raw_h5 = "~{sample_id}_raw_feature_bc_matrix.h5"
   }
 
   # Minimal Lua-having container so the host's bind-mounted Lmod can
