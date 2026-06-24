@@ -136,6 +136,8 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `execution_mode` | Which Cell Ranger task to dispatch to: `"docker"`, `"hpc_cromwell"`, or `"hpc_sprocket"`. See [Cell Ranger Software Environment](#cell-ranger-software-environment). | String | No | `"docker"` |
 | `docker_image` | Private Cell Ranger Docker image used by `run_count`. Ignored unless `execution_mode = "docker"`. | String | No | `ghcr.io/getwilds/cellranger:10.0.0` |
 | `cellranger_module` | HPC environment module used by the `run_count_hpc_*` tasks. Ignored unless `execution_mode` starts with `hpc_`. | String | No | `CellRanger/10.0.0` |
+| `organize_results` | When true, package all Cell Ranger outputs into a ZIP archive organized by sample subdirectory. | Boolean | No | `false` |
+| `output_prefix` | Prefix for the organized results ZIP filename. | String | No | `cellranger_results` |
 
 ### Cell Ranger Reference
 
@@ -154,6 +156,7 @@ Cell Ranger requires a pre-built reference transcriptome tarball. You can:
 | `cellranger_metrics` | Metrics summary CSV files | ww-cellranger |
 | `cellranger_filtered_h5s` | Filtered feature-barcode matrix HDF5 files | ww-cellranger |
 | `cellranger_raw_h5s` | Raw feature-barcode matrix HDF5 files | ww-cellranger |
+| `organized_results` | ZIP archive of all outputs organized into per-sample subdirectories (absent unless `organize_results = true`) | pipeline |
 
 ### Mixed single-cell / non-single-cell input
 

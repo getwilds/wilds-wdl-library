@@ -24,7 +24,8 @@ workflow sra_cellranger {
         cellranger_web_summaries: "Cell Ranger web summary HTML files",
         cellranger_metrics: "Cell Ranger metrics summary CSV files",
         cellranger_filtered_h5s: "Cell Ranger filtered feature-barcode matrix HDF5 files",
-        cellranger_raw_h5s: "Cell Ranger raw feature-barcode matrix HDF5 files"
+        cellranger_raw_h5s: "Cell Ranger raw feature-barcode matrix HDF5 files",
+        organized_results: "ZIP archive of all Cell Ranger outputs organized into per-sample subdirectories (absent when organize_results is false)"
     }
   }
 
@@ -42,6 +43,8 @@ workflow sra_cellranger {
     execution_mode: "Which Cell Ranger task to dispatch to: 'docker' (default; private Cell Ranger image), 'hpc_cromwell' (loads Cell Ranger via host env-modules under Cromwell-on-HPC), or 'hpc_sprocket' (same module-load approach inside a Lua container under Sprocket-on-HPC). Any other value fails loudly via select_first."
     docker_image: "Private Cell Ranger Docker image used by run_count. Ignored unless execution_mode is 'docker'."
     cellranger_module: "HPC environment module used by the run_count_hpc_* tasks. Ignored unless execution_mode starts with 'hpc_'."
+    organize_results: "When true, package all Cell Ranger outputs into a ZIP archive organized by sample subdirectory."
+    output_prefix: "Prefix for the organized results ZIP filename (default: 'cellranger_results')."
   }
 
   input {
@@ -58,6 +61,8 @@ workflow sra_cellranger {
     String execution_mode = "docker"
     String docker_image = "ghcr.io/getwilds/cellranger:10.0.0"
     String cellranger_module = "CellRanger/10.0.0"
+    Boolean organize_results = false
+    String output_prefix = "cellranger_results"
   }
 
   # Resolve the sample list from whichever input was provided. A
@@ -172,6 +177,22 @@ workflow sra_cellranger {
       chemistry_status_files = chemistry_status_file
   }
 
+  # Optional: package all outputs into per-sample subdirectories. Uses
+  # read_lines on the single_cell_sample_list so the sample IDs are in
+  # the same order as the select_all'd file arrays (skipped samples are
+  # absent from both).
+  if (organize_results) {
+    call organize_outputs { input:
+        sample_ids = read_lines(summarize_chemistry_status.single_cell_sample_list),
+        results_tars = select_all(results_tar),
+        web_summaries = select_all(web_summary),
+        metrics_summaries = select_all(metrics_summary),
+        filtered_h5s = select_all(filtered_h5),
+        raw_h5s = select_all(raw_h5),
+        output_prefix = output_prefix
+    }
+  }
+
   output {
     File single_cell_sample_list = summarize_chemistry_status.single_cell_sample_list
     File skipped_sample_list = summarize_chemistry_status.skipped_sample_list
@@ -180,6 +201,7 @@ workflow sra_cellranger {
     Array[File] cellranger_metrics = select_all(metrics_summary)
     Array[File] cellranger_filtered_h5s = select_all(filtered_h5)
     Array[File] cellranger_raw_h5s = select_all(raw_h5)
+    File? organized_results = organize_outputs.results_zip
   }
 }
 
@@ -244,5 +266,74 @@ task summarize_chemistry_status {
     docker: "ubuntu:22.04"
     cpu: 1
     memory: "2 GB"
+  }
+}
+
+task organize_outputs {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Package Cell Ranger outputs into a ZIP archive organized by sample subdirectory."
+    outputs: {
+        results_zip: "ZIP archive containing all Cell Ranger outputs organized into per-sample subdirectories"
+    }
+  }
+
+  parameter_meta {
+    sample_ids: "Sample IDs in the same order as the file arrays (skipped samples must be excluded)"
+    results_tars: "Cell Ranger output tarballs, one per successful sample"
+    web_summaries: "Web summary HTML files, one per successful sample"
+    metrics_summaries: "Metrics summary CSV files, one per successful sample"
+    filtered_h5s: "Filtered feature-barcode matrix HDF5 files, one per successful sample"
+    raw_h5s: "Raw feature-barcode matrix HDF5 files, one per successful sample"
+    output_prefix: "Prefix for the output ZIP filename"
+    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task"
+  }
+
+  input {
+    Array[String] sample_ids
+    Array[File] results_tars
+    Array[File] web_summaries
+    Array[File] metrics_summaries
+    Array[File] filtered_h5s
+    Array[File] raw_h5s
+    String output_prefix = "cellranger_results"
+    Int memory_gb = 4
+    Int cpu_cores = 1
+  }
+
+  command <<<
+    set -eo pipefail
+
+    OUTDIR="~{output_prefix}"
+    SAMPLE_IDS=(~{sep=' ' sample_ids})
+    TARS=(~{sep=' ' results_tars})
+    WEB=(~{sep=' ' web_summaries})
+    METRICS=(~{sep=' ' metrics_summaries})
+    FILTERED=(~{sep=' ' filtered_h5s})
+    RAW=(~{sep=' ' raw_h5s})
+
+    for i in "${!SAMPLE_IDS[@]}"; do
+      SAMPLE="${SAMPLE_IDS[$i]}"
+      mkdir -p "$OUTDIR/$SAMPLE"
+      cp "${TARS[$i]}"     "$OUTDIR/$SAMPLE/"
+      cp "${WEB[$i]}"      "$OUTDIR/$SAMPLE/"
+      cp "${METRICS[$i]}"  "$OUTDIR/$SAMPLE/"
+      cp "${FILTERED[$i]}" "$OUTDIR/$SAMPLE/"
+      cp "${RAW[$i]}"      "$OUTDIR/$SAMPLE/"
+    done
+
+    zip -r "~{output_prefix}.zip" "$OUTDIR"
+  >>>
+
+  output {
+    File results_zip = "~{output_prefix}.zip"
+  }
+
+  runtime {
+    docker: "ubuntu:22.04"
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
   }
 }
