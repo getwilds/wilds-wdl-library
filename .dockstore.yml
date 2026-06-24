@@ -149,6 +149,22 @@ tools:
       branches:
         - main
 
+  - name: ww-cellbender
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-cellbender/ww-cellbender.wdl
+    readMePath: /modules/ww-cellbender/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for removing ambient RNA from single-cell RNA-seq data using CellBender
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-cellranger
     subclass: WDL
     primaryDescriptorPath: /modules/ww-cellranger/ww-cellranger.wdl
