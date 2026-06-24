@@ -18,7 +18,7 @@ workflow cellbender_example {
     epochs = 150,
     gpu_enabled = false,
     cpu_cores = 4,
-    memory_gb = 32
+    memory_gb = 8
   }
 
   output {
