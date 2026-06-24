@@ -45,6 +45,7 @@ task remove_background {
     model: "CellBender model variant: naive, simple, ambient, swapping, or full"
     low_count_threshold: "Droplets with total UMI count below this value are excluded from analysis"
     exclude_feature_types: "Optional space-separated list of feature types to exclude (e.g. 'Antibody Capture')"
+    checkpoint_mins: "How frequently (in minutes) to save a training checkpoint; default matches CellBender's built-in default of 7 minutes"
     gpu_enabled: "Enable GPU acceleration (adds --cuda flag and requests 1 GPU in runtime); set to false for CPU-only execution"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
@@ -62,6 +63,7 @@ task remove_background {
     String model = "full"
     Int low_count_threshold = 5
     String? exclude_feature_types
+    Float checkpoint_mins = 7.0
     Boolean gpu_enabled = true
     Int cpu_cores = 4
     Int memory_gb = 32
@@ -82,6 +84,7 @@ task remove_background {
       ~{"--expected-cells " + expected_cells} \
       ~{"--total-droplets-included " + total_droplets_included} \
       ~{"--exclude-feature-types " + exclude_feature_types} \
+      --checkpoint-mins ~{checkpoint_mins} \
       ~{if gpu_enabled then "--cuda" else ""} \
       --cpu-threads ~{cpu_cores}
   >>>
