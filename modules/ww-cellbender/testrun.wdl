@@ -1,8 +1,8 @@
 version 1.0
 
 # Import module under test and testdata module using relative paths for local linting/testing
-import "ww-cellbender.wdl" as ww_cellbender
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellbender/modules/ww-cellbender/ww-cellbender.wdl" as ww_cellbender
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellbender/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
 
@@ -17,7 +17,7 @@ workflow cellbender_example {
     sample_name = "pbmc_10k_v3",
     expected_cells = 500,
     total_droplets_included = 5000,
-    epochs = 150,
+    epochs = 10,
     epoch_elbo_fail_fraction = 1.0,
     final_elbo_fail_fraction = 1.0,
     gpu_enabled = false,

@@ -3,8 +3,8 @@ version 1.0
 # HPC variant of the CellBender testrun. Runs remove-background with GPU enabled.
 # Uses the same test data as testrun.wdl; the only difference is gpu_enabled = true,
 # which adds --cuda to the CellBender command and requests 1 GPU in the runtime block.
-import "ww-cellbender.wdl" as ww_cellbender
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellbender/modules/ww-cellbender/ww-cellbender.wdl" as ww_cellbender
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellbender/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
 
