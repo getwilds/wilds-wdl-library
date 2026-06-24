@@ -13,8 +13,8 @@ workflow cellbender_example {
   # Run CellBender remove-background on the test sample (CPU-only for CI)
   call ww_cellbender.remove_background { input:
     input_h5 = download_raw_h5.raw_h5_matrix,
-    sample_name = "2500_Wistar_Rat_PBMCs_Singleplex",
-    expected_cells = 2500,
+    sample_name = "pbmc_10k_v3",
+    expected_cells = 10000,
     epochs = 150,
     gpu_enabled = false,
     cpu_cores = 4,

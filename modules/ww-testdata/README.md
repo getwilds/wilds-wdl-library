@@ -623,12 +623,12 @@ call seurat_tasks.seurat_analysis {
 
 ### download_10x_raw_h5_data
 
-Downloads a 10X Genomics example raw (unfiltered) feature-barcode matrix in HDF5 format (2,500 Wistar Rat PBMCs, Singleplex, Cell Ranger 9.0.0).
+Downloads a 10X Genomics example raw (unfiltered) feature-barcode matrix in HDF5 format (10k human PBMCs, v3 chemistry, Cell Ranger 3.0.0, ~168 MB).
 
 **Use Case**: When testing ambient RNA removal tools (e.g., CellBender) that require the unfiltered Cell Ranger output, you need the raw matrix rather than the filtered one. The raw matrix includes all detected barcodes -- empty droplets and cells alike -- which is the input format these tools expect.
 
 **Inputs**:
-- `sample_name` (String): Output filename prefix (default: "2500_Wistar_Rat_PBMCs_Singleplex")
+- `sample_name` (String): Output filename prefix (default: "pbmc_10k_v3")
 - `cpu_cores` (Int): CPU allocation (default: 1)
 - `memory_gb` (Int): Memory allocation (default: 2)
 - `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
@@ -636,7 +636,7 @@ Downloads a 10X Genomics example raw (unfiltered) feature-barcode matrix in HDF5
 **Outputs**:
 - `raw_h5_matrix` (File): Raw feature-barcode matrix in HDF5 format (`<sample_name>_raw_feature_bc_matrix.h5`)
 
-**Data Source**: https://www.10xgenomics.com/datasets/2500-wistar-rat-pbmcs-singleplex-3p-gem-x-universal-protocol
+**Data Source**: https://www.10xgenomics.com/datasets/10-k-pbm-cs-from-a-healthy-donor-v-3-chemistry-3-0-0
 
 **Example Usage**:
 ```wdl
@@ -644,8 +644,8 @@ call testdata.download_10x_raw_h5_data { }
 call cellbender_tasks.remove_background {
   input:
     input_h5 = download_10x_raw_h5_data.raw_h5_matrix,
-    sample_name = "rat_pbmcs",
-    expected_cells = 2500
+    sample_name = "pbmc_10k_v3",
+    expected_cells = 10000
 }
 ```
 

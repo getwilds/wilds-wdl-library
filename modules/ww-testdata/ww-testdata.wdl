@@ -1998,9 +1998,9 @@ task download_10x_h5_data {
 
 task download_10x_raw_h5_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
-    description: "Downloads a 10X example raw feature-barcode matrix H5 file (2500 rat PBMCs). The raw matrix includes all barcodes detected, making it suitable as input to ambient RNA removal tools like CellBender."
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Downloads a 10X example raw feature-barcode matrix H5 file (10k human PBMCs, v3 chemistry, Cell Ranger 3.0.0). The raw matrix includes all detected barcodes, making it suitable as input to ambient RNA removal tools like CellBender."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         raw_h5_matrix: "Raw feature-barcode matrix in HDF5 format (all detected barcodes, pre-filtering)"
@@ -2015,7 +2015,7 @@ task download_10x_raw_h5_data {
   }
 
   input {
-    String sample_name = "2500_Wistar_Rat_PBMCs_Singleplex"
+    String sample_name = "pbmc_10k_v3"
     Int cpu_cores = 1
     Int memory_gb = 2
     String docker_image = "getwilds/awscli:2.27.49"
@@ -2025,7 +2025,7 @@ task download_10x_raw_h5_data {
     set -eo pipefail
 
     curl -L -o "~{sample_name}_raw_feature_bc_matrix.h5" \
-      "https://cf.10xgenomics.com/samples/cell-exp/9.0.0/2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal_2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal/2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal_2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal_count_sample_raw_feature_bc_matrix.h5"
+      "https://cf.10xgenomics.com/samples/cell-exp/3.0.0/pbmc_10k_v3/pbmc_10k_v3_raw_feature_bc_matrix.h5"
   >>>
 
   output {
