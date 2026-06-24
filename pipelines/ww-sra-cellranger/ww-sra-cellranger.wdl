@@ -25,7 +25,7 @@ workflow sra_cellranger {
         cellranger_metrics: "Cell Ranger metrics summary CSV files",
         cellranger_filtered_h5s: "Cell Ranger filtered feature-barcode matrix HDF5 files",
         cellranger_raw_h5s: "Cell Ranger raw feature-barcode matrix HDF5 files",
-        organized_results: "ZIP archive of all Cell Ranger outputs organized into per-sample subdirectories (absent when organize_results is false)"
+        organized_results: "Tarball of all Cell Ranger outputs organized into per-sample subdirectories (absent when organize_results is false)"
     }
   }
 
@@ -43,8 +43,8 @@ workflow sra_cellranger {
     execution_mode: "Which Cell Ranger task to dispatch to: 'docker' (default; private Cell Ranger image), 'hpc_cromwell' (loads Cell Ranger via host env-modules under Cromwell-on-HPC), or 'hpc_sprocket' (same module-load approach inside a Lua container under Sprocket-on-HPC). Any other value fails loudly via select_first."
     docker_image: "Private Cell Ranger Docker image used by run_count. Ignored unless execution_mode is 'docker'."
     cellranger_module: "HPC environment module used by the run_count_hpc_* tasks. Ignored unless execution_mode starts with 'hpc_'."
-    organize_results: "When true, package all Cell Ranger outputs into a ZIP archive organized by sample subdirectory."
-    output_prefix: "Prefix for the organized results ZIP filename (default: 'cellranger_results')."
+    organize_results: "When true, package all Cell Ranger outputs into a tarball organized by sample subdirectory."
+    output_prefix: "Prefix for the organized results tarball filename (default: 'cellranger_results')."
   }
 
   input {
@@ -273,9 +273,9 @@ task organize_outputs {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Package Cell Ranger outputs into a ZIP archive organized by sample subdirectory."
+    description: "Package Cell Ranger outputs into a tarball organized by sample subdirectory."
     outputs: {
-        results_zip: "ZIP archive containing all Cell Ranger outputs organized into per-sample subdirectories"
+        results_zip: "Tarball containing all Cell Ranger outputs organized into per-sample subdirectories"
     }
   }
 
@@ -286,7 +286,7 @@ task organize_outputs {
     metrics_summaries: "Metrics summary CSV files, one per successful sample"
     filtered_h5s: "Filtered feature-barcode matrix HDF5 files, one per successful sample"
     raw_h5s: "Raw feature-barcode matrix HDF5 files, one per successful sample"
-    output_prefix: "Prefix for the output ZIP filename"
+    output_prefix: "Prefix for the output tarball filename"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
   }
@@ -324,11 +324,11 @@ task organize_outputs {
       cp "${RAW[$i]}"      "$OUTDIR/$SAMPLE/"
     done
 
-    zip -r "~{output_prefix}.zip" "$OUTDIR"
+    tar -czf "~{output_prefix}.tar.gz" "$OUTDIR"
   >>>
 
   output {
-    File results_zip = "~{output_prefix}.zip"
+    File results_zip = "~{output_prefix}.tar.gz"
   }
 
   runtime {
