@@ -46,6 +46,9 @@ task remove_background {
     low_count_threshold: "Droplets with total UMI count below this value are excluded from analysis"
     exclude_feature_types: "Optional space-separated list of feature types to exclude (e.g. 'Antibody Capture')"
     checkpoint_mins: "How frequently (in minutes) to save a training checkpoint; default matches CellBender's built-in default of 7 minutes"
+    epoch_elbo_fail_fraction: "Optional fraction of initial ELBO loss at which a per-epoch ELBO is considered a failure and triggers a training retry; set to 1.0 to disable per-epoch early stopping"
+    final_elbo_fail_fraction: "Optional fraction of initial ELBO loss at which the final ELBO is considered a failure and triggers a training retry; set to 1.0 to disable final-ELBO early stopping"
+    num_training_tries: "Number of times to attempt training if ELBO failures occur (default: CellBender uses 1)"
     gpu_enabled: "Enable GPU acceleration (adds --cuda flag and requests 1 GPU in runtime); set to false for CPU-only execution"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
@@ -64,6 +67,9 @@ task remove_background {
     Int low_count_threshold = 5
     String? exclude_feature_types
     Float checkpoint_mins = 7.0
+    Float? epoch_elbo_fail_fraction
+    Float? final_elbo_fail_fraction
+    Int? num_training_tries
     Boolean gpu_enabled = true
     Int cpu_cores = 4
     Int memory_gb = 32
@@ -85,6 +91,9 @@ task remove_background {
       ~{"--total-droplets-included " + total_droplets_included} \
       ~{"--exclude-feature-types " + exclude_feature_types} \
       --checkpoint-mins ~{checkpoint_mins} \
+      ~{"--epoch-elbo-fail-fraction " + epoch_elbo_fail_fraction} \
+      ~{"--final-elbo-fail-fraction " + final_elbo_fail_fraction} \
+      ~{"--num-training-tries " + num_training_tries} \
       ~{if gpu_enabled then "--cuda" else ""} \
       --cpu-threads ~{cpu_cores}
   >>>
