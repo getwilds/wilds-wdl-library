@@ -1995,3 +1995,46 @@ task download_10x_h5_data {
     memory: "~{memory_gb} GB"
   }
 }
+
+task download_10x_raw_h5_data {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Downloads a 10X example raw feature-barcode matrix H5 file (2500 rat PBMCs). The raw matrix includes all barcodes detected, making it suitable as input to ambient RNA removal tools like CellBender."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        raw_h5_matrix: "Raw feature-barcode matrix in HDF5 format (all detected barcodes, pre-filtering)"
+    }
+  }
+
+  parameter_meta {
+    sample_name: "Sample name used as the output filename prefix"
+    cpu_cores: "Number of CPU cores to use for downloading"
+    memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    String sample_name = "2500_Wistar_Rat_PBMCs_Singleplex"
+    Int cpu_cores = 1
+    Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    curl -L -o "~{sample_name}_raw_feature_bc_matrix.h5" \
+      "https://cf.10xgenomics.com/samples/cell-exp/9.0.0/2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal_2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal/2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal_2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal_count_sample_raw_feature_bc_matrix.h5"
+  >>>
+
+  output {
+    File raw_h5_matrix = "~{sample_name}_raw_feature_bc_matrix.h5"
+  }
+
+  runtime {
+    docker: docker_image
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
