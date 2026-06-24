@@ -1,0 +1,49 @@
+# Sprocket unit tests for ww-delly testrun.wdl
+# Run with: sprocket dev test modules/ww-delly/testrun.wdl
+#
+# This file contains tests for the delly_example workflow and validate_outputs task.
+
+# Test the validate_outputs task with mock VCF files
+validate_outputs:
+  - name: single_vcf_validation
+    tags: [unit, delly, fast]
+    inputs:
+      $vcf_files:
+        delly_vcfs:
+          - delly/mock_delly.vcf.gz
+        delly_vcf_indices:
+          - delly/mock_delly.vcf.gz.csi
+    assertions:
+      outputs:
+        report:
+          - Name: validation_report.txt
+
+  - name: multiple_vcf_validation
+    tags: [unit, delly, fast]
+    inputs:
+      $vcf_files:
+        delly_vcfs:
+          - delly/mock_delly.vcf.gz
+          - delly/mock_delly_2.vcf.gz
+        delly_vcf_indices:
+          - delly/mock_delly.vcf.gz.csi
+          - delly/mock_delly_2.vcf.gz.csi
+    assertions:
+      outputs:
+        report:
+          - Name: validation_report.txt
+
+# Test the full workflow (requires network access to download test data)
+delly_example:
+  - name: full_workflow_integration
+    tags: [integration, slow, network]
+    inputs: {}
+    assertions:
+      should_fail: false
+      outputs:
+        delly_vcf:
+          - Name: NA12878_chr1.delly.vcf.gz
+        delly_vcf_index:
+          - Name: NA12878_chr1.delly.vcf.gz.csi
+        validation_report:
+          - Name: validation_report.txt

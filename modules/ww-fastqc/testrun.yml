@@ -1,0 +1,19 @@
+# Sprocket unit tests for ww-fastqc testrun.wdl
+# Run with: sprocket dev test modules/ww-fastqc/testrun.wdl
+#
+# This workflow downloads test data automatically and runs FastQC analysis.
+
+# Test the full workflow (requires network access to download test data)
+fastqc_example:
+  - name: full_workflow_integration
+    tags: [integration, slow, network]
+    inputs: {}
+    assertions:
+      should_fail: false
+      outputs:
+        fastqc_html_reports:
+          - Empty: false
+          - Length: 3
+        fastqc_zip_reports:
+          - Empty: false
+          - Length: 3
