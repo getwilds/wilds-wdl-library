@@ -10,12 +10,15 @@ workflow cellbender_example {
   # Download a 10x raw feature-barcode matrix for testing
   call ww_testdata.download_10x_raw_h5_data as download_raw_h5 { }
 
-  # Run CellBender remove-background on the test sample (CPU-only for CI)
+  # Run CellBender remove-background on the test sample (CPU-only for CI).
+  # epochs and total_droplets_included are deliberately small to keep
+  # runtime under the 6-hour GitHub Actions limit on CPU.
   call ww_cellbender.remove_background { input:
     input_h5 = download_raw_h5.raw_h5_matrix,
     sample_name = "pbmc_10k_v3",
-    expected_cells = 10000,
-    epochs = 150,
+    expected_cells = 500,
+    total_droplets_included = 5000,
+    epochs = 10,
     gpu_enabled = false,
     cpu_cores = 4,
     memory_gb = 8
