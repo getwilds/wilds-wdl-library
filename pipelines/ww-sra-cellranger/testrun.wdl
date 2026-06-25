@@ -17,7 +17,7 @@ workflow sra_cellranger_example {
     ref_gex = download_test_cellranger_ref.ref_tar,
     ncpu = 2,
     memory_gb = 6,
-    max_reads = 1000000,
+    max_reads = 5000000,
     skip_on_chemistry_failure = true,
     organize_results = true,
     cellbender_gpu_enabled = false,
