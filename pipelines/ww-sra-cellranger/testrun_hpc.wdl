@@ -20,7 +20,7 @@ workflow sra_cellranger_example {
     memory_gb = 6,
     max_reads = 5000000,
     skip_on_chemistry_failure = true,
-    execution_mode = "hpc_cromwell",
+    execution_mode = "hpc_sprocket",
     cellbender_gpu_enabled = true
   }
 
