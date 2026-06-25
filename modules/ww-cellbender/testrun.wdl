@@ -1,8 +1,8 @@
 version 1.0
 
 # Import module under test and testdata module using relative paths for local linting/testing
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellbender/modules/ww-cellbender/ww-cellbender.wdl" as ww_cellbender
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellbender/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/organize-sra-cellranger-outputs/modules/ww-cellbender/ww-cellbender.wdl" as ww_cellbender
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/organize-sra-cellranger-outputs/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 #### TEST WORKFLOW DEFINITION ####
 
