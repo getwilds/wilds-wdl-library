@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-sra-cellranger/ww-sra-cellranger.wdl" as sra_cellranger_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellbender/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellbender/pipelines/ww-sra-cellranger/ww-sra-cellranger.wdl" as sra_cellranger_workflow
 
 #### TEST WORKFLOW DEFINITION ####
 # HPC variant of the ww-sra-cellranger pipeline testrun. Dispatches via
@@ -20,7 +20,8 @@ workflow sra_cellranger_example {
     memory_gb = 6,
     max_reads = 1000000,
     skip_on_chemistry_failure = true,
-    execution_mode = "hpc_sprocket"
+    execution_mode = "hpc_sprocket",
+    cellbender_gpu_enabled = true
   }
 
   Int n_results = length(sra_cellranger.cellranger_results)
@@ -40,6 +41,8 @@ workflow sra_cellranger_example {
     Array[File] cellranger_web_summaries = sra_cellranger.cellranger_web_summaries
     Array[File] cellranger_metrics = sra_cellranger.cellranger_metrics
     Array[File] cellranger_filtered_h5s = sra_cellranger.cellranger_filtered_h5s
+    Array[File] cellbender_output_h5s = sra_cellranger.cellbender_output_h5s
+    Array[File] cellbender_filtered_h5s = sra_cellranger.cellbender_filtered_h5s
     File validation_report = validate_outputs.report
   }
 }

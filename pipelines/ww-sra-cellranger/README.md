@@ -2,11 +2,11 @@
 [![Project Status: Experimental – Useable, some support, not open to feedback, unstable API.](https://getwilds.org/badges/badges/experimental.svg)](https://getwilds.org/badges/#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL pipeline for downloading single-cell RNA-seq data from SRA and processing with Cell Ranger count.
+A WILDS WDL pipeline for downloading single-cell RNA-seq data from SRA, processing with Cell Ranger count, and removing ambient RNA with CellBender.
 
 ## Overview
 
-This pipeline combines the `ww-sra` and `ww-cellranger` modules to download scRNA-seq FASTQ data from NCBI's Sequence Read Archive and run Cell Ranger `count` for gene expression quantification. It supports both public SRA data and controlled-access dbGaP data via optional NGC authentication.
+This pipeline combines the `ww-sra`, `ww-cellranger`, and `ww-cellbender` modules to download scRNA-seq FASTQ data from NCBI's Sequence Read Archive, run Cell Ranger `count` for gene expression quantification, and remove ambient RNA contamination from the resulting count matrices. It supports both public SRA data and controlled-access dbGaP data via optional NGC authentication.
 
 The pipeline automatically handles FASTQ renaming to satisfy Cell Ranger's strict naming convention, so users only need to provide SRA accession IDs and a reference transcriptome.
 
@@ -22,9 +22,9 @@ When pulling controlled-access data from dbGaP via the `ngc_file` input, you are
 
 This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and demonstrates:
 
-- **Module Integration**: Combining `ww-sra` and `ww-cellranger` modules
-- **Data Flow**: SRA download, FASTQ renaming, and Cell Ranger processing
-- **Complexity Level**: Basic (2 modules)
+- **Module Integration**: Combining `ww-sra`, `ww-cellranger`, and `ww-cellbender` modules
+- **Data Flow**: SRA download, FASTQ renaming, Cell Ranger processing, and ambient RNA removal
+- **Complexity Level**: Basic (3 modules)
 
 ## Pipeline Steps
 
@@ -40,11 +40,17 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
    - Runs `cellranger count` on each sample via one of `run_count` (private Docker image), `run_count_hpc_cromwell` (HPC environment module on a Cromwell-on-HPC backend), or `run_count_hpc_sprocket` (HPC environment module inside a Sprocket-managed Lua container), selected by the `execution_mode` input
    - Generates gene expression matrices, web summaries, and metrics
 
+4. **Ambient RNA Removal** (using `ww-cellbender` module):
+   - Runs CellBender `remove-background` on each sample that produced a raw feature-barcode matrix
+   - Samples skipped by Cell Ranger (chemistry detection failure) are automatically excluded
+   - GPU acceleration is enabled by default; set `cellbender_gpu_enabled = false` for CPU-only execution
+
 ## Module Dependencies
 
 This pipeline imports and uses:
 - **ww-sra module**: For SRA data download (`fastqdump` task, with optional dbGaP/NGC support)
 - **ww-cellranger module**: For FASTQ renaming (`rename_fastqs` task) and gene expression quantification (one of `run_count`, `run_count_hpc_cromwell`, or `run_count_hpc_sprocket`, selected per run via the `execution_mode` input)
+- **ww-cellbender module**: For ambient RNA removal (`remove_background` task), run on each sample that produced a raw feature-barcode matrix
 
 ## Cell Ranger Software Environment
 
@@ -138,6 +144,12 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `cellranger_module` | HPC environment module used by the `run_count_hpc_*` tasks. Ignored unless `execution_mode` starts with `hpc_`. | String | No | `CellRanger/10.0.0` |
 | `organize_results` | When true, package all Cell Ranger outputs into a tarball organized by sample subdirectory. | Boolean | No | `false` |
 | `output_prefix` | Prefix for the organized results tarball filename. | String | No | `cellranger_results` |
+| `cellbender_gpu_enabled` | Enable GPU acceleration for CellBender. Set to `false` for CPU-only execution. | Boolean | No | `true` |
+| `cellbender_expected_cells` | Expected number of real cells per sample passed to CellBender. | Int | No | auto |
+| `cellbender_total_droplets_included` | Total number of droplets for CellBender to analyze per sample. | Int | No | auto |
+| `cellbender_epochs` | Number of CellBender training epochs. | Int | No | `150` |
+| `cellbender_cpu_cores` | Number of CPU cores for CellBender. | Int | No | `4` |
+| `cellbender_memory_gb` | Memory in GB for CellBender. | Int | No | `32` |
 
 ### Cell Ranger Reference
 
@@ -156,6 +168,8 @@ Cell Ranger requires a pre-built reference transcriptome tarball. You can:
 | `cellranger_metrics` | Metrics summary CSV files | ww-cellranger |
 | `cellranger_filtered_h5s` | Filtered feature-barcode matrix HDF5 files | ww-cellranger |
 | `cellranger_raw_h5s` | Raw feature-barcode matrix HDF5 files | ww-cellranger |
+| `cellbender_output_h5s` | CellBender cleaned count matrices (all barcodes retained), one per successful sample | ww-cellbender |
+| `cellbender_filtered_h5s` | CellBender filtered count matrices (barcodes with >50% cell probability), one per successful sample | ww-cellbender |
 | `organized_results` | Tarball of all outputs organized into per-sample subdirectories (absent unless `organize_results = true`) | pipeline |
 
 ### Mixed single-cell / non-single-cell input
@@ -198,7 +212,8 @@ The test workflow automatically:
 2. Downloads two SRA datasets, limited to 1M reads each: SRR7722937 (10x Chromium 3' v3 scRNA-seq demo dataset, expected to run successfully) and SRR1039508 (bulk RNA-seq, expected to trigger the `skip_on_chemistry_failure` path)
 3. Renames FASTQs for Cell Ranger compatibility
 4. Runs Cell Ranger count
-5. Outputs results, web summary, and metrics
+5. Runs CellBender `remove-background` on the successful sample (CPU-only with reduced epochs and droplets for CI speed)
+6. Validates that CellBender produced output for the single-cell sample and was correctly skipped for the bulk sample
 
 ### HPC Test Workflow
 
@@ -208,6 +223,7 @@ The test workflow automatically:
 
 - **ww-sra module**: SRA download functionality
 - **ww-cellranger module**: Cell Ranger processing functionality
+- **ww-cellbender module**: Ambient RNA removal functionality
 - **ww-sra-star pipeline**: Alternative pipeline for bulk RNA-seq alignment
 - **ww-sra-salmon pipeline**: Alternative pipeline for bulk RNA-seq quantification
 
