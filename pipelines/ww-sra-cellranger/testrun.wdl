@@ -21,8 +21,6 @@ workflow sra_cellranger_example {
     skip_on_chemistry_failure = true,
     organize_results = true,
     cellbender_gpu_enabled = false,
-    cellbender_total_droplets_included = 5000,
-    cellbender_epochs = 10,
     cellbender_memory_gb = 8
   }
 
