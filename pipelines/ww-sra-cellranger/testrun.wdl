@@ -133,17 +133,17 @@ task validate_outputs {
     fi
 
     if [ -n "~{organized_results}" ]; then
-      if tar -tf "~{organized_results}" | grep -q "$expected_single_cell/"; then
-        echo "organized_results contains $expected_single_cell/ subdirectory - PASSED" >> validation_report.txt
+      if tar -tf "~{organized_results}" | grep -q "$expected_single_cell"; then
+        echo "organized_results contains $expected_single_cell subdirectory - PASSED" >> validation_report.txt
       else
-        echo "organized_results missing $expected_single_cell/ subdirectory" >> validation_report.txt
+        echo "organized_results missing $expected_single_cell subdirectory" >> validation_report.txt
         status=FAILED
       fi
-      if tar -tf "~{organized_results}" | grep -q "$expected_skipped/"; then
-        echo "organized_results contains $expected_skipped/ subdirectory (skipped sample should be absent) - FAILED" >> validation_report.txt
+      if tar -tf "~{organized_results}" | grep -q "$expected_skipped"; then
+        echo "organized_results contains $expected_skipped subdirectory (skipped sample should be absent) - FAILED" >> validation_report.txt
         status=FAILED
       else
-        echo "organized_results does not contain $expected_skipped/ subdirectory (skipped sample correctly absent) - PASSED" >> validation_report.txt
+        echo "organized_results does not contain $expected_skipped subdirectory (skipped sample correctly absent) - PASSED" >> validation_report.txt
       fi
     fi
 

@@ -170,7 +170,7 @@ Cell Ranger requires a pre-built reference transcriptome tarball. You can:
 | `cellranger_raw_h5s` | Raw feature-barcode matrix HDF5 files | ww-cellranger |
 | `cellbender_output_h5s` | CellBender cleaned count matrices (all barcodes retained), one per successful sample | ww-cellbender |
 | `cellbender_filtered_h5s` | CellBender filtered count matrices (barcodes with >50% cell probability), one per successful sample | ww-cellbender |
-| `organized_results` | Tarball of all outputs organized into per-sample subdirectories (absent unless `organize_results = true`) | pipeline |
+| `organized_results` | Tarball of all Cell Ranger and CellBender outputs organized into per-sample subdirectories (absent unless `organize_results = true`) | pipeline |
 
 ### Mixed single-cell / non-single-cell input
 

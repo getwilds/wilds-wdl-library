@@ -31,7 +31,9 @@ workflow sra_cellranger_example {
     skipped_sample_list = sra_cellranger.skipped_sample_list,
     n_results = n_results,
     expected_single_cell_id = "SRR7722937",
-    expected_skipped_id = "SRR1039508"
+    expected_skipped_id = "SRR1039508",
+    cellbender_output_h5s = sra_cellranger.cellbender_output_h5s,
+    cellbender_filtered_h5s = sra_cellranger.cellbender_filtered_h5s
   }
 
   output {
@@ -49,7 +51,7 @@ workflow sra_cellranger_example {
 
 task validate_outputs {
   meta {
-    description: "Assert that the skip_on_chemistry_failure=true scatter correctly partitioned the single-cell and non-single-cell samples."
+    description: "Assert that the skip_on_chemistry_failure=true scatter correctly partitioned the single-cell and non-single-cell samples, and that CellBender produced output for exactly the successful sample."
     outputs: {
         report: "Validation report"
     }
@@ -61,6 +63,8 @@ task validate_outputs {
     n_results: "Length of the filtered cellranger_results array (should be 1)"
     expected_single_cell_id: "Sample ID expected in single_cell_sample_list"
     expected_skipped_id: "Sample ID expected in skipped_sample_list"
+    cellbender_output_h5s: "CellBender cleaned H5 files (one per successful sample)"
+    cellbender_filtered_h5s: "CellBender filtered H5 files (one per successful sample)"
   }
 
   input {
@@ -69,6 +73,8 @@ task validate_outputs {
     Int n_results
     String expected_single_cell_id
     String expected_skipped_id
+    Array[File] cellbender_output_h5s
+    Array[File] cellbender_filtered_h5s
   }
 
   command <<<
@@ -103,6 +109,22 @@ task validate_outputs {
       status=FAILED
     else
       echo "cellranger_results length = 1 - PASSED" >> validation_report.txt
+    fi
+
+    n_cellbender_output=~{length(cellbender_output_h5s)}
+    if [ "$n_cellbender_output" -ne 1 ]; then
+      echo "cellbender_output_h5s length: expected 1, got $n_cellbender_output" >> validation_report.txt
+      status=FAILED
+    else
+      echo "cellbender_output_h5s length = 1 - PASSED" >> validation_report.txt
+    fi
+
+    n_cellbender_filtered=~{length(cellbender_filtered_h5s)}
+    if [ "$n_cellbender_filtered" -ne 1 ]; then
+      echo "cellbender_filtered_h5s length: expected 1, got $n_cellbender_filtered" >> validation_report.txt
+      status=FAILED
+    else
+      echo "cellbender_filtered_h5s length = 1 - PASSED" >> validation_report.txt
     fi
 
     echo "" >> validation_report.txt
