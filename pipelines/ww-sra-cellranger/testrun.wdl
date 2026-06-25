@@ -23,7 +23,8 @@ workflow sra_cellranger_example {
     cellbender_gpu_enabled = false,
     cellbender_expected_cells = 500,
     cellbender_total_droplets_included = 5000,
-    cellbender_epochs = 10
+    cellbender_epochs = 10,
+    cellbender_memory_gb = 8
   }
 
   Int n_results = length(sra_cellranger.cellranger_results)
