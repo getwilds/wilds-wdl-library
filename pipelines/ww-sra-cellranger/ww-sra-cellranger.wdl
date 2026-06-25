@@ -2,6 +2,7 @@ version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as sra_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/organize-sra-cellranger-outputs/modules/ww-cellranger/ww-cellranger.wdl" as cellranger_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellbender/modules/ww-cellbender/ww-cellbender.wdl" as cellbender_tasks
 
 workflow sra_cellranger {
   meta {
@@ -25,6 +26,8 @@ workflow sra_cellranger {
         cellranger_metrics: "Cell Ranger metrics summary CSV files",
         cellranger_filtered_h5s: "Cell Ranger filtered feature-barcode matrix HDF5 files",
         cellranger_raw_h5s: "Cell Ranger raw feature-barcode matrix HDF5 files",
+        cellbender_output_h5s: "CellBender cleaned count matrix H5 files (all barcodes retained), one per successful sample",
+        cellbender_filtered_h5s: "CellBender filtered count matrix H5 files (barcodes with >50% cell probability), one per successful sample",
         organized_results: "Tarball of all Cell Ranger outputs organized into per-sample subdirectories (absent when organize_results is false)"
     }
   }
@@ -45,6 +48,12 @@ workflow sra_cellranger {
     cellranger_module: "HPC environment module used by the run_count_hpc_* tasks. Ignored unless execution_mode starts with 'hpc_'."
     organize_results: "When true, package all Cell Ranger outputs into a tarball organized by sample subdirectory."
     output_prefix: "Prefix for the organized results tarball filename (default: 'cellranger_results')."
+    cellbender_gpu_enabled: "Enable GPU acceleration for CellBender (default: true); set to false for CPU-only execution."
+    cellbender_expected_cells: "Optional expected number of real cells per sample passed to CellBender."
+    cellbender_total_droplets_included: "Optional total number of droplets for CellBender to analyze per sample."
+    cellbender_epochs: "Number of CellBender training epochs (default: 150)."
+    cellbender_cpu_cores: "Number of CPU cores for CellBender (default: 4)."
+    cellbender_memory_gb: "Memory in GB for CellBender (default: 32)."
   }
 
   input {
@@ -63,6 +72,12 @@ workflow sra_cellranger {
     String cellranger_module = "CellRanger/10.0.0"
     Boolean organize_results = false
     String output_prefix = "cellranger_results"
+    Boolean cellbender_gpu_enabled = true
+    Int? cellbender_expected_cells
+    Int? cellbender_total_droplets_included
+    Int cellbender_epochs = 150
+    Int cellbender_cpu_cores = 4
+    Int cellbender_memory_gb = 32
   }
 
   # Resolve the sample list from whichever input was provided. A
@@ -168,6 +183,20 @@ workflow sra_cellranger {
     File? raw_h5 = if defined(run_count.raw_h5) then run_count.raw_h5
                   else if defined(run_count_hpc_cromwell.raw_h5) then run_count_hpc_cromwell.raw_h5
                   else run_count_hpc_sprocket.raw_h5
+
+    # Run CellBender on samples that produced a raw h5 (skipped samples won't have one)
+    if (defined(raw_h5)) {
+      call cellbender_tasks.remove_background { input:
+        input_h5 = select_first([raw_h5]),
+        sample_name = id,
+        expected_cells = cellbender_expected_cells,
+        total_droplets_included = cellbender_total_droplets_included,
+        epochs = cellbender_epochs,
+        gpu_enabled = cellbender_gpu_enabled,
+        cpu_cores = cellbender_cpu_cores,
+        memory_gb = cellbender_memory_gb
+      }
+    }
   }
 
   # Partition sample_ids into "ran" vs "skipped" based on each
@@ -201,6 +230,8 @@ workflow sra_cellranger {
     Array[File] cellranger_metrics = select_all(metrics_summary)
     Array[File] cellranger_filtered_h5s = select_all(filtered_h5)
     Array[File] cellranger_raw_h5s = select_all(raw_h5)
+    Array[File] cellbender_output_h5s = select_all(remove_background.output_h5)
+    Array[File] cellbender_filtered_h5s = select_all(remove_background.filtered_h5)
     File? organized_results = organize_outputs.results_zip
   }
 }

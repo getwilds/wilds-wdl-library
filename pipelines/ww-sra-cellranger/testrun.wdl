@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/organize-sra-cellranger-outputs/pipelines/ww-sra-cellranger/ww-sra-cellranger.wdl" as sra_cellranger_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellbender/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-cellbender/pipelines/ww-sra-cellranger/ww-sra-cellranger.wdl" as sra_cellranger_workflow
 
 workflow sra_cellranger_example {
   # Download a small GEX reference for Cell Ranger
@@ -19,7 +19,11 @@ workflow sra_cellranger_example {
     memory_gb = 6,
     max_reads = 1000000,
     skip_on_chemistry_failure = true,
-    organize_results = true
+    organize_results = true,
+    cellbender_gpu_enabled = false,
+    cellbender_expected_cells = 500,
+    cellbender_total_droplets_included = 5000,
+    cellbender_epochs = 10
   }
 
   Int n_results = length(sra_cellranger.cellranger_results)
@@ -30,7 +34,9 @@ workflow sra_cellranger_example {
     n_results = n_results,
     expected_single_cell_id = "SRR7722937",
     expected_skipped_id = "SRR1039508",
-    organized_results = sra_cellranger.organized_results
+    organized_results = sra_cellranger.organized_results,
+    cellbender_output_h5s = sra_cellranger.cellbender_output_h5s,
+    cellbender_filtered_h5s = sra_cellranger.cellbender_filtered_h5s
   }
 
   output {
@@ -41,6 +47,8 @@ workflow sra_cellranger_example {
     Array[File] cellranger_metrics = sra_cellranger.cellranger_metrics
     Array[File] cellranger_filtered_h5s = sra_cellranger.cellranger_filtered_h5s
     Array[File] cellranger_raw_h5s = sra_cellranger.cellranger_raw_h5s
+    Array[File] cellbender_output_h5s = sra_cellranger.cellbender_output_h5s
+    Array[File] cellbender_filtered_h5s = sra_cellranger.cellbender_filtered_h5s
     File? organized_results = sra_cellranger.organized_results
     File validation_report = validate_outputs.report
   }
@@ -61,6 +69,8 @@ task validate_outputs {
     expected_single_cell_id: "Sample ID expected in single_cell_sample_list"
     expected_skipped_id: "Sample ID expected in skipped_sample_list"
     organized_results: "ZIP archive produced by organize_outputs (optional; checked when present)"
+    cellbender_output_h5s: "CellBender cleaned H5 files (one per successful sample)"
+    cellbender_filtered_h5s: "CellBender filtered H5 files (one per successful sample)"
   }
 
   input {
@@ -70,6 +80,8 @@ task validate_outputs {
     String expected_single_cell_id
     String expected_skipped_id
     File? organized_results
+    Array[File] cellbender_output_h5s
+    Array[File] cellbender_filtered_h5s
   }
 
   command <<<
@@ -104,6 +116,22 @@ task validate_outputs {
       status=FAILED
     else
       echo "cellranger_results length = 1 - PASSED" >> validation_report.txt
+    fi
+
+    n_cellbender_output=~{length(cellbender_output_h5s)}
+    if [ "$n_cellbender_output" -ne 1 ]; then
+      echo "cellbender_output_h5s length: expected 1, got $n_cellbender_output" >> validation_report.txt
+      status=FAILED
+    else
+      echo "cellbender_output_h5s length = 1 - PASSED" >> validation_report.txt
+    fi
+
+    n_cellbender_filtered=~{length(cellbender_filtered_h5s)}
+    if [ "$n_cellbender_filtered" -ne 1 ]; then
+      echo "cellbender_filtered_h5s length: expected 1, got $n_cellbender_filtered" >> validation_report.txt
+      status=FAILED
+    else
+      echo "cellbender_filtered_h5s length = 1 - PASSED" >> validation_report.txt
     fi
 
     if [ -n "~{organized_results}" ]; then
