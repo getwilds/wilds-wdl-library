@@ -218,6 +218,8 @@ workflow sra_cellranger {
         metrics_summaries = select_all(metrics_summary),
         filtered_h5s = select_all(filtered_h5),
         raw_h5s = select_all(raw_h5),
+        cellbender_output_h5s = select_all(remove_background.output_h5),
+        cellbender_filtered_h5s = select_all(remove_background.filtered_h5),
         output_prefix = output_prefix
     }
   }
@@ -306,7 +308,7 @@ task organize_outputs {
     email: "tfirman@fredhutch.org"
     description: "Package Cell Ranger outputs into a tarball organized by sample subdirectory."
     outputs: {
-        results_zip: "Tarball containing all Cell Ranger outputs organized into per-sample subdirectories"
+        results_zip: "Tarball containing all Cell Ranger and CellBender outputs organized into per-sample subdirectories"
     }
   }
 
@@ -317,6 +319,8 @@ task organize_outputs {
     metrics_summaries: "Metrics summary CSV files, one per successful sample"
     filtered_h5s: "Filtered feature-barcode matrix HDF5 files, one per successful sample"
     raw_h5s: "Raw feature-barcode matrix HDF5 files, one per successful sample"
+    cellbender_output_h5s: "CellBender cleaned count matrix H5 files, one per successful sample"
+    cellbender_filtered_h5s: "CellBender filtered count matrix H5 files, one per successful sample"
     output_prefix: "Prefix for the output tarball filename"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
@@ -329,6 +333,8 @@ task organize_outputs {
     Array[File] metrics_summaries
     Array[File] filtered_h5s
     Array[File] raw_h5s
+    Array[File] cellbender_output_h5s
+    Array[File] cellbender_filtered_h5s
     String output_prefix = "cellranger_results"
     Int memory_gb = 4
     Int cpu_cores = 1
@@ -344,15 +350,19 @@ task organize_outputs {
     METRICS=(~{sep=' ' metrics_summaries})
     FILTERED=(~{sep=' ' filtered_h5s})
     RAW=(~{sep=' ' raw_h5s})
+    CB_OUTPUT=(~{sep=' ' cellbender_output_h5s})
+    CB_FILTERED=(~{sep=' ' cellbender_filtered_h5s})
 
     for i in "${!SAMPLE_IDS[@]}"; do
       SAMPLE="${SAMPLE_IDS[$i]}"
       mkdir -p "$OUTDIR/$SAMPLE"
-      cp "${TARS[$i]}"     "$OUTDIR/$SAMPLE/"
-      cp "${WEB[$i]}"      "$OUTDIR/$SAMPLE/"
-      cp "${METRICS[$i]}"  "$OUTDIR/$SAMPLE/"
-      cp "${FILTERED[$i]}" "$OUTDIR/$SAMPLE/"
-      cp "${RAW[$i]}"      "$OUTDIR/$SAMPLE/"
+      cp "${TARS[$i]}"        "$OUTDIR/$SAMPLE/"
+      cp "${WEB[$i]}"         "$OUTDIR/$SAMPLE/"
+      cp "${METRICS[$i]}"     "$OUTDIR/$SAMPLE/"
+      cp "${FILTERED[$i]}"    "$OUTDIR/$SAMPLE/"
+      cp "${RAW[$i]}"         "$OUTDIR/$SAMPLE/"
+      cp "${CB_OUTPUT[$i]}"   "$OUTDIR/$SAMPLE/"
+      cp "${CB_FILTERED[$i]}" "$OUTDIR/$SAMPLE/"
     done
 
     tar -czf "~{output_prefix}.tar.gz" "$OUTDIR"
