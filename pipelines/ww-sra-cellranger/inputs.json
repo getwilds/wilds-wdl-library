@@ -6,5 +6,7 @@
   "sra_cellranger.skip_on_chemistry_failure": true,
   "sra_cellranger.execution_mode": "hpc_cromwell",
   "sra_cellranger.docker_image": "ghcr.io/getwilds/cellranger:10.0.0",
-  "sra_cellranger.cellranger_module": "CellRanger/10.0.0"
+  "sra_cellranger.cellranger_module": "CellRanger/10.0.0",
+  "sra_cellranger.cellbender_gpu_enabled": true,
+  "sra_cellranger.cellbender_expected_cells": 5000
 }

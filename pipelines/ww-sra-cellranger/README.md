@@ -71,7 +71,7 @@ Unused inputs are ignored — e.g., `docker_image` has no effect when `execution
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
 - One of: Docker/Apptainer support with a private Cell Ranger image (default `execution_mode = "docker"`), a Cromwell-on-HPC backend that runs tasks directly on the compute node and provides Cell Ranger via Lmod (`execution_mode = "hpc_cromwell"`), or a Sprocket-on-HPC config that bind-mounts the host's Lmod and Cell Ranger software trees into the container (`execution_mode = "hpc_sprocket"`)
 - Internet access for SRA downloads
-- Sufficient compute resources for Cell Ranger (64GB+ RAM recommended)
+- Sufficient compute resources for Cell Ranger (64GB+ RAM recommended) and CellBender (32GB+ RAM; GPU strongly recommended, set `cellbender_gpu_enabled = false` for CPU-only)
 - **Platform**: Cell Ranger requires Linux x86_64 with AVX support (not compatible with Apple Silicon)
 
 ### Input Configuration
@@ -86,7 +86,9 @@ Create an inputs JSON file with your SRA accessions and Cell Ranger reference. P
   "sra_cellranger.memory_gb": 64,
   "sra_cellranger.execution_mode": "hpc_cromwell",
   "sra_cellranger.docker_image": "ghcr.io/getwilds/cellranger:10.0.0",
-  "sra_cellranger.cellranger_module": "CellRanger/10.0.0"
+  "sra_cellranger.cellranger_module": "CellRanger/10.0.0",
+  "sra_cellranger.cellbender_gpu_enabled": true,
+  "sra_cellranger.cellbender_expected_cells": 5000
 }
 ```
 
