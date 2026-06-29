@@ -52,6 +52,7 @@ workflow sra_cellranger {
     cellbender_expected_cells: "Optional expected number of real cells per sample passed to CellBender."
     cellbender_total_droplets_included: "Optional total number of droplets for CellBender to analyze per sample."
     cellbender_epochs: "Number of CellBender training epochs (default: 150)."
+    cellbender_low_count_threshold: "Droplets with total UMI count below this value are excluded from CellBender analysis (default: 5)."
     cellbender_cpu_cores: "Number of CPU cores for CellBender (default: 4)."
     cellbender_memory_gb: "Memory in GB for CellBender (default: 32)."
   }
@@ -76,6 +77,7 @@ workflow sra_cellranger {
     Int? cellbender_expected_cells
     Int? cellbender_total_droplets_included
     Int cellbender_epochs = 150
+    Int cellbender_low_count_threshold = 5
     Int cellbender_cpu_cores = 4
     Int cellbender_memory_gb = 32
   }
@@ -192,6 +194,7 @@ workflow sra_cellranger {
         expected_cells = cellbender_expected_cells,
         total_droplets_included = cellbender_total_droplets_included,
         epochs = cellbender_epochs,
+        low_count_threshold = cellbender_low_count_threshold,
         gpu_enabled = cellbender_gpu_enabled,
         cpu_cores = cellbender_cpu_cores,
         memory_gb = cellbender_memory_gb

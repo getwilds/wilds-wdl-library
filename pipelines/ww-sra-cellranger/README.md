@@ -150,6 +150,7 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `cellbender_expected_cells` | Expected number of real cells per sample passed to CellBender. | Int | No | auto |
 | `cellbender_total_droplets_included` | Total number of droplets for CellBender to analyze per sample. | Int | No | auto |
 | `cellbender_epochs` | Number of CellBender training epochs. | Int | No | `150` |
+| `cellbender_low_count_threshold` | Droplets with total UMI count below this value are excluded from CellBender analysis. | Int | No | `5` |
 | `cellbender_cpu_cores` | Number of CPU cores for CellBender. | Int | No | `4` |
 | `cellbender_memory_gb` | Memory in GB for CellBender. | Int | No | `32` |
 
