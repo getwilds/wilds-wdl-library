@@ -30,7 +30,7 @@ Runs CellBender `remove-background` on a raw 10x Genomics feature-barcode matrix
 | `input_h5` | File | required | Raw feature-barcode matrix HDF5 file from Cell Ranger (`raw_feature_bc_matrix.h5`) |
 | `sample_name` | String | required | Sample name used as output file prefix |
 | `expected_cells` | Int? | auto | Estimated number of real cells; helps CellBender set priors |
-| `total_droplets_included` | Int? | auto | Total droplets to analyze (ranked by UMI count) |
+| `total_droplets_included` | Int? | auto | Total droplets to analyze |
 | `fpr` | String | `"0.01"` | False positive rate target(s), space-separated for multiple (e.g. `"0.01 0.05"`) |
 | `epochs` | Int | `150` | Number of training epochs |
 | `learning_rate` | Float | `0.0001` | Base learning rate for the variational inference optimizer |

@@ -30,7 +30,7 @@ task remove_background {
     input_sample_optional: "none"
     input_reference_required: "none"
     input_reference_optional: "none"
-    output_sample: "output_h5:gene_expression_matrix:h5,filtered_h5:gene_expression_matrix:h5,report_html:quality_control_report:html,summary_pdf:plot:pdf,cell_barcodes_csv:gene_report:csv,metrics_csv:gene_report:csv"
+    output_sample: "output_h5:gene_expression_matrix:h5,filtered_h5:gene_expression_matrix:h5,report_html:quality_control_report:html,summary_pdf:plot:pdf,log_file:report:textual_format,cell_barcodes_csv:gene_report:csv,metrics_csv:gene_report:csv,checkpoint_tar:mathematical_model:tar_format"
     output_reference: "none"
   }
 
