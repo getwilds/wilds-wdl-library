@@ -1,0 +1,37 @@
+[
+  {
+    "referrer": "Google",
+    "count": 12,
+    "uniques": 6
+  },
+  {
+    "referrer": "sciwiki.fredhutch.org",
+    "count": 11,
+    "uniques": 5
+  },
+  {
+    "referrer": "github.com",
+    "count": 6,
+    "uniques": 4
+  },
+  {
+    "referrer": "DuckDuckGo",
+    "count": 4,
+    "uniques": 1
+  },
+  {
+    "referrer": "Bing",
+    "count": 1,
+    "uniques": 1
+  },
+  {
+    "referrer": "linkedin.com",
+    "count": 1,
+    "uniques": 1
+  },
+  {
+    "referrer": "ocdo.fredhutch.org",
+    "count": 1,
+    "uniques": 1
+  }
+]
