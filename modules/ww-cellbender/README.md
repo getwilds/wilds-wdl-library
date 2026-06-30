@@ -78,9 +78,9 @@ workflow my_scrna_pipeline {
   }
 
   output {
-    File cleaned_h5      = remove_background.filtered_h5
-    File qc_report       = remove_background.report_html
-    File cell_barcodes   = remove_background.cell_barcodes_csv
+    File cleaned_h5 = remove_background.filtered_h5
+    File qc_report = remove_background.report_html
+    File cell_barcodes = remove_background.cell_barcodes_csv
   }
 }
 ```

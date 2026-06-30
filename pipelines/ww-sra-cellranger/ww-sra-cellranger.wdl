@@ -359,12 +359,12 @@ task organize_outputs {
     for i in "${!SAMPLE_IDS[@]}"; do
       SAMPLE="${SAMPLE_IDS[$i]}"
       mkdir -p "$OUTDIR/$SAMPLE"
-      cp "${TARS[$i]}"        "$OUTDIR/$SAMPLE/"
-      cp "${WEB[$i]}"         "$OUTDIR/$SAMPLE/"
-      cp "${METRICS[$i]}"     "$OUTDIR/$SAMPLE/"
-      cp "${FILTERED[$i]}"    "$OUTDIR/$SAMPLE/"
-      cp "${RAW[$i]}"         "$OUTDIR/$SAMPLE/"
-      cp "${CB_OUTPUT[$i]}"   "$OUTDIR/$SAMPLE/"
+      cp "${TARS[$i]}" "$OUTDIR/$SAMPLE/"
+      cp "${WEB[$i]}" "$OUTDIR/$SAMPLE/"
+      cp "${METRICS[$i]}" "$OUTDIR/$SAMPLE/"
+      cp "${FILTERED[$i]}" "$OUTDIR/$SAMPLE/"
+      cp "${RAW[$i]}" "$OUTDIR/$SAMPLE/"
+      cp "${CB_OUTPUT[$i]}" "$OUTDIR/$SAMPLE/"
       cp "${CB_FILTERED[$i]}" "$OUTDIR/$SAMPLE/"
     done
 
