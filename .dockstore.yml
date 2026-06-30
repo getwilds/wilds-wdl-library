@@ -159,6 +159,16 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+      - name: Hrishi Venkatesh
+        email: hvenkate@fredhutch.org
+        role: Post-Doctoral Research Fellow
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0002-2938-3856
     topic: WDL module for removing ambient RNA from single-cell RNA-seq data using CellBender
     enableAutoDois: true
     filters:
