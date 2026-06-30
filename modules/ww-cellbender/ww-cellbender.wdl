@@ -90,14 +90,14 @@ task remove_background {
   >>>
 
   output {
-    File output_h5             = "~{sample_name}_out.h5"
-    File filtered_h5           = "~{sample_name}_out_filtered.h5"
-    File report_html           = "~{sample_name}_out_report.html"
-    File summary_pdf           = "~{sample_name}_out.pdf"
-    File log_file              = "~{sample_name}_out.log"
-    File cell_barcodes_csv     = "~{sample_name}_out_cell_barcodes.csv"
-    File metrics_csv           = "~{sample_name}_out_metrics.csv"
-    File checkpoint_tar        = "ckpt.tar.gz"
+    File output_h5 = "~{sample_name}_out.h5"
+    File filtered_h5 = "~{sample_name}_out_filtered.h5"
+    File report_html = "~{sample_name}_out_report.html"
+    File summary_pdf = "~{sample_name}_out.pdf"
+    File log_file = "~{sample_name}_out.log"
+    File cell_barcodes_csv = "~{sample_name}_out_cell_barcodes.csv"
+    File metrics_csv = "~{sample_name}_out_metrics.csv"
+    File checkpoint_tar = "ckpt.tar.gz"
   }
 
   runtime {

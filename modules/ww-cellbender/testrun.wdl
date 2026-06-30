@@ -24,13 +24,13 @@ workflow cellbender_example {
   }
 
   output {
-    File output_h5         = remove_background.output_h5
-    File filtered_h5       = remove_background.filtered_h5
-    File report_html       = remove_background.report_html
-    File summary_pdf       = remove_background.summary_pdf
-    File log_file          = remove_background.log_file
+    File output_h5 = remove_background.output_h5
+    File filtered_h5 = remove_background.filtered_h5
+    File report_html = remove_background.report_html
+    File summary_pdf = remove_background.summary_pdf
+    File log_file = remove_background.log_file
     File cell_barcodes_csv = remove_background.cell_barcodes_csv
-    File metrics_csv       = remove_background.metrics_csv
-    File checkpoint_tar    = remove_background.checkpoint_tar
+    File metrics_csv = remove_background.metrics_csv
+    File checkpoint_tar = remove_background.checkpoint_tar
   }
 }
