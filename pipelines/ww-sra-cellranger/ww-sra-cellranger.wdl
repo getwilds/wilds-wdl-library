@@ -1,8 +1,8 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as sra_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/organize-sra-cellranger-outputs/modules/ww-cellranger/ww-cellranger.wdl" as cellranger_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/organize-sra-cellranger-outputs/modules/ww-cellbender/ww-cellbender.wdl" as cellbender_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cellranger/ww-cellranger.wdl" as cellranger_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cellbender/ww-cellbender.wdl" as cellbender_tasks
 
 workflow sra_cellranger {
   meta {
