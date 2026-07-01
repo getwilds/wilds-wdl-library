@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-proseq/ww-proseq.wdl" as proseq_workflow
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/proseq-input-change/pipelines/ww-proseq/ww-proseq.wdl" as proseq_workflow
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
 
@@ -11,10 +11,16 @@ struct ProseqSample {
 }
 
 struct ProseqReferences {
-    File experimental_fasta
-    File spikein_merged_fasta
-    File rdna_fasta
+    File? experimental_fasta
+    File? spikein_merged_fasta
+    File? rdna_fasta
+    File? experimental_index_tar
+    File? spikein_index_tar
+    File? rdna_index_tar
     String spikein_chrom_prefix
+    String? experimental_index_prefix
+    String? spikein_index_prefix
+    String? rdna_index_prefix
 }
 
 workflow proseq_example {
@@ -52,17 +58,17 @@ workflow proseq_example {
   # rDNA reference for rRNA depletion.
   call ww_testdata.download_rrna_reference { }
 
-  ProseqReferences references = {
-      "experimental_fasta": download_dm6.fasta,
-      "spikein_merged_fasta": build_merged.merged_fasta,
-      "rdna_fasta": download_rrna_reference.fasta,
-      "spikein_chrom_prefix": "hg38"
+  ProseqReferences references = object {
+      experimental_fasta: download_dm6.fasta,
+      spikein_merged_fasta: build_merged.merged_fasta,
+      rdna_fasta: download_rrna_reference.fasta,
+      spikein_chrom_prefix: "hg38"
   }
 
-  ProseqSample sample1 = {
-      "name": "proseq_demo",
-      "r1": proseq_rep1.r1_end,
-      "r2": proseq_rep1.r2_end
+  ProseqSample sample1 = object {
+      name: "proseq_demo",
+      r1: proseq_rep1.r1_end,
+      r2: proseq_rep1.r2_end
   }
 
   call proseq_workflow.proseq { input:

@@ -1,16 +1,5 @@
 {
-  "proseq.samples": [
-    {
-      "name": "sample1",
-      "r1": "/path/to/sample1_R1.fastq.gz",
-      "r2": "/path/to/sample1_R2.fastq.gz"
-    },
-    {
-      "name": "sample2",
-      "r1": "/path/to/sample2_R1.fastq.gz",
-      "r2": "/path/to/sample2_R2.fastq.gz"
-    }
-  ],
+  "proseq.samples_tsv": "/path/to/samples.tsv",
   "proseq.references": {
     "experimental_fasta": "/path/to/dm6.fa",
     "spikein_merged_fasta": "/path/to/dm6_hg38_merged.fa",
