@@ -79,9 +79,13 @@ Pipelines follow the same `testrun.wdl` / `testrun_hpc.wdl` split as modules: mo
 
 ## Using Pipelines
 
-### **Running Directly (No Git Clone Required)**
+### **Obtaining a Pipeline**
 
-You can download and run any pipeline without cloning the entire repository:
+There are two equally supported ways to get a pipeline onto your system. Which one fits depends on how the pipeline imports its modules, so check the individual pipeline's README if you are unsure.
+
+**Option 1: Download a single file**
+
+Works for pipelines that import their modules using GitHub URLs, where your WDL executor fetches the dependencies automatically at runtime. No clone required:
 
 ```bash
 # Download a pipeline and its example inputs
@@ -94,7 +98,18 @@ curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipeli
 sprocket run ww-sra-star.wdl @inputs.json
 ```
 
-This works because all pipelines import modules using GitHub URLs, so your WDL executor fetches dependencies automatically.
+**Option 2: Clone the repository (or download a release bundle)**
+
+Required for pipelines that import their modules using **relative paths** (currently being piloted in `ww-bwa-gatk`; see [issue #364](https://github.com/getwilds/wilds-wdl-library/issues/364)), since the surrounding `modules/` directory must be present on disk. This approach also keeps the whole workflow self-contained and inspectable, with nothing fetched at runtime:
+
+```bash
+# Clone the library, then run from within the pipeline directory
+git clone https://github.com/getwilds/wilds-wdl-library.git
+cd wilds-wdl-library/pipelines/ww-bwa-gatk
+
+# Modify inputs.json as necessary for your data, then run via the command line or PROOF's point-and-click interface
+sprocket run ww-bwa-gatk.wdl @inputs.json
+```
 
 ### **Testing and Demonstration**
 

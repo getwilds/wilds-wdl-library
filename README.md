@@ -42,9 +42,13 @@ Complete analysis workflows combining multiple modules.
 
 ## Quick Start
 
-### Running Pipelines Directly (No Clone Required)
+### Running Pipelines
 
-Thanks to GitHub URL imports, you can download and run any pipeline without cloning the entire repository:
+There are two equally supported ways to obtain and run a pipeline. Which one fits depends on how the pipeline imports its modules, so check the individual pipeline's README if you are unsure.
+
+**Option 1: Download a single file (no clone required)**
+
+Works for pipelines that import their modules using GitHub URLs, where your WDL executor fetches the dependencies automatically at runtime:
 
 ```bash
 # Download a pipeline and its example inputs
@@ -57,9 +61,9 @@ curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipeli
 sprocket run ww-sra-star.wdl @inputs.json
 ```
 
-### Using the Full Repository
+**Option 2: Clone the repository (or download a release bundle)**
 
-If you want to explore multiple components or contribute:
+Required for pipelines that import their modules using relative paths (currently being piloted in `ww-bwa-gatk`; see [issue #364](https://github.com/getwilds/wilds-wdl-library/issues/364)), since the surrounding `modules/` directory must be present on disk. This approach also keeps the whole workflow self-contained and inspectable, with nothing fetched at runtime, and is the right choice if you want to explore multiple components or contribute:
 
 ```bash
 # Clone the repository
@@ -71,8 +75,8 @@ cd modules/ww-star
 sprocket run testrun.wdl
 
 # Run a pipeline (modify inputs.json as necessary)
-cd ../../pipelines/ww-sra-star
-sprocket run ww-sra-star.wdl @inputs.json
+cd ../../pipelines/ww-bwa-gatk
+sprocket run ww-bwa-gatk.wdl @inputs.json
 ```
 
 ### Importing into Your Workflows
@@ -89,12 +93,14 @@ workflow my_analysis {
 }
 ```
 
-WILDS pipelines use GitHub URLs for imports, providing several advantages:
+The example above uses GitHub URL imports, which are convenient for plug-and-play usage:
 
 - **No local cloning required**: Use modules directly without downloading the repository
-- **Version control**: Pin to specific commits or tags for reproducibility
+- **Version control**: Pin to a specific commit or tag for reproducibility (prefer a commit SHA over `refs/heads/main`, which is a moving target)
 - **Easy updates**: Switch between versions by changing the URL
 - **Modular usage**: Import only the modules you need
+
+Alternatively, modules can be referenced with **relative path imports** (e.g. `import "../ww-star/ww-star.wdl"`), which keep the workflow self-contained with nothing fetched at runtime and make it runnable on executors that block remote imports (such as AWS HealthOmics), at the cost of needing the repository layout present on disk. Both styles are valid; see the [modules README](modules/README.md) and [issue #364](https://github.com/getwilds/wilds-wdl-library/issues/364) for the tradeoffs.
 
 ## Supported Executors
 
