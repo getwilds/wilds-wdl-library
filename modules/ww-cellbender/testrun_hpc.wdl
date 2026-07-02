@@ -18,7 +18,7 @@ workflow cellbender_example {
     sample_name = "pbmc_10k_v3",
     expected_cells = 10000,
     epochs = 150,
-    gpu_enabled = true,
+    gpu_enabled = false, # Can't test this in current HPC test run setup
     cpu_cores = 4,
     memory_gb = 32
   }

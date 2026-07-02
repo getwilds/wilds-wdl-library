@@ -21,7 +21,7 @@ workflow sra_cellranger_example {
     max_reads = 5000000,
     skip_on_chemistry_failure = true,
     execution_mode = "hpc_sprocket",
-    cellbender_gpu_enabled = true
+    cellbender_gpu_enabled = false # Can't test this in current HPC test run setup
   }
 
   Int n_results = length(sra_cellranger.cellranger_results)
