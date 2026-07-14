@@ -13,8 +13,8 @@ identifiers:
     value: 10.5281/zenodo.19339693
     description: "Concept DOI for all versions of the WILDS WDL Library"
   - type: doi
-    value: 10.5281/zenodo.19339694
-    description: "DOI for version 0.2.0"
+    value: 10.5281/zenodo.21350120
+    description: "DOI for version 0.3.0"
 contact:
   - email: wilds@fredhutch.org
     name: "Fred Hutch OCDO WILDS"
