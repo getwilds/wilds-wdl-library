@@ -3,8 +3,8 @@ message: "If you use this software, please cite it as below."
 type: software
 title: "WILDS WDL Library"
 abstract: "A centralized collection of bioinformatics WDL infrastructure providing reusable, well-tested components that can be combined to create powerful computational pipelines for genomics research."
-version: 0.2.0
-date-released: "2026-03-31"
+version: 0.3.0
+date-released: "2026-07-13"
 license: MIT
 repository-code: "https://github.com/getwilds/wilds-wdl-library"
 url: "https://getwilds.org/wilds-wdl-library/"
