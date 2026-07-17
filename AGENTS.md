@@ -22,7 +22,8 @@ pipelines/ww-pipeline-name/
 - Command blocks: start with `set -eo pipefail`, use `<<<...>>>` heredoc syntax
 - Docker images: always from `getwilds/` with exact version pins (never `latest`); declared as `String docker_image = "getwilds/tool:version"` in the `input` block and referenced via `docker: docker_image` in `runtime`
 - Resource params: `cpu_cores` and `memory_gb` with sensible defaults
-- Imports use GitHub raw URLs: `https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-*/ww-*.wdl`
+- Pipeline and module source WDL files (`ww-*.wdl`) use GitHub raw URL imports: `https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-*/ww-*.wdl`
+- `testrun.wdl` and `testrun_hpc.wdl` use relative path imports (e.g. `"./ww-toolname.wdl"`, `"../ww-testdata/ww-testdata.wdl"`)
 - Modules are self-contained: `ww-<toolname>.wdl` files never import other modules. Cross-module composition happens only in `testrun.wdl` (for test fixtures) and in pipelines. If a task needs another tool's output, add it to the existing module rather than introducing a cross-module import in the source WDL.
 
 ## Test Workflows (testrun.wdl)
@@ -50,7 +51,6 @@ make run_cromwell NAME=ww-toolname  # Run testrun.wdl with Cromwell
 Sprocket exceptions (from sprocket.toml): TodoComment, ContainerUri, UnusedInput
 
 ## Common Development Pitfalls
-- Import URLs must point to the correct branch during development; switch to `main` before merging
 - Docker image version conflicts (especially with complex tools like ColabFold) - always pin versions
 - Test data changes go in the `ww-testdata` module, not individual modules
 - All modules/pipelines must pass CI on three executors: Cromwell, miniWDL, and Sprocket
