@@ -1,0 +1,25 @@
+{
+  "proseq.samples": [
+    {
+      "name": "sample1",
+      "r1": "/path/to/sample1_R1.fastq.gz",
+      "r2": "/path/to/sample1_R2.fastq.gz"
+    },
+    {
+      "name": "sample2",
+      "r1": "/path/to/sample2_R1.fastq.gz",
+      "r2": "/path/to/sample2_R2.fastq.gz"
+    }
+  ],
+  "proseq.references": {
+    "experimental_fasta": "/path/to/dm6.fa",
+    "spikein_merged_fasta": "/path/to/dm6_hg38_merged.fa",
+    "rdna_fasta": "/path/to/human_45S_rRNA.fa",
+    "spikein_chrom_prefix": "hg38"
+  },
+  "proseq.umi_loc": "per_read",
+  "proseq.umi_len": 6,
+  "proseq.mapq_threshold": 10,
+  "proseq.align_cpu": 8,
+  "proseq.align_memory_gb": 16
+}

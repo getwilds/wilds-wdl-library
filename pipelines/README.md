@@ -41,10 +41,14 @@ Each pipeline directory contains the following required components:
 ```
 pipelines/pipeline-name/
 ├── pipeline-name.wdl    # Main workflow importing multiple modules
-├── testrun.wdl          # Zero-configuration test workflow
+├── testrun.wdl          # Zero-configuration test workflow used in CI
+├── testrun_hpc.wdl      # Zero-configuration test workflow used in HPC (optional, see below)
 ├── inputs.json          # Example inputs for the complete pipeline
+├── module.json          # Optional, experimental module manifest (see below)
 └── README.md            # Pipeline-specific documentation
 ```
+
+Pipelines follow the same `testrun.wdl` / `testrun_hpc.wdl` split as modules: most ship just `testrun.wdl` for CI, and pipelines that exercise GPU or HPC-only tasks (e.g. `ww-leukemia`, `ww-starling-batch`, `ww-sra-cellranger`) add a `testrun_hpc.wdl` that the monthly Fred Hutch HPC test run uses instead.
 
 
 ### **Optional Components**
@@ -52,6 +56,7 @@ pipelines/pipeline-name/
 - **Options JSON**: Workflow execution configuration for different WDL engines
 - **Additional Input Files**: Alternative inputs for different use cases
 - **Platform Configurations**: Platform-specific execution configs in subdirectories (e.g., `.cirro/` for Cirro platform integration)
+- **`module.json` (Experimental)**: In anticipation of the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765), a small set of pipelines (currently `ww-bwa-gatk`) ship a `module.json` declaring metadata like license, version, and module dependencies. These manifests are informational only (no executor reads them at runtime today) and are not required for new pipelines. See the [contributing guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details.
 
 ## Available Pipelines
 
@@ -63,8 +68,10 @@ pipelines/pipeline-name/
 | `ww-imputation` | Intermediate | `ww-glimpse2`, `ww-bcftools` | Genotype imputation from low-coverage WGS data using GLIMPSE2 |
 | `ww-jetlag` | Basic | `ww-sjl` | Solar Jetlag tile processing across an array of geographic tiles |
 | `ww-leukemia` | Advanced | Multiple | Complete leukemia analysis pipeline |
+| `ww-rnaseq` | Advanced | `ww-fastqc`, `ww-trimgalore`, `ww-star`, `ww-bedparse`, `ww-rseqc`, `ww-deseq2`, `ww-multiqc`, `ww-gffread` | Production-ready RNA-seq workflow with QC, trimming, alignment, differential expression, and MultiQC reporting |
 | `ww-saturation` | Intermediate | Multiple | Sequencing saturation analysis |
 | `ww-splicing-proteomics` | Intermediate | `ww-star`, `ww-rmats-turbo`, `ww-jcast` | Alternative splicing proteomics: STAR alignment, rMATS splicing detection, and JCAST protein translation |
+| `ww-sra-cellranger` | Basic | `ww-sra`, `ww-cellranger` | SRA download and single-cell RNA-seq processing with Cell Ranger |
 | `ww-sra-salmon` | Basic | `ww-sra`, `ww-salmon` | SRA download and transcript quantification |
 | `ww-sra-star` | Basic | `ww-sra`, `ww-star` | SRA download and RNA-seq alignment |
 | `ww-star-deseq2` | Intermediate | `ww-star`, `ww-deseq2` | RNA-seq alignment and differential expression |
@@ -84,7 +91,7 @@ curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipeli
 # Option 2: Download directly from GitHub by navigating to the file and clicking the download button
 
 # Modify inputs.json as necessary for your data, then run via the command line or PROOF's point-and-click interface
-sprocket run ww-sra-star.wdl inputs.json
+sprocket run ww-sra-star.wdl @inputs.json
 ```
 
 This works because all pipelines import modules using GitHub URLs, so your WDL executor fetches dependencies automatically.
@@ -124,7 +131,7 @@ cd pipelines/ww-sra-star
 
 # Run with your preferred executor using the example inputs.json as a starting point:
 # Sprocket
-sprocket run ww-sra-star.wdl inputs.json
+sprocket run ww-sra-star.wdl @inputs.json
 # Cromwell
 java -jar cromwell.jar run ww-sra-star.wdl --inputs inputs.json
 # miniWDL
@@ -145,6 +152,8 @@ Pipelines serve as starting points for custom workflows:
 All pipelines are automatically tested through GitHub Actions:
 - **Multi-executor testing**: Cromwell, miniWDL, and Sprocket
 - **End-to-end validation**: Complete pipeline testing with real data
+
+Pipelines that ship a `testrun_hpc.wdl` are additionally exercised on the Fred Hutch HPC on a monthly basis to validate GPU and HPC-only execution paths. See the [contributing guide](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for the full picture.
 
 ### **Test Data**
 - Small but realistic datasets for efficient testing

@@ -16,6 +16,15 @@ task jcast {
         output_fasta: "FASTA file containing translated protein sequences from alternative splicing events",
         output_directory: "Directory containing all JCAST output files"
     }
+    topic: "transcriptomics,proteomics,protein_expression,rna_splicing"
+    species: "human,eukaryote"
+    operation: "sequence_conversion"
+    input_sample_required: "rmats_directory:gene_report:directory|tar_format|zip_format"
+    input_sample_optional: "none"
+    input_reference_required: "gtf_file:sequence_features:gtf,genome_fasta:rna_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "output_fasta:protein_sequence:fasta,output_directory:report:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -31,6 +40,7 @@ task jcast {
     splice_types: 'Comma-separated list of splice types to process (MXE,RI,SE,A3SS,A5SS). If empty, process all types (default: "")'
     cpu_cores: "Number of CPU cores allocated for the task (default: 2)"
     memory_gb: "Memory allocated for the task in GB (default: 8)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -46,6 +56,7 @@ task jcast {
     String splice_types = ""
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/jcast:0.3.5"
   }
 
   String gmm_flag = if use_gmm then "-m" else ""
@@ -73,11 +84,14 @@ task jcast {
     echo "rMATS input directory contents:"
     ls -la "${RMATS_DIR}"
 
+    # Symlink GTF locally so JCAST can write cache files alongside it
+    ln -s "~{gtf_file}" "~{basename(gtf_file)}"
+
     # Run JCAST
     echo "Running JCAST..."
     jcast \
       "${RMATS_DIR}" \
-      "~{gtf_file}" \
+      "~{basename(gtf_file)}" \
       "~{genome_fasta}" \
       -o "~{output_name}" \
       -r ~{min_read_count} \
@@ -105,7 +119,7 @@ task jcast {
   }
 
   runtime {
-    docker: "getwilds/jcast:0.3.5"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

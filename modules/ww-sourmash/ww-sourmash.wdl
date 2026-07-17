@@ -12,6 +12,15 @@ task sketch {
     outputs: {
       sig: "Sourmash sketch (.sig) file"
     }
+    topic: "genomics,proteomics,metagenomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "indexing"
+    input_sample_required: "infile:nucleic_acid_sequence:bam|fasta"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "sig:data_index:sig"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -23,6 +32,7 @@ task sketch {
     cpu_cores: "Number of CPU cores to use (only used for BAM input)"
     memory_gb: "Memory allocated for the task in GB"
     output_name: "Optional custom output name (defaults to input basename)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -33,6 +43,7 @@ task sketch {
     Boolean track_abundance = true
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/sourmash:4.8.2"
     String? output_name
   }
 
@@ -57,7 +68,7 @@ task sketch {
   }
 
   runtime {
-    docker: "getwilds/sourmash:4.8.2"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -72,6 +83,15 @@ task gather {
     outputs: {
       result: "CSV file of sourmash gather results"
     }
+    topic: "genomics,proteomics,metagenomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequence_classification,quantification,statistical_calculation"
+    input_sample_required: "query_sig:data_index:sig,reference_databases_sigs:data_index:sig"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "result:genome_report:csv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -81,6 +101,7 @@ task gather {
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores to use"
     output_name: "Optional custom output name (defaults to query basename)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -89,6 +110,7 @@ task gather {
     Int threshold_bp = 50000
     Int memory_gb = 8
     Int cpu_cores = 4
+    String docker_image = "getwilds/sourmash:4.8.2"
     String? output_name
   }
 
@@ -110,7 +132,7 @@ task gather {
   }
 
   runtime {
-    docker: "getwilds/sourmash:4.8.2"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -126,6 +148,15 @@ task compare {
       npy: "Numpy binary matrix file of angular similarity matrix",
       csv: "CSV file of angular similarity matrix"
     }
+    topic: "genomics,proteomics,metagenomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "sig_inputs:data_index:sig"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "npy:comparison_matrix:binary_format,csv:comparison_matrix:csv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -134,6 +165,7 @@ task compare {
     k_value: "Value of k used for sourmash sketch"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -142,6 +174,7 @@ task compare {
     Int k_value
     Int memory_gb = 8
     Int cpu_cores = 4
+    String docker_image = "getwilds/sourmash:4.8.2"
   }
 
   command <<<
@@ -170,7 +203,7 @@ task compare {
   }
 
   runtime {
-    docker: "getwilds/sourmash:4.8.2"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }

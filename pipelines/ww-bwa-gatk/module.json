@@ -1,0 +1,23 @@
+{
+  "name": "ww-bwa-gatk",
+  "version": "0.2.0",
+  "license": "MIT",
+  "authors": ["Emma Bishop <ebishop@fredhutch.org>"],
+  "description": "WILDS WDL pipeline aligning sequencing reads with BWA-MEM and performing GATK preprocessing (mark duplicates + base recalibration)",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-bwa-gatk.wdl",
+  "readme": "README.md",
+  "dependencies": {
+    "ww_bwa": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-bwa"
+    },
+    "ww_gatk": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-gatk"
+    }
+  }
+}

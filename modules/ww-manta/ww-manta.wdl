@@ -14,6 +14,15 @@ task manta_call {
         vcf: "Structural variant calls in compressed VCF format",
         vcf_index: "Index file for the VCF output"
     }
+    topic: "genomics,transcriptomics,structural_variation"
+    species: "human,eukaryote"
+    operation: "variant_calling"
+    input_sample_required: "aligned_bam:nucleic_acid_sequence_alignment:bam,aligned_bam_index:data_index:bai"
+    input_sample_optional: "call_regions_bed:annotation_track:bed,call_regions_index:data_index:tbi"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -27,6 +36,7 @@ task manta_call {
     is_rna: "Boolean flag for RNA-seq mode (enables RNA-specific settings)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -40,6 +50,7 @@ task manta_call {
     Boolean is_rna = false
     Int cpu_cores = 8
     Int memory_gb = 16
+    String docker_image = "getwilds/manta:1.6.0"
   }
 
   command <<<
@@ -71,7 +82,7 @@ task manta_call {
   }
 
   runtime {
-    docker: "getwilds/manta:1.6.0"
+    docker: docker_image
     memory: "~{memory_gb}GB"
     cpu: cpu_cores
   }

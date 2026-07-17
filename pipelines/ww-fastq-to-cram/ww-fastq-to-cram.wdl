@@ -25,8 +25,16 @@ struct SampleData {
 
 workflow fastq_to_cram {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        }
+    ]
     description: "Convert paired FASTQ files to unmapped CRAM format using WILDS WDL modules"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-fastq-to-cram/ww-fastq-to-cram.wdl"
     outputs: {

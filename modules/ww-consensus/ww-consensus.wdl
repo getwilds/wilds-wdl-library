@@ -16,6 +16,15 @@ task consensus_processing {
     outputs: {
         consensus_tsv: "Tab-separated file containing consensus variant calls with evidence from all callers"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "aggregation"
+    input_sample_required: "haplo_vars:sequence_variations:tsv,mpileup_vars:sequence_variations:tsv,mutect_vars:sequence_variations:tsv"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "consensus_tsv:sequence_variations:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -25,6 +34,7 @@ task consensus_processing {
     base_file_name: "Base name for output files"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -34,6 +44,7 @@ task consensus_processing {
     String base_file_name
     Int cpu_cores = 1
     Int memory_gb = 8
+    String docker_image = "rocker/tidyverse:4.4.2"
   }
 
   command <<<
@@ -56,6 +67,6 @@ task consensus_processing {
   runtime {
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    docker: "rocker/tidyverse:4"
+    docker: docker_image
   }
 }

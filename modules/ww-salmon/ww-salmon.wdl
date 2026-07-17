@@ -1,31 +1,42 @@
 ## WILDS WDL Module: ww-salmon
 ## Description: Module for RNA-seq quantification using Salmon
-## Author: WILDS Team
-## Contact: wilds@fredhutch.org
+## Author: Taylor Firman
+## Contact: tfirman@fredhutch.org
 
 version 1.0
 
 task build_index {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Build Salmon index from reference transcriptome FASTA file"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl"
     outputs: {
         salmon_index: "Compressed tarball containing the Salmon index for quantification"
     }
+    topic: "transcriptomics,mapping,gene_expression"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "indexing"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "transcriptome_fasta:rna_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "salmon_index:data_index:tar_format"
   }
 
   parameter_meta {
     transcriptome_fasta: "Reference transcriptome in FASTA format"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     File transcriptome_fasta
     Int cpu_cores = 8
     Int memory_gb = 16
+    String docker_image = "getwilds/salmon:1.10.3"
   }
 
   command <<<
@@ -56,7 +67,7 @@ task build_index {
   }
 
   runtime {
-    docker: "getwilds/salmon:1.10.3"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -64,14 +75,23 @@ task build_index {
 
 task quantify {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Quantify transcript expression from RNA-seq reads using Salmon. Supports both paired-end and single-end data."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl"
     outputs: {
         salmon_quant_dir: "Compressed tarball containing Salmon quantification results including abundance estimates",
         output_sample_name: "Sample name used for output files"
     }
+    topic: "transcriptomics,gene_expression"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "rna_seq_quantification"
+    input_sample_required: "fastq_r1:rna_sequence:fastq"
+    input_sample_optional: "fastq_r2:rna_sequence:fastq"
+    input_reference_required: "salmon_index_dir:data_index:tar_format"
+    input_reference_optional: "none"
+    output_sample: "salmon_quant_dir:gene_expression_matrix:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -81,6 +101,7 @@ task quantify {
     fastq_r2: "Optional FASTQ file for read 2 (omit for single-end data)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -90,6 +111,7 @@ task quantify {
     File? fastq_r2
     Int cpu_cores = 8
     Int memory_gb = 16
+    String docker_image = "getwilds/salmon:1.10.3"
   }
 
   command <<<
@@ -128,7 +150,7 @@ task quantify {
   }
 
   runtime {
-    docker: "getwilds/salmon:1.10.3"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -136,8 +158,8 @@ task quantify {
 
 task merge_results {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Merge Salmon quantification results from multiple samples into count and TPM matrices"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-salmon/ww-salmon.wdl"
     outputs: {
@@ -145,6 +167,15 @@ task merge_results {
         counts_matrix: "Tab-separated matrix of estimated read counts for all samples",
         sample_list: "Text file listing all sample names included in the matrices"
     }
+    topic: "transcriptomics,gene_expression"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "aggregation"
+    input_sample_required: "salmon_quant_dirs:gene_expression_matrix:tar_format"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "tpm_matrix:gene_expression_matrix:tsv,counts_matrix:gene_expression_matrix:tsv,sample_list:sample_id:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -152,6 +183,7 @@ task merge_results {
     sample_names: "Array of sample names corresponding to the quantification directories"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -159,6 +191,7 @@ task merge_results {
     Array[String] sample_names
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/salmon:1.10.3"
   }
 
   command <<<
@@ -201,7 +234,7 @@ task merge_results {
   }
 
   runtime {
-    docker: "getwilds/salmon:1.10.3"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }

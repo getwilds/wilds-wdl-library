@@ -14,6 +14,15 @@ task glimpse2_chunk {
     outputs: {
       chunks_file: "Text file containing chunk definitions with input/output regions"
     }
+    topic: "genomics,sequencing"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "splitting"
+    input_sample_required: "reference_vcf:sequence_variations:vcf|bcf,reference_vcf_index:data_index:tbi|csi"
+    input_sample_optional: "none"
+    input_reference_required: "genetic_map:sequence_coordinates:textual_format"
+    input_reference_optional: "none"
+    output_sample: "chunks_file:sequence_coordinates:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -27,6 +36,7 @@ task glimpse2_chunk {
     uniform_number_variants: "Use uniform number of variants per chunk instead of centiMorgans-based"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -40,6 +50,7 @@ task glimpse2_chunk {
     Boolean uniform_number_variants = false
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -66,7 +77,7 @@ task glimpse2_chunk {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -81,6 +92,15 @@ task glimpse2_split_reference {
     outputs: {
       reference_chunk: "Binary reference chunk file for imputation"
     }
+    topic: "genomics,mapping,sequencing"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "splitting,indexing"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "reference_vcf:sequence_variations:vcf|bcf,reference_vcf_index:data_index:tbi|csi,genetic_map:sequence_coordinates:textual_format"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "reference_chunk:sequence_coordinates:binary_format"
   }
 
   parameter_meta {
@@ -93,6 +113,7 @@ task glimpse2_split_reference {
     keep_monomorphic_ref_sites: "Keep monomorphic reference sites in output"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -105,6 +126,7 @@ task glimpse2_split_reference {
     Boolean keep_monomorphic_ref_sites = true
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -131,7 +153,7 @@ task glimpse2_split_reference {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -147,6 +169,15 @@ task glimpse2_phase {
       imputed_chunk: "Imputed and phased BCF file for the chunk",
       imputed_chunk_index: "Index file for imputed BCF"
     }
+    topic: "genomics,sequencing"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "input_vcf:sequence_variations:vcf|bcf,input_vcf_index:data_index:tbi|csi"
+    input_sample_optional: "none"
+    input_reference_required: "reference_chunk:sequence_coordinates:binary_format"
+    input_reference_optional: "none"
+    output_sample: "imputed_chunk:sequence_variations:bcf,imputed_chunk_index:data_index:csi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -160,6 +191,7 @@ task glimpse2_phase {
     effective_population_size: "Effective population size (default: 15000)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -173,6 +205,7 @@ task glimpse2_phase {
     Int effective_population_size = 15000
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -202,7 +235,7 @@ task glimpse2_phase {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -218,6 +251,15 @@ task glimpse2_phase_cram {
       imputed_chunk: "Imputed and phased BCF file for the chunk",
       imputed_chunk_index: "Index file for imputed BCF"
     }
+    topic: "genomics,sequencing"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "input_bams:nucleic_acid_sequence_alignment:bam|cram,input_bam_indices:data_index:bai|crai"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai,reference_chunk:sequence_coordinates:binary_format"
+    input_reference_optional: "none"
+    output_sample: "imputed_chunk:sequence_variations:bcf,imputed_chunk_index:data_index:csi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -232,6 +274,7 @@ task glimpse2_phase_cram {
     effective_population_size: "Effective population size (default: 15000)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -246,6 +289,7 @@ task glimpse2_phase_cram {
     Int effective_population_size = 15000
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -315,7 +359,7 @@ task glimpse2_phase_cram {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -331,6 +375,15 @@ task glimpse2_ligate {
       ligated_vcf: "Ligated VCF/BCF file containing all imputed variants",
       ligated_vcf_index: "Index file for ligated VCF"
     }
+    topic: "genomics,sequencing"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "aggregation"
+    input_sample_required: "imputed_chunks:sequence_variations:bcf,imputed_chunks_indices:data_index:csi"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "ligated_vcf:sequence_variations:vcf|bcf,ligated_vcf_index:data_index:tbi|csi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -340,6 +393,7 @@ task glimpse2_ligate {
     output_format: "Output format: bcf or vcf.gz (default: bcf)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -349,6 +403,7 @@ task glimpse2_ligate {
     String output_format = "bcf"
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -390,7 +445,7 @@ task glimpse2_ligate {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -405,6 +460,15 @@ task glimpse2_concordance {
     outputs: {
       concordance_output: "Concordance metrics output file"
     }
+    topic: "genomics,sequencing,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "imputed_vcf:sequence_variations:bcf,imputed_vcf_index:data_index:csi,truth_vcf:sequence_variations:bcf,truth_vcf_index:data_index:csi"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "allele_frequencies:sequence_variations:vcf"
+    output_sample: "concordance_output:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -419,6 +483,7 @@ task glimpse2_concordance {
     min_val_gq: "Minimum genotype quality in validation data (default: 0)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -433,6 +498,7 @@ task glimpse2_concordance {
     Int min_val_gq = 0
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -460,7 +526,7 @@ task glimpse2_concordance {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -477,14 +543,25 @@ task parse_chunks_file {
       output_regions: "Array of output regions from chunks file",
       chunk_ids: "Array of chunk identifiers"
     }
+    topic: "genomics,sequencing"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "mapping,splitting"
+    input_sample_required: "chunks_file:sequence_coordinates:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "none"
   }
 
   parameter_meta {
     chunks_file: "Chunks file from glimpse2_chunk task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     File chunks_file
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -505,7 +582,7 @@ task parse_chunks_file {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: 1
     memory: "2 GB"
   }

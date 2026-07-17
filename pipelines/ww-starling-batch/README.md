@@ -67,7 +67,7 @@ java -jar cromwell.jar run ww-starling-batch.wdl --inputs inputs.json
 miniwdl run ww-starling-batch.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-starling-batch.wdl inputs.json
+sprocket run ww-starling-batch.wdl @inputs.json
 ```
 
 ### For Fred Hutch Users
@@ -118,7 +118,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint starling_batch_example
+sprocket run testrun.wdl
 ```
 
 The test workflow automatically:

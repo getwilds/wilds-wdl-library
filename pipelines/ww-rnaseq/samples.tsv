@@ -1,0 +1,5 @@
+name	r1	r2	condition
+sample1	/path/to/sample1_R1.fastq.gz	/path/to/sample1_R2.fastq.gz	control
+sample2	/path/to/sample2_R1.fastq.gz	/path/to/sample2_R2.fastq.gz	control
+sample3	/path/to/sample3_R1.fastq.gz	/path/to/sample3_R2.fastq.gz	treatment
+sample4	/path/to/sample4_R1.fastq.gz	/path/to/sample4_R2.fastq.gz	treatment

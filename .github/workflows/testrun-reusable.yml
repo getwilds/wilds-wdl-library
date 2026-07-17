@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   discover:
@@ -30,11 +31,12 @@ jobs:
     -
       name: Find items
       id: find-items
-      run: python3 .github/scripts/discover_wdls.py ${{ inputs.item_type }} "${{ inputs.item_name }}"
+      run: python3 .github/scripts/discover_wdls.py ${{ inputs.item_type }} ci "${{ inputs.item_name }}"
 
   miniwdl-test:
     needs: [discover]
-    # Test runs at the workflow level become difficult to run due to large collection 
+    if: ${{ needs.discover.outputs.items != '[]' }}
+    # Test runs at the workflow level become difficult to run due to large collection
     # of Docker images that need to be pulled down (see ww-leukemia for example).
     # Consider using larger runners in the future, e.g. ubuntu-latest-4-cores (4-core, 16GB RAM, 150GB disk)
     # https://docs.github.com/en/enterprise-cloud@latest/actions/concepts/runners/larger-runners
@@ -47,6 +49,13 @@ jobs:
     -
       name: Checkout
       uses: actions/checkout@v4
+    -
+      name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     -
       name: Set up Python
       uses: actions/setup-python@v5
@@ -67,7 +76,8 @@ jobs:
 
   cromwell-test:
     needs: [discover]
-    # Test runs at the workflow level become difficult to run due to large collection 
+    if: ${{ needs.discover.outputs.items != '[]' }}
+    # Test runs at the workflow level become difficult to run due to large collection
     # of Docker images that need to be pulled down (see ww-leukemia for example).
     # Consider using larger runners in the future, e.g. ubuntu-latest-4-cores (4-core, 16GB RAM, 150GB disk)
     # https://docs.github.com/en/enterprise-cloud@latest/actions/concepts/runners/larger-runners
@@ -80,6 +90,17 @@ jobs:
     -
       name: Checkout
       uses: actions/checkout@v4
+    -
+      name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    -
+      name: Pre-pull cellranger image (private GHCR)
+      if: (inputs.item_type == 'modules' && matrix.item == 'ww-cellranger') || (inputs.item_type == 'pipelines' && matrix.item == 'ww-sra-cellranger')
+      run: docker pull ghcr.io/getwilds/cellranger:10.0.0
     -
       name: Set Up Java
       uses: actions/setup-java@v4
@@ -96,11 +117,12 @@ jobs:
         item_dir="${{ inputs.item_type }}/${{ matrix.item }}"
         wdl_file="$item_dir/testrun.wdl"
         echo "Running ${{ inputs.item_type }}/${{ matrix.item }} with Cromwell..."
-        java -jar cromwell-92.jar run "$wdl_file"
+        java -Dconfig.file=.github/configs/cromwell.conf -jar cromwell-92.jar run "$wdl_file"
 
   sprocket-test:
     needs: [discover]
-    # Test runs at the workflow level become difficult to run due to large collection 
+    if: ${{ needs.discover.outputs.items != '[]' }}
+    # Test runs at the workflow level become difficult to run due to large collection
     # of Docker images that need to be pulled down (see ww-leukemia for example).
     # Consider using larger runners in the future, e.g. ubuntu-latest-4-cores (4-core, 16GB RAM, 150GB disk)
     # https://docs.github.com/en/enterprise-cloud@latest/actions/concepts/runners/larger-runners
@@ -114,6 +136,17 @@ jobs:
       name: Checkout
       uses: actions/checkout@v4
     -
+      name: Log in to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    -
+      name: Pre-pull cellranger image (private GHCR)
+      if: (inputs.item_type == 'modules' && matrix.item == 'ww-cellranger') || (inputs.item_type == 'pipelines' && matrix.item == 'ww-sra-cellranger')
+      run: docker pull ghcr.io/getwilds/cellranger:10.0.0
+    -
       name: Set Up Rust
       uses: dtolnay/rust-toolchain@stable
     -
@@ -122,14 +155,11 @@ jobs:
     -
       name: Install Sprocket
       run: |
-        cargo-binstall sprocket --version 0.22.0 -y
-        cargo install --git https://github.com/getwilds/wdlparse --tag v0.0.5
+        cargo-binstall sprocket --version 0.25.0 -y
     -
       name: Run workflow with Sprocket
       run: |
         item_dir="${{ inputs.item_type }}/${{ matrix.item }}"
         wdl_file="$item_dir/testrun.wdl"
-        # Extract entrypoint from the WDL file
-        entrypoint=$(wdlparse parse --format json "$wdl_file" | jq -r '.wdl.workflows[].name')
-        echo "Running ${{ inputs.item_type }}/${{ matrix.item }} with Sprocket using entrypoint: $entrypoint"
-        sprocket run "$wdl_file" --target "$entrypoint"
+        echo "Running ${{ inputs.item_type }}/${{ matrix.item }} with Sprocket"
+        sprocket run "$wdl_file"

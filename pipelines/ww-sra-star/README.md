@@ -10,6 +10,12 @@ This pipeline showcases how to combine WILDS WDL modules to create a complete RN
 
 This pipeline serves as both a functional workflow and a demonstration of modular WDL design patterns within the WILDS ecosystem.
 
+## Data Governance
+
+When pulling controlled-access data from dbGaP via the `ngc_file` input, you are bound by the data use agreement attached to that study, which typically restricts where derived data (FASTQs, alignments, BAMs, etc.) may be stored. **Make sure to run this pipeline in a location approved for regulated data storage** and avoid persisting outputs to general-purpose or shared filesystems.
+
+**Fred Hutch users:** Use [PROOF Regulated](https://sciwiki.fredhutch.org/datademos/proof-regulated/) to submit this pipeline. PROOF Regulated stages analysis data under `/fh/regulated`, which is set up for compliance with dbGaP and similar data use agreements.
+
 ## Pipeline Structure
 
 This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and demonstrates:
@@ -37,7 +43,7 @@ This pipeline is part of the [WILDS WDL Library](https://github.com/getwilds/wil
 ## Module Dependencies
 
 This pipeline imports and uses:
-- **ww-sra module**: For SRA data download (`fastqdump` task)
+- **ww-sra module**: For SRA data download (`fastqdump` task, with optional dbGaP/NGC support)
 - **ww-star module**: For genome indexing and alignment (`build_index`, `align_two_pass` tasks)
 
 ## Usage
@@ -62,9 +68,12 @@ Create an inputs JSON file with your SRA accessions and reference genome:
     "gtf": "/path/to/annotation.gtf"
   },
   "sra_star.ncpu": 12,
-  "sra_star.memory_gb": 64
+  "sra_star.memory_gb": 64,
+  "sra_star.ngc_file": "/path/to/prj_12345.ngc"
 }
 ```
+
+> The `ngc_file` parameter is optional. Omit it when downloading public SRA data.
 
 ### Running the Pipeline
 
@@ -76,7 +85,7 @@ java -jar cromwell.jar run ww-sra-star.wdl --inputs inputs.json --options option
 miniwdl run ww-sra-star.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-sra-star.wdl inputs.json
+sprocket run ww-sra-star.wdl @inputs.json
 ```
 
 ### For Fred Hutch Users
@@ -120,6 +129,9 @@ For detailed information on configuring and using Cirro pipelines, see the [offi
 | `ncpu` | Number of CPU cores | Int | No | 12 |
 | `memory_gb` | Memory allocation in GB | Int | No | 64 |
 | `max_reads` | Maximum reads to download per sample (for testing) | Int | No | all reads |
+| `ngc_file` | NGC repository key file for downloading controlled-access dbGaP data | File | No | - |
+
+> **Note:** When using `ngc_file` for controlled-access dbGaP data, ensure you are running in a regulated computing environment that complies with your data use agreement. At Fred Hutch, use [PROOF Regulated](https://sciwiki.fredhutch.org/datademos/proof-regulated/).
 
 ### RefGenome Structure
 
@@ -201,7 +213,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint sra_star_example
+sprocket run testrun.wdl
 ```
 
 The test workflow automatically:

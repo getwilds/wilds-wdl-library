@@ -111,7 +111,7 @@ java -jar cromwell.jar run ww-saturation.wdl --inputs inputs.json --options opti
 miniwdl run ww-saturation.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-saturation.wdl inputs.json
+sprocket run ww-saturation.wdl @inputs.json
 ```
 
 ### Running the Test Workflow

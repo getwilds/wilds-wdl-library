@@ -16,6 +16,15 @@ task download_files {
         download_summary: "Summary report of the download operation",
         accessions_used: "The accession numbers that were processed"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_retrieval"
+    input_sample_required: "none"
+    input_sample_optional: "accessions_file:accession:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "downloaded_files:nucleic_acid_sequence:fastq,download_summary:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -27,6 +36,7 @@ task download_files {
     output_dir_name: "Name for the output directory where files will be downloaded (default: ena_downloads)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -45,6 +55,7 @@ task download_files {
     # Resource parameters
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/ena-tools:2.1.1"
   }
 
   # Resolve accessions input - prefer string accessions over file
@@ -105,7 +116,7 @@ task download_files {
   }
 
   runtime {
-    docker: "getwilds/ena-tools:2.1.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -122,6 +133,15 @@ task download_by_query {
         download_log: "Log file containing download status and details",
         download_summary: "Summary report of the download operation"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_retrieval"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "downloaded_files:nucleic_acid_sequence:fastq,download_log:report:textual_format,download_summary:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -132,6 +152,7 @@ task download_by_query {
     output_dir_name: "Name for the output directory where files will be downloaded"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -148,6 +169,7 @@ task download_by_query {
     # Resource parameters
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/ena-tools:2.1.1"
   }
 
   command <<<
@@ -185,7 +207,7 @@ task download_by_query {
   }
 
   runtime {
-    docker: "getwilds/ena-tools:2.1.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -203,14 +225,25 @@ task extract_fastq_pairs {
         accessions: "Array of ENA accession IDs extracted from filenames, parallel with r1_files and r2_files",
         is_paired_end_list: "Array of booleans indicating whether each sample is paired-end"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "file_handling"
+    input_sample_required: "downloaded_files:nucleic_acid_sequence:fastq"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "r1_files:nucleic_acid_sequence:fastq,r2_files:nucleic_acid_sequence:fastq"
+    output_reference: "none"
   }
 
   parameter_meta {
     downloaded_files: "Array of files downloaded from ENA"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Array[File] downloaded_files
+    String docker_image = "getwilds/ena-tools:2.1.1"
   }
 
   command <<<
@@ -282,7 +315,7 @@ task extract_fastq_pairs {
   }
 
   runtime {
-    docker: "getwilds/ena-tools:2.1.1"
+    docker: docker_image
     cpu: 1
     memory: "2 GB"
   }

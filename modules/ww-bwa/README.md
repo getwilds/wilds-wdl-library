@@ -27,6 +27,7 @@ Builds BWA index files from reference FASTA and packages them in a compressed ta
 - `reference_fasta` (File): Reference genome FASTA file
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 32)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bwa:0.7.17`)
 
 **Outputs:**
 - `bwa_index_tar` (File): Compressed tarball containing BWA genome index files
@@ -43,6 +44,7 @@ Aligns paired-end reads to a reference using BWA-MEM with automatic read group a
 - `paired_end` (Boolean): Optional, indicating if reads are paired end (default: true)
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bwa:0.7.17`)
 
 **Outputs:**
 - `sorted_bam` (File): Sorted BAM alignment file
@@ -116,7 +118,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint bwa_example
+sprocket run testrun.wdl
 ```
 
 The test workflow automatically:

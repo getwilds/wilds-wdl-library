@@ -15,6 +15,15 @@ task delly_call {
         vcf_index: "Index file for the VCF output",
         summary: "Summary text file with Delly run details and statistics"
     }
+    topic: "genomics,structural_variation"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "variant_calling"
+    input_sample_required: "aligned_bam:nucleic_acid_sequence_alignment:bam,aligned_bam_index:data_index:bai"
+    input_sample_optional: "target_regions_bed:annotation_track:bed,exclude_regions_bed:annotation_track:bed"
+    input_reference_required: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:csi,summary:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -27,6 +36,7 @@ task delly_call {
     sv_type: "Structural variant type to call (DEL, DUP, INV, TRA, INS) or empty for all"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -39,6 +49,7 @@ task delly_call {
     String sv_type = ""
     Int cpu_cores = 8
     Int memory_gb = 16
+    String docker_image = "getwilds/delly:1.2.9"
   }
 
   String sample_name = basename(aligned_bam, ".bam")
@@ -84,7 +95,7 @@ task delly_call {
   }
 
   runtime {
-    docker: "getwilds/delly:1.2.9"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb}GB"
   }

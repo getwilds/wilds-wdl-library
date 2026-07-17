@@ -37,6 +37,7 @@ Run ShapeMapper to analyze RNA structure probing data and generate reactivity pr
 - `is_amplicon` (Boolean, default=false): Set to true if data is from amplicon sequencing
 - `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String, default=`getwilds/shapemapper:2.3`): Docker image to use for this task
 
 **Outputs:**
 - `output_tar` (File): Compressed tarball of a folder containing ShapeMapper outputs
@@ -167,7 +168,7 @@ The module includes a test workflow (`testrun.wdl`) that can be run independentl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint shapemapper_example
+sprocket run testrun.wdl
 
 # Using Cromwell
 java -jar cromwell.jar run testrun.wdl

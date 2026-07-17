@@ -6,9 +6,9 @@ version 1.0
 
 task download_ref_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
-    description: "Downloads reference genome and index files for WILDS WDL test runs"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Downloads chromosome or whole-genome FASTA + GTF + BED + samtools index/dict from a UCSC assembly."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         fasta: "Reference genome FASTA file",
@@ -21,11 +21,12 @@ task download_ref_data {
 
   parameter_meta {
     chromo: "Chromosome to download (e.g., chr1, chr2, etc.)"
-    version: "Reference genome version (e.g., hg38, hg19)"
+    version: "UCSC reference genome version (e.g., hg38, mm10, dm6, sacCer3)"
     region: "Optional region coordinates to extract from chromosome in format '1-30000000'. If not specified, uses entire chromosome."
     output_name: "Optional name for output files (default: uses chromo name)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -35,6 +36,7 @@ task download_ref_data {
     String? output_name
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   String final_output_name = select_first([output_name, chromo])
@@ -42,10 +44,22 @@ task download_ref_data {
   command <<<
     set -euo pipefail
 
-    # Download chromosome fasta
-    wget -q -O "~{chromo}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"
-    gunzip "~{chromo}.fa.gz"
-    mv "~{chromo}.fa" temp.fa
+    # Try the per-chromosome FASTA first (available for hg19/hg38/mm10/etc.).
+    # Fall back to the whole-genome bigZips FASTA for assemblies that don't ship
+    # per-chromosome files (e.g. dm6, sacCer3) — extract the requested chromosome
+    # via samtools faidx after downloading.
+    if wget -q --spider "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"; then
+      wget -q -O "~{chromo}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"
+      gunzip "~{chromo}.fa.gz"
+      mv "~{chromo}.fa" temp.fa
+    else
+      echo "No per-chromosome FASTA for ~{version}/~{chromo}; falling back to whole-genome bigZips download"
+      wget -q -O "~{version}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/bigZips/~{version}.fa.gz"
+      gunzip "~{version}.fa.gz"
+      samtools faidx "~{version}.fa"
+      samtools faidx "~{version}.fa" "~{chromo}" > temp.fa
+      rm "~{version}.fa" "~{version}.fa.fai"
+    fi
 
     # Subset to specified region if provided
     REGION="~{if defined(region) then region else ""}"
@@ -97,7 +111,110 @@ task download_ref_data {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task merge_fastas_with_prefix {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Concatenates two FASTAs, prepending a configurable prefix to the second one's contig names. Used to assemble experimental + spike-in references with a distinguishing prefix on the spike-in contigs."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        merged_fasta: "Merged FASTA: first_fasta contigs unchanged, second_fasta contigs renamed with the prefix",
+        merged_fasta_index: "samtools .fai index for the merged FASTA"
+    }
+  }
+
+  parameter_meta {
+    first_fasta: "FASTA whose contig names are kept as-is in the merged output"
+    second_fasta: "FASTA whose contig names get the prefix prepended in the merged output"
+    second_prefix: "String to prepend to every contig name in second_fasta (e.g. 'hg38')"
+    output_name: "Output filename prefix (without the .fa extension)"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    File first_fasta
+    File second_fasta
+    String second_prefix
+    String output_name
+    Int cpu_cores = 1
+    Int memory_gb = 2
+    String docker_image = "getwilds/samtools:1.11"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    cat "~{first_fasta}" > "~{output_name}.fa"
+    sed "s/^>/>~{second_prefix}/" "~{second_fasta}" >> "~{output_name}.fa"
+
+    samtools faidx "~{output_name}.fa"
+  >>>
+
+  output {
+    File merged_fasta = "~{output_name}.fa"
+    File merged_fasta_index = "~{output_name}.fa.fai"
+  }
+
+  runtime {
+    docker: docker_image
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_rrna_reference {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Downloads the human 45S rRNA precursor (NR_046235.3, ~13 kb) from NCBI Entrez. Single-sequence FASTA suitable for building a small bowtie2 index for PRO-seq rRNA depletion."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        fasta: "Human 45S rRNA precursor FASTA"
+    }
+  }
+
+  parameter_meta {
+    output_name: "Output filename prefix (without the .fa extension)"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    String output_name = "human_45S_rRNA"
+    Int cpu_cores = 1
+    Int memory_gb = 2
+    String docker_image = "getwilds/samtools:1.11"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # NR_046235.3: Homo sapiens RNA, 45S pre-ribosomal N5 (RNA45SN5)
+    wget -q --no-check-certificate -O "~{output_name}.fa" \
+      "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id=NR_046235.3&rettype=fasta&retmode=text"
+
+    # Sanity check: the fetch must produce a non-empty FASTA with at least one record.
+    if ! grep -q "^>" "~{output_name}.fa"; then
+      echo "ERROR: NCBI efetch did not return a valid FASTA" >&2
+      exit 1
+    fi
+  >>>
+
+  output {
+    File fasta = "~{output_name}.fa"
+  }
+
+  runtime {
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -105,8 +222,8 @@ task download_ref_data {
 
 task download_fastq_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads small example FASTQ files for WILDS WDL test runs. Renames to Illumina naming convention with optional gzip compression."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -120,6 +237,7 @@ task download_fastq_data {
     gzip_output: "Compress output files with gzip (default: false)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -127,6 +245,7 @@ task download_fastq_data {
     String prefix = "testdata"
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   # Determine output filenames based on prefix and gzip setting
@@ -156,7 +275,7 @@ task download_fastq_data {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -164,8 +283,8 @@ task download_fastq_data {
 
 task interleave_fastq {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
     description: "Interleaves a set of R1 and R2 FASTQ files"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -178,6 +297,7 @@ task interleave_fastq {
     r2_fq: "Reverse (R2) FASTQ file"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -185,6 +305,7 @@ task interleave_fastq {
     File r2_fq
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -200,7 +321,7 @@ task interleave_fastq {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -208,8 +329,8 @@ task interleave_fastq {
 
 task download_cram_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads small example CRAM files for WILDS WDL test runs"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -221,16 +342,22 @@ task download_cram_data {
   parameter_meta {
     ref_fasta: "Reference genome FASTA file to use for CRAM conversion"
     chromosome: "Chromosome to extract from the BAM file (default: chr1)"
+    output_name: "Optional name for output CRAM file (default: NA12878_{chromosome})"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     File ref_fasta
     String chromosome = "chr1"
+    String? output_name
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/awscli:2.27.49"
   }
+
+  String final_name = select_first([output_name, "NA12878_~{chromosome}"])
 
   command <<<
     set -euo pipefail
@@ -271,20 +398,20 @@ task download_cram_data {
     samtools index -@ ~{cpu_cores} NA12878_~{chromosome}.bam
 
     # Convert BAM to CRAM using the local reference copy
-    samtools view -@ ~{cpu_cores} -C -T ref.fa -o NA12878_~{chromosome}.cram NA12878_~{chromosome}.bam
-    samtools index -@ ~{cpu_cores} NA12878_~{chromosome}.cram
+    samtools view -@ ~{cpu_cores} -C -T ref.fa -o ~{final_name}.cram NA12878_~{chromosome}.bam
+    samtools index -@ ~{cpu_cores} ~{final_name}.cram
 
     # Clean up intermediate files
     rm NA12878_full.bam NA12878_full.bam.bai NA12878.bam NA12878.bam.bai NA12878_~{chromosome}.bam NA12878_~{chromosome}.bam.bai
   >>>
 
   output {
-    File cram = "NA12878_~{chromosome}.cram"
-    File crai = "NA12878_~{chromosome}.cram.crai"
+    File cram = "~{final_name}.cram"
+    File crai = "~{final_name}.cram.crai"
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -292,8 +419,8 @@ task download_cram_data {
 
 task download_bam_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads small example BAM files for WILDS WDL test runs"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -306,12 +433,14 @@ task download_bam_data {
     filename: "Filename to save the BAM file as"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     String filename = "NA12878_chr1.bam"
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -354,7 +483,81 @@ task download_bam_data {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task inject_synthetic_umis {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Appends a deterministic synthetic 6-mer UMI to each read name in a BAM, mimicking the format produced by fastp --umi. Mates of a pair share a UMI so paired-end UMI dedup tools can run end-to-end without real UMI data."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        umi_bam: "Coordinate-sorted BAM with synthetic UMIs appended to read names",
+        umi_bai: "Index for the UMI-tagged BAM"
+    }
+  }
+
+  parameter_meta {
+    input_bam: "BAM whose read names lack UMIs"
+    input_bai: "Index for the input BAM"
+    sample_name: "Sample name used for output file naming"
+    umi_separator: "Character separating the read ID from the appended UMI in the read name"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    File input_bam
+    File input_bai
+    String sample_name
+    String umi_separator = ":"
+    Int cpu_cores = 2
+    Int memory_gb = 4
+    String docker_image = "getwilds/awscli:2.27.49"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Stream the BAM as SAM and append a deterministic synthetic 6-mer UMI to each read name.
+    # The UMI is derived from the read name itself, so paired mates (which share a name)
+    # automatically receive the same UMI -- a requirement for paired-end UMI dedup tools.
+    samtools view -h "~{input_bam}" | awk -v sep="~{umi_separator}" 'BEGIN{OFS="\t"}
+      # Pass SAM header lines through unchanged
+      /^@/ {print; next}
+      {
+        n = $1
+        bases = "ACGT"
+        umi = ""
+        # Build a 6-base UMI by walking the last 6 characters of the read name in reverse.
+        # Each character is mapped to a base in {A,C,G,T} via its position in "ACGT";
+        # non-base characters fall back to the loop index so the mapping stays deterministic.
+        for (i = 1; i <= 6; i++) {
+          c = substr(n, length(n) - i + 1, 1)
+          idx = index(bases, c)
+          if (idx == 0) idx = i
+          umi = umi substr(bases, ((idx - 1) % 4) + 1, 1)
+        }
+        # Append the UMI to the read name using the configured separator (e.g. "READID:ACGTAC"),
+        # matching the format that fastp --umi produces so downstream tools work unchanged.
+        $1 = n sep umi
+        print
+      }' | samtools sort -@ ~{cpu_cores} -o "~{sample_name}.umi.bam" -
+    samtools index -@ ~{cpu_cores} "~{sample_name}.umi.bam"
+  >>>
+
+  output {
+    File umi_bam = "~{sample_name}.umi.bam"
+    File umi_bai = "~{sample_name}.umi.bam.bai"
+  }
+
+  runtime {
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -362,8 +565,8 @@ task download_bam_data {
 
 task download_ichor_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads reference data for ichorCNA analysis on hg38"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -377,11 +580,13 @@ task download_ichor_data {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -403,7 +608,7 @@ task download_ichor_data {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -411,8 +616,8 @@ task download_ichor_data {
 
 task download_tritonnp_data {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Chris Lo"
+    email: "clo2@fredhutch.org"
     description: "Downloads test data for TritonNP analysis"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -429,11 +634,13 @@ task download_tritonnp_data {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -464,7 +671,7 @@ task download_tritonnp_data {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -472,8 +679,8 @@ task download_tritonnp_data {
 
 task download_dbsnp_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads dbSNP VCF files for GATK workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -487,6 +694,7 @@ task download_dbsnp_vcf {
     filter_name: "Filename tag to save the dbSNP vcf with"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -494,6 +702,7 @@ task download_dbsnp_vcf {
     String filter_name = "hg38"
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -544,7 +753,7 @@ task download_dbsnp_vcf {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -552,8 +761,8 @@ task download_dbsnp_vcf {
 
 task download_known_indels_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads known indel VCF files for GATK workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -567,6 +776,7 @@ task download_known_indels_vcf {
     filter_name: "Filename tag to save the known indels vcf with"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -574,6 +784,7 @@ task download_known_indels_vcf {
     String filter_name = "hg38"
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -593,7 +804,7 @@ task download_known_indels_vcf {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -601,8 +812,8 @@ task download_known_indels_vcf {
 
 task download_gnomad_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads gnomad VCF files for GATK workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -616,6 +827,7 @@ task download_gnomad_vcf {
     filter_name: "Filename tag to save the gnomad vcf with"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -623,6 +835,7 @@ task download_gnomad_vcf {
     String filter_name = "hg38"
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -641,7 +854,7 @@ task download_gnomad_vcf {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -661,11 +874,13 @@ task download_annotsv_vcf {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -680,7 +895,7 @@ task download_annotsv_vcf {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -707,6 +922,7 @@ task generate_pasilla_counts {
     output_prefix: "Prefix for output files"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -716,12 +932,16 @@ task generate_pasilla_counts {
     String output_prefix = "pasilla"
     Int memory_gb = 4
     Int cpu_cores = 1
+    String docker_image = "getwilds/deseq2:1.40.2"
   }
 
   command <<<
     set -eo pipefail
 
-    generate_pasilla_counts.R \
+    curl -so generate_pasilla_counts.R \
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/generate_pasilla_counts.R"
+
+    Rscript generate_pasilla_counts.R \
       --nsamples ~{n_samples} \
       --ngenes ~{n_genes} \
       --condition "~{condition_name}" \
@@ -738,7 +958,7 @@ task generate_pasilla_counts {
   }
 
   runtime {
-    docker: "getwilds/deseq2:1.40.2"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -758,11 +978,13 @@ task download_test_transcriptome {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -782,7 +1004,7 @@ task download_test_transcriptome {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -808,6 +1030,7 @@ task create_clean_amplicon_reference {
     replace_n_with: "Base to replace N's with (default: 'A'). Use empty string to fail if N's are found."
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -817,15 +1040,19 @@ task create_clean_amplicon_reference {
     String replace_n_with = "A"
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
     set -eo pipefail
 
+    # Symlink input FASTA locally so samtools can write the .fai index
+    ln -s "~{input_fasta}" "~{basename(input_fasta)}"
+
     # Extract region if specified, otherwise use entire sequence
     if [ -n "~{region}" ]; then
-      samtools faidx "~{input_fasta}"
-      samtools faidx "~{input_fasta}" "~{region}" > temp_extract.fa
+      samtools faidx "~{basename(input_fasta)}"
+      samtools faidx "~{basename(input_fasta)}" "~{region}" > temp_extract.fa
 
       # Replace the header with just the chromosome name
       sed "s/^>.*/>~{output_name}/" temp_extract.fa > temp.fa
@@ -875,7 +1102,7 @@ task create_clean_amplicon_reference {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -890,6 +1117,14 @@ task create_gdc_manifest {
     outputs: {
         manifest: "GDC manifest file containing test file UUIDs"
     }
+  }
+
+  parameter_meta {
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -912,7 +1147,7 @@ EOF
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     memory: "2 GB"
     cpu: 1
   }
@@ -936,11 +1171,13 @@ task download_shapemapper_data {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -1000,7 +1237,7 @@ task download_shapemapper_data {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1020,11 +1257,13 @@ task download_test_cellranger_ref {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -1046,7 +1285,7 @@ task download_test_cellranger_ref {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -1067,11 +1306,13 @@ task create_diamond_data {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -1134,7 +1375,7 @@ FASTA
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1154,11 +1395,13 @@ task create_test_protein_fasta {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "ubuntu:22.04"
   }
 
   command <<<
@@ -1176,7 +1419,7 @@ FASTA
   }
 
   runtime {
-    docker: "ubuntu:22.04"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1184,8 +1427,8 @@ FASTA
 
 task download_glimpse2_genetic_map {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads genetic map files for GLIMPSE2 imputation from the official GLIMPSE repository"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -1198,6 +1441,7 @@ task download_glimpse2_genetic_map {
     genome_build: "Genome build version (b37 or b38)"
     cpu_cores: "Number of CPU cores to use for downloading"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1205,6 +1449,7 @@ task download_glimpse2_genetic_map {
     String genome_build = "b38"
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   command <<<
@@ -1232,7 +1477,7 @@ task download_glimpse2_genetic_map {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1240,8 +1485,8 @@ task download_glimpse2_genetic_map {
 
 task download_glimpse2_reference_panel {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads and prepares a 1000 Genomes reference panel subset for GLIMPSE2 imputation. Downloads phased data for the specified chromosome and filters to a region."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -1258,6 +1503,7 @@ task download_glimpse2_reference_panel {
     exclude_samples: "Comma-separated list of samples to exclude (useful for validation)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1266,6 +1512,7 @@ task download_glimpse2_reference_panel {
     String exclude_samples = "NA12878"
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -1310,7 +1557,7 @@ task download_glimpse2_reference_panel {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1334,6 +1581,7 @@ task download_glimpse2_truth_vcf {
     sample_name: "Sample to extract as truth (must be in the high-coverage dataset)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1342,6 +1590,7 @@ task download_glimpse2_truth_vcf {
     String sample_name = "NA12878"
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -1371,7 +1620,7 @@ task download_glimpse2_truth_vcf {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1393,12 +1642,14 @@ task generate_sjl_data {
     year: "Year to embed in the synthetic data"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int year = 2022
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/r-utils:0.1.0"
   }
 
   command <<<
@@ -1437,7 +1688,7 @@ task generate_sjl_data {
   }
 
   runtime {
-    docker: "getwilds/r-utils:0.1.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1445,8 +1696,8 @@ task generate_sjl_data {
 
 task download_glimpse2_test_gl_vcf {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Downloads low-coverage sequencing data from 1000 Genomes and generates a VCF with genotype likelihoods for GLIMPSE2 imputation testing."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
@@ -1461,6 +1712,7 @@ task download_glimpse2_test_gl_vcf {
     sample_name: "Sample to extract from 1000 Genomes (must be in low-coverage dataset)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1469,6 +1721,7 @@ task download_glimpse2_test_gl_vcf {
     String sample_name = "NA12878"
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -1499,7 +1752,7 @@ task download_glimpse2_test_gl_vcf {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1521,11 +1774,13 @@ task download_jcast_test_data {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use for downloading"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/samtools:1.11"
   }
 
   command <<<
@@ -1575,7 +1830,7 @@ task download_jcast_test_data {
   }
 
   runtime {
-    docker: "getwilds/samtools:1.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -1595,11 +1850,13 @@ task create_test_idp_fasta {
   parameter_meta {
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "ubuntu:22.04"
   }
 
   command <<<
@@ -1622,7 +1879,161 @@ FASTA
   }
 
   runtime {
-    docker: "ubuntu:22.04"
+    docker: docker_image
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_pao1_ref {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Downloads the Pseudomonas aeruginosa PAO1 reference genome (FASTA and GTF) from NCBI RefSeq for bacterial RNA-seq test runs"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        fasta: "Pseudomonas aeruginosa PAO1 reference genome FASTA (NC_002516.2)",
+        fasta_index: "Index file for the PAO1 reference FASTA",
+        dict: "Dictionary file for the PAO1 reference FASTA",
+        gtf: "NCBI RefSeq GTF annotation for PAO1 (bacterial layout: mostly CDS rows with only tRNA/rRNA exons)"
+    }
+  }
+
+  parameter_meta {
+    output_prefix: "Prefix used for output filenames"
+    cpu_cores: "Number of CPU cores to use for downloading and processing"
+    memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    String output_prefix = "pao1"
+    Int cpu_cores = 1
+    Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.11"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    BASE_URL="https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/006/765/GCF_000006765.1_ASM676v1"
+
+    # Note: --no-check-certificate is required because the getwilds/samtools:1.11
+    # container's CA bundle is older than the intermediate CA that NCBI's FTP
+    # endpoint presents, so strict TLS verification fails. This matches the
+    # approach already used by download_jcast_test_data above for the same reason.
+
+    # Download PAO1 reference FASTA from NCBI RefSeq
+    wget -q --no-check-certificate -O "~{output_prefix}.fa.gz" "${BASE_URL}/GCF_000006765.1_ASM676v1_genomic.fna.gz"
+    gunzip "~{output_prefix}.fa.gz"
+
+    # Create FASTA index (.fai) and dictionary (.dict) alongside the FASTA
+    samtools faidx "~{output_prefix}.fa"
+    samtools dict "~{output_prefix}.fa" > "~{output_prefix}.dict"
+
+    # Download PAO1 GTF annotation from NCBI RefSeq
+    # Note: this GTF has the classic bacterial layout (~5573 CDS rows,
+    # ~5697 gene rows, only ~106 exon rows for tRNAs/rRNAs) which is exactly
+    # the case the ww-gffread normalize_gtf task is designed to handle.
+    wget -q --no-check-certificate -O "~{output_prefix}.gtf.gz" "${BASE_URL}/GCF_000006765.1_ASM676v1_genomic.gtf.gz"
+    gunzip "~{output_prefix}.gtf.gz"
+  >>>
+
+  output {
+    File fasta = "~{output_prefix}.fa"
+    File fasta_index = "~{output_prefix}.fa.fai"
+    File dict = "~{output_prefix}.dict"
+    File gtf = "~{output_prefix}.gtf"
+  }
+
+  runtime {
+    docker: docker_image
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_10x_h5_data {
+  meta {
+    author: "Emma Bishop"
+    email: "ebishop@fredhutch.org"
+    description: "Downloads a 10X example data H5 file (2500 rat cells)"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        h5_matrix: "Filtered feature-barcode matrix in HDF5 format"
+    }
+  }
+
+  parameter_meta {
+    sample_name: "Sample name used as the output filename prefix"
+    cpu_cores: "Number of CPU cores to use for downloading"
+    memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    String sample_name = "2500_Wistar_Rat_PBMCs_Singleplex"
+    Int cpu_cores = 1
+    Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    curl -L -o "~{sample_name}_filtered_feature_bc_matrix.h5" \
+      "https://cf.10xgenomics.com/samples/cell-exp/9.0.0/2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal_2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal/2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal_2500_Wistar_Rat_PBMCs_Singleplex_3p_gem-x_Universal_count_sample_filtered_feature_bc_matrix.h5"
+  >>>
+
+  output {
+    File h5_matrix = "~{sample_name}_filtered_feature_bc_matrix.h5"
+  }
+
+  runtime {
+    docker: docker_image
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
+task download_10x_raw_h5_data {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Downloads a 10X example raw feature-barcode matrix H5 file (10k human PBMCs, v3 chemistry, Cell Ranger 3.0.0). The raw matrix includes all detected barcodes, making it suitable as input to ambient RNA removal tools like CellBender."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        raw_h5_matrix: "Raw feature-barcode matrix in HDF5 format (all detected barcodes, pre-filtering)"
+    }
+  }
+
+  parameter_meta {
+    sample_name: "Sample name used as the output filename prefix"
+    cpu_cores: "Number of CPU cores to use for downloading"
+    memory_gb: "Memory allocation in GB for the task"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    String sample_name = "pbmc_10k_v3"
+    Int cpu_cores = 1
+    Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    curl -L -o "~{sample_name}_raw_feature_bc_matrix.h5" \
+      "https://cf.10xgenomics.com/samples/cell-exp/3.0.0/pbmc_10k_v3/pbmc_10k_v3_raw_feature_bc_matrix.h5"
+  >>>
+
+  output {
+    File raw_h5_matrix = "~{sample_name}_raw_feature_bc_matrix.h5"
+  }
+
+  runtime {
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

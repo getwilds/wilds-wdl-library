@@ -1,30 +1,5 @@
 {
-  "rnaseq.samples": [
-    {
-      "name": "sample1",
-      "r1": "/path/to/sample1_R1.fastq.gz",
-      "r2": "/path/to/sample1_R2.fastq.gz",
-      "condition": "control"
-    },
-    {
-      "name": "sample2",
-      "r1": "/path/to/sample2_R1.fastq.gz",
-      "r2": "/path/to/sample2_R2.fastq.gz",
-      "condition": "control"
-    },
-    {
-      "name": "sample3",
-      "r1": "/path/to/sample3_R1.fastq.gz",
-      "r2": "/path/to/sample3_R2.fastq.gz",
-      "condition": "treatment"
-    },
-    {
-      "name": "sample4",
-      "r1": "/path/to/sample4_R1.fastq.gz",
-      "r2": "/path/to/sample4_R2.fastq.gz",
-      "condition": "treatment"
-    }
-  ],
+  "rnaseq.samples_tsv": "/path/to/samples.tsv",
   "rnaseq.reference_genome": {
     "name": "hg38",
     "fasta": "/path/to/genome.fasta",
@@ -34,7 +9,12 @@
   "rnaseq.contrast": "condition,treatment,control",
   "rnaseq.trim_quality": 20,
   "rnaseq.trim_length": 20,
+  "rnaseq.min_counts": 10,
+  "rnaseq.min_samples": 0,
   "rnaseq.star_cpu": 8,
   "rnaseq.star_memory_gb": 64,
-  "rnaseq.genome_sa_index_nbases": 14
+  "rnaseq.genome_sa_index_nbases": 14,
+  "rnaseq.organize_results": false,
+  "rnaseq.include_bams": false,
+  "rnaseq.include_trimmed_fastqs": false
 }

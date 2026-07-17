@@ -11,8 +11,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Project Status: Stable – Useable, full support, open to feedback, stable API.](https://getwilds.org/badges/badges/stable.svg)](https://getwilds.org/badges/#stable)
 [![WDL Executors](https://img.shields.io/badge/WDL-Cromwell%20%7C%20miniWDL%20%7C%20Sprocket-blue.svg)](https://github.com/getwilds/wilds-wdl-library)
-[![WDL](https://img.shields.io/badge/WDL-1.0-orange.svg)](https://openwdl.org/)
 [![GitHub Release](https://img.shields.io/github/v/release/getwilds/wilds-wdl-library)](https://github.com/getwilds/wilds-wdl-library/releases)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19339693-blue)](https://doi.org/10.5281/zenodo.19339693)
 
 ---
 
@@ -71,7 +71,7 @@ curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipeli
 # Option 2: Download directly from GitHub by navigating to the file and clicking the download button
 
 # Modify inputs.json as necessary for your data, then run via the command line or PROOF's point-and-click interface
-sprocket run ww-sra-star.wdl inputs.json
+sprocket run ww-sra-star.wdl @inputs.json
 ```
 
 ### Running Components Locally
@@ -89,7 +89,7 @@ sprocket run testrun.wdl
 
 # Run a pipeline (modify inputs.json as necessary)
 cd ../../pipelines/ww-sra-star
-sprocket run ww-sra-star.wdl inputs.json
+sprocket run ww-sra-star.wdl @inputs.json
 ```
 
 ---
@@ -103,6 +103,7 @@ The WILDS WDL Library is organized into two complementary tiers:
 **Content**: Individual bioinformatics tools (STAR, BWA, GATK, etc.)
 **Testing**: Unit tests ensure each task functions correctly
 **Usage**: Import tasks into custom workflows or run demonstration workflows
+**Metadata**: Tasks optionally include [EDAM ontology](https://www.ebi.ac.uk/ols4/ontologies/edam) tags describing the bioinformatics topic, operation, applicable species, and file input/output data types. File parameters are described using the format `<param_name>:<EDAM data type>:<EDAM format type>` See the [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for details.
 
 ### Pipelines (`pipelines/`)
 **Purpose**: Functional pipelines ranging from educational examples to production-ready analyses
@@ -129,6 +130,14 @@ All tasks use versioned, tested Docker images from the [WILDS Docker Library](ht
 
 ---
 
+## AI Disclosure
+
+Large language models (primarily [Claude](https://www.anthropic.com/claude)) have been used to assist with prototyping new modules and pipelines in this repository, including initial drafts of task scaffolding, command structures, and test workflows. All AI-generated code is reviewed, validated, and modified as necessary by human researchers through linting tools, multi-executor test runs (Cromwell, miniWDL, Sprocket), and peer code review. No architectural or scientific decisions are made by AI tools.
+
+To support contributors who use AI coding assistants, the repository ships an [`AGENTS.md`](https://github.com/getwilds/wilds-wdl-library/blob/main/AGENTS.md) project-context file (following the vendor-neutral [agents.md](https://agents.md/) convention) and a set of reusable task recipes under [`.agents/skills/`](https://github.com/getwilds/wilds-wdl-library/tree/main/.agents/skills) for common operations like scaffolding a new module, adding test data, and running linting. These are picked up automatically by tools that support the convention (OpenCode, Claude Code, and others). Use of these tools is optional, and the human-review requirement above applies to any AI-assisted contribution regardless of which tool was used.
+
+---
+
 ## Getting Help
 
 - **Documentation Issues**: Found something unclear or incorrect? [Report an issue](https://github.com/getwilds/wilds-wdl-library/issues)
@@ -136,6 +145,12 @@ All tasks use versioned, tested Docker images from the [WILDS Docker Library](ht
 - **Additional Resources**:
   - [Contributing Guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) - How to contribute
   - [GitHub Repository](https://github.com/getwilds/wilds-wdl-library) - Source code and development
+
+---
+
+## Citation
+
+If you use the WILDS WDL Library in your research, please cite it via Zenodo: [10.5281/zenodo.19339693](https://doi.org/10.5281/zenodo.19339693). The DOI always resolves to the latest release; see the [GitHub README](https://github.com/getwilds/wilds-wdl-library#citation) for a copy-pasteable citation and BibTeX entry.
 
 ---
 

@@ -17,6 +17,15 @@ task sjl_tiles {
       matched_points: "RDS file containing points with sunrise/sunset difference values",
       missing_points: "RDS file containing points that could not be matched to border points (may be empty)"
     }
+    topic: "public_health_and_epidemiology"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "tile_path:accession:binary_format,border_points_path:accession:csv"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "matched_points:report:binary_format,missing_points:report:binary_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -27,6 +36,7 @@ task sjl_tiles {
     missing_prefix: "Filename prefix for missing results output (default: 'missing_')"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -37,6 +47,7 @@ task sjl_tiles {
     String missing_prefix = "missing_"
     Int cpu_cores = 1
     Int memory_gb = 8
+    String docker_image = "getwilds/r-utils:0.1.0"
   }
 
   String tile_basename = basename(tile_path, ".rds")
@@ -66,6 +77,6 @@ task sjl_tiles {
   runtime {
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    docker: "getwilds/r-utils:0.1.0"
+    docker: docker_image
   }
 }

@@ -6,13 +6,22 @@ version 1.0
 
 task annotsv_annotate {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Annotate structural variants using AnnotSV with comprehensive genomic and clinical annotations"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-annotsv/ww-annotsv.wdl"
     outputs: {
         annotated_tsv: "Tab-delimited file with detailed annotations per SV"
     }
+    topic: "genomics,structural_variation"
+    species: "human"
+    operation: "annotation"
+    input_sample_required: "raw_vcf:sequence_variations:vcf"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "annotated_tsv:sequence_features:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -26,6 +35,7 @@ task annotsv_annotate {
     overlap_threshold: "Minimum percentage overlap with genomic features"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -37,6 +47,7 @@ task annotsv_annotate {
     Boolean exclude_benign = false
     Int sv_min_size = 50
     Int overlap_threshold = 70
+    String docker_image = "getwilds/annotsv:3.4.4"
     Int cpu_cores = 4
     Int memory_gb = 8
   }
@@ -83,7 +94,7 @@ task annotsv_annotate {
   }
 
   runtime {
-    docker: "getwilds/annotsv:3.4.4"
+    docker: docker_image
     memory: "~{memory_gb}GB"
     cpu: cpu_cores
   }

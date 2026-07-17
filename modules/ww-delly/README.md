@@ -34,6 +34,7 @@ Calls structural variants from aligned BAM files using Delly.
 - `sv_type` (String): Structural variant type to call (DEL, DUP, INV, TRA, INS) or empty for all types (default: "")
 - `cpu_cores` (Int): Number of CPU cores to use (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/delly:1.2.9`)
 
 **Outputs:**
 - `vcf` (File): Structural variants in compressed VCF format
@@ -132,7 +133,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint delly_example
+sprocket run testrun.wdl
 ```
 
 ### Automatic Test Data

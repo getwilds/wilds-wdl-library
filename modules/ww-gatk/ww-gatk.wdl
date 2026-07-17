@@ -13,18 +13,29 @@ task create_sequence_dictionary {
     outputs: {
         sequence_dict: "Sequence dictionary file (.dict) for the reference genome"
     }
+    topic: "genomics,transcriptomics,mapping,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "indexing"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "sequence_dict:data_index:dict"
   }
 
   parameter_meta {
     reference_fasta: "Reference genome FASTA file"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     File reference_fasta
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   String dict_basename = basename(basename(reference_fasta, ".fa"), ".fasta")
@@ -44,7 +55,7 @@ task create_sequence_dictionary {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -61,6 +72,15 @@ task mark_duplicates {
         markdup_bai: "Index file for the duplicate-marked BAM",
         duplicate_metrics: "Metrics file containing duplicate marking statistics"
     }
+    topic: "genomics,transcriptomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequencing_quality_control"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "markdup_bam:nucleic_acid_sequence_alignment:bam,markdup_bai:data_index:bai,duplicate_metrics:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -69,6 +89,7 @@ task mark_duplicates {
     base_file_name: "Base name for the output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -77,6 +98,7 @@ task mark_duplicates {
     String base_file_name
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -99,7 +121,7 @@ task mark_duplicates {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -116,6 +138,15 @@ task base_recalibrator {
         recalibrated_bai: "Index file for the recalibrated BAM",
         recalibration_report: "Base recalibration report table"
     }
+    topic: "genomics,transcriptomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequencing_quality_control"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "dbsnp_vcf:sequence_variations:vcf,reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict,known_indels_sites_vcfs:sequence_variations:vcf"
+    input_reference_optional: "none"
+    output_sample: "recalibrated_bam:nucleic_acid_sequence_alignment:bam,recalibrated_bai:data_index:bai,recalibration_report:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -130,6 +161,7 @@ task base_recalibrator {
     intervals: "Optional interval list file defining target regions"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -144,22 +176,29 @@ task base_recalibrator {
     File? intervals
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    ln -s "~{dbsnp_vcf}" "~{basename(dbsnp_vcf)}"
+    known_vcfs=(~{sep=" " known_indels_sites_vcfs})
+    known_sites_args=""
+    for known_vcf in "${known_vcfs[@]}"; do
+      ln -s "${known_vcf}" "$(basename "${known_vcf}")"
+      known_sites_args="${known_sites_args} --known-sites $(basename "${known_vcf}")"
+    done
 
     # Generate vcf index files using GATK
-    gatk IndexFeatureFile -I "~{dbsnp_vcf}"
-    known_vcfs=(~{sep=" " known_indels_sites_vcfs})
+    gatk IndexFeatureFile -I "~{basename(dbsnp_vcf)}"
     for known_vcf in "${known_vcfs[@]}"; do
-      gatk IndexFeatureFile -I "${known_vcf}"
+      gatk IndexFeatureFile -I "$(basename "${known_vcf}")"
     done
 
     # Generate Base Recalibration Table
@@ -168,8 +207,8 @@ task base_recalibrator {
       -R "~{basename(reference_fasta)}" \
       -I "~{bam}" \
       -O "~{base_file_name}.recal_data.table" \
-      --known-sites "~{dbsnp_vcf}" \
-      --known-sites ~{sep=" --known-sites " known_indels_sites_vcfs} \
+      --known-sites "~{basename(dbsnp_vcf)}" \
+      ${known_sites_args} \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       --verbosity WARNING
 
@@ -194,7 +233,7 @@ task base_recalibrator {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -209,6 +248,15 @@ task collect_wgs_metrics {
     outputs: {
         metrics_file: "Comprehensive WGS metrics file with coverage and quality statistics"
     }
+    topic: "genomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "metrics_file:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -223,6 +271,7 @@ task collect_wgs_metrics {
     minimum_mapping_quality: "Minimum mapping quality for reads to be included"
     minimum_base_quality: "Minimum base quality for bases to be included"
     coverage_cap: "Maximum coverage depth to analyze"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -237,6 +286,7 @@ task collect_wgs_metrics {
     Int minimum_mapping_quality = 20
     Int minimum_base_quality = 20
     Int coverage_cap = 250
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -259,7 +309,7 @@ task collect_wgs_metrics {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -278,6 +328,15 @@ task markdup_recal_metrics {
         duplicate_metrics: "Metrics file containing duplicate marking statistics",
         wgs_metrics: "Comprehensive WGS metrics file with coverage and quality statistics"
     }
+    topic: "genomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequencing_quality_control"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "dbsnp_vcf:sequence_variations:vcf,reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict,known_indels_sites_vcfs:sequence_variations:vcf"
+    input_reference_optional: "none"
+    output_sample: "recalibrated_bam:nucleic_acid_sequence_alignment:bam,recalibrated_bai:data_index:bai,recalibration_report:quality_control_report:textual_format,duplicate_metrics:quality_control_report:textual_format,wgs_metrics:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -295,6 +354,7 @@ task markdup_recal_metrics {
     minimum_mapping_quality: "Minimum mapping quality for reads to be included"
     minimum_base_quality: "Minimum base quality for bases to be included"
     coverage_cap: "Maximum coverage depth to analyze"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -312,6 +372,7 @@ task markdup_recal_metrics {
     Int minimum_mapping_quality = 20
     Int minimum_base_quality = 20
     Int coverage_cap = 250
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -329,17 +390,23 @@ task markdup_recal_metrics {
     # Index resulting bam file
     samtools index "~{base_file_name}.markdup.bam"
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    ln -s "~{dbsnp_vcf}" "~{basename(dbsnp_vcf)}"
+    known_vcfs=(~{sep=" " known_indels_sites_vcfs})
+    known_sites_args=""
+    for known_vcf in "${known_vcfs[@]}"; do
+      ln -s "${known_vcf}" "$(basename "${known_vcf}")"
+      known_sites_args="${known_sites_args} --known-sites $(basename "${known_vcf}")"
+    done
 
     # Generate vcf index files using GATK
-    gatk IndexFeatureFile -I "~{dbsnp_vcf}"
-    known_vcfs=(~{sep=" " known_indels_sites_vcfs})
+    gatk IndexFeatureFile -I "~{basename(dbsnp_vcf)}"
     for known_vcf in "${known_vcfs[@]}"; do
-      gatk IndexFeatureFile -I "${known_vcf}"
+      gatk IndexFeatureFile -I "$(basename "${known_vcf}")"
     done
 
     # Generate Base Recalibration Table
@@ -348,8 +415,8 @@ task markdup_recal_metrics {
       -R "~{basename(reference_fasta)}" \
       -I "~{bam}" \
       -O "~{base_file_name}.recal_data.table" \
-      --known-sites "~{dbsnp_vcf}" \
-      --known-sites ~{sep=" --known-sites " known_indels_sites_vcfs} \
+      --known-sites "~{basename(dbsnp_vcf)}" \
+      ${known_sites_args} \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       --verbosity WARNING
 
@@ -391,7 +458,7 @@ task markdup_recal_metrics {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -406,6 +473,15 @@ task split_intervals {
     outputs: {
         interval_files: "Array of interval files optimized for parallel processing"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "splitting"
+    input_sample_required: "none"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "interval_files:sequence_coordinates:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -417,6 +493,7 @@ task split_intervals {
     filter_to_canonical_chromosomes: "Whether to restrict analysis to canonical chromosomes (chr1-22,X,Y,M) (default: true)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -428,6 +505,7 @@ task split_intervals {
     Boolean filter_to_canonical_chromosomes = true
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -494,7 +572,7 @@ task split_intervals {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -510,6 +588,15 @@ task print_reads {
         interval_bams: "Array of BAM files containing reads from specified intervals",
         interval_bam_indices: "Array of index files for the interval BAMs"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_handling"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "interval_bams:nucleic_acid_sequence_alignment:bam,interval_bam_indices:data_index:bai"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -522,6 +609,7 @@ task print_reads {
     output_basename: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -534,6 +622,7 @@ task print_reads {
     String output_basename
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -579,7 +668,7 @@ task print_reads {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -595,6 +684,15 @@ task haplotype_caller {
         vcf: "Compressed VCF file containing germline variant calls",
         vcf_index: "Index file for the VCF output"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "variant_calling"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "dbsnp_vcf:sequence_variations:vcf,reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -608,6 +706,7 @@ task haplotype_caller {
     intervals: "Optional interval list file defining target regions"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -621,19 +720,21 @@ task haplotype_caller {
     File? intervals
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    ln -s "~{dbsnp_vcf}" "~{basename(dbsnp_vcf)}"
 
     # Create index for dbSNP vcf
-    gatk IndexFeatureFile -I "~{dbsnp_vcf}"
+    gatk IndexFeatureFile -I "~{basename(dbsnp_vcf)}"
 
     # Run HaplotypeCaller
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
@@ -641,7 +742,7 @@ task haplotype_caller {
       -R "~{basename(reference_fasta)}" \
       -I "~{bam}" \
       -O "~{base_file_name}.haplotypecaller.vcf.gz" \
-      --dbsnp "~{dbsnp_vcf}" \
+      --dbsnp "~{basename(dbsnp_vcf)}" \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       ~{if defined(intervals) then "--interval-padding 100" else ""} \
       --verbosity WARNING
@@ -653,7 +754,7 @@ task haplotype_caller {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -673,6 +774,15 @@ task mutect2 {
         stats_file: "Mutect2 statistics file",
         f1r2_counts: "F1R2 counts for filtering"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "variant_calling"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "intervals:sequence_coordinates:textual_format"
+    input_reference_required: "gnomad_vcf:sequence_variations:vcf,reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi,unfiltered_vcf:sequence_variations:vcf,unfiltered_vcf_index:data_index:tbi,stats_file:report:vcf,f1r2_counts:report:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -687,6 +797,7 @@ task mutect2 {
     max_mnp_distance: "Distance at which to merge MNPs (default: 1)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -701,19 +812,21 @@ task mutect2 {
     Int max_mnp_distance = 1
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    ln -s "~{gnomad_vcf}" "~{basename(gnomad_vcf)}"
 
     # Index gnomad VCF
-    gatk IndexFeatureFile -I "~{gnomad_vcf}"
+    gatk IndexFeatureFile -I "~{basename(gnomad_vcf)}"
 
     # Run Mutect2
     gatk --java-options "-Xms~{memory_gb - 4}g -Xmx~{memory_gb - 2}g" \
@@ -723,7 +836,7 @@ task mutect2 {
       -O "~{base_file_name}.unfiltered.vcf.gz" \
       ~{if defined(intervals) then "--intervals " + intervals else ""} \
       ~{if defined(intervals) then "--interval-padding 100" else ""} \
-      --germline-resource "~{gnomad_vcf}" \
+      --germline-resource "~{basename(gnomad_vcf)}" \
       --f1r2-tar-gz "~{base_file_name}.f1r2.tar.gz" \
       --max-mnp-distance "~{max_mnp_distance}" \
       --verbosity WARNING
@@ -748,7 +861,7 @@ task mutect2 {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -764,6 +877,15 @@ task merge_vcfs {
         merged_vcf: "Merged VCF file",
         merged_vcf_index: "Index for merged VCF file"
     }
+    topic: "genomics,dna_polymorphism,structural_variation"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "aggregation"
+    input_sample_required: "vcfs:sequence_variations:vcf,vcf_indices:data_index:tbi"
+    input_sample_optional: "none"
+    input_reference_required: "reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "merged_vcf:sequence_variations:vcf,merged_vcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -773,6 +895,7 @@ task merge_vcfs {
     reference_dict: "Reference sequence dictionary"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -782,6 +905,7 @@ task merge_vcfs {
     File reference_dict
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -801,7 +925,7 @@ task merge_vcfs {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -816,6 +940,15 @@ task merge_mutect_stats {
     outputs: {
         merged_stats: "Merged Mutect2 statistics file"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "aggregation"
+    input_sample_required: "stats:report:vcf"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "merged_stats:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -823,6 +956,7 @@ task merge_mutect_stats {
     base_file_name: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -830,6 +964,7 @@ task merge_mutect_stats {
     String base_file_name
     Int memory_gb = 4
     Int cpu_cores = 1
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -847,7 +982,7 @@ task merge_mutect_stats {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -863,6 +998,15 @@ task haplotype_caller_parallel {
         vcf: "Compressed VCF file containing germline variant calls",
         vcf_index: "Index file for the VCF output"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "variant_calling"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai,intervals:sequence_coordinates:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "dbsnp_vcf:sequence_variations:vcf,reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -876,6 +1020,7 @@ task haplotype_caller_parallel {
     base_file_name: "Base name for output files"
     memory_gb: "Memory allocation in GB (minimum: 8)"
     cpu_cores: "Number of CPU cores to use (should match number of intervals)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -889,18 +1034,20 @@ task haplotype_caller_parallel {
     String base_file_name
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    ln -s "~{dbsnp_vcf}" "~{basename(dbsnp_vcf)}"
 
     # Create index for dbSNP vcf
-    gatk IndexFeatureFile -I "~{dbsnp_vcf}"
+    gatk IndexFeatureFile -I "~{basename(dbsnp_vcf)}"
 
     # Calculate memory per parallel job
     mem_per_job=$(( (~{memory_gb} - 4) / ~{length(intervals)} ))
@@ -923,7 +1070,7 @@ task haplotype_caller_parallel {
         -O "~{base_file_name}.${interval_name}.vcf.gz" \
         --intervals "$interval_file" \
         --interval-padding 100 \
-        --dbsnp "~{dbsnp_vcf}" \
+        --dbsnp "${dbsnp_vcf}" \
         --verbosity WARNING
     }
 
@@ -931,7 +1078,7 @@ task haplotype_caller_parallel {
     export -f run_haplotypecaller
     export reference_fasta="~{basename(reference_fasta)}"
     export bam="~{bam}"
-    export dbsnp_vcf="~{dbsnp_vcf}"
+    export dbsnp_vcf="~{basename(dbsnp_vcf)}"
     export base_file_name="~{base_file_name}"
     export mem_per_job
 
@@ -957,7 +1104,7 @@ task haplotype_caller_parallel {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -976,6 +1123,15 @@ task mutect2_parallel {
         unfiltered_vcf_index: "Index file for the unfiltered Mutect2 VCF output",
         stats_file: "Merged Mutect2 statistics file"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "variant_calling"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai,intervals:sequence_coordinates:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "gnomad_vcf:sequence_variations:vcf,reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi,unfiltered_vcf:sequence_variations:vcf,unfiltered_vcf_index:data_index:tbi,stats_file:report:vcf"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -990,6 +1146,7 @@ task mutect2_parallel {
     max_mnp_distance: "Distance at which to merge MNPs (default: 1)"
     memory_gb: "Memory allocation in GB (minimum: 8)"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1004,19 +1161,21 @@ task mutect2_parallel {
     Int max_mnp_distance = 1
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
+    ln -s "~{gnomad_vcf}" "~{basename(gnomad_vcf)}"
 
     # Index gnomad VCF
-    gatk IndexFeatureFile -I "~{gnomad_vcf}"
+    gatk IndexFeatureFile -I "~{basename(gnomad_vcf)}"
 
     # Calculate memory per parallel job
     mem_per_job=$(( (~{memory_gb} - 4) / ~{length(intervals)} ))
@@ -1040,7 +1199,7 @@ task mutect2_parallel {
         -O "~{base_file_name}.${interval_name}.unfiltered.vcf.gz" \
         --intervals "$interval_file" \
         --interval-padding 100 \
-        --germline-resource "~{gnomad_vcf}" \
+        --germline-resource "${gnomad_vcf}" \
         --f1r2-tar-gz "~{base_file_name}.${interval_name}.f1r2.tar.gz" \
         --max-mnp-distance "~{max_mnp_distance}" \
         --verbosity WARNING
@@ -1059,7 +1218,7 @@ task mutect2_parallel {
     export -f run_mutect2
     export reference_fasta="~{basename(reference_fasta)}"
     export bam="~{bam}"
-    export gnomad_vcf="~{gnomad_vcf}"
+    export gnomad_vcf="~{basename(gnomad_vcf)}"
     export base_file_name="~{base_file_name}"
     export mem_per_job
 
@@ -1110,7 +1269,7 @@ task mutect2_parallel {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -1125,6 +1284,15 @@ task fastq_to_bam {
     outputs: {
         unmapped_bam: "Unmapped BAM file containing reads from input FASTQ files"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_formatting"
+    input_sample_required: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "unmapped_bam:nucleic_acid_sequence_alignment:bam"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -1138,6 +1306,7 @@ task fastq_to_bam {
     read_group_name: "Read group name (if not provided, defaults to sample_name)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1151,6 +1320,7 @@ task fastq_to_bam {
     String? read_group_name
     Int memory_gb = 8
     Int cpu_cores = 4
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   String rg_name = select_first([read_group_name, sample_name])
@@ -1177,7 +1347,7 @@ task fastq_to_bam {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -1192,6 +1362,15 @@ task validate_sam_file {
     outputs: {
         validation_report: "Text file containing validation statistics and any errors/warnings"
     }
+    topic: "genomics,transcriptomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequencing_quality_control"
+    input_sample_required: "input_file:nucleic_acid_sequence_alignment:bam|sam|cram"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "reference_fasta:nucleic_acid_sequence:fasta"
+    output_sample: "validation_report:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -1202,6 +1381,7 @@ task validate_sam_file {
     reference_fasta: "Reference genome FASTA (required for CRAM files)"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1212,6 +1392,7 @@ task validate_sam_file {
     File? reference_fasta
     Int memory_gb = 4
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -1230,7 +1411,7 @@ task validate_sam_file {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -1252,6 +1433,15 @@ task analyze_saturation_mutagenesis {
         ref_coverage: "Reference coverage table",
         variant_counts: "Variant count table"
     }
+    topic: "genomics,dna_mutation"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "none"
+    output_sample: "aa_counts:report:textual_format,aa_fractions:report:textual_format,codon_counts:report:textual_format,codon_fractions:report:textual_format,cov_length_counts:report:textual_format,read_counts:report:textual_format,ref_coverage:report:textual_format,variant_counts:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -1264,6 +1454,7 @@ task analyze_saturation_mutagenesis {
     base_file_name: "Base name for output files"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1276,6 +1467,7 @@ task analyze_saturation_mutagenesis {
     String base_file_name
     Int memory_gb = 16
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
@@ -1311,7 +1503,7 @@ task analyze_saturation_mutagenesis {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -1327,6 +1519,15 @@ task create_somatic_pon {
         pon_vcf: "Gzipped VCF file containing the panel of normals",
         pon_vcf_index: "Index file for the panel of normals VCF"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "aggregation"
+    input_sample_required: "normal_vcfs:sequence_variations:vcf,normal_vcf_indices:data_index:tbi,intervals:sequence_coordinates:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai,reference_dict:data_index:dict"
+    input_reference_optional: "germline_resource:sequence_variations:vcf"
+    output_sample: "none"
+    output_reference: "pon_vcf:sequence_variations:vcf,pon_vcf_index:data_index:tbi"
   }
 
   parameter_meta {
@@ -1341,6 +1542,7 @@ task create_somatic_pon {
     germline_resource: "Optional gnomAD VCF for additional germline filtering"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -1355,20 +1557,20 @@ task create_somatic_pon {
     File? germline_resource
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/gatk:4.6.1.0"
   }
 
   command <<<
     set -eo pipefail
 
-    # Add local symbolic link for reference fasta and dict
+    # Add local symbolic link for reference data
     # If soft links aren't allowed on your HPC system, copy them locally instead
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
     ln -s "~{reference_fasta_index}" "~{basename(reference_fasta_index)}"
     ln -s "~{reference_dict}" "~{basename(reference_dict)}"
-
-    # Index germline resource if provided
     if [[ -f "~{germline_resource}" ]]; then
-      gatk IndexFeatureFile -I "~{germline_resource}"
+      ln -s "~{germline_resource}" "$(basename ~{germline_resource})"
+      gatk IndexFeatureFile -I "$(basename ~{germline_resource})"
     fi
 
     # Create a GenomicsDB from normal calls
@@ -1387,7 +1589,7 @@ task create_somatic_pon {
       -V gendb://"~{database_name}" \
       -R "~{basename(reference_fasta)}" \
       -L "~{intervals}" \
-      ~{if defined(germline_resource) then "--germline-resource " + germline_resource else ""} \
+      ~{if defined(germline_resource) then "--germline-resource " + basename(select_first([germline_resource])) else ""} \
       -O "~{base_file_name}.pon.vcf.gz" \
       --verbosity WARNING
   >>>
@@ -1398,7 +1600,7 @@ task create_somatic_pon {
   }
 
   runtime {
-    docker: "getwilds/gatk:4.6.1.0"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }

@@ -31,6 +31,7 @@ Generates consensus variant calls by combining annotated variant tables from thr
 - `base_file_name` (String): Base name for output files
 - `cpu_cores` (Int): Number of CPU cores to use (default: 1)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `rocker/tidyverse:4.4.2`)
 
 **Outputs:**
 - `consensus_tsv` (File): Tab-separated file containing consensus variant calls with evidence from all callers
@@ -78,16 +79,14 @@ The module includes a test workflow that demonstrates the consensus processing t
 
 ```bash
 # Using Cromwell
-java -jar cromwell.jar run testrun.wdl -i inputs-test.json
+java -jar cromwell.jar run testrun.wdl
 
 # Using miniWDL
-miniwdl run testrun.wdl -i inputs-test.json
+miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint consensus_example -i inputs-test.json
+sprocket run testrun.wdl
 ```
-
-Note: Testing requires annotated variant tables from the three callers as input.
 
 ## Input Requirements
 

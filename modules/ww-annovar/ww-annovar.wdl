@@ -14,6 +14,15 @@ task annovar_annotate {
         annotated_vcf: "VCF file with Annovar annotations added",
         annotated_table: "Tab-delimited table with variant annotations"
     }
+    topic: "genomics,structural_variation"
+    species: "human"
+    operation: "annotation"
+    input_sample_required: "vcf_to_annotate:sequence_variations:vcf"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "annotated_vcf:sequence_variations:vcf,annotated_table:sequence_features:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -23,6 +32,7 @@ task annovar_annotate {
     annovar_operation: "Comma-separated list of operations corresponding to the protocols"
     cpu_cores: "Number of CPU cores to allocate for the annotation task"
     memory_gb: "Memory in GB to allocate for the annotation task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -32,6 +42,7 @@ task annovar_annotate {
     String annovar_operation
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/annovar:~{ref_name}"
   }
 
   String base_vcf_name = basename(vcf_to_annotate, ".vcf.gz")
@@ -54,7 +65,7 @@ task annovar_annotate {
   }
 
   runtime {
-    docker: "getwilds/annovar:~{ref_name}"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

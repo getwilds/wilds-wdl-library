@@ -12,13 +12,22 @@ version 1.0
 task process_sample {
   # Provide metadata describing the purpose and authorship of the task
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Your Name"
+    email: "your.email@fredhutch.org"
     description: "Simple template processing task that creates a hello world output file"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-template/ww-template.wdl"
     outputs: {
         output_file: "Simple text file with hello world message and sample information"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_parsing"
+    input_sample_required: "input_file:any:any"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "output_file:text_data:textual_format"
+    output_reference: "none"
   }
 
   # Provide parameter metadata for clarity on each input
@@ -27,6 +36,7 @@ task process_sample {
     input_file: "Input file (any file type works for this template)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   # Specify inputs required for the task
@@ -35,6 +45,7 @@ task process_sample {
     File input_file
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/bwa:0.7.17"
   }
 
   # Define the command section to execute the task's functionality
@@ -59,7 +70,7 @@ task process_sample {
   # Specify runtime requirements for the task
   runtime {
     # Replace with your tool's Docker image
-    docker: "getwilds/bwa:0.7.17"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

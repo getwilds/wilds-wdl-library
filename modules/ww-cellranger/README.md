@@ -13,18 +13,20 @@ This module provides reusable WDL tasks for preparing and processing single-cell
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `run_count`
-- **Test workflow**: `testrun.wdl` (demonstration workflow with automatic test data support)
-- **Container**: `getwilds/cellranger:10.0.0` (WILDS Docker image with Cell Ranger installed)
+- **Tasks**: `run_count`, `run_count_hpc_cromwell`, `run_count_hpc_sprocket`, `rename_fastqs`
+- **Test workflows**: `testrun.wdl` for CI/CD; `testrun_hpc.wdl` for monthly HPC validation of the Sprocket module-load path
+- **Container**: Cell Ranger is not redistributable, so the WILDS Docker Library does not publish a public Cell Ranger image. A [Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) is provided so users can build their own private image. Fred Hutch users running on institutional HPC can instead use `run_count_hpc_cromwell` or `run_count_hpc_sprocket` with the `CellRanger/10.0.0` environment module under Fred Hutch's institutional Cell Ranger license.
 
 ## Important Requirements
 
 ### Platform Requirements
 
-**Cell Ranger requires Linux x86_64 architecture with AVX instruction support.** This module runs Cell Ranger inside a Docker container (`getwilds/cellranger:10.0.0`), which works on:
+**Cell Ranger requires Linux x86_64 architecture with AVX instruction support.** When using `run_count`, the binary runs inside a Docker container built from the [WILDS Cell Ranger Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest), which works on:
 - Linux x86_64 systems (native)
 - Intel-based Macs (via Docker)
 - Cloud platforms and HPC clusters (GitHub Actions, AWS, Google Cloud, etc.)
+
+When using either `run_count_hpc_cromwell` or `run_count_hpc_sprocket`, the same architecture requirement applies to the HPC compute nodes that load the Cell Ranger environment module.
 
 **Note for Apple Silicon (M1/M2/M3) Mac users:** Local testing is not supported. Docker's x86_64 emulation on Apple Silicon does not support the AVX instructions that Cell Ranger requires. The CI/CD pipeline will test this module on compatible infrastructure.
 
@@ -34,7 +36,11 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 - Format: `SampleName_S1_L001_R1_001.fastq.gz` (for Read 1)
 - Format: `SampleName_S1_L001_R2_001.fastq.gz` (for Read 2)
 
-If your files don't follow this convention, you can use the `download_fastq_data` task from `ww-testdata` with the `prefix` parameter to rename them, or rename them manually before running the workflow.
+If your files don't follow this convention, you can use the `rename_fastqs` task from this module to rename them automatically.
+
+### Supported Cell Ranger Versions
+
+This module's `cellranger count` invocation is compatible with **Cell Ranger 8.x, 9.x, and 10.x**. The CLI for the flags used here (including the required `--create-bam`) has been stable across those releases. To use a specific version, override `docker_image` (for `run_count`) or `cellranger_module` (for the HPC variants) with your preferred release. **Cell Ranger 7.x and earlier are not supported** because they predate the `--create-bam` flag.
 
 ### Current Limitations
 
@@ -44,9 +50,21 @@ If you need support for feature barcoding or other Cell Ranger features, please 
 
 ## Tasks
 
+### Picking a `run_count` variant
+
+Cell Ranger's license prevents WILDS from publishing a public Docker image, and the two HPC engines this library supports (Cromwell and Sprocket) load host environment modules in different ways. This module therefore exposes three near-identical tasks; pick the one that matches your environment:
+
+| Task | Use when | How Cell Ranger is obtained |
+| --- | --- | --- |
+| `run_count` | You have a private Cell Ranger Docker image (built locally from the [WILDS Dockerfile recipe](https://github.com/getwilds/wilds-docker-library/blob/main/cellranger/Dockerfile_latest) or supplied by your organization). Right choice for cloud, CI, and most local runs. | `docker` runtime key pulls a private Cell Ranger image |
+| `run_count_hpc_cromwell` | You are running on an institutional HPC via Cromwell (e.g., Fred Hutch HPC via PROOF), and your Cromwell backend executes tasks directly on the compute node. | No `docker` runtime key; the task runs on the host and `module load` makes the licensed Cell Ranger binary available on `PATH` |
+| `run_count_hpc_sprocket` | You are running on an institutional HPC via Sprocket, where tasks always run inside a container under Apptainer. | Runs inside a minimal Lua container (`getwilds/lua:5.3.6`); the host's Lmod tree, modulefiles, and Cell Ranger software tree are bind-mounted in via the Sprocket HPC config so `module load` works inside the container |
+
+All three tasks produce identical outputs and accept the same scientific parameters; they differ only in how they obtain the Cell Ranger binary. The Sprocket variant requires a Sprocket configuration that bind-mounts the host's Lmod and Cell Ranger software trees into the container — see [`.github/configs/sprocket-hpc.toml`](../../.github/configs/sprocket-hpc.toml) for the reference setup used in the monthly HPC test run.
+
 ### `run_count`
 
-Run `cellranger count` on gene expression reads from one GEM well.
+Run `cellranger count` on gene expression reads from one GEM well using a private Cell Ranger Docker image.
 
 **Inputs:**
 - `r1_fastqs` (Array[File]): Array of R1 FASTQ files (contain cell barcodes and UMIs)
@@ -57,14 +75,83 @@ Run `cellranger count` on gene expression reads from one GEM well.
 - `cpu_cores` (Int, default=8): Number of CPU cores to use
 - `memory_gb` (Int, default=64): Memory allocation in GB
 - `expect_cells` (Int, optional): Expected number of recovered cells
-- `chemistry` (String, optional): Assay configuration (e.g., SC3Pv3)
+- `chemistry` (String, optional): Assay configuration (e.g., SC3Pv3). Leave unset for automatic chemistry detection (required for `skip_on_chemistry_failure` to work).
+- `skip_on_chemistry_failure` (Boolean, default=false): If true, samples for which Cell Ranger can't automatically detect the chemistry (usually because the data is low quality or not single-cell) succeed with absent count outputs and `chemistry_status="skipped_non_single_cell"` instead of failing. Other Cell Ranger failures will still cause the workflow to quit. Only active when `chemistry` is left unset (auto-detection mode). See [Graceful chemistry-detection skip](#graceful-chemistry-detection-skip) for details.
+- `docker_image` (String, default=`ghcr.io/getwilds/cellranger:10.0.0`): Private Cell Ranger Docker image. Cell Ranger is not redistributable, so you must supply your own image (see the WILDS Dockerfile recipe linked above) and override the default if it is not available in your registry.
 
 **Important:** All input FASTQs must be from one GEM well. If you have multiple GEM wells, use `run_count` separately for each well. The task validates that FASTQ filenames follow Cell Ranger's naming convention and will fail with a helpful error message if they don't.
 
 **Outputs:**
-- `results_tar` (File): Compressed tarball of Cell Ranger count output directory
-- `web_summary` (File): Web summary HTML file with QC metrics
-- `metrics_summary` (File): Metrics summary CSV file with key statistics
+- `chemistry_status` (File): One-line marker file with contents `ok` (Cell Ranger ran to completion) or `skipped_non_single_cell` (chemistry detection failed and `skip_on_chemistry_failure=true`). Always present.
+- `results_tar` (File?): Compressed tarball of Cell Ranger count output directory. Absent when the sample was skipped.
+- `web_summary` (File?): Web summary HTML file with QC metrics. Absent when the sample was skipped.
+- `metrics_summary` (File?): Metrics summary CSV file with key statistics. Absent when the sample was skipped.
+- `filtered_h5` (File?): Filtered feature-barcode matrix HDF5 file. Absent when the sample was skipped.
+- `raw_h5` (File?): Raw feature-barcode matrix HDF5 file. Absent when the sample was skipped.
+
+### Graceful chemistry-detection skip
+
+When `cellranger count` cannot automatically detect the input chemistry (usually because it's low quality or not single-cell) it errors out before producing the usual outputs. By default, the `run_count` WDL task reports the error and quits (`skip_on_chemistry_failure = false`). Setting `skip_on_chemistry_failure = true` makes the task exit cleanly instead and reports `chemistry_status = "skipped_non_single_cell"` (regardless of why chemistry detection failed). This lets you scatter over many samples and skip bad inputs instead of stopping the whole workflow because of the error.
+
+**How it works:** The task searches the `cellranger count` output for terms like "could not detect", "ambiguous chemistry", "NO_INPUT_ANTIBODY_READS" and the error codes "TXRNGR10002" and "TXRNGR10004." This method has been validated against Cell Ranger version 10.0.0.
+
+### `run_count_hpc_cromwell`
+
+Run `cellranger count` on gene expression reads from one GEM well using the host's environment-module system instead of a Docker image. The task omits the `docker` runtime key entirely so that Cromwell's HPC backend executes it directly on the compute node, where `module load` makes the licensed Cell Ranger binary available on `PATH`. Intended for Cromwell-on-HPC deployments such as the Fred Hutch HPC via PROOF; on container-based backends, no Cell Ranger binary will be on `PATH` and the task will fail.
+
+**Inputs:** Same as `run_count`, except `docker_image` is replaced by:
+- `cellranger_module` (String, default=`"CellRanger/10.0.0"`): HPC environment module to load before invoking `cellranger count`.
+
+**Outputs:** Same as `run_count`.
+
+Example, Cromwell-on-HPC with environment modules:
+```wdl
+call cellranger_tasks.run_count_hpc_cromwell {
+  input:
+    r1_fastqs = r1_fastqs,
+    r2_fastqs = r2_fastqs,
+    ref_gex = reference,
+    sample_id = "my_sample",
+    cellranger_module = "CellRanger/10.0.0"
+}
+```
+
+### `run_count_hpc_sprocket`
+
+Run `cellranger count` on gene expression reads from one GEM well from inside a minimal Lua container, with the host's Lmod tree and Cell Ranger software tree bind-mounted in. Sprocket always runs tasks inside a container under Apptainer, so this variant cannot omit the `docker` runtime key the way `run_count_hpc_cromwell` does; instead the container ships only the bits needed to execute `module load` (Lua) and the Cell Ranger binary itself comes in via host bind-mounts configured in the Sprocket HPC config.
+
+**Inputs:** Same as `run_count_hpc_cromwell`, plus:
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/lua:5.3.6`)
+
+**Outputs:** Same as `run_count`.
+
+Example, Sprocket-on-HPC with environment modules:
+```wdl
+call cellranger_tasks.run_count_hpc_sprocket {
+  input:
+    r1_fastqs = r1_fastqs,
+    r2_fastqs = r2_fastqs,
+    ref_gex = reference,
+    sample_id = "my_sample",
+    cellranger_module = "CellRanger/10.0.0"
+}
+```
+
+> **Sprocket configuration note:** This task assumes a Sprocket config that bind-mounts `/app/lmod`, the host's modulefiles, and the host's Cell Ranger software tree into the container. The reference setup used by the monthly HPC test run lives in [`.github/configs/sprocket-hpc.toml`](../../.github/configs/sprocket-hpc.toml).
+
+### `rename_fastqs`
+
+Renames FASTQ files to match the Cell Ranger naming convention. Useful for preparing SRA downloads or other non-standard FASTQ files for Cell Ranger input.
+
+**Inputs:**
+- `r1_fastq` (File): R1 FASTQ file to rename
+- `r2_fastq` (File): R2 FASTQ file to rename
+- `sample_id` (String): Sample ID to use as the prefix in the renamed file
+- `docker_image` (String): Docker image to use for this task (default: `ubuntu:22.04`)
+
+**Outputs:**
+- `r1_renamed` (File): R1 FASTQ file renamed to `{sample_id}_S1_R1_001.fastq.gz`
+- `r2_renamed` (File): R2 FASTQ file renamed to `{sample_id}_S1_R2_001.fastq.gz`
 
 ## Usage as a Module
 
@@ -94,6 +181,8 @@ workflow my_single_cell_pipeline {
     File results = run_count.results_tar
     File web_summary = run_count.web_summary
     File metrics = run_count.metrics_summary
+    File filtered_h5 = run_count.filtered_h5
+    File raw_h5 = run_count.raw_h5
   }
 }
 ```
@@ -145,24 +234,19 @@ This module integrates seamlessly with other WILDS components:
 
 ## Testing the Module
 
-The module includes a demonstration workflow that can be tested independently. The workflow in `testrun.wdl` automatically downloads test data and runs without requiring input files:
+The module includes a demonstration workflow that can be tested independently. The workflow in `testrun.wdl` automatically downloads test data and runs without requiring input files.
 
-```bash
-# Using Cromwell
-java -jar cromwell.jar run testrun.wdl
-
-# Using miniWDL
-miniwdl run testrun.wdl
-
-# Using Sprocket
-sprocket run testrun.wdl
-```
+**Fred Hutch users**: If you would like run `testrun.wdl` on PROOF, first edit it to use the `run_count_hpc` task instead of `run_count`. That way the Cell Ranger module will be used instead of the private Docker image used by CI/CD.
 
 The test workflow (`cellranger_example`) automatically:
 1. Downloads a small GEX reference using `ww-testdata`
 2. Downloads test FASTQ data with proper naming convention using `ww-testdata`
 3. Runs Cell Ranger count analysis
 4. Validates all outputs
+
+### HPC Test Workflow
+
+`testrun_hpc.wdl` mirrors the regular testrun's coverage but dispatches to `run_count_hpc_sprocket` instead of `run_count`. It is intended to be exercised on Fred Hutch HPC via Sprocket on a monthly basis to validate the module-load path; the Cromwell variant (`run_count_hpc_cromwell`) is exercised by users running Cromwell on their HPC by hand. Uses the same tiny test data as `testrun.wdl` so the only thing this run validates is the HPC dispatch path.
 
 ## Configuration Guidelines
 
@@ -188,7 +272,7 @@ The module supports flexible resource configuration:
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- Docker or Apptainer support for containerized execution
+- One of: Docker/Apptainer support with a private Cell Ranger image (for `run_count`), a Cromwell-on-HPC backend that runs tasks directly on the compute node and provides Cell Ranger via Lmod (for `run_count_hpc_cromwell`), or a Sprocket-on-HPC config that bind-mounts the host's Lmod and Cell Ranger software trees into the container (for `run_count_hpc_sprocket`)
 - Sufficient computational resources (Cell Ranger can be memory-intensive)
 - 10x Genomics reference transcriptome (available from [10x Genomics Download Center](https://www.10xgenomics.com/support/software/cell-ranger/downloads#reference-downloads))
 

@@ -16,16 +16,27 @@ task download_weights {
     outputs: {
         weights_tarball: "Compressed tarball containing AlphaFold2 model weights (~15-20 GB)"
     }
+    topic: "proteomics,protein_structure_analysis"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_retrieval"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "weights_tarball:data_index:tar_format"
   }
 
   parameter_meta {
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/colabfold:1.5.5"
   }
 
   command <<<
@@ -52,7 +63,7 @@ task download_weights {
   }
 
   runtime {
-    docker: "getwilds/colabfold:1.5.5"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -67,6 +78,15 @@ task colabfold_predict {
     outputs: {
         results_tarball: "Compressed tarball containing all ColabFold outputs including PDB structure files, PAE plots, pLDDT plots, coverage plots, and prediction metrics"
     }
+    topic: "proteomics,protein_structure_analysis"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "protein_structure_prediction"
+    input_sample_required: "fasta_file:protein_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "weights_tarball:data_index:tar_format"
+    input_reference_optional: "none"
+    output_sample: "results_tarball:protein_structure:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -85,6 +105,7 @@ task colabfold_predict {
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
     gpu_enabled: "Enable GPU for prediction (controls JAX CPU/GPU mode and PROOF GPU allocation)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -103,6 +124,7 @@ task colabfold_predict {
     Int cpu_cores = 8
     Int memory_gb = 48
     Boolean gpu_enabled = true
+    String docker_image = "getwilds/colabfold:1.5.5"
   }
 
   command <<<
@@ -145,7 +167,7 @@ task colabfold_predict {
   }
 
   runtime {
-    docker: "getwilds/colabfold:1.5.5"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
     gpus: if gpu_enabled then "1" else "0"

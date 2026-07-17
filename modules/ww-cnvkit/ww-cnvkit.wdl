@@ -14,6 +14,15 @@ task create_reference {
     outputs: {
         reference_cnn: "CNVkit reference file (.cnn)"
     }
+    topic: "genomics,copy_number_variation"
+    species: "human,eukaryote"
+    operation: "indexing"
+    input_sample_required: "bam_files:nucleic_acid_sequence_alignment:bam,bam_indices:data_index:bai"
+    input_sample_optional: "target_bed:annotation_track:bed,antitarget_bed:annotation_track:bed"
+    input_reference_required: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "reference_cnn:data_index:cnn"
   }
 
   parameter_meta {
@@ -25,6 +34,7 @@ task create_reference {
     reference_fasta_index: "Reference genome FASTA index file"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -36,6 +46,7 @@ task create_reference {
     File? antitarget_bed
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/cnvkit:0.9.10"
   }
 
   command <<<
@@ -95,7 +106,7 @@ task create_reference {
   }
 
   runtime {
-    docker: "getwilds/cnvkit:0.9.10"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -112,6 +123,15 @@ task run_cnvkit {
         cnv_segments: "CNV segments file (.cnr)",
         cnv_plot: "CNV visualization plot"
     }
+    topic: "genomics,copy_number_variation"
+    species: "human,eukaryote"
+    operation: "copy_number_variation_detection"
+    input_sample_required: "tumor_bam:nucleic_acid_sequence_alignment:bam,tumor_bai:data_index:bai"
+    input_sample_optional: "normal_bam:nucleic_acid_sequence_alignment:bam,normal_bai:data_index:bai,target_bed:annotation_track:bed"
+    input_reference_required: "reference_cnn:data_index:cnn"
+    input_reference_optional: "none"
+    output_sample: "cnv_calls:sequence_variations:cns,cnv_segments:sequence_variations:cnr,cnv_plot:plot:pdf"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -125,6 +145,7 @@ task run_cnvkit {
     paired_analysis: "Whether to perform paired tumor/normal analysis"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -138,6 +159,7 @@ task run_cnvkit {
     Boolean paired_analysis = false
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/cnvkit:0.9.10"
   }
 
   command <<<
@@ -188,7 +210,7 @@ task run_cnvkit {
   }
 
   runtime {
-    docker: "getwilds/cnvkit:0.9.10"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

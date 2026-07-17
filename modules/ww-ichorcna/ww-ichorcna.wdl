@@ -13,6 +13,15 @@ task readcounter_wig {
     outputs: {
         wig_file: "WIG file created from binned read count data within input BED files"
     }
+    topic: "genomics,copy_number_variation"
+    species: "human"
+    operation: "quantification"
+    input_sample_required: "bam_file:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "wig_file:annotation_track:wig"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -23,6 +32,7 @@ task readcounter_wig {
     chromosomes: "Chromosomes to include in WIG file"
     memory_gb: "Memory allocated for the task in GB"
     cpus: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -33,6 +43,7 @@ task readcounter_wig {
     Int window_size = 500000
     Int memory_gb = 8
     Int cpus = 2
+    String docker_image = "getwilds/hmmcopy:1.0.0"
   }
 
   command <<<
@@ -51,7 +62,7 @@ task readcounter_wig {
   }
 
   runtime {
-    docker: "getwilds/hmmcopy:1.0.0"
+    docker: docker_image
     cpu: cpus
     memory: "~{memory_gb} GB"
   }
@@ -71,6 +82,15 @@ task ichorcna_call {
         correct_pdf:  "Genome wide correction comparisons",
         rdata: "Saved R image after ichorCNA has finished. Results for all solutions will be included"
     }
+    topic: "genomics,copy_number_variation"
+    species: "human"
+    operation: "statistical_calculation,sequence_classification"
+    input_sample_required: "wig_tumor:annotation_track:wig"
+    input_sample_optional: "none"
+    input_reference_required: "wig_gc:annotation_track:wig,wig_map:annotation_track:wig,panel_of_norm_rds:sequence_report:binary_forma,centromeres:sequence_coordinates:textual_format"
+    input_reference_optional: "none"
+    output_sample: "params:report:textual_format,seg:report:textual_format,genomewide_pdf:plot:pdf,allgenomewide_pdf:plot:pdf,correct_pdf:plot:pdf,rdata:report:binary_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -86,6 +106,7 @@ task ichorcna_call {
     chrs: "Chromosomes to analyze (default: chr 1-22, X, and Y)"
     memory_gb: "Memory allocated for each task in the workflow in GB"
     cpus: "Number of CPU cores allocated for each task in the workflow"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -101,6 +122,7 @@ task ichorcna_call {
     String chrs = "c(1:22, 'X', 'Y')"
     Int memory_gb = 16
     Int cpus = 6
+    String docker_image = "getwilds/ichorcna:0.2.0"
   }
 
   command <<<
@@ -141,7 +163,7 @@ task ichorcna_call {
   }
 
   runtime {
-    docker: "getwilds/ichorcna:0.2.0"
+    docker: docker_image
     cpu: cpus
     memory: "~{memory_gb} GB"
   }

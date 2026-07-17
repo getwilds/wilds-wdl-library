@@ -19,6 +19,15 @@ task s3_download_file {
     outputs: {
         downloaded_file: "Downloaded file from S3"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_retrieval"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "downloaded_file:any:any"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -28,6 +37,7 @@ task s3_download_file {
     aws_credentials_file: "Path to AWS credentials file (optional)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -37,6 +47,7 @@ task s3_download_file {
     File? aws_credentials_file
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   String final_filename = select_first([output_filename, basename(s3_uri)])
@@ -75,7 +86,7 @@ task s3_download_file {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -90,6 +101,15 @@ task s3_upload_file {
     outputs: {
         s3_uri: "S3 URI of the uploaded file"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_deposition"
+    input_sample_required: "file_to_upload:any:any,aws_config_file:resource_metadata:configuration_file_format"
+    input_sample_optional: "aws_credentials_file:account_authentication:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -100,6 +120,7 @@ task s3_upload_file {
     aws_credentials_file: "Path to AWS credentials file (optional)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -110,6 +131,7 @@ task s3_upload_file {
     File? aws_credentials_file
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   String final_key = select_first([s3_key, basename(file_to_upload)])
@@ -139,7 +161,7 @@ task s3_upload_file {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -155,6 +177,15 @@ task s3_list_bucket {
         file_list: "Text file containing list of S3 objects",
         object_count: "Number of objects found"
     }
+    topic: "any"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_retrieval"
+    input_sample_required: "none"
+    input_sample_optional: "aws_config_file:resource_metadata:configuration_file_format,aws_credentials_file:account_authentication:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -165,6 +196,7 @@ task s3_list_bucket {
     human_readable: "Use human-readable file sizes (default: true)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -175,6 +207,7 @@ task s3_list_bucket {
     Boolean human_readable = true
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
   }
 
   Boolean use_credentials = defined(aws_config_file)
@@ -216,7 +249,7 @@ task s3_list_bucket {
   }
 
   runtime {
-    docker: "getwilds/awscli:2.27.49"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

@@ -15,6 +15,15 @@ task run_shapemapper {
         output_tar: "Compressed tarball of the ShapeMapper output directory",
         log_file: "ShapeMapper log file with processing details and quality metrics"
     }
+    topic: "transcriptomics,nucleic_acid_structure_analysis"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "nucleic_acid_structure_analysis"
+    input_sample_required: "target_fa:rna_sequence:fasta,modified_r1:rna_sequence:fastq,modified_r2:rna_sequence:fastq,untreated_r1:rna_sequence:fastq,untreated_r2:rna_sequence:fastq"
+    input_sample_optional: "primers_fa:pcr_primers:fasta"
+    input_reference_required: "ref_fasta:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "output_tar:nucleic_acid_property:tar_format,log_file:report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -29,6 +38,7 @@ task run_shapemapper {
     is_amplicon: "Set to true if data is from amplicon sequencing (default: false)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -43,6 +53,7 @@ task run_shapemapper {
     Boolean is_amplicon = false
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/shapemapper:2.3"
   }
 
   command <<<
@@ -77,7 +88,7 @@ task run_shapemapper {
   }
 
   runtime {
-    docker: "getwilds/shapemapper:2.3"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

@@ -73,7 +73,6 @@ task validate_outputs {
   command <<<
     set -eo pipefail
 
-    pip3 install pandas
     python3 << 'EOF'
 import pandas as pd
 import sys
@@ -148,7 +147,7 @@ EOF
   }
 
   runtime {
-    docker: "python:3.9-slim"
+    docker: "getwilds/python-utils:0.1.0"
     memory: "2 GB"
     cpu: 1
   }

@@ -14,18 +14,29 @@ task make_database {
     outputs: {
         diamond_db: "DIAMOND database file (.dmnd) created from input FASTA"
     }
+    topic: "proteomics,mapping"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "indexing"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "fasta:protein_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "diamond_db:data_index:dmnd"
   }
 
   parameter_meta {
     fasta: "Input FASTA file containing protein sequences"
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     File fasta
     Int memory_gb = 2
     Int cpu_cores = 1
+    String docker_image = "getwilds/diamond:2.1.16"
   }
 
   String fasta_base = sub(basename(fasta), ".*/", "")
@@ -41,7 +52,7 @@ task make_database {
   }
 
   runtime {
-    docker: "getwilds/diamond:2.1.16"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -56,6 +67,15 @@ task diamond_blastp {
     outputs: {
         aln: "Compressed alignment file in tabular format (outfmt 6)"
     }
+    topic: "proteomics,mapping"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequence_alignment"
+    input_sample_required: "query:protein_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "diamond_db:data_index:dmnda"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "aln:sequence_alignment:tsv"
   }
 
   parameter_meta {
@@ -68,6 +88,7 @@ task diamond_blastp {
     blocksize: "Block size in billions of sequence letters to be processed at a time."
     memory_gb: "Memory allocation in GB"
     cpu_cores: "Number of CPU cores to use"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -80,6 +101,7 @@ task diamond_blastp {
     Float blocksize = 2.0
     Int memory_gb = 2
     Int cpu_cores = 1
+    String docker_image = "getwilds/diamond:2.1.16"
   }
 
   String db_name = basename(diamond_db, ".dmnd")
@@ -109,7 +131,7 @@ task diamond_blastp {
   }
 
   runtime {
-    docker: "getwilds/diamond:2.1.16"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }

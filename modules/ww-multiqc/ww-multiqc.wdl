@@ -17,6 +17,15 @@ task run_multiqc {
         html_report: "MultiQC interactive HTML summary report",
         data_dir: "Directory of parsed data files in tab-delimited format"
     }
+    topic: "any,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "quality_control"
+    input_sample_required: "input_files:quality_control_report:any"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "html_report:quality_control_report:html,data_dir:quality_control_report:zip_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -26,6 +35,7 @@ task run_multiqc {
     extra_args: "Additional command-line arguments to pass to MultiQC"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -35,6 +45,7 @@ task run_multiqc {
     String extra_args = ""
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/multiqc:1.33"
   }
 
   command <<<
@@ -65,7 +76,7 @@ task run_multiqc {
   }
 
   runtime {
-    docker: "getwilds/multiqc:1.33"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

@@ -28,8 +28,10 @@ Run comprehensive RSeQC quality control metrics on aligned RNA-seq data.
 - `bam_index` (File): Index file for the aligned BAM file
 - `ref_bed` (File): Reference genome annotation in BED format (12-column)
 - `sample_name` (String): Sample name for output files
+- `skip_gene_body_cov` (Boolean, default=true): Whether to skip the `geneBody_coverage.py` analysis (see [Gene Body Coverage](#2-gene-body-coverage) for details)
 - `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=4): Memory allocated for the task in GB
+- `docker_image` (String, default=`getwilds/rseqc:5.0.4`): Docker image to use for this task
 
 **Outputs:**
 - `read_distribution` (File): Distribution of reads across genomic features
@@ -137,7 +139,7 @@ The module includes a test workflow (`testrun.wdl`) that can be run independentl
 
 ```bash
 # Using Sprocket (recommended)
-sprocket run testrun.wdl --entrypoint rseqc_example
+sprocket run testrun.wdl
 
 # Using miniWDL
 miniwdl run testrun.wdl
@@ -187,6 +189,8 @@ Assesses the uniformity of coverage along gene bodies:
 - Important for assessing RNA degradation
 - Generates coverage curve plots
 
+**Skipped by default** (`skip_gene_body_cov = true`). The `geneBody_coverage.py` analysis is single-threaded and can take hours on large BAMs or bacterial genomes. To enable gene body coverage, set `skip_gene_body_cov = false`. When skipped, a placeholder file is written so downstream tools that expect the output file (e.g. MultiQC) do not error.
+
 ### 3. Infer Experiment
 Determines the strand-specificity of the RNA-seq library:
 - Unstranded
@@ -212,7 +216,7 @@ Classifies and analyzes splice junctions:
 ### Default Resources
 - **CPU**: 2 cores
 - **Memory**: 4 GB
-- **Runtime**: ~5-15 minutes per sample depending on BAM size
+- **Runtime**: ~1-5 minutes per sample with default settings (gene body coverage skipped). Enabling gene body coverage (`skip_gene_body_cov = false`) can add significant runtime depending on BAM size and annotation complexity.
 
 ### Resource Scaling
 For larger datasets, consider increasing resources:

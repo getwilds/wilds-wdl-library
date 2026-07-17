@@ -103,7 +103,7 @@ java -jar cromwell.jar run ww-star-deseq2.wdl --inputs inputs.json --options opt
 miniwdl run ww-star-deseq2.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-star-deseq2.wdl inputs.json
+sprocket run ww-star-deseq2.wdl @inputs.json
 ```
 
 ### For Fred Hutch Users
@@ -210,7 +210,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint star_deseq2_example
+sprocket run testrun.wdl
 ```
 
 The test workflow automatically:
@@ -265,6 +265,10 @@ This pipeline can be extended by:
 - **ww-deseq2 module**: Differential expression analysis
 - **ww-sra-star pipeline**: SRA download to alignment pipeline
 - **Other pipelines**: Additional integration examples
+
+## Acknowledgments
+
+Special thanks to [Ethan Bouvet](https://github.com/EthanB-no) for helping test this pipeline in realistic settings. Thank you for your contributions!
 
 ## Support
 

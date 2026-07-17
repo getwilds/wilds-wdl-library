@@ -15,6 +15,15 @@ task download_by_manifest {
         downloaded_files: "Array of downloaded data files from GDC",
         download_log: "Log file with download statistics and any errors"
     }
+    topic: "genomics,transcriptomics"
+    species: "human"
+    operation: "data_retrieval"
+    input_sample_required: "manifest_file:accession:textual_format"
+    input_sample_optional: "token_file:account_authentication:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "downloaded_files:any:any,download_log:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -25,6 +34,7 @@ task download_by_manifest {
     wait_time: "Seconds to wait between retries (default: 5)"
     cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
     memory_gb: "Memory allocated for the task in GB (default: 8)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -35,6 +45,7 @@ task download_by_manifest {
     Int wait_time = 5
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/gdc-client:2.3.0"
   }
 
   command <<<
@@ -115,7 +126,7 @@ task download_by_manifest {
   }
 
   runtime {
-    docker: "getwilds/gdc-client:2.3.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -123,14 +134,23 @@ task download_by_manifest {
 
 task download_by_uuids {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Download files from GDC using file UUIDs. Supports both controlled-access (with token) and open-access data."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gdc/ww-gdc.wdl"
     outputs: {
         downloaded_files: "Array of downloaded data files from GDC",
         download_log: "Log file with download statistics and any errors"
     }
+    topic: "genomics,transcriptomics"
+    species: "human"
+    operation: "data_retrieval"
+    input_sample_required: "none"
+    input_sample_optional: "token_file:account_authentication:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "downloaded_files:any:any,download_log:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -141,6 +161,7 @@ task download_by_uuids {
     wait_time: "Seconds to wait between retries (default: 5)"
     cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
     memory_gb: "Memory allocated for the task in GB (default: 8)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -151,6 +172,7 @@ task download_by_uuids {
     Int wait_time = 5
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/gdc-client:2.3.0"
   }
 
   command <<<
@@ -234,7 +256,7 @@ EOL
   }
 
   runtime {
-    docker: "getwilds/gdc-client:2.3.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

@@ -23,6 +23,12 @@ workflow testdata_example {
 
   call ww_testdata.download_bam_data { }
 
+  call ww_testdata.inject_synthetic_umis { input:
+    input_bam = download_bam_data.bam,
+    input_bai = download_bam_data.bai,
+    sample_name = "umi_demo"
+  }
+
   call ww_testdata.download_ichor_data { }
 
   call ww_testdata.download_dbsnp_vcf { input:
@@ -75,6 +81,21 @@ workflow testdata_example {
 
   call ww_testdata.download_jcast_test_data { }
 
+  call ww_testdata.download_pao1_ref { }
+
+  # Exercise the spike-in-style merged reference builder using two existing fragments.
+  call ww_testdata.merge_fastas_with_prefix { input:
+    first_fasta = download_ref_data.fasta,
+    second_fasta = download_pao1_ref.fasta,
+    second_prefix = "spikein_",
+    output_name = "merged_demo"
+  }
+
+  # Exercise the human rRNA precursor download.
+  call ww_testdata.download_rrna_reference { }
+
+  call ww_testdata.download_10x_h5_data { }
+
   call validate_outputs { input:
     ref_fasta = download_ref_data.fasta,
     ref_fasta_index = download_ref_data.fasta_index,
@@ -88,6 +109,8 @@ workflow testdata_example {
     crai = download_cram_data.crai,
     bam = download_bam_data.bam,
     bai = download_bam_data.bai,
+    umi_bam = inject_synthetic_umis.umi_bam,
+    umi_bai = inject_synthetic_umis.umi_bai,
     ichor_gc_wig = download_ichor_data.wig_gc,
     ichor_map_wig = download_ichor_data.wig_map,
     ichor_centromeres = download_ichor_data.centromeres,
@@ -128,7 +151,15 @@ workflow testdata_example {
     sjl_border_points_csv = generate_sjl_data.border_points_csv,
     jcast_rmats_output = download_jcast_test_data.rmats_output,
     jcast_gtf_file = download_jcast_test_data.gtf_file,
-    jcast_genome_fasta = download_jcast_test_data.genome_fasta
+    jcast_genome_fasta = download_jcast_test_data.genome_fasta,
+    pao1_fasta = download_pao1_ref.fasta,
+    pao1_fasta_index = download_pao1_ref.fasta_index,
+    pao1_dict = download_pao1_ref.dict,
+    pao1_gtf = download_pao1_ref.gtf,
+    merged_demo_fasta = merge_fastas_with_prefix.merged_fasta,
+    merged_demo_fasta_index = merge_fastas_with_prefix.merged_fasta_index,
+    rrna_fasta = download_rrna_reference.fasta,
+    h5_matrix = download_10x_h5_data.h5_matrix
   }
 
   output {
@@ -145,6 +176,9 @@ workflow testdata_example {
     File crai = download_cram_data.crai
     File bam = download_bam_data.bam
     File bai = download_bam_data.bai
+    # Outputs from synthetic UMI injection on the BAM
+    File umi_bam = inject_synthetic_umis.umi_bam
+    File umi_bai = inject_synthetic_umis.umi_bai
     # Outputs from the ichorCNA data download
     File ichor_gc_wig = download_ichor_data.wig_gc
     File ichor_map_wig = download_ichor_data.wig_map
@@ -201,6 +235,17 @@ workflow testdata_example {
     File jcast_rmats_output = download_jcast_test_data.rmats_output
     File jcast_gtf_file = download_jcast_test_data.gtf_file
     File jcast_genome_fasta = download_jcast_test_data.genome_fasta
+    # Outputs from PAO1 reference download
+    File pao1_fasta = download_pao1_ref.fasta
+    File pao1_fasta_index = download_pao1_ref.fasta_index
+    File pao1_dict = download_pao1_ref.dict
+    File pao1_gtf = download_pao1_ref.gtf
+    # Outputs from merged-FASTA + rRNA reference helpers
+    File merged_demo_fasta = merge_fastas_with_prefix.merged_fasta
+    File merged_demo_fasta_index = merge_fastas_with_prefix.merged_fasta_index
+    File rrna_fasta = download_rrna_reference.fasta
+    # Output from 10X H5 data download
+    File tenx_h5_matrix = download_10x_h5_data.h5_matrix
     # Validation report summarizing all outputs
     File validation_report = validate_outputs.report
   }
@@ -227,6 +272,8 @@ task validate_outputs {
     crai: "CRAM index file to validate"
     bam: "BAM file to validate"
     bai: "BAM index file to validate"
+    umi_bam: "UMI-tagged BAM file (output of inject_synthetic_umis) to validate"
+    umi_bai: "UMI-tagged BAM index file to validate"
     ichor_gc_wig: "ichorCNA GC content file to validate"
     ichor_map_wig: "ichorCNA mapping quality file to validate"
     ichor_centromeres: "ichorCNA centromere locations file to validate"
@@ -268,6 +315,14 @@ task validate_outputs {
     jcast_rmats_output: "JCAST rMATS output tarball to validate"
     jcast_gtf_file: "JCAST Ensembl GTF annotation file to validate"
     jcast_genome_fasta: "JCAST Ensembl genome FASTA file to validate"
+    pao1_fasta: "PAO1 reference FASTA file to validate"
+    pao1_fasta_index: "PAO1 reference FASTA index file to validate"
+    pao1_dict: "PAO1 reference FASTA dictionary file to validate"
+    pao1_gtf: "PAO1 NCBI RefSeq GTF annotation file to validate"
+    merged_demo_fasta: "Merged FASTA produced by merge_fastas_with_prefix to validate"
+    merged_demo_fasta_index: "Index for the merged FASTA to validate"
+    rrna_fasta: "Human 45S rRNA precursor FASTA from download_rrna_reference to validate"
+    h5_matrix: "10X filtered feature-barcode matrix H5 file from download_10x_h5_data to validate"
     cpu_cores: "Number of CPU cores to use for validation"
     memory_gb: "Memory allocation in GB for the task"
   }
@@ -285,6 +340,8 @@ task validate_outputs {
     File crai
     File bam
     File bai
+    File umi_bam
+    File umi_bai
     File ichor_gc_wig
     File ichor_map_wig
     File ichor_centromeres
@@ -326,6 +383,14 @@ task validate_outputs {
     File jcast_rmats_output
     File jcast_gtf_file
     File jcast_genome_fasta
+    File pao1_fasta
+    File pao1_fasta_index
+    File pao1_dict
+    File pao1_gtf
+    File merged_demo_fasta
+    File merged_demo_fasta_index
+    File rrna_fasta
+    File h5_matrix
     Int cpu_cores = 1
     Int memory_gb = 2
   }
@@ -366,6 +431,8 @@ task validate_outputs {
     validate_file "~{crai}" "CRAM index" || validation_passed=false
     validate_file "~{bam}" "BAM file" || validation_passed=false
     validate_file "~{bai}" "BAM index" || validation_passed=false
+    validate_file "~{umi_bam}" "UMI-tagged BAM file" || validation_passed=false
+    validate_file "~{umi_bai}" "UMI-tagged BAM index" || validation_passed=false
     validate_file "~{ichor_gc_wig}" "ichorCNA GC WIG" || validation_passed=false
     validate_file "~{ichor_map_wig}" "ichorCNA MAP WIG" || validation_passed=false
     validate_file "~{ichor_centromeres}" "ichorCNA centromeres" || validation_passed=false
@@ -412,6 +479,14 @@ task validate_outputs {
     validate_file "~{jcast_rmats_output}" "JCAST rMATS output tarball" || validation_passed=false
     validate_file "~{jcast_gtf_file}" "JCAST Ensembl GTF file" || validation_passed=false
     validate_file "~{jcast_genome_fasta}" "JCAST Ensembl genome FASTA" || validation_passed=false
+    validate_file "~{pao1_fasta}" "PAO1 reference FASTA" || validation_passed=false
+    validate_file "~{pao1_fasta_index}" "PAO1 reference FASTA index" || validation_passed=false
+    validate_file "~{pao1_dict}" "PAO1 reference FASTA dict" || validation_passed=false
+    validate_file "~{pao1_gtf}" "PAO1 NCBI RefSeq GTF" || validation_passed=false
+    validate_file "~{merged_demo_fasta}" "Merged demo FASTA" || validation_passed=false
+    validate_file "~{merged_demo_fasta_index}" "Merged demo FASTA index" || validation_passed=false
+    validate_file "~{rrna_fasta}" "Human 45S rRNA precursor FASTA" || validation_passed=false
+    validate_file "~{h5_matrix}" "10X H5 matrix" || validation_passed=false
 
     # Additional check: Verify no N bases in clean amplicon
     echo "" >> validation_report.txt
@@ -427,7 +502,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 51"
+      echo "Total files validated: 61"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

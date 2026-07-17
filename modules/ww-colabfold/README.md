@@ -30,6 +30,7 @@ Download AlphaFold2 model weights for use with ColabFold predictions. Weights ar
 **Inputs:**
 - `cpu_cores` (Int, default=2): CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/colabfold:1.5.5`)
 
 **Outputs:**
 - `weights_tarball` (File): Compressed tarball containing AlphaFold2 model weights (~15-20 GB)
@@ -54,6 +55,7 @@ Predict protein structures from amino acid sequences using ColabFold (AlphaFold2
 - `cpu_cores` (Int, default=8): CPU cores
 - `memory_gb` (Int, default=48): Memory in GB
 - `gpu_enabled` (Boolean, default=true): Enable GPU for prediction (controls JAX CPU/GPU mode and PROOF GPU allocation)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/colabfold:1.5.5`)
 
 **Outputs:**
 - `results_tarball` (File): Compressed tarball containing all ColabFold outputs (PDB files, PAE/pLDDT plots, coverage plots, prediction metrics)
@@ -172,7 +174,7 @@ The module includes a test workflow (`testrun.wdl`) that downloads weights and p
 miniwdl run modules/ww-colabfold/testrun.wdl
 
 # Using Sprocket
-sprocket run modules/ww-colabfold/testrun.wdl --entrypoint colabfold_example
+sprocket run modules/ww-colabfold/testrun.wdl
 
 # Using Cromwell
 java -jar cromwell.jar run modules/ww-colabfold/testrun.wdl

@@ -81,7 +81,7 @@ java -jar cromwell.jar run ww-jetlag.wdl --inputs inputs.json
 miniwdl run ww-jetlag.wdl -i inputs.json
 
 # Using Sprocket
-sprocket run ww-jetlag.wdl inputs.json
+sprocket run ww-jetlag.wdl @inputs.json
 ```
 
 ### For Fred Hutch Users
@@ -120,7 +120,7 @@ java -jar cromwell.jar run testrun.wdl
 miniwdl run testrun.wdl --entrypoint jetlag_example
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint jetlag_example
+sprocket run testrun.wdl
 ```
 
 ## Acknowledgments

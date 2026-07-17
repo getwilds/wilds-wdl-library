@@ -18,6 +18,15 @@ task generate_ensemble {
         pdb_file: "PDB topology file converted from the STARLING ensemble",
         xtc_file: "XTC trajectory file converted from the STARLING ensemble"
     }
+    topic: "proteomics,protein_disordered_structure"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "protein_structure_prediction"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "starling_file:structure_prediction:binary_format,pdb_file:topology_data:pdb,xtc_file:trajectory_data:xtc"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -27,6 +36,7 @@ task generate_ensemble {
     gpu_enabled: "Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -36,12 +46,17 @@ task generate_ensemble {
     Boolean gpu_enabled = true
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/starling:2.0.0a3"
   }
 
   String device = if gpu_enabled then "cuda" else "cpu"
 
   command <<<
     set -eo pipefail
+
+    # Use working directory for model cache to avoid filling up container root filesystem
+    TORCH_HOME="$(pwd)/.torch_cache"
+    export TORCH_HOME
 
     # Generate the structural ensemble
     starling "~{sequence}" \
@@ -62,7 +77,7 @@ task generate_ensemble {
   }
 
   runtime {
-    docker: "getwilds/starling:2.0.0a3"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
     gpus: if gpu_enabled then "1" else "0"
@@ -80,6 +95,15 @@ task generate_ensemble_batch {
         pdb_files: "Array of PDB topology files converted from the STARLING ensembles",
         xtc_files: "Array of XTC trajectory files converted from the STARLING ensembles"
     }
+    topic: "proteomics,protein_disordered_structure"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "protein_structure_prediction"
+    input_sample_required: "fasta_file:protein_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "starling_files:structure_prediction:binary_format,pdb_files:topology_data:pdb,xtc_files:trajectory_data:xtc"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -88,6 +112,7 @@ task generate_ensemble_batch {
     gpu_enabled: "Enable GPU for STARLING inference (sets device to cuda and requests GPU in runtime)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -96,12 +121,17 @@ task generate_ensemble_batch {
     Boolean gpu_enabled = true
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/starling:2.0.0a3"
   }
 
   String device = if gpu_enabled then "cuda" else "cpu"
 
   command <<<
     set -eo pipefail
+
+    # Use working directory for model cache to avoid filling up container root filesystem
+    TORCH_HOME="$(pwd)/.torch_cache"
+    export TORCH_HOME
 
     # Generate structural ensembles for all sequences in the FASTA
     starling "~{fasta_file}" \
@@ -123,7 +153,7 @@ task generate_ensemble_batch {
   }
 
   runtime {
-    docker: "getwilds/starling:2.0.0a3"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
     gpus: if gpu_enabled then "1" else "0"
@@ -139,6 +169,15 @@ task split_fasta {
     outputs: {
         batch_files: "Array of FASTA files, each containing up to sequences_per_batch sequences"
     }
+    topic: "proteomics,protein_disordered_structure"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "splitting"
+    input_sample_required: "fasta_file:protein_sequence:fasta"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "batch_files:protein_sequence:fasta"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -146,6 +185,7 @@ task split_fasta {
     sequences_per_batch: "Maximum number of sequences per output batch file"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -153,6 +193,7 @@ task split_fasta {
     Int sequences_per_batch = 10
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "ubuntu:22.04"
   }
 
   command <<<
@@ -176,7 +217,7 @@ task split_fasta {
   }
 
   runtime {
-    docker: "ubuntu:22.04"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -191,6 +232,15 @@ task ensemble_info {
     outputs: {
         info_file: "Text file containing ensemble metadata and summary statistics"
     }
+    topic: "proteomics,protein_disordered_structure"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "starling_file:structure_prediction:binary_format"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "info_file:quality_control_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -198,6 +248,7 @@ task ensemble_info {
     sample_name: "Name identifier for the output file"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -205,6 +256,7 @@ task ensemble_info {
     String sample_name
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/starling:2.0.0a3"
   }
 
   command <<<
@@ -218,7 +270,7 @@ task ensemble_info {
   }
 
   runtime {
-    docker: "getwilds/starling:2.0.0a3"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

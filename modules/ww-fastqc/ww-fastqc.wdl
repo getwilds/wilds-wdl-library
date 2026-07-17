@@ -15,6 +15,15 @@ task run_fastqc {
         html_reports: "FastQC HTML quality control reports",
         zip_reports: "FastQC ZIP archives containing all report data"
     }
+    topic: "genomics,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "quality_control"
+    input_sample_required: "none"
+    input_sample_optional: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq,adapters:sequence_record:textual_format,limits:report:textual_format,contaminants:report:textual_format"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "html_reports:quality_control_report:html,zip_reports:quality_control_report:zip"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -25,6 +34,7 @@ task run_fastqc {
     adapters: "Optional adapter sequences file for contamination screening"
     limits: "Optional limits file to override default warning/error thresholds"
     contaminants: "Optional contaminants file for contamination screening"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -35,6 +45,7 @@ task run_fastqc {
     File? adapters
     File? limits
     File? contaminants
+    String docker_image = "getwilds/fastqc:0.12.1"
   }
 
   command <<<
@@ -88,7 +99,7 @@ task run_fastqc {
   }
 
   runtime {
-    docker: "getwilds/fastqc:0.12.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

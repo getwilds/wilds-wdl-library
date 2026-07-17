@@ -30,7 +30,7 @@ jobs:
 
       - name: Install Sprocket
         run: |
-          cargo-binstall sprocket --version 0.22.0 -y
+          cargo-binstall sprocket --version 0.25.0 -y
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -43,14 +43,16 @@ jobs:
         run: |
           # Join WDL dir specific README's into .wdl files
           uv run .github/scripts/make_preambles.py
-          # Create .sprocketignore to exclude testrun.wdl files from docs
+          # Create .sprocketignore to exclude test-run WDL files from docs
           cat > .sprocketignore << 'EOF'
           # Excluding test run WDL's from documentation builds
           modules/**/testrun.wdl
+          modules/**/testrun_hpc.wdl
           pipelines/**/testrun.wdl
+          pipelines/**/testrun_hpc.wdl
           EOF
           # Build docs
-          sprocket dev doc -v --homepage docs-README.md --logo WILDSWDLNameLogo.svg .
+          sprocket dev doc -v .
           # Post-process generated HTML files
           uv run .github/scripts/postprocess_docs.py
 

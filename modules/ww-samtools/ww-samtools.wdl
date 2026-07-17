@@ -14,6 +14,15 @@ task crams_to_fastq {
         r2_fastq: "R2 FASTQ file generated from merged CRAM/BAM/SAM file",
         sample_name: "Sample name that was processed"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_formatting"
+    input_sample_required: "cram_files:nucleic_acid_sequence_alignment:cram|bam|sam"
+    input_sample_optional: "none"
+    input_reference_required: "ref:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "r1_fastq:nucleic_acid_sequence:fastq,r2_fastq:nucleic_acid_sequence:fastq"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -22,6 +31,7 @@ task crams_to_fastq {
     name: "Name of the sample (used for file naming)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -30,15 +40,27 @@ task crams_to_fastq {
     String name
     Int cpu_cores = 2
     Int memory_gb = 16
+    String docker_image = "getwilds/samtools:1.19"
   }
 
   command <<<
     set -eo pipefail
 
+    # Symlink reference FASTA locally so samtools can write the .fai index
+    ln -s "~{ref}" "~{basename(ref)}"
+
+    # Symlink CRAM/BAM/SAM files locally to avoid read-only filesystem issues
+    cram_files=(~{sep=" " cram_files})
+    local_crams=""
+    for cram in "${cram_files[@]}"; do
+      ln -s "${cram}" "$(basename "${cram}")"
+      local_crams="${local_crams} $(basename "${cram}")"
+    done
+
     # Merge CRAM/BAM/SAM files if more than one, then collate and convert to FASTQ
-    samtools merge -@ ~{cpu_cores} --reference "~{ref}" -u - ~{sep=" " cram_files} | \
-    samtools collate -@ ~{cpu_cores} --reference "~{ref}" -O - | \
-    samtools fastq -@ ~{cpu_cores} --reference "~{ref}" -1 "~{name}_R1.fastq.gz" -2 "~{name}_R2.fastq.gz" -0 /dev/null -s /dev/null -
+    samtools merge -@ ~{cpu_cores} --reference "~{basename(ref)}" -u - ${local_crams} | \
+    samtools collate -@ ~{cpu_cores} --reference "~{basename(ref)}" -O - | \
+    samtools fastq -@ ~{cpu_cores} --reference "~{basename(ref)}" -1 "~{name}_R1.fastq.gz" -2 "~{name}_R2.fastq.gz" -0 /dev/null -s /dev/null -
   >>>
 
   output {
@@ -50,7 +72,7 @@ task crams_to_fastq {
   runtime {
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
-    docker: "getwilds/samtools:1.19"
+    docker: docker_image
   }
 }
 
@@ -64,6 +86,15 @@ task merge_bams_to_cram {
         cram: "Merged CRAM file containing all reads from input BAMs",
         crai: "Index file for the merged CRAM"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "aggregation"
+    input_sample_required: "bams_to_merge:nucleic_acid_sequence_alignment:bam"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "cram:nucleic_acid_sequence_alignment:cram,crai:data_index:crai"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -71,6 +102,7 @@ task merge_bams_to_cram {
     base_file_name: "Base name for output CRAM file"
     cpu_cores: "Number of CPU cores to use (threads = cpu_cores - 1)"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -78,6 +110,7 @@ task merge_bams_to_cram {
     String base_file_name
     Int cpu_cores = 6
     Int memory_gb = 12
+    String docker_image = "getwilds/samtools:1.19"
   }
 
   command <<<
@@ -96,7 +129,80 @@ task merge_bams_to_cram {
   runtime {
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
-    docker: "getwilds/samtools:1.19"
+    docker: docker_image
+  }
+}
+
+task filter_bam_by_chrom_prefix {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Filters a coordinate-sorted, indexed BAM to reads on contigs whose names start with the given prefix. Useful for splitting a BAM aligned to a merged reference into per-organism BAMs."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-samtools/ww-samtools.wdl"
+    outputs: {
+        filtered_bam: "Coordinate-sorted BAM containing only reads on contigs matching the prefix",
+        filtered_bai: "Index for the filtered BAM"
+    }
+  }
+
+  parameter_meta {
+    input_bam: "Coordinate-sorted BAM"
+    input_bai: "Index for the input BAM"
+    chrom_prefix: "Contig-name prefix to retain (e.g. 'hg38' to keep contigs named 'hg38chr1', 'hg38chr2', ...)"
+    sample_name: "Sample name used for output file naming"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    File input_bam
+    File input_bai
+    String chrom_prefix
+    String sample_name
+    Int cpu_cores = 2
+    Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.19"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # samtools requires the .bai to sit next to the .bam; stage both into the cwd.
+    ln -s "~{input_bam}" "input.bam"
+    ln -s "~{input_bai}" "input.bam.bai"
+
+    # Pull matching contig names from the BAM header and pass them as regions
+    # to samtools view.
+    MATCHING_CHROMS=$(samtools view -H input.bam \
+      | awk -v p="~{chrom_prefix}" '/^@SQ/ {
+          for (i = 1; i <= NF; i++) {
+            if ($i ~ /^SN:/) {
+              name = substr($i, 4)
+              if (index(name, p) == 1) print name
+            }
+          }
+        }' | tr '\n' ' ')
+
+    if [ -z "${MATCHING_CHROMS}" ]; then
+      echo "ERROR: no contigs in the BAM header start with prefix '~{chrom_prefix}'" >&2
+      exit 1
+    fi
+
+    samtools view -b -@ ~{cpu_cores} input.bam ${MATCHING_CHROMS} \
+      | samtools sort -@ ~{cpu_cores} -o "~{sample_name}.bam" -
+    samtools index -@ ~{cpu_cores} "~{sample_name}.bam"
+  >>>
+
+  output {
+    File filtered_bam = "~{sample_name}.bam"
+    File filtered_bai = "~{sample_name}.bam.bai"
+  }
+
+  runtime {
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+    docker: docker_image
   }
 }
 
@@ -109,6 +215,15 @@ task mpileup {
     outputs: {
         pileup: "Pileup file"
     }
+    topic: "genomics,transcriptomics"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "quantification"
+    input_sample_required: "bamfile:nucleic_acid_sequence_alignment:bam|cram"
+    input_sample_optional: "none"
+    input_reference_required: "ref_fasta:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "pileup:nucleic_acid_sequence_alignment:pileup"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -120,6 +235,7 @@ task mpileup {
     min_baseq: "Minimum base quality for bases to be included"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -131,13 +247,17 @@ task mpileup {
     Int min_baseq = 13
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/samtools:1.19"
   }
 
   command <<<
     set -eo pipefail
 
+    # Symlink reference FASTA locally so samtools can write the .fai index
+    ln -s "~{ref_fasta}" "~{basename(ref_fasta)}"
+
     samtools mpileup \
-      -f "~{ref_fasta}" \
+      -f "~{basename(ref_fasta)}" \
       -q "~{min_mapq}" \
       -Q "~{min_baseq}" \
       ~{if disable_baq then "--no-BAQ" else ""} \
@@ -152,6 +272,6 @@ task mpileup {
   runtime {
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
-    docker: "getwilds/samtools:1.19"
+    docker: docker_image
   }
 }

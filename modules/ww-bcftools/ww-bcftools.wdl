@@ -14,6 +14,15 @@ task mpileup_call {
         mpileup_vcf: "Compressed VCF file containing variants called by mpileup",
         mpileup_vcf_index: "Index file for the mpileup VCF"
     }
+    topic: "genomics,transcriptomics,dna_polymorphism,structural_variation"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "variant_calling"
+    input_sample_required: "bam_file:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "regions_bed:annotation_track:bed"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "mpileup_vcf:sequence_variations:vcf,mpileup_vcf_index:data_index:csi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -29,6 +38,7 @@ task mpileup_call {
     max_idepth: "Maximum per-sample depth for indel calling"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -44,6 +54,7 @@ task mpileup_call {
     Int max_idepth = 10000
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -90,7 +101,7 @@ task mpileup_call {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -106,6 +117,15 @@ task concat {
         concatenated_vcf: "Concatenated VCF/BCF file",
         concatenated_vcf_index: "Index file for concatenated VCF"
     }
+    topic: "genomics,transcriptomics,dna_polymorphism,structural_variation"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "aggregation"
+    input_sample_required: "vcf_files:sequence_variations:vcf,vcf_indices:data_index:csi"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "concatenated_vcf:sequence_variations:vcf,concatenated_vcf_index:data_index:csi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -116,6 +136,7 @@ task concat {
     allow_overlaps: "Allow overlapping positions in input files (default: false)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -126,6 +147,7 @@ task concat {
     Boolean allow_overlaps = false
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -168,7 +190,7 @@ task concat {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

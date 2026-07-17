@@ -14,6 +14,15 @@ task smoove_call {
         vcf: "Structural variant calls in compressed VCF format",
         vcf_index: "Index file for the VCF output"
     }
+    topic: "genomics,structural_variation"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "variant_calling"
+    input_sample_required: "aligned_bam:nucleic_acid_sequence_alignment:bam,aligned_bam_index:data_index:bai"
+    input_sample_optional: "target_regions_bed:annotation_track:bed,exclude_bed:annotation_track:bed"
+    input_reference_required: "reference_fasta:dna_sequence:fasta,reference_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "vcf:sequence_variations:vcf,vcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -27,6 +36,7 @@ task smoove_call {
     exclude_chroms: "Optional comma-separated list of chromosomes to exclude"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -40,6 +50,7 @@ task smoove_call {
     String? exclude_chroms
     Int cpu_cores = 8
     Int memory_gb = 16
+    String docker_image = "getwilds/smoove:0.2.8"
   }
 
   String vcf_filename = "${sample_name}.smoove.vcf.gz"
@@ -90,7 +101,7 @@ task smoove_call {
   }
 
   runtime {
-    docker: "getwilds/smoove:0.2.8"
+    docker: docker_image
     cpu: cpu_cores
     memory: "${memory_gb}GB"
   }

@@ -11,8 +11,24 @@ struct SalmonSample {
 
 workflow sra_salmon {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        },
+        {
+            name: "Alice Berger",
+            email: "aberger@fredhutch.org"
+        },
+        {
+            name: "Janet Young",
+            email: "jyoung@fredhutch.org"
+        }
+    ]
     description: "WDL workflow to download raw sequencing data from SRA and quantify using Salmon quasi-mapping"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-sra-salmon/ww-sra-salmon.wdl"
     outputs: {
@@ -28,6 +44,7 @@ workflow sra_salmon {
     ncpu: "number of CPUs to use for SRA download and Salmon quantification"
     memory_gb: "memory allocation in GB for Salmon tasks"
     max_reads: "Optional maximum number of reads to download from SRA (for testing/downsampling). If not specified, downloads all reads."
+    ngc_file: "Optional NGC repository key file for downloading controlled-access dbGaP data."
   }
 
   input {
@@ -36,6 +53,7 @@ workflow sra_salmon {
     Int ncpu = 8
     Int memory_gb = 16
     Int? max_reads
+    File? ngc_file
   }
 
   # Build Salmon index from transcriptome
@@ -50,7 +68,8 @@ workflow sra_salmon {
     call sra_tasks.fastqdump { input:
         sra_id = id,
         ncpu = ncpu,
-        max_reads = max_reads
+        max_reads = max_reads,
+        ngc_file = ngc_file
     }
 
     # Paired-end quantification

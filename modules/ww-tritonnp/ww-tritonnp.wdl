@@ -12,6 +12,15 @@ task triton_main {
     outputs: {
         fm_file: "Array of outputs from TritonNP"
     }
+    topic: "epigenomics,dna_packaging"
+    species: "human"
+    operation: "statistical_calculation"
+    input_sample_required: "bam_path:nucleic_acid_sequence_alignment:bam,bam_index_path:data_index:bai,annotation:annotation_track:bed,plot_list:gene_name:textual_format"
+    input_sample_optional: "none"
+    input_reference_required: "bias_path:sequence_report:textual_format,reference_genome:nucleic_acid_sequence:fasta,reference_genome_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "fm_file:sequence_features:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -28,8 +37,9 @@ task triton_main {
     size_range: "Size range as a space-delimited string, such as '15 500'"
     ncpus: "Number of CPUs to use"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
-  
+
   input {
     String sample_name
     File bam_path
@@ -44,6 +54,7 @@ task triton_main {
     String size_range = "15 500"
     Int ncpus = 4
     Int memory_gb = 4
+    String docker_image = "getwilds/python-utils:0.1.0"
   }
 
   command <<<
@@ -51,9 +62,6 @@ task triton_main {
 
     # Create results directory if it doesn't exist
     mkdir -p ~{results_dir}
-    
-    # Needed Python packages for running Triton
-    python3 -m pip install pysam numpy scipy pandas matplotlib seaborn
 
     # Download script
     git clone https://github.com/caalo/TritonNP.git
@@ -79,7 +87,7 @@ task triton_main {
   runtime {
     cpu: ncpus
     memory: "~{memory_gb} GB"
-    docker: "python:bullseye"
+    docker: docker_image
   }
 }
 
@@ -92,18 +100,29 @@ task combine_fms {
     outputs: {
         final: "Aggregrated output file from TritonNP."
     }
+    topic: "epigenomics,dna_packaging"
+    species: "human"
+    operation: "aggregation"
+    input_sample_required: "fm_files:sequence_features:tsv"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "final:sequence_features:tsv"
+    output_reference: "none"
   }
 
   parameter_meta {
     fm_files: "Array of output files from TritonNP"
     results_dir: "Output directory name"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Array[File] fm_files
     String results_dir
     Int memory_gb = 4
+    String docker_image = "getwilds/python-utils:0.1.0"
   }
 
   command <<<
@@ -114,8 +133,6 @@ task combine_fms {
     
     # Download script
     git clone https://github.com/caalo/TritonNP.git
-
-    python3 -m pip install pandas
 
     # Run cleanup script
     python TritonNP/CombinePhasingFM.py \
@@ -130,6 +147,6 @@ task combine_fms {
   runtime {
     cpu: 1
     memory: "~{memory_gb} GB"
-    docker: "python:bullseye"
+    docker: docker_image
   }
 }

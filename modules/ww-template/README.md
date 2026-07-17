@@ -30,6 +30,7 @@ Simple template processing task that creates a hello world output file.
 - `input_file` (File): Input file (any file type works for this template)
 - `cpu_cores` (Int, default=1): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=4): Memory allocated for the task in GB
+- `docker_image` (String, default=`getwilds/bwa:0.7.17`): Docker image to use for this task
 
 **Outputs:**
 - `output_file` (File): Simple text file with hello world message and sample information
@@ -94,7 +95,7 @@ The module includes a test workflow (`testrun.wdl`) that can be run independentl
 miniwdl run testrun.wdl
 
 # Using Sprocket
-sprocket run testrun.wdl --entrypoint template_example
+sprocket run testrun.wdl
 
 # Using Cromwell
 java -jar cromwell.jar run testrun.wdl
@@ -174,6 +175,7 @@ To use this template for a new tool:
 4. **Update documentation**:
    - Customize README.md with your tool's information
    - Update meta descriptions and parameter documentation in the WDL files
+    - Optional: Update the EDAM ontology tags (`topic`, `operation`, `species`, `input_sample_required`, `input_sample_optional`, `input_reference_required`, `input_reference_optional`, `output_sample`, `output_reference`). These describe what the tool does as well as `File`-type parameters using the format `param_name:EDAM_data_type:EDAM_format_type`. See [CONTRIBUTING.md](../../.github/CONTRIBUTING.md) for full guidance.
    - Add tool-specific usage examples
    - Add citation information if applicable
 

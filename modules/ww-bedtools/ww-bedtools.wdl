@@ -14,6 +14,15 @@ task coverage {
         name: "Sample name that was processed",
         mean_coverage: "File containing mean read coverage across BED intervals"
     }
+    topic: "genomics,transcriptomics,sequence_features,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequencing_quality_control,quantification"
+    input_sample_required: "bed_file:annotation_track:bed,aligned_bam:nucleic_acid_sequence_alignment:bam"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "mean_coverage:sequence_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -22,6 +31,7 @@ task coverage {
     sample_name: "Name of the sample provided for output files"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -30,6 +40,7 @@ task coverage {
     String sample_name
     Int cpu_cores = 2
     Int memory_gb = 16
+    String docker_image = "getwilds/bedtools:2.31.1"
   }
 
   command <<<
@@ -49,7 +60,7 @@ task coverage {
   }
 
   runtime {
-    docker: "getwilds/bedtools:2.31.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -65,6 +76,15 @@ task intersect {
         name: "Sample name that was processed",
         intersect_output: "BEDTools intersect results file"
     }
+    topic: "genomics,transcriptomics,sequence_features"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "data_filtering"
+    input_sample_required: "bed_file:annotation_track:bed,aligned_bam:nucleic_acid_sequence_alignment:bam"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "intersect_output:sequence_report:textual_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -74,6 +94,7 @@ task intersect {
     flags: "BEDTools intersect command flags"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -83,6 +104,7 @@ task intersect {
     String flags = "-header -wo"
     Int cpu_cores = 2
     Int memory_gb = 16
+    String docker_image = "getwilds/bedtools:2.31.1"
   }
 
   command <<<
@@ -96,7 +118,7 @@ task intersect {
   }
 
   runtime {
-    docker: "getwilds/bedtools:2.31.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -112,6 +134,15 @@ task makewindows {
         name: "Sample name that was processed",
         counts_bed: "Tarball of per-chromosome BED files of read counts"
     }
+    topic: "genomics,transcriptomics,sequence_features,data_quality_management"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "quantification"
+    input_sample_required: "bed_file:annotation_track:bed,aligned_bam:nucleic_acid_sequence_alignment:bam,bam_index:data_index:bai"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta,reference_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "counts_bed:annotation_track:tar_format"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -125,6 +156,7 @@ task makewindows {
     tmp_dir: "Path to a temporary directory"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -138,6 +170,7 @@ task makewindows {
     String tmp_dir
     Int cpu_cores = 10
     Int memory_gb = 24
+    String docker_image = "getwilds/bedtools:2.31.1"
   }
 
  command <<<
@@ -166,7 +199,7 @@ task makewindows {
   }
 
   runtime {
-    docker: "getwilds/bedtools:2.31.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

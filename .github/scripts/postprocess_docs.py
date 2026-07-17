@@ -5,47 +5,6 @@ from pathlib import Path
 import re
 import sys
 
-# Google Analytics tag ID - replace with your actual tag ID
-GOOGLE_ANALYTICS_ID = "G-PL1XVGX8T2"
-
-
-def add_google_analytics(html_content: str) -> str:
-    """
-    Add Google Analytics gtag.js script to the <head> section.
-    """
-    # Skip if already added
-    if 'googletagmanager.com/gtag' in html_content:
-        return html_content
-
-    gtag_script = f'''<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id={GOOGLE_ANALYTICS_ID}"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){{dataLayer.push(arguments);}}
-  gtag('js', new Date());
-  gtag('config', '{GOOGLE_ANALYTICS_ID}');
-</script>
-'''
-
-    # Insert just before </head>
-    html_content = html_content.replace('</head>', f'{gtag_script}</head>')
-
-    return html_content
-
-
-def set_default_sidebar_tab(html_content: str) -> str:
-    """
-    Set the default sidebar tab to 'Full Directory' instead of 'Workflows'.
-    Changes showWorkflows from true to false.
-    """
-    # Find and replace the showWorkflows initialization
-    fixed_content = html_content.replace(
-        'showWorkflows: $persist(true).using(sessionStorage)',
-        'showWorkflows: $persist(false).using(sessionStorage)'
-    )
-
-    return fixed_content
-
 
 def update_page_title(html_content: str, file_path: Path) -> str:
     """
@@ -108,32 +67,6 @@ def set_accordions_closed(html_content: str) -> str:
     fixed_content = re.sub(self_pattern, set_self_cache, fixed_content)
 
     return fixed_content
-
-
-def add_github_link(html_content: str) -> str:
-    """
-    Add a GitHub icon link just to the left of the theme toggle button.
-    Links to the wilds-wdl-library repository.
-    """
-    # Skip if already added
-    if 'title="View on GitHub"' in html_content:
-        return html_content
-
-    # GitHub icon using the same header__button class as the theme toggle for
-    # consistent styling (size, border, colors, dark/light mode support)
-    github_icon = '''<a href="https://github.com/getwilds/wilds-wdl-library" target="_blank" rel="noopener noreferrer" class="header__button" title="View on GitHub"><svg fill="currentColor" viewBox="0 0 24 24" class="size-6"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a>'''
-
-    # Insert the GitHub icon after the theme toggle's <div class="relative">
-    # block (which contains the button + tooltip). The parent container uses
-    # flex-row-reverse, so later in HTML = visually to the left.
-    html_content = re.sub(
-        r'''(<div class="relative"><button\s[^>]*id="theme-toggle".*?Switch theme</div></div>)(</div>)''',
-        rf'\1\2{github_icon}',
-        html_content,
-        flags=re.DOTALL
-    )
-
-    return html_content
 
 
 def shorten_sprocket_paths(html_content: str) -> str:
@@ -199,12 +132,9 @@ def postprocess_html_file(file_path: Path) -> None:
 
         # Apply fixes
         content = update_page_title(content, file_path)
-        content = set_default_sidebar_tab(content)
         content = set_accordions_closed(content)
         content = fix_badge_paragraphs(content)
         content = shorten_sprocket_paths(content)
-        content = add_github_link(content)
-        content = add_google_analytics(content)
 
         # Only write if content changed
         if content != original_content:

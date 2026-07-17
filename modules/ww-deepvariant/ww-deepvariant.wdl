@@ -18,6 +18,15 @@ task run_deepvariant {
         output_gvcf: "Array containing the gVCF file for downstream joint genotyping (empty when output_gvcf_enabled is false)",
         output_gvcf_index: "Array containing the gVCF index file (empty when output_gvcf_enabled is false)"
     }
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "variant_calling"
+    input_sample_required: "input_bam:nucleic_acid_sequence_alignment:bam,input_bam_index:data_index:bai"
+    input_sample_optional: "none"
+    input_reference_required: "ref_fasta:dna_sequence:fasta,ref_fasta_index:data_index:fai"
+    input_reference_optional: "none"
+    output_sample: "output_vcf:sequence_variations:vcf,output_vcf_index:data_index:tbi,output_gvcf:sequence_variations:gvcf,output_gvcf_index:data_index:tbi"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -31,6 +40,7 @@ task run_deepvariant {
     regions: "Optional genomic regions to restrict variant calling (e.g., chr1)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -44,6 +54,7 @@ task run_deepvariant {
     String? regions
     Int cpu_cores = 8
     Int memory_gb = 32
+    String docker_image = "google/deepvariant:1.10.0"
   }
 
   command <<<
@@ -67,7 +78,7 @@ task run_deepvariant {
   }
 
   runtime {
-    docker: "google/deepvariant:1.10.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

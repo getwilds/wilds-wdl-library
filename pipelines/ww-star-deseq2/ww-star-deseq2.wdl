@@ -20,8 +20,20 @@ struct RefGenome {
 
 workflow star_deseq2 {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        },
+        {
+            name: "Ethan Bouvet",
+            email: "ebouvet@fredhutch.org"
+        }
+    ]
     description: "WDL workflow for RNA-seq alignment via STAR and DESeq2 differential expression analysis"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-star-deseq2/ww-star-deseq2.wdl"
     outputs: {

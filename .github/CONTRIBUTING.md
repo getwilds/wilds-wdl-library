@@ -12,6 +12,8 @@ Thank you for your interest in contributing to the WILDS WDL Library! This docum
 - [Testing Requirements](#testing-requirements)
 - [Documentation Standards](#documentation-standards)
 - [Documentation Website](#documentation-website)
+- [Citation and Attribution](#citation-and-attribution)
+- [Dockstore Registration](#dockstore-registration)
 - [Pull Request Process](#pull-request-process)
 - [Code of Conduct](#code-of-conduct)
 
@@ -90,12 +92,27 @@ wilds-wdl-library/
 **The module folder must contain:**
 
 1. **`ww-toolname.wdl`** - Main WDL file containing task definitions for the tool
-2. **`testrun.wdl`** - Test workflow demonstrating module functionality (must be named `testrun.wdl`)
+2. **At least one of `testrun.wdl` or `testrun_hpc.wdl`** - Test workflow demonstrating module functionality (see "Test workflow files" below)
 3. **`README.md`** - Comprehensive documentation
 
 **The module folder may optionally contain:**
 
 - **Custom scripts** (e.g., `.R`, `.py`, `.sh`) - If your task requires a custom script that isn't part of the container image, place it directly in the module directory alongside the WDL files. The script can be fetched at runtime using `curl` or `wget` in the task's command block.
+
+**Test workflow files (`testrun.wdl` and/or `testrun_hpc.wdl`):**
+
+Most modules ship with a single `testrun.wdl` that exercises the workflow on a tiny, biologically minimal input — fast enough to run on a GitHub Actions runner. CI/CD always uses `testrun.wdl`, and the monthly HPC test run falls back to it when no HPC-specific file is provided.
+
+For modules where CI execution is impractical (GPU-only tools, license-gated tools that require `module load` on HPC, or workflows that need a much larger, more realistic input to be meaningful), you may add a `testrun_hpc.wdl`:
+
+| Files present | CI runs | HPC runs |
+|---|---|---|
+| `testrun.wdl` only | `testrun.wdl` | `testrun.wdl` |
+| both files | `testrun.wdl` | `testrun_hpc.wdl` |
+| `testrun_hpc.wdl` only | (skipped — HPC-only module) | `testrun_hpc.wdl` |
+| neither | not allowed — discovery will fail | same |
+
+`ww-esmfold` is the canonical HPC-only example; pair it with `testrun_hpc.wdl` when adding similar GPU/licensed tools.
 
 
 **Your main WDL file (`ww-toolname.wdl`) must include:**
@@ -103,8 +120,16 @@ wilds-wdl-library/
 - **Version declaration**: Use WDL version 1.0
 - **Task definitions**: Individual tasks with proper resource requirements
 - **Metadata documentation**: Describe properties of tasks (e.g. inputs, outputs) using `meta` and `parameter_meta` blocks
+- **Optional metadata**: Include the following metadata tags in each task's `meta` block to describe the task with [EDAM ontology](https://www.ebi.ac.uk/ols4/ontologies/edam) terms (using underscores instead of spaces):
+  - **`topic`**: Comma-separated EDAM `topic` terms describing the bioinformatics topic and data type(s) the task handles. For example, a DNA variant caller for SNPs would be `"genomics,dna_polymorphism"`. Use `"any"` for tasks that are very non-specific (e.g. downloading data from AWS).
+  - **`operation`**: An EDAM `operation` term describing what the task does (e.g. `"variant_calling"`). Use `"any"` for tasks that are very non-specific.
+  - **`species`**: Comma-separated list of species terms. Choose from: `human` (human data), `eukaryote` (non-human eukaryote data), `prokaryote` (prokaryote data), `virus` (viral data). Include all that apply. For example, a task that works on both human and mouse data should include both `human` and `eukaryote`.
+  - **File inputs/outputs**: Describe `File`-type parameters (not strings, integers, booleans, etc.) using the format `<param_name>:<EDAM data type>:<EDAM format type>`. Use `"none"` if a category has no files. For important but niche formats not in EDAM, you may use the file extension (e.g. `sig`, `csi`). Separate multiple formats per parameter with `|` (e.g. `"input_aln:nucleic_acid_sequence_alignment:bam|sam|cram"`). Use these metadata tags to describe file inputs/outputs:
+    - Sample or run-specific data (e.g. target region BED file, sample FASTQ): `input_sample_required`, `input_sample_optional`
+    - Reference data (e.g. allele frequencies, reference genome)`input_reference_required`, `input_reference_optional`
+    - Output files (e.g. sample BAM, reference genome index)`output_sample`, `output_reference`
 
-**Your test workflow file (`testrun.wdl`) must include:**
+**Your test workflow file (`testrun.wdl` or `testrun_hpc.wdl`) must include:**
 
 - **Version declaration**: Use WDL version 1.0
 - **Module imports**: Import the module being tested and the `ww-testdata` module using GitHub URLs
@@ -126,6 +151,15 @@ wilds-wdl-library/
 - Specify exact image versions (avoid `latest` tags)
 - Document image dependencies in the README
 
+**Module manifest (`module.json`), experimental:**
+
+You may notice `module.json` files in a handful of modules (currently `ww-bwa`, `ww-gatk`) and pipelines (`ww-bwa-gatk`). These are an early experiment with the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765), which standardizes module metadata (name, version, license, upstream tool provenance, and dependency declarations). The format has been informally validated against Sprocket's `wdl-modules` crate by collaborators at St. Jude.
+
+A few things to know:
+
+- **Contributors are not required to add `module.json` files.** No executor consumes them at runtime yet, and the upstream spec is still unmerged. We're keeping a small set of examples around so the library is ready when tooling support arrives.
+- **The schema is a moving target.** Field names and constraints may change before the spec is finalized.
+- **If you do add one**, license strings must use current [SPDX identifiers](https://spdx.org/licenses/) (e.g. `GPL-3.0-only`, not `GPL-3.0`). The parser rejects deprecated forms.
 
 ## Pipeline Development Guidelines
 
@@ -147,7 +181,7 @@ wilds-wdl-library/
 
 **Prefer Existing Modules**
 
-- Pipelines should primarily combine existing modules - prefer using existing modules over creating new task definitions. If you need new functionality, consider contributing it as a module first.
+- Pipelines should primarily combine existing modules - prefer using existing modules over creating new task definitions. If you need new functionality, consider contributing it as a module first. Tasks defined within pipelines are acceptable only when the logic is truly specific to that single pipeline and would not be reusable elsewhere (e.g., reorganizing that pipeline's particular outputs).
 
 **Pipeline inputs.json**
 
@@ -232,7 +266,7 @@ sprocket lint \
   testrun.wdl
 
 # Test running (use testrun.wdl for execution tests)
-sprocket run testrun.wdl --entrypoint toolname_example
+sprocket run testrun.wdl
 miniwdl run testrun.wdl
 ```
 
@@ -241,16 +275,25 @@ miniwdl run testrun.wdl
 Use our automated Makefile from the repository root for easier testing:
 
 ```bash
-# Test a specific module (replace ww-toolname with your module name)
-make lint MODULE=ww-toolname          # Run all linting checks
-make lint_sprocket MODULE=ww-toolname # Run only sprocket linting
-make lint_miniwdl MODULE=ww-toolname  # Run only miniwdl linting
-make run_sprocket MODULE=ww-toolname  # Run sprocket with proper entrypoint
-make run_miniwdl MODULE=ww-toolname   # Run miniwdl
+# Test a specific module or pipeline (replace ww-toolname with your module/pipeline name)
+make lint NAME=ww-toolname          # Run all linting checks
+make lint_sprocket NAME=ww-toolname # Run only sprocket linting
+make lint_miniwdl NAME=ww-toolname  # Run only miniwdl linting
+make run_sprocket NAME=ww-toolname  # Run sprocket with proper entrypoint
+make run_miniwdl NAME=ww-toolname   # Run miniwdl
 
-# Test all modules
-make lint    # Lint all modules
-make run     # Run all modules with both sprocket and miniwdl
+# Test all modules and pipelines
+make lint    # Lint everything
+make run     # Run everything with both sprocket and miniwdl
+
+# Scope by tier with TYPE=modules or TYPE=pipelines
+make run_sprocket TYPE=modules
+
+# By default, the run targets use testrun.wdl (TARGET=ci). To exercise
+# the HPC variant locally instead — useful on a system with GPUs and the
+# right module environment — pass TARGET=hpc; the run will prefer
+# testrun_hpc.wdl when present and fall back to testrun.wdl otherwise:
+make run_sprocket NAME=ww-toolname TARGET=hpc
 ```
 
 The Makefile automatically handles:
@@ -274,6 +317,38 @@ All contributions must pass our automated testing pipeline which executes on a P
 - **Syntax validation**: WDL syntax and structure validation
 - **Integration testing**: Cross-module compatibility testing
 - **Cirro validation**: Validates `.cirro/` configurations for pipelines that include them
+
+#### CI-Excluded Modules
+
+Some modules require more memory than GitHub Actions runners provide (~16 GB) and are excluded from CI test runs. These modules are listed in the `CI_EXCLUDED_ITEMS` dictionary in [`.github/scripts/discover_wdls.py`](.github/scripts/discover_wdls.py). Linting still runs for these modules in CI, and their test workflows are validated on the Fred Hutch high performance computing (HPC) cluster on a monthly basis (see below).
+
+Currently excluded:
+- **ww-esmfold**: Requires ~24 GB to load the 3B-parameter ESM-2 model
+
+If your module exceeds GitHub Actions resource limits, add it to `CI_EXCLUDED_ITEMS` and document the exclusion in your module's README. Be sure to verify that the test workflow runs successfully on an HPC or local machine with sufficient resources.
+
+#### HPC Monthly Test Runs
+
+Contributors should be aware that to supplement GitHub Actions CI (which has resource limits), we run the full test suite monthly on the Fred Hutch HPC using a SLURM batch script. This ensures that CI-excluded modules are still regularly validated, and that all modules/pipelines work under HPC execution conditions (Slurm + Apptainer).
+
+The infrastructure consists of two scripts:
+
+- [`.github/scripts/hpc-testrun.sbatch`](.github/scripts/hpc-testrun.sbatch) — SLURM batch script that clones the repo, runs `make run_sprocket` with a [Slurm + Apptainer sprocket config](https://sprocket.bio/guides/slurm), and invokes the report script.
+- [`.github/scripts/hpc_testrun_report.py`](.github/scripts/hpc_testrun_report.py) — Python script that parses the test output and posts a pass/fail summary as a comment on a central GitHub tracking issue.
+
+To run it:
+
+```bash
+export GITHUB_ISSUE_NUMBER=<tracking_issue_number>
+export WORK_DIR=/hpc/temp/your-username/wilds-testrun
+sbatch /path/to/hpc-testrun.sbatch
+```
+
+You can also run the test suite manually on the HPC without the SLURM script. Pass `TARGET=hpc` so each module/pipeline runs its `testrun_hpc.wdl` when present (with `testrun.wdl` as the fallback):
+
+```bash
+make run_sprocket TARGET=hpc SPROCKET_CONFIG=/path/to/your/sprocket-slurm-config.toml
+```
 
 ## Documentation Website
 
@@ -354,6 +429,74 @@ If you encounter issues with local documentation builds:
 
 For questions about documentation, please contact [wilds@fredhutch.org](mailto:wilds@fredhutch.org).
 
+## Citation and Attribution
+
+The repository includes a `CITATION.cff` file that provides structured citation metadata for the WILDS WDL Library. This file follows the [Citation File Format](https://citation-file-format.github.io/) standard and is used by GitHub, Zenodo, and other platforms to generate proper citations.
+
+### When to Update `CITATION.cff`
+
+If you are a new contributor making a significant contribution (e.g., a new module or pipeline), add yourself to the `authors:` list in `CITATION.cff`:
+
+```yaml
+authors:
+  - family-names: LastName
+    given-names: FirstName
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0000-0000-0000-0000"  # optional but encouraged
+```
+
+Keep the ORCID in full URL format (`https://orcid.org/...`) in `CITATION.cff` — this differs from `.dockstore.yml` which uses just the numeric ID.
+
+### Keeping Author Info Consistent
+
+Author information appears in several places across the repo. When adding or updating author details, make sure the following are consistent:
+
+- **`CITATION.cff`** — the canonical source for contributor names, affiliations, and ORCIDs
+- **`.dockstore.yml`** — author entries for each module/pipeline (see [Dockstore Registration](#dockstore-registration))
+- **WDL `meta` blocks** — `author` and `email` fields in task/workflow metadata
+
+## Dockstore Registration
+
+All modules and pipelines in this library are published on [Dockstore](https://dockstore.org/), a platform for sharing and discovering bioinformatics workflows. When you contribute a new module or pipeline, you must add a corresponding entry to the `.dockstore.yml` file in the repository root.
+
+### Adding a Module Entry
+
+Modules are registered under the `tools:` section. Use an existing entry as a template:
+
+```yaml
+tools:
+  - name: ww-toolname
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-toolname/ww-toolname.wdl
+    readMePath: /modules/ww-toolname/README.md
+    authors:
+      - name: Your Name
+        email: your.email@fredhutch.org
+        role: Your Role
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0000-0000-0000  # optional but encouraged
+    description: "Brief description of what this module does"
+    topic: relevant-topic
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+      tags:
+        - relevant-tag-1
+        - relevant-tag-2
+```
+
+### Adding a Pipeline Entry
+
+Pipelines are registered under the `workflows:` section with the same structure, but with paths pointing to the `pipelines/` directory. If you have an `inputs.json`, include it in `testParameterFiles`.
+
+### Author Information
+
+- List all authors who contributed tasks to the module or steps to the pipeline
+- Include `orcid` if available (use the numeric ID only, e.g., `0009-0002-2052-1084`)
+- Keep entries in alphabetical order by module/pipeline name within their section
+- Author details should match the `CITATION.cff` file where applicable
+
 ## Pull Request Process
 
 After meeting the requirements above, submit a PR to merge your forked repo into `main`.
@@ -366,6 +509,21 @@ After meeting the requirements above, submit a PR to merge your forked repo into
 3. **Link related issues**: Reference any GitHub issues your PR addresses
 
 4. **Request reviews**: Tag Emma Bishop (@emjbishop) or Taylor Firman (@tefirman)
+
+### AI-Assisted Development
+
+We occasionally use large language models (primarily [Claude](https://www.anthropic.com/claude)) to assist with prototyping modules and pipelines, and contributors are welcome to do the same. However, all AI-generated code must go through the same testing, linting, and human review process as any other contribution. Please ensure you review and understand any AI-generated code before submitting it in a PR.
+
+To make AI assistance more consistent with project conventions, the repository ships an [`AGENTS.md`](../AGENTS.md) project-context file (following the vendor-neutral [agents.md](https://agents.md/) convention) and a set of reusable task recipes under [`.agents/skills/`](../.agents/skills/):
+
+- `add-testdata` — add a test-data download task to `ww-testdata`
+- `create-module` — scaffold a new `ww-toolname` module
+- `create-pipeline` — assemble existing modules into a new pipeline
+- `lint-module` — run linting and fix issues
+- `pr-description` — draft a PR description from the current branch
+- `run-tests` — run `testrun.wdl` via Sprocket or miniwdl
+
+Tools that follow the AGENTS.md convention (OpenCode, Claude Code, and others) discover these files automatically. Use of these tools is optional — they are provided as a convenience and do not replace the testing and review requirements above.
 
 ### Review Criteria
 

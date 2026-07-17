@@ -2,3 +2,11 @@
 deny_warnings = true
 hide_notes = true
 except = ['TodoComment', 'ContainerUri', 'UnusedInput']
+
+[doc]
+index_page = "docs-README.md"
+logo = "WILDSWDLNameLogo.svg"
+github_url = "https://github.com/getwilds/wilds-wdl-library"
+
+[doc.extra_html]
+head = ".github/assets/analytics.html"

@@ -5,6 +5,40 @@ All notable changes to the WILDS WDL Library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-07-13
+
+Third release of the WILDS WDL Library, expanding into single-cell genomics, structural biology, and improved HPC/infrastructure tooling.
+
+### Highlights
+
+- **53 Modules** (up from 44): 9 new modules added
+- **15 Pipelines** (up from 12): 3 new pipelines added
+- **HPC Test Run Infrastructure**: modules and pipelines can now be validated directly on Fred Hutch HPC via automated test runs
+
+### Added
+
+- New modules: `ww-cellbender`, `ww-clair3`, `ww-esmfold`, `ww-gffread`, `ww-multiqc`, `ww-seurat`, `ww-trimgalore`, `ww-umi-tools`, `ww-viennarna`
+- New pipelines: `ww-proseq`, `ww-rnaseq`, `ww-sra-cellranger`
+- HPC-specific test run workflow (`testrun_hpc.wdl`) for modules and pipelines
+- Automated HPC test run GitHub Action with PR comment reporting
+- Zenodo DOI citation support
+- NGC key file support in `ww-sra` and related pipelines
+- EDAM ontology metadata for Dockstore entries
+- Repo stats GitHub Action
+- WILDS WDL agent scaffolding for AI-assisted module development
+- Cirro HTTP download support in `ww-ena-star`
+- AI disclosure in README and CONTRIBUTING
+
+### Changed
+
+- Docker images moved from `runtime` block to task `input` block for all modules
+- CellRanger `run_count` tasks now support graceful failure mode
+- `ww-sra-cellranger` pipeline updated to accept Run Selector `.txt` file as input and include CellBender post-processing
+- `ww-rnaseq` pipeline updated with collaborator feedback and GTF processing fixes
+- Updated `sprocket` version and cleaned up doc post-processing
+- Added concurrency limit to Cromwell CI/CD configuration
+- Modules registered as tools in Dockstore with updated author info
+
 ## [0.2.0] - 2026-03-31
 
 Second release of the WILDS WDL Library, featuring significant growth in both content and contributor community.
@@ -86,5 +120,6 @@ We're excited to announce the first official release of the WILDS WDL Library â€
 - [Documentation Site](https://getwilds.org/wilds-wdl-library/)
 - [Fred Hutch SciWiki Article](https://sciwiki.fredhutch.org/datascience/wilds_wdl/)
 
+[0.3.0]: https://github.com/getwilds/wilds-wdl-library/releases/tag/v0.3.0
 [0.2.0]: https://github.com/getwilds/wilds-wdl-library/releases/tag/v0.2.0
 [0.1.0]: https://github.com/getwilds/wilds-wdl-library/releases/tag/v0.1.0

@@ -28,6 +28,7 @@ Builds STAR genome index from reference FASTA and GTF files.
 - `genome_sa_index_nbases` (Int): SA pre-indexing string length (default: 14)
 - `memory_gb` (Int): Memory allocation in GB (default: 64)
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/star:2.7.6a`)
 
 **Outputs:**
 - `star_index_tar` (File): Compressed tarball containing STAR genome index
@@ -40,10 +41,12 @@ Performs RNA-seq alignment using STAR's two-pass methodology.
 - `r1` (File): R1 FASTQ file
 - `r2` (File?, optional): R2 FASTQ file (omit for single-end data)
 - `name` (String): Sample name for output files
+- `prohibit_splicing` (Boolean): Whether to set `--alignIntronMax` to 1 (default: false)
 - `sjdb_overhang` (Int): Length of genomic sequence around junctions (default: 100)
 - `memory_gb` (Int): Memory allocation in GB (default: 62)
 - `cpu_cores` (Int): Total CPU cores (default: 8)
 - `star_threads` (Int): STAR-specific thread count (default: 6)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/star:2.7.6a`)
 
 **Outputs:**
 - `bam` (File): Sorted BAM alignment file
@@ -177,6 +180,10 @@ The module supports flexible resource configuration:
 - `sjdb_overhang`: Set to (read_length - 1) for optimal junction detection
 - `star_threads`: Usually set slightly less than `cpu_cores` to leave resources for I/O
 - Resource allocation can be tuned for different compute environments
+
+**For prokaryotic data:** Set the `align_two_pass` parameter `prohibit_splicing` to `true`, which sets `--alignIntronMax` to `1` to prohibit splicing (see [this thread](https://groups.google.com/g/rna-star/c/UhKoLcWr4TA) involving the tool author). If you need this added, please [file an issue](https://github.com/getwilds/wilds-wdl-library/issues).
+
+**For stranded data:** Our STAR tasks currently account for stranded data by default, since we require an annotation file when building the index and use `--quantMode GeneCounts` when aligning. Strand information is reported in the `align_two_pass` output `gene_counts` (a `ReadsPerGene.out.tab` file). See Section 7 of the [STAR manual](https://github.com/alexdobin/STAR/tree/2.7.6a/doc) and [this thread](https://groups.google.com/g/rna-star/c/oGvChGG2gto/m/UQrP3c8yDQAJ) with the tool author.
 
 
 ## Requirements

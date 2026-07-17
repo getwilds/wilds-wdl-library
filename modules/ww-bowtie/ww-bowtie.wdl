@@ -13,6 +13,15 @@ task bowtie_build {
     outputs: {
         bowtie_index_tar: "Compressed tarball containing Bowtie genome index files"
     }
+    topic: "genomics,transcriptomics,mapping"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "indexing"
+    input_sample_required: "none"
+    input_sample_optional: "none"
+    input_reference_required: "reference_fasta:nucleic_acid_sequence:fasta"
+    input_reference_optional: "none"
+    output_sample: "none"
+    output_reference: "bowtie_index_tar:data_index:tar_format"
   }
 
   parameter_meta {
@@ -20,6 +29,7 @@ task bowtie_build {
     index_prefix: "Prefix for the Bowtie index files"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -27,6 +37,7 @@ task bowtie_build {
     String index_prefix = "bowtie_index"
     Int cpu_cores = 4
     Int memory_gb = 16
+    String docker_image = "getwilds/bowtie:1.3.1"
   }
 
   command <<<
@@ -51,7 +62,7 @@ task bowtie_build {
   }
 
   runtime {
-    docker: "getwilds/bowtie:1.3.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -67,6 +78,15 @@ task bowtie_align {
         sorted_bam: "Sorted Bowtie alignment output BAM file",
         sorted_bai: "Index file for the sorted Bowtie alignment BAM file"
     }
+    topic: "genomics,transcriptomics,mapping"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "sequence_alignment"
+    input_sample_required: "reads:nucleic_acid_sequence:fastq"
+    input_sample_optional: "mates:nucleic_acid_sequence:fastq"
+    input_reference_required: "bowtie_index_tar:data_index:tar_format"
+    input_reference_optional: "none"
+    output_sample: "sorted_bam:nucleic_acid_sequence_alignment:bam,sorted_bai:data_index:bai"
+    output_reference: "none"
   }
 
   parameter_meta {
@@ -77,6 +97,7 @@ task bowtie_align {
     mates: "Optional FASTQ file for reverse (R2) reads for paired-end alignment"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -87,6 +108,7 @@ task bowtie_align {
     File? mates
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/bowtie:1.3.1"
   }
 
   command <<<
@@ -136,7 +158,7 @@ task bowtie_align {
   }
 
   runtime {
-    docker: "getwilds/bowtie:1.3.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
