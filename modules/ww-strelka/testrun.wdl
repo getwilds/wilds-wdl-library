@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-strelka/ww-strelka.wdl" as ww_strelka
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "./ww-strelka.wdl" as ww_strelka
 
 struct StrelkaSample {
     String name

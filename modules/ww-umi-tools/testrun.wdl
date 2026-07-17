@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-umi-tools/ww-umi-tools.wdl" as ww_umi_tools
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "./ww-umi-tools.wdl" as ww_umi_tools
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
 
 struct DedupSample {
   String name
