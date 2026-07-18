@@ -1,7 +1,7 @@
 # AGENTS.md - WILDS WDL Library
 
 ## Project Overview
-Centralized bioinformatics WDL library with two tiers: **modules** (tool-specific task collections) and **pipelines** (workflows combining modules). All WDL uses version 1.0.
+Centralized bioinformatics WDL library with two tiers: **modules** (tool-specific task collections) and **pipelines** (workflows combining modules). WDL 1.0 is the default. Modules or pipelines requiring features only available in WDL 1.2 (e.g., the `Directory` type) may use `version 1.2`; document the reason in their README.
 
 ## Repo Structure
 ```
@@ -53,7 +53,7 @@ Sprocket exceptions (from sprocket.toml): TodoComment, ContainerUri, UnusedInput
 - Import URLs must point to the correct branch during development; switch to `main` before merging
 - Docker image version conflicts (especially with complex tools like ColabFold) - always pin versions
 - Test data changes go in the `ww-testdata` module, not individual modules
-- All modules/pipelines must pass CI on three executors: Cromwell, miniWDL, and Sprocket
+- All modules/pipelines must pass CI on three executors: Cromwell, miniWDL, and Sprocket. Exception: `version 1.2` items skip Cromwell (no WDL 1.2 support).
 
 ## Dockstore Registration
 - All modules and pipelines must be registered in `.dockstore.yml`
