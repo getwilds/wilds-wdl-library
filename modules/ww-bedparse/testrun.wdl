@@ -1,14 +1,14 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedparse/ww-bedparse.wdl" as ww_bedparse
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow bedparse_example {
   # Auto-download test reference data for testing purposes
   call ww_testdata.download_ref_data as download_ref {
     input:
       chromo = "chr1",
-      genome_version = "hg38"
+      version = "hg38"
   }
 
   # Convert GTF to BED12 format using bedparse

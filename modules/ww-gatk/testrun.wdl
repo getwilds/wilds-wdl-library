@@ -1,6 +1,6 @@
 version 1.0
 
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gatk/ww-gatk.wdl" as ww_gatk
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bwa/ww-bwa.wdl" as ww_bwa
 
@@ -232,7 +232,7 @@ workflow gatk_example {
   call ww_testdata.download_ref_data as download_saturation_ref {
     input:
       chromo = "chr1",
-      genome_version = "hg38",
+      version = "hg38",
       region = "1000000-1005000"
   }
 

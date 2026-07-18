@@ -1,6 +1,6 @@
 version 1.0
 
-import "../../modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-saturation/ww-saturation.wdl" as saturation_workflow
 
 struct SaturationSample {
@@ -44,7 +44,7 @@ workflow saturation_mutagenesis_example {
   call ww_testdata.download_ref_data {
     input:
       chromo = "chr1",
-      genome_version = "hg38",
+      version = "hg38",
       region = "1000000-1005000"
   }
 

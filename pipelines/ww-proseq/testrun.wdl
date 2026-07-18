@@ -1,7 +1,7 @@
 version 1.0
 
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-proseq/ww-proseq.wdl" as proseq_workflow
-import "../../modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-sra/ww-sra.wdl" as ww_sra
 
 struct ProseqSample {
@@ -27,7 +27,7 @@ workflow proseq_example {
 
   # Experimental reference genome: Same species as the qPRO-seq data
   call ww_testdata.download_ref_data as download_dm6 { input:
-      genome_version ="dm6",
+      version = "dm6",
       chromo = "chr2L",
       region = "1-1000000",
       output_name = "dm6_chr2L_1M"
@@ -35,7 +35,7 @@ workflow proseq_example {
 
   # Spike-in source: a small slice of hg38.
   call ww_testdata.download_ref_data as download_hg38 { input:
-      genome_version ="hg38",
+      version = "hg38",
       chromo = "chr1",
       region = "1-1000000",
       output_name = "hg38_chr1_1M"
