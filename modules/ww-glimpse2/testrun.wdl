@@ -1,7 +1,7 @@
 version 1.2
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/imputation-v1.1/modules/ww-glimpse2/ww-glimpse2.wdl" as ww_glimpse2
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/imputation-v1.1/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "./ww-glimpse2.wdl" as ww_glimpse2
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
 
 task create_cram_directory {
   input {
