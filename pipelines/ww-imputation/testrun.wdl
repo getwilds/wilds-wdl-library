@@ -45,7 +45,6 @@ workflow imputation_testrun {
   call ww_testdata.download_ref_data as download_reference {
     input:
       chromo = test_chromosome,
-      genome_version = "hg38",
       region = "1-10000000",
       output_name = "chr1_test"
   }
