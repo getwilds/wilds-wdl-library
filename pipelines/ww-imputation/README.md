@@ -15,7 +15,7 @@ This pipeline provides a unified workflow for genotype imputation, combining the
 - Single multi-sample output file (all samples and chromosomes combined)
 - Configurable imputation parameters
 
-> **WDL version note:** This pipeline uses `version 1.2` to support the `Directory` input type for CRAM/BAM files, which avoids file-descriptor and container bind-mount limits when running large cohorts. As a result, it is compatible with miniWDL and Sprocket but not with Cromwell-based executors (including PROOF), which do not yet support WDL 1.2.
+> **WDL version note:** This pipeline uses `version 1.2` to support the `Directory` input type for CRAM/BAM files, which avoids file-descriptor and container bind-mount limits when running large cohorts. As a result, it is compatible with miniWDL and Sprocket but not with Cromwell-based executors (including PROOF), which do not yet support WDL 1.2. If you need a WDL 1.0-compatible version for use with PROOF or Cromwell, refer to earlier versions of this file in the repository's git history.
 
 ## Pipeline Structure
 
