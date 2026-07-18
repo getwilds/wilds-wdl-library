@@ -63,6 +63,10 @@ jobs:
         echo "Validating WDL files using WOMtool."
         files=$(find modules pipelines -name '*.wdl' 2>/dev/null || true)
         for file in $files; do
+          if grep -qE '^version 1\.2' "$file"; then
+            echo "  Skipping WOMtool (WDL 1.2 not supported): $file"
+            continue
+          fi
           echo "  [***] Validating $file [***]"
           java -jar womtool-86.jar validate "$file"
           EXITCODE=$(($? || EXITCODE))
@@ -80,7 +84,7 @@ jobs:
       run: which shellcheck || sudo apt-get install -y shellcheck
     - 
       name: Sprocket Linting
-      uses: stjude-rust-labs/sprocket-action@v0.25.0
+      uses: stjude-rust-labs/sprocket-action@v0.27.0
       with:
         action: lint
 
