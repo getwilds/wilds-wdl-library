@@ -21,7 +21,7 @@ task download_ref_data {
 
   parameter_meta {
     chromo: "Chromosome to download (e.g., chr1, chr2, etc.)"
-    version: "UCSC reference genome version (e.g., hg38, mm10, dm6, sacCer3)"
+    genome_version: "UCSC reference genome version (e.g., hg38, mm10, dm6, sacCer3)"
     region: "Optional region coordinates to extract from chromosome in format '1-30000000'. If not specified, uses entire chromosome."
     output_name: "Optional name for output files (default: uses chromo name)"
     cpu_cores: "Number of CPU cores to use for downloading and processing"
@@ -31,7 +31,7 @@ task download_ref_data {
 
   input {
     String chromo = "chr1"
-    String version = "hg38"
+    String genome_version = "hg38"
     String? region
     String? output_name
     Int cpu_cores = 1
@@ -48,17 +48,17 @@ task download_ref_data {
     # Fall back to the whole-genome bigZips FASTA for assemblies that don't ship
     # per-chromosome files (e.g. dm6, sacCer3) — extract the requested chromosome
     # via samtools faidx after downloading.
-    if wget -q --spider "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"; then
-      wget -q -O "~{chromo}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/chromosomes/~{chromo}.fa.gz"
+    if wget -q --spider "http://hgdownload.soe.ucsc.edu/goldenPath/~{genome_version}/chromosomes/~{chromo}.fa.gz"; then
+      wget -q -O "~{chromo}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{genome_version}/chromosomes/~{chromo}.fa.gz"
       gunzip "~{chromo}.fa.gz"
       mv "~{chromo}.fa" temp.fa
     else
-      echo "No per-chromosome FASTA for ~{version}/~{chromo}; falling back to whole-genome bigZips download"
-      wget -q -O "~{version}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/bigZips/~{version}.fa.gz"
-      gunzip "~{version}.fa.gz"
-      samtools faidx "~{version}.fa"
-      samtools faidx "~{version}.fa" "~{chromo}" > temp.fa
-      rm "~{version}.fa" "~{version}.fa.fai"
+      echo "No per-chromosome FASTA for ~{genome_version}/~{chromo}; falling back to whole-genome bigZips download"
+      wget -q -O "~{genome_version}.fa.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{genome_version}/bigZips/~{genome_version}.fa.gz"
+      gunzip "~{genome_version}.fa.gz"
+      samtools faidx "~{genome_version}.fa"
+      samtools faidx "~{genome_version}.fa" "~{chromo}" > temp.fa
+      rm "~{genome_version}.fa" "~{genome_version}.fa.fai"
     fi
 
     # Subset to specified region if provided
@@ -78,11 +78,11 @@ task download_ref_data {
     samtools dict "~{final_output_name}.fa" > "~{final_output_name}.dict"
 
     # Download GTF file
-    wget -q -O "~{version}.ncbiRefSeq.gtf.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{version}/bigZips/genes/~{version}.ncbiRefSeq.gtf.gz"
-    gunzip "~{version}.ncbiRefSeq.gtf.gz"
+    wget -q -O "~{genome_version}.ncbiRefSeq.gtf.gz" "http://hgdownload.soe.ucsc.edu/goldenPath/~{genome_version}/bigZips/genes/~{genome_version}.ncbiRefSeq.gtf.gz"
+    gunzip "~{genome_version}.ncbiRefSeq.gtf.gz"
     # Extract only chromosome annotations
-    grep "^~{chromo}[[:space:]]" "~{version}.ncbiRefSeq.gtf" > temp.gtf
-    rm "~{version}.ncbiRefSeq.gtf"
+    grep "^~{chromo}[[:space:]]" "~{genome_version}.ncbiRefSeq.gtf" > temp.gtf
+    rm "~{genome_version}.ncbiRefSeq.gtf"
 
     # If region is specified, filter GTF to only include genes in that region
     if [ -n "$REGION" ]; then

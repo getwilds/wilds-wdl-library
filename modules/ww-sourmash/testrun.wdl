@@ -7,7 +7,7 @@ workflow sourmash_example {
   # Pull down reference genome and index files for chr1
   call ww_testdata.download_ref_data { input:
       chromo = "chr1",
-      version = "hg38",
+      genome_version = "hg38",
       region = "1-10000000"
   }
 

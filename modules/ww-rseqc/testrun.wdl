@@ -9,7 +9,7 @@ workflow rseqc_example {
   call ww_testdata.download_ref_data as download_ref {
     input:
       chromo = "chr1",
-      version = "hg38"
+      genome_version = "hg38"
   }
 
   # Auto-download test BAM data

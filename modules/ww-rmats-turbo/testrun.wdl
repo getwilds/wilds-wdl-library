@@ -14,7 +14,7 @@ workflow rmats_turbo_example {
   call ww_testdata.download_ref_data {
     input:
       chromo = "chr1",
-      version = "hg38",
+      genome_version = "hg38",
       region = "1-10000000"
   }
 

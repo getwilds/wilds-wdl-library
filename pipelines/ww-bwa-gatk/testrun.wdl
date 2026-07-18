@@ -14,7 +14,7 @@ workflow bwa_gatk_example {
   call ww_testdata.download_ref_data {
     input:
       chromo = "chr1",
-      version = "hg38"
+      genome_version = "hg38"
   }
 
   call ww_testdata.download_fastq_data { }
