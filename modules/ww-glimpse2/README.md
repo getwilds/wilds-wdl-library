@@ -15,6 +15,8 @@ This module wraps the core GLIMPSE2 tools and is inspired by the [Broad Institut
 - Efficient chunking of genomic regions for parallel processing
 - Support for both VCF/BCF and CRAM/BAM input formats for phasing
 
+> **WDL version note:** This module uses `version 1.2` to support the `Directory` input type in `glimpse2_phase_cram`, which avoids file-descriptor and container bind-mount limits when running large cohorts. As a result, it is compatible with miniWDL and Sprocket but not with Cromwell-based executors (including PROOF), which do not yet support WDL 1.2.
+
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
