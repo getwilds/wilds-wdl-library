@@ -13,9 +13,9 @@ task calculate_depth {
     description: "Calculates sequencing coverage depth from BAM or CRAM alignments."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-mosdepth/ww-mosdepth.wdl"
     outputs: {
-        depth_per_base: "Per-base coverage depth in BED format",
-        depth_summary: "Summary of coverage depth statistics",
-        region_depth: "Coverage depth for specified regions (if provided)"
+        depth_per_base: "Per-base coverage depth in gzipped BED format",
+        depth_summary: "Summary of coverage depth statistics (plain text)",
+        region_depth: "Coverage depth per window or region (always produced)"
     }
     topic: "any"
     species: "human,eukaryote,prokaryote,virus"
@@ -53,28 +53,17 @@ task calculate_depth {
   command <<<
     set -eo pipefail
 
-    # Construct mosdepth command
-    CMD="mosdepth"
-    
-    if [ -n "~{ref_fasta}" ]; then
-      CMD="$CMD --fasta ~{ref_fasta}"
-    fi
-    
-    if [ -n "~{regions_bed}" ]; then
-      CMD="$CMD --by ~{regions_bed}"
-    else
-      CMD="$CMD --by ~{window_size}"
-    fi
-
-    CMD="$CMD --threads ~{cpu_cores} ~{sample_name} ~{input_bam}"
-    
-    # Execution
-    eval $CMD
+    mosdepth \
+      ~{if defined(ref_fasta) then "--fasta " + ref_fasta else ""} \
+      ~{if defined(regions_bed) then "--by " + regions_bed else "--by " + window_size} \
+      --threads ~{cpu_cores} \
+      ~{sample_name} \
+      ~{input_bam}
   >>>
 
   output {
     File depth_per_base = "~{sample_name}.per-base.bed.gz"
-    File depth_summary = "~{sample_name}.mosdepth.gz"
+    File depth_summary = "~{sample_name}.mosdepth.summary.txt"
     File region_depth = "~{sample_name}.regions.bed.gz"
   }
 
