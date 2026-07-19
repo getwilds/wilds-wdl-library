@@ -35,8 +35,8 @@ Calculates sequencing coverage depth from BAM or CRAM alignments.
 
 **Outputs:**
 - `depth_per_base` (File): Per-base coverage depth in BED format
-- `depth_summary` (File): Summary of coverage depth statistics
-- `region_depth` (File): Coverage depth for specified regions or windows
+- `depth_summary` (File): Summary of coverage depth statistics (plain text)
+- `region_depth` (File): Coverage depth per window or region (always produced)
 
 ## Usage as a Module
 
@@ -53,12 +53,11 @@ workflow my_coverage_analysis {
   }
   
   call mosdepth_tasks.calculate_depth {
-    input: {
-      sample_name: "sample_1",
-      input_bam: input_bam,
-      input_bam_index: input_bai,
-      ref_fasta: ref_fasta
-    }
+    input:
+      sample_name = "sample_1",
+      input_bam = input_bam,
+      input_bam_index = input_bai,
+      ref_fasta = ref_fasta
   }
 }
 ```
