@@ -36,7 +36,7 @@ Calculates sequencing coverage depth from BAM or CRAM alignments.
 **Outputs:**
 - `depth_per_base` (File): Per-base coverage depth in BED format
 - `depth_summary` (File): Summary of coverage depth statistics (plain text)
-- `region_depth` (File): Coverage depth per window or region (always produced)
+- `region_depth` (File, optional): Coverage depth per window or region (produced when `--by` is passed via `regions_bed` or `window_size`)
 
 ## Usage as a Module
 

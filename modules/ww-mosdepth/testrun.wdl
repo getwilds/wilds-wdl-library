@@ -25,6 +25,6 @@ workflow mosdepth_example {
   output {
     File depth_per_base = calculate_depth.depth_per_base
     File depth_summary = calculate_depth.depth_summary
-    File region_depth = calculate_depth.region_depth
+    File? region_depth = calculate_depth.region_depth
   }
 }

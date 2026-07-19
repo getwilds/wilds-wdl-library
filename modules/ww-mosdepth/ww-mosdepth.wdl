@@ -15,7 +15,7 @@ task calculate_depth {
     outputs: {
         depth_per_base: "Per-base coverage depth in gzipped BED format",
         depth_summary: "Summary of coverage depth statistics (plain text)",
-        region_depth: "Coverage depth per window or region (always produced)"
+        region_depth: "Coverage depth per window or region (produced when --by is passed)"
     }
     topic: "any"
     species: "human,eukaryote,prokaryote,virus"
@@ -64,7 +64,7 @@ task calculate_depth {
   output {
     File depth_per_base = "~{sample_name}.per-base.bed.gz"
     File depth_summary = "~{sample_name}.mosdepth.summary.txt"
-    File region_depth = "~{sample_name}.regions.bed.gz"
+    File? region_depth = "~{sample_name}.regions.bed.gz"
   }
 
   runtime {
