@@ -35,6 +35,7 @@ task annotsv_annotate {
     overlap_threshold: "Minimum percentage overlap with genomic features"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -46,6 +47,7 @@ task annotsv_annotate {
     Boolean exclude_benign = false
     Int sv_min_size = 50
     Int overlap_threshold = 70
+    String docker_image = "getwilds/annotsv:3.4.4"
     Int cpu_cores = 4
     Int memory_gb = 8
   }
@@ -92,7 +94,7 @@ task annotsv_annotate {
   }
 
   runtime {
-    docker: "getwilds/annotsv:3.4.4"
+    docker: docker_image
     memory: "~{memory_gb}GB"
     cpu: cpu_cores
   }

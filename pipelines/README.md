@@ -98,19 +98,12 @@ This works because all pipelines import modules using GitHub URLs, so your WDL e
 
 ### **Testing and Demonstration**
 
-Pipelines also include zero-configuration test workflows for quick demonstrations:
+Pipelines also include zero-configuration test workflows for quick demonstrations. Because `testrun.wdl` uses relative path imports, you need the repository cloned to run it:
 
 ```bash
-# Download and run a test workflow (no inputs needed)
-curl -O https://raw.githubusercontent.com/getwilds/wilds-wdl-library/main/pipelines/ww-sra-star/testrun.wdl
-sprocket run testrun.wdl
-```
-
-If you have the repository cloned:
-
-```bash
-# Navigate to pipeline directory
-cd pipelines/ww-sra-star
+# Clone the repository and navigate to a pipeline directory
+git clone https://github.com/getwilds/wilds-wdl-library.git
+cd wilds-wdl-library/pipelines/ww-sra-star
 
 # Run test workflow with your preferred executor (no inputs needed):
 # Sprocket

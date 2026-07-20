@@ -38,6 +38,10 @@ When using either `run_count_hpc_cromwell` or `run_count_hpc_sprocket`, the same
 
 If your files don't follow this convention, you can use the `rename_fastqs` task from this module to rename them automatically.
 
+### Supported Cell Ranger Versions
+
+This module's `cellranger count` invocation is compatible with **Cell Ranger 8.x, 9.x, and 10.x**. The CLI for the flags used here (including the required `--create-bam`) has been stable across those releases. To use a specific version, override `docker_image` (for `run_count`) or `cellranger_module` (for the HPC variants) with your preferred release. **Cell Ranger 7.x and earlier are not supported** because they predate the `--create-bam` flag.
+
 ### Current Limitations
 
 **This module currently only accepts samples that are gene expression (GEX) only.** Feature barcoding data (e.g., antibody-derived tags, CRISPR guides) is not supported at this time.
@@ -71,16 +75,25 @@ Run `cellranger count` on gene expression reads from one GEM well using a privat
 - `cpu_cores` (Int, default=8): Number of CPU cores to use
 - `memory_gb` (Int, default=64): Memory allocation in GB
 - `expect_cells` (Int, optional): Expected number of recovered cells
-- `chemistry` (String, optional): Assay configuration (e.g., SC3Pv3)
+- `chemistry` (String, optional): Assay configuration (e.g., SC3Pv3). Leave unset for automatic chemistry detection (required for `skip_on_chemistry_failure` to work).
+- `skip_on_chemistry_failure` (Boolean, default=false): If true, samples for which Cell Ranger can't automatically detect the chemistry (usually because the data is low quality or not single-cell) succeed with absent count outputs and `chemistry_status="skipped_non_single_cell"` instead of failing. Other Cell Ranger failures will still cause the workflow to quit. Only active when `chemistry` is left unset (auto-detection mode). See [Graceful chemistry-detection skip](#graceful-chemistry-detection-skip) for details.
 - `docker_image` (String, default=`ghcr.io/getwilds/cellranger:10.0.0`): Private Cell Ranger Docker image. Cell Ranger is not redistributable, so you must supply your own image (see the WILDS Dockerfile recipe linked above) and override the default if it is not available in your registry.
 
 **Important:** All input FASTQs must be from one GEM well. If you have multiple GEM wells, use `run_count` separately for each well. The task validates that FASTQ filenames follow Cell Ranger's naming convention and will fail with a helpful error message if they don't.
 
 **Outputs:**
-- `results_tar` (File): Compressed tarball of Cell Ranger count output directory
-- `web_summary` (File): Web summary HTML file with QC metrics
-- `metrics_summary` (File): Metrics summary CSV file with key statistics
-- `filtered_h5` (File): Filtered feature-barcode matrix HDF5 file
+- `chemistry_status` (File): One-line marker file with contents `ok` (Cell Ranger ran to completion) or `skipped_non_single_cell` (chemistry detection failed and `skip_on_chemistry_failure=true`). Always present.
+- `results_tar` (File?): Compressed tarball of Cell Ranger count output directory. Absent when the sample was skipped.
+- `web_summary` (File?): Web summary HTML file with QC metrics. Absent when the sample was skipped.
+- `metrics_summary` (File?): Metrics summary CSV file with key statistics. Absent when the sample was skipped.
+- `filtered_h5` (File?): Filtered feature-barcode matrix HDF5 file. Absent when the sample was skipped.
+- `raw_h5` (File?): Raw feature-barcode matrix HDF5 file. Absent when the sample was skipped.
+
+### Graceful chemistry-detection skip
+
+When `cellranger count` cannot automatically detect the input chemistry (usually because it's low quality or not single-cell) it errors out before producing the usual outputs. By default, the `run_count` WDL task reports the error and quits (`skip_on_chemistry_failure = false`). Setting `skip_on_chemistry_failure = true` makes the task exit cleanly instead and reports `chemistry_status = "skipped_non_single_cell"` (regardless of why chemistry detection failed). This lets you scatter over many samples and skip bad inputs instead of stopping the whole workflow because of the error.
+
+**How it works:** The task searches the `cellranger count` output for terms like "could not detect", "ambiguous chemistry", "NO_INPUT_ANTIBODY_READS" and the error codes "TXRNGR10002" and "TXRNGR10004." This method has been validated against Cell Ranger version 10.0.0.
 
 ### `run_count_hpc_cromwell`
 
@@ -107,7 +120,8 @@ call cellranger_tasks.run_count_hpc_cromwell {
 
 Run `cellranger count` on gene expression reads from one GEM well from inside a minimal Lua container, with the host's Lmod tree and Cell Ranger software tree bind-mounted in. Sprocket always runs tasks inside a container under Apptainer, so this variant cannot omit the `docker` runtime key the way `run_count_hpc_cromwell` does; instead the container ships only the bits needed to execute `module load` (Lua) and the Cell Ranger binary itself comes in via host bind-mounts configured in the Sprocket HPC config.
 
-**Inputs:** Same as `run_count_hpc_cromwell`.
+**Inputs:** Same as `run_count_hpc_cromwell`, plus:
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/lua:5.3.6`)
 
 **Outputs:** Same as `run_count`.
 
@@ -133,6 +147,7 @@ Renames FASTQ files to match the Cell Ranger naming convention. Useful for prepa
 - `r1_fastq` (File): R1 FASTQ file to rename
 - `r2_fastq` (File): R2 FASTQ file to rename
 - `sample_id` (String): Sample ID to use as the prefix in the renamed file
+- `docker_image` (String): Docker image to use for this task (default: `ubuntu:22.04`)
 
 **Outputs:**
 - `r1_renamed` (File): R1 FASTQ file renamed to `{sample_id}_S1_R1_001.fastq.gz`
@@ -167,6 +182,7 @@ workflow my_single_cell_pipeline {
     File web_summary = run_count.web_summary
     File metrics = run_count.metrics_summary
     File filtered_h5 = run_count.filtered_h5
+    File raw_h5 = run_count.raw_h5
   }
 }
 ```

@@ -37,6 +37,7 @@ Runs DeepVariant to call germline variants from aligned reads. Optionally produc
 - `regions` (String?, optional): Genomic regions to restrict variant calling
 - `cpu_cores` (Int, default=8): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=32): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `google/deepvariant:1.10.0`)
 
 **Outputs:**
 - `output_vcf` (File): VCF file containing variant calls

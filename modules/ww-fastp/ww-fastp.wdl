@@ -42,6 +42,7 @@ task fastp_paired {
     umi_len: "Length of the UMI in basepairs. Required when umi_loc is set; ignored otherwise (default: 6)"
     cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
     memory_gb: "Memory allocated for the task in GB (default: 8)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -56,6 +57,7 @@ task fastp_paired {
     Int umi_len = 6
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/fastp:1.1.0"
   }
 
   command <<<
@@ -96,7 +98,7 @@ task fastp_paired {
   }
 
   runtime {
-    docker: "getwilds/fastp:1.1.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -134,6 +136,7 @@ task fastp_single {
     umi_len: "Length of the UMI in basepairs. Required when umi_loc is set; ignored otherwise (default: 6)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -146,6 +149,7 @@ task fastp_single {
     Int umi_len = 6
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/fastp:1.1.0"
   }
 
   command <<<
@@ -179,7 +183,7 @@ task fastp_single {
   }
 
   runtime {
-    docker: "getwilds/fastp:1.1.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

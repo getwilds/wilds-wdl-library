@@ -31,6 +31,7 @@ Run comprehensive RSeQC quality control metrics on aligned RNA-seq data.
 - `skip_gene_body_cov` (Boolean, default=true): Whether to skip the `geneBody_coverage.py` analysis (see [Gene Body Coverage](#2-gene-body-coverage) for details)
 - `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=4): Memory allocated for the task in GB
+- `docker_image` (String, default=`getwilds/rseqc:5.0.4`): Docker image to use for this task
 
 **Outputs:**
 - `read_distribution` (File): Distribution of reads across genomic features

@@ -34,6 +34,7 @@ Annotates structural variants with comprehensive genomic and clinical informatio
 - `overlap_threshold` (Int): Minimum percentage overlap with genomic features (default: 70)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 4)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/annotsv:3.4.4`)
 
 **Outputs:**
 - `annotated_tsv` (File): Tab-delimited file with detailed annotations per SV

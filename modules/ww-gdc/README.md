@@ -31,6 +31,7 @@ Download files from GDC using a manifest file. This is the recommended approach 
 - `wait_time` (Int, default=5): Seconds to wait between retries
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gdc-client:2.3.0`)
 
 **Outputs:**
 - `downloaded_files` (Array[File]): Array of downloaded data files from GDC
@@ -48,6 +49,7 @@ Download files from GDC using file UUIDs. Useful when you have specific file IDs
 - `wait_time` (Int, default=5): Seconds to wait between retries
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gdc-client:2.3.0`)
 
 **Outputs:**
 - `downloaded_files` (Array[File]): Array of downloaded data files from GDC

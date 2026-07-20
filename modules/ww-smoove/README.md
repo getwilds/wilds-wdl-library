@@ -32,6 +32,7 @@ Calls structural variants using Smoove for a single sample.
 - `exclude_chroms` (String?): Optional comma-separated list of chromosomes to exclude
 - `cpu_cores` (Int): Number of CPU cores to use (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/smoove:0.2.8`)
 
 **Outputs:**
 - `vcf` (File): Compressed VCF file with structural variant calls

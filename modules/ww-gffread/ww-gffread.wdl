@@ -28,6 +28,7 @@ task normalize_gtf {
     output_prefix: "Prefix used for output filenames"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -35,6 +36,7 @@ task normalize_gtf {
     String output_prefix = "normalized"
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/gffread:0.12.7"
   }
 
   command <<<
@@ -53,7 +55,7 @@ task normalize_gtf {
   }
 
   runtime {
-    docker: "getwilds/gffread:0.12.7"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -75,6 +77,7 @@ task gff3_to_gtf {
     output_prefix: "Prefix used for output filenames"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -82,6 +85,7 @@ task gff3_to_gtf {
     String output_prefix = "converted"
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/gffread:0.12.7"
   }
 
   command <<<
@@ -96,7 +100,7 @@ task gff3_to_gtf {
   }
 
   runtime {
-    docker: "getwilds/gffread:0.12.7"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

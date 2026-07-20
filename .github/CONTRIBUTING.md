@@ -132,11 +132,13 @@ For modules where CI execution is impractical (GPU-only tools, license-gated too
 **Your test workflow file (`testrun.wdl` or `testrun_hpc.wdl`) must include:**
 
 - **Version declaration**: Use WDL version 1.0
-- **Module imports**: Import the module being tested and the `ww-testdata` module using GitHub URLs
+- **Module imports**: Import the module being tested and the `ww-testdata` module using relative paths (e.g. `"./ww-toolname.wdl"` for the own module and `"../ww-testdata/ww-testdata.wdl"` for test data)
 - **Sample struct definition**: Define a struct for organizing sample inputs if needed
 - **Test workflow**: A `toolname_example` workflow that demonstrates all tasks (must follow the naming convention `{module}_example` where `{module}` is the tool name, e.g., `star_example` for `ww-star`)
 - **Auto-downloading of test data**: Use the `ww-testdata` module to automatically provision test data
 - **Validation task (optional)**: Consider including a validation task to verify output correctness
+
+Note: `testrun.wdl` files use relative path imports (unlike the pipeline source WDL files, which use GitHub raw URLs for end-user convenience). Relative imports ensure that CI/CD and local test runs always exercise the local version of the WDL under development, rather than fetching a stale copy from a remote branch.
 
 **Parameter preferences:**
 
@@ -513,6 +515,17 @@ After meeting the requirements above, submit a PR to merge your forked repo into
 ### AI-Assisted Development
 
 We occasionally use large language models (primarily [Claude](https://www.anthropic.com/claude)) to assist with prototyping modules and pipelines, and contributors are welcome to do the same. However, all AI-generated code must go through the same testing, linting, and human review process as any other contribution. Please ensure you review and understand any AI-generated code before submitting it in a PR.
+
+To make AI assistance more consistent with project conventions, the repository ships an [`AGENTS.md`](../AGENTS.md) project-context file (following the vendor-neutral [agents.md](https://agents.md/) convention) and a set of reusable task recipes under [`.agents/skills/`](../.agents/skills/):
+
+- `add-testdata` — add a test-data download task to `ww-testdata`
+- `create-module` — scaffold a new `ww-toolname` module
+- `create-pipeline` — assemble existing modules into a new pipeline
+- `lint-module` — run linting and fix issues
+- `pr-description` — draft a PR description from the current branch
+- `run-tests` — run `testrun.wdl` via Sprocket or miniwdl
+
+Tools that follow the AGENTS.md convention (OpenCode, Claude Code, and others) discover these files automatically. Use of these tools is optional — they are provided as a convenience and do not replace the testing and review requirements above.
 
 ### Review Criteria
 

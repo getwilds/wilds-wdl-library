@@ -31,6 +31,7 @@ Predict minimum free energy (MFE) secondary structures and optionally compute pa
 - `extra_args` (String, default=""): Additional command-line arguments
 - `cpu_cores` (Int, default=1): Number of CPU cores
 - `memory_gb` (Int, default=4): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/viennarna:2.7.2`)
 
 **Outputs:**
 - `structure_output` (File): Predicted MFE structures in dot-bracket notation with free energies
@@ -48,6 +49,7 @@ Enumerate suboptimal secondary structures within an energy range of the MFE.
 - `extra_args` (String, default=""): Additional command-line arguments
 - `cpu_cores` (Int, default=1): Number of CPU cores
 - `memory_gb` (Int, default=4): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/viennarna:2.7.2`)
 
 **Outputs:**
 - `subopt_output` (File): Suboptimal structures in dot-bracket notation with energies
@@ -64,6 +66,7 @@ Predict the joint secondary structure and hybridization energy of two interactin
 - `extra_args` (String, default=""): Additional command-line arguments
 - `cpu_cores` (Int, default=1): Number of CPU cores
 - `memory_gb` (Int, default=4): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/viennarna:2.7.2`)
 
 **Outputs:**
 - `cofold_output` (File): Predicted joint MFE structure with interaction energy
@@ -82,6 +85,7 @@ Compute local base pair probabilities using a sliding window approach, useful fo
 - `extra_args` (String, default=""): Additional command-line arguments
 - `cpu_cores` (Int, default=1): Number of CPU cores
 - `memory_gb` (Int, default=4): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/viennarna:2.7.2`)
 
 **Outputs:**
 - `accessibility_profiles` (Array[File]): Accessibility profile files with unpaired probabilities

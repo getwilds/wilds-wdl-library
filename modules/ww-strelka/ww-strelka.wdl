@@ -35,6 +35,7 @@ task strelka_germline {
     is_exome: "Whether this is exome sequencing data (enables exome-specific settings)"
     cpus: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -47,6 +48,7 @@ task strelka_germline {
     Boolean is_exome = false
     Int cpus = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/strelka:2.9.10"
   }
 
   String exome_flag = if is_exome then "--exome" else ""
@@ -98,7 +100,7 @@ task strelka_germline {
   }
 
   runtime {
-    docker: "getwilds/strelka:2.9.10"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpus
   }
@@ -140,6 +142,7 @@ task strelka_somatic {
     is_exome: "Whether this is exome sequencing data (enables exome-specific settings)"
     cpus: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -155,6 +158,7 @@ task strelka_somatic {
     Boolean is_exome = false
     Int cpus = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/strelka:2.9.10"
   }
 
   String exome_flag = if is_exome then "--exome" else ""
@@ -217,7 +221,7 @@ task strelka_somatic {
   }
 
   runtime {
-    docker: "getwilds/strelka:2.9.10"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpus
   }

@@ -36,6 +36,7 @@ task manta_call {
     is_rna: "Boolean flag for RNA-seq mode (enables RNA-specific settings)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -49,6 +50,7 @@ task manta_call {
     Boolean is_rna = false
     Int cpu_cores = 8
     Int memory_gb = 16
+    String docker_image = "getwilds/manta:1.6.0"
   }
 
   command <<<
@@ -80,7 +82,7 @@ task manta_call {
   }
 
   runtime {
-    docker: "getwilds/manta:1.6.0"
+    docker: docker_image
     memory: "~{memory_gb}GB"
     cpu: cpu_cores
   }

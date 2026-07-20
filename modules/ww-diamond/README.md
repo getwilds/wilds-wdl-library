@@ -26,6 +26,7 @@ Creates a DIAMOND database from a protein FASTA file.
 - `fasta` (File): Input FASTA file containing protein sequences
 - `memory_gb` (Int): Memory allocation in GB (default: 2)
 - `cpu_cores` (Int): Number of CPU cores (default: 1)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/diamond:2.1.16`)
 
 **Outputs:**
 - `diamond_db` (File): DIAMOND database file (.dmnd) created from input FASTA
@@ -44,6 +45,7 @@ Aligns protein sequences to a DIAMOND database using the BLASTP algorithm.
 - `blocksize` (Float): Billions of sequence letters to process at a time (default: "2.0")
 - `memory_gb` (Int): Memory allocation in GB (default: 2)
 - `cpu_cores` (Int): Number of CPU cores (default: 1)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/diamond:2.1.16`)
 
 **Outputs:**
 - `aln` (File): Compressed alignment file in tabular format (outfmt 6), gzip-compressed

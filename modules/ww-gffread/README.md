@@ -29,6 +29,7 @@ Normalizes a GTF file so downstream tools see exon features for every transcript
 - `output_prefix` (String, default=`"normalized"`): Prefix used for output filenames
 - `cpu_cores` (Int, default=1): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=2): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gffread:0.12.7`)
 
 **Outputs:**
 - `normalized_gtf` (File): GTF file with exon features synthesized from CDS records where needed
@@ -44,6 +45,7 @@ Converts a GFF3 annotation file to GTF format. Useful when an upstream source (e
 - `output_prefix` (String, default=`"converted"`): Prefix used for output filenames
 - `cpu_cores` (Int, default=1): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=2): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/gffread:0.12.7`)
 
 **Outputs:**
 - `gtf_file` (File): GTF-format annotation converted from the input GFF3

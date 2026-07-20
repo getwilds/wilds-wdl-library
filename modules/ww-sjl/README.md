@@ -15,7 +15,7 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 - **Tasks**: `sjl_tiles`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 - **Script**: `sjl_tiles.R` (pulled from GitHub at runtime)
-- **Container**: `rocker/tidyverse:4`
+- **Container**: `getwilds/r-utils:0.1.0`
 
 ## Tasks
 
@@ -30,6 +30,7 @@ Calculates sunrise/sunset times and sun time differences for each point within a
 - `missing_prefix` (String, default: `"missing_"`): Filename prefix for missing results output. Set to `""` to keep the original input filename.
 - `cpu_cores` (Int, default: 1): Number of CPU cores to use
 - `memory_gb` (Int, default: 8): Memory allocation in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/r-utils:0.1.0`)
 
 **Outputs:**
 - `matched_points` (File): RDS file containing points with sunrise/sunset difference values (in seconds) (named `<matched_prefix><input_filename>.rds`)

@@ -35,6 +35,7 @@ Run fastp on paired-end FASTQ files for quality filtering, adapter trimming, and
 - `umi_len` (Int, default=6): Length of the UMI in basepairs. Only consulted when `umi_loc` is set.
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/fastp:1.1.0`)
 
 **Outputs:**
 - `r1_trimmed` (File): Trimmed and filtered R1 FASTQ file
@@ -56,6 +57,7 @@ Run fastp on single-end FASTQ files for quality filtering, adapter trimming, and
 - `umi_len` (Int, default=6): Length of the UMI in basepairs. Only consulted when `umi_loc` is set.
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/fastp:1.1.0`)
 
 **Outputs:**
 - `trimmed_fastq` (File): Trimmed and filtered FASTQ file

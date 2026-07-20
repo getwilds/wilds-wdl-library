@@ -38,6 +38,7 @@ task run_shapemapper {
     is_amplicon: "Set to true if data is from amplicon sequencing (default: false)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -52,6 +53,7 @@ task run_shapemapper {
     Boolean is_amplicon = false
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/shapemapper:2.3"
   }
 
   command <<<
@@ -86,7 +88,7 @@ task run_shapemapper {
   }
 
   runtime {
-    docker: "getwilds/shapemapper:2.3"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

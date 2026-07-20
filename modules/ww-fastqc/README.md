@@ -32,6 +32,7 @@ Run FastQC quality control analysis on FASTQ files.
 - `adapters` (File, optional): Adapter sequences file for contamination screening
 - `limits` (File, optional): Limits file to override default warning/error thresholds
 - `contaminants` (File, optional): Contaminants file for contamination screening
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/fastqc:0.12.1`)
 
 **Outputs:**
 - `html_reports` (Array[File]): FastQC HTML quality control reports

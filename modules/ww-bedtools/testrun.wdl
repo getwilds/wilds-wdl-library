@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bedtools/ww-bedtools.wdl" as ww_bedtools
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "./ww-bedtools.wdl" as ww_bedtools
 
 workflow bedtools_example {
   # Hard-coded configuration for testing

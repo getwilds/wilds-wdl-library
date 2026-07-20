@@ -38,6 +38,7 @@ task run_rseqc {
     skip_gene_body_cov: "Whether to skip the geneBody_coverage.py analysis (default: true)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -48,6 +49,7 @@ task run_rseqc {
     Boolean skip_gene_body_cov = true
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/rseqc:5.0.4"
   }
 
   command <<<
@@ -126,7 +128,7 @@ EOF
   }
 
   runtime {
-    docker: "getwilds/rseqc:5.0.4"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

@@ -30,6 +30,7 @@ Runs MultiQC to aggregate QC reports from multiple bioinformatics tools into a s
 - `extra_args` (String, default=""): Additional command-line arguments to pass to MultiQC
 - `cpu_cores` (Int, default=1): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=4): Memory allocated for the task in GB
+- `docker_image` (String, default=`getwilds/multiqc:1.33`): Docker image to use for this task
 
 **Outputs:**
 - `html_report` (File): MultiQC interactive HTML summary report
