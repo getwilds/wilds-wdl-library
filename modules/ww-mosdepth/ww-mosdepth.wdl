@@ -20,11 +20,11 @@ task calculate_depth {
     topic: "any"
     species: "human,eukaryote,prokaryote,virus"
     operation: "data_parsing"
-    input_sample_required: "input_bam:bam:bam"
-    input_sample_optional: "none"
+    input_sample_required: "input_bam:nucleic_acid_sequence_alignment:bam,input_bam_index:data_index:bai"
+    input_sample_optional: "regions_bed:annotation_track:bed"
     input_reference_required: "none"
-    input_reference_optional: "ref_fasta:fasta:fasta"
-    output_sample: "depth_per_base:text_data:bed"
+    input_reference_optional: "ref_fasta:dna_sequence:fasta"
+    output_sample: "depth_per_base:annotation_track:bed,depth_summary:text_data:textual_format,region_depth:annotation_track:bed"
     output_reference: "none"
   }
 
