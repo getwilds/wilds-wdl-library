@@ -521,6 +521,22 @@ tools:
       branches:
         - main
 
+  - name: ww-mosdepth
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-mosdepth/ww-mosdepth.wdl
+    readMePath: /modules/ww-mosdepth/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for fast sequencing coverage depth calculation using mosdepth
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-megahit
     subclass: WDL
     primaryDescriptorPath: /modules/ww-megahit/ww-megahit.wdl

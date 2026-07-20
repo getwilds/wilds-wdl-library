@@ -53,7 +53,7 @@ Create three files in `modules/ww-$ARGUMENTS/`:
 - `version 1.0`
 - Import the module using a **relative file path**: `import "ww-$ARGUMENTS.wdl" as ww_$ARGUMENTS_UNDERSCORE`
 - Import testdata using a **relative file path**: `import "../ww-testdata/ww-testdata.wdl" as ww_testdata`
-- **IMPORTANT**: Use relative imports so the module can be linted and tested locally before being committed. The CI/CD pipeline or the user will update these to GitHub raw URLs when ready.
+- **IMPORTANT**: Always use relative imports in `testrun.wdl`. This ensures that linting and test runs (both locally and in CI/CD) use the local version of the WDL being developed, not a stale copy on a remote branch.
 - Workflow name: `$ARGUMENTS_example` (with hyphens converted to underscores)
 - Must run with zero configuration (no input files needed)
 - Use appropriate `ww_testdata` tasks to provision test data
