@@ -132,11 +132,13 @@ For modules where CI execution is impractical (GPU-only tools, license-gated too
 **Your test workflow file (`testrun.wdl` or `testrun_hpc.wdl`) must include:**
 
 - **Version declaration**: Use WDL version 1.0
-- **Module imports**: Import the module being tested and the `ww-testdata` module using GitHub URLs
+- **Module imports**: Import the module being tested and the `ww-testdata` module using relative paths (e.g. `"./ww-toolname.wdl"` for the own module and `"../ww-testdata/ww-testdata.wdl"` for test data)
 - **Sample struct definition**: Define a struct for organizing sample inputs if needed
 - **Test workflow**: A `toolname_example` workflow that demonstrates all tasks (must follow the naming convention `{module}_example` where `{module}` is the tool name, e.g., `star_example` for `ww-star`)
 - **Auto-downloading of test data**: Use the `ww-testdata` module to automatically provision test data
 - **Validation task (optional)**: Consider including a validation task to verify output correctness
+
+Note: `testrun.wdl` files use relative path imports (unlike the pipeline source WDL files, which use GitHub raw URLs for end-user convenience). Relative imports ensure that CI/CD and local test runs always exercise the local version of the WDL under development, rather than fetching a stale copy from a remote branch.
 
 **Parameter preferences:**
 

@@ -61,7 +61,7 @@ Create four files in `pipelines/ww-$0/`:
 
 #### `testrun.wdl`
 - `version 1.0`
-- Import the pipeline WDL and `ww-testdata`
+- Import the pipeline WDL and `ww-testdata` using **relative paths** (e.g. `"./ww-$0.wdl"` and `"../../modules/ww-testdata/ww-testdata.wdl"`). This ensures linting and test runs use the local version being developed, not a stale copy on a remote branch.
 - Workflow name: `{pipeline_name}_example` (underscored)
 - Must run with zero configuration
 - Use `ww-testdata` tasks for all test data — check what's available:
