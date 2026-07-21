@@ -4,6 +4,9 @@ import "./ww-glimpse2.wdl" as ww_glimpse2
 import "../ww-testdata/ww-testdata.wdl" as ww_testdata
 
 task create_cram_directory {
+  meta {
+    description: "Copy all input files to a 'cram_dir' folder and return that folder."
+  }
   input {
     Array[File] cram_files
     Array[File] crai_files
@@ -66,7 +69,7 @@ workflow glimpse2_example {
       ref_fasta = download_reference.fasta
   }
 
-  # Step 4a-ii: Stage CRAM and index into a directory for glimpse2_phase_cram
+  # Stage CRAM and index into a directory for glimpse2_phase_cram
   call create_cram_directory {
     input:
       cram_files = [download_cram.cram],
