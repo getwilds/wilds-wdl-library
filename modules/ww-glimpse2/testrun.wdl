@@ -7,6 +7,7 @@ task create_cram_directory {
   meta {
     description: "Copy all input files to a 'cram_dir' folder and return that folder."
   }
+
   input {
     Array[File] cram_files
     Array[File] crai_files
