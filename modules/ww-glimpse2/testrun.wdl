@@ -6,6 +6,9 @@ import "../ww-testdata/ww-testdata.wdl" as ww_testdata
 task create_cram_directory {
   meta {
     description: "Copy all input files to a 'cram_dir' folder and return that folder."
+    outputs: {
+      cram_directory: "Directory containing all input CRAM and CRAI files."
+    }
   }
 
   input {
