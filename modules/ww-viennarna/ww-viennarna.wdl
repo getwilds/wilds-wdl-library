@@ -5,12 +5,6 @@
 
 version 1.0
 
-workflow ww_viennarna {
-  meta {
-    description: "Dummy workflow for Dockstore tool registration"
-  }
-}
-
 #### TASK DEFINITIONS ####
 
 task rnafold {

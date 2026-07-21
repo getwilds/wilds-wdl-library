@@ -12,12 +12,6 @@
 
 version 1.0
 
-workflow ww_gffread {
-  meta {
-    description: "Dummy workflow for Dockstore tool registration"
-  }
-}
-
 task normalize_gtf {
   meta {
     author: "Taylor Firman"
