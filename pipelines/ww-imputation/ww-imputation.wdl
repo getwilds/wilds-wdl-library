@@ -7,8 +7,8 @@
 
 version 1.2
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/imputation-v1.1/modules/ww-glimpse2/ww-glimpse2.wdl" as glimpse2
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/imputation-v1.1/modules/ww-bcftools/ww-bcftools.wdl" as bcftools
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl" as glimpse2
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-bcftools/ww-bcftools.wdl" as bcftools
 
 struct ChromosomeData {
     String chromosome
