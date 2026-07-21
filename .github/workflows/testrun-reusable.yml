@@ -65,7 +65,7 @@ jobs:
       name: Install miniwdl
       run: |
         python -m pip install --upgrade pip
-        pip3 install miniwdl==1.13.0
+        pip3 install miniwdl==1.15.0rc1
     -
       name: Run workflow with miniwdl
       run: |
@@ -116,6 +116,11 @@ jobs:
       run: |
         item_dir="${{ inputs.item_type }}/${{ matrix.item }}"
         wdl_file="$item_dir/testrun.wdl"
+        wdl_version=$(grep -m1 '^version' "$wdl_file" | awk '{print $2}')
+        if [[ "$wdl_version" == "1.2" ]]; then
+          echo "Skipping Cromwell for ${{ matrix.item }}: no WDL 1.2 support"
+          exit 0
+        fi
         echo "Running ${{ inputs.item_type }}/${{ matrix.item }} with Cromwell..."
         java -Dconfig.file=.github/configs/cromwell.conf -jar cromwell-92.jar run "$wdl_file"
 

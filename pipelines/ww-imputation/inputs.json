@@ -1,16 +1,5 @@
 {
-  "imputation.input_crams": [
-    "/path/to/sample001.cram",
-    "/path/to/sample002.cram"
-  ],
-  "imputation.input_cram_indices": [
-    "/path/to/sample001.cram.crai",
-    "/path/to/sample002.cram.crai"
-  ],
-  "imputation.sample_ids": [
-    "sample001",
-    "sample002"
-  ],
+  "imputation.input_cram_dir": "/path/to/cram_directory",
   "imputation.chromosomes": [
     {
       "chromosome": "chr22",

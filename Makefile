@@ -7,7 +7,7 @@ WOMTOOL ?= 92
 WOMTOOL_JAR ?= womtool-$(WOMTOOL).jar
 CROMWELL ?= 92
 CROMWELL_JAR ?= cromwell-$(CROMWELL).jar
-MINIWDL ?= 1.13.0
+MINIWDL ?= 1.15.0rc1
 SPROCKET_MIN ?= 0.25.0
 SPROCKET_CONFIG ?=
 SPROCKET_CONFIG_FLAG := $(if $(SPROCKET_CONFIG),-c $(SPROCKET_CONFIG),)
@@ -139,6 +139,10 @@ lint_womtool: check_java check_womtool check_name ## Run WOMtool validate on mod
 	@echo "Running WOMtool validate..."
 	@set -e; for file in modules/$(NAME)/*.wdl pipelines/$(NAME)/*.wdl; do \
 		if [ -f "$$file" ]; then \
+			if grep -qE '^version 1\.2' "$$file"; then \
+				echo "Skipping WOMtool (WDL 1.2 not supported): $$file"; \
+				continue; \
+			fi; \
 			echo "Validating $$file"; \
 			java -jar $(WOMTOOL_JAR) validate "$$file"; \
 		fi; \
@@ -244,6 +248,10 @@ run_cromwell: check_java check_cromwell check_name ## Run Cromwell on testrun WD
 			wdl="$$dir/testrun.wdl"; \
 		fi; \
 		if [ -z "$$wdl" ]; then continue; fi; \
+		if grep -qE '^version 1\.2' "$$wdl"; then \
+			echo "... Skipping $$(basename $$dir) (Cromwell does not support WDL 1.2)"; \
+			continue; \
+		fi; \
 		echo "... Running $$(basename $$dir) ($$wdl)"; \
 		if ! java -jar $(CROMWELL_JAR) run "$$wdl"; then \
 			failed="$$failed $$(basename $$dir)"; \

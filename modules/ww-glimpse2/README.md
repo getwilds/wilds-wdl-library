@@ -15,6 +15,8 @@ This module wraps the core GLIMPSE2 tools and is inspired by the [Broad Institut
 - Efficient chunking of genomic regions for parallel processing
 - Support for both VCF/BCF and CRAM/BAM input formats for phasing
 
+> **WDL version note:** This module uses `version 1.2` to support the `Directory` input type in `glimpse2_phase_cram`, which avoids file-descriptor and container bind-mount limits when running large cohorts. As a result, it is compatible with miniWDL and Sprocket but not with Cromwell-based executors (including PROOF), which do not yet support WDL 1.2. If you need a WDL 1.0-compatible version for use with PROOF or Cromwell, refer to earlier versions of this file in the repository's git history.
+
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
@@ -87,12 +89,10 @@ Perform imputation and phasing from VCF input.
 
 ### `glimpse2_phase_cram`
 
-Perform imputation directly from CRAM/BAM files. Accepts one or more BAM/CRAM files via an array input, which are passed to GLIMPSE2_phase using `--bam-list`. Sample IDs are explicitly included in the BAM list alongside index paths (matching the Broad Institute's implementation) to ensure correct sample identification by GLIMPSE2.
+Perform imputation directly from CRAM/BAM files. Accepts a directory containing CRAM/BAM files and their co-located index files, which are passed to GLIMPSE2_phase using `--bam-list`. Sample IDs are derived from filenames by stripping the `.cram` or `.bam` extension. Using a directory input (WDL 1.1 `Directory` type) avoids file descriptor limits when running with large sample counts under Apptainer.
 
 **Inputs:**
-- `input_bams` (Array[File]): Array of input CRAM or BAM files
-- `input_bam_indices` (Array[File]): Array of index files for input CRAM/BAM files
-- `sample_ids` (Array[String]): Array of sample IDs corresponding to each CRAM/BAM file
+- `input_cram_dir` (Directory): Directory containing CRAM/BAM files and their index files (`.cram.crai` or `.crai` / `.bam.bai` or `.bai`)
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Reference genome FASTA index
 - `reference_chunk` (File): Binary reference chunk
