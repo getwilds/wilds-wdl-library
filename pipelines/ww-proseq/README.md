@@ -240,6 +240,10 @@ If you use this pipeline, please cite the original PRO-seq method:
 
 For the qPRO-seq variant this pipeline implements and the reference shell pipeline it adapts, see [JAJ256/PROseq_alignment.sh](https://github.com/JAJ256/PROseq_alignment.sh) and follow the citation guidance there. Underlying tools (fastp, bowtie2, samtools, UMI-tools, deepTools, MultiQC) should be cited per their own homepages.
 
+## Acknowledgments
+
+This pipeline was developed in collaboration with Ruihong Wang through the [WILDS WDL Development Program](https://sciwiki.fredhutch.org/datascience/wilds_workflow_dev/). Thank you for the initial motivation and testing!
+
 ## Support
 
 - Open an issue in the [WILDS WDL Library repository](https://github.com/getwilds/wilds-wdl-library/issues)
