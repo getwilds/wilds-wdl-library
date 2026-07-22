@@ -28,6 +28,7 @@ Builds STAR genome index from reference FASTA and GTF files.
 - `genome_sa_index_nbases` (Int): SA pre-indexing string length (default: 14)
 - `memory_gb` (Int): Memory allocation in GB (default: 64)
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/star:2.7.6a`)
 
 **Outputs:**
 - `star_index_tar` (File): Compressed tarball containing STAR genome index
@@ -45,6 +46,7 @@ Performs RNA-seq alignment using STAR's two-pass methodology.
 - `memory_gb` (Int): Memory allocation in GB (default: 62)
 - `cpu_cores` (Int): Total CPU cores (default: 8)
 - `star_threads` (Int): STAR-specific thread count (default: 6)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/star:2.7.6a`)
 
 **Outputs:**
 - `bam` (File): Sorted BAM alignment file

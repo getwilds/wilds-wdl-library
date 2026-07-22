@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-annotsv/ww-annotsv.wdl" as ww_annotsv
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "./ww-annotsv.wdl" as ww_annotsv
 
 workflow annotsv_example {
   # Download test data for annotation

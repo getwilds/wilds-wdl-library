@@ -31,6 +31,7 @@ task crams_to_fastq {
     name: "Name of the sample (used for file naming)"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -39,6 +40,7 @@ task crams_to_fastq {
     String name
     Int cpu_cores = 2
     Int memory_gb = 16
+    String docker_image = "getwilds/samtools:1.19"
   }
 
   command <<<
@@ -70,7 +72,7 @@ task crams_to_fastq {
   runtime {
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
-    docker: "getwilds/samtools:1.19"
+    docker: docker_image
   }
 }
 
@@ -100,6 +102,7 @@ task merge_bams_to_cram {
     base_file_name: "Base name for output CRAM file"
     cpu_cores: "Number of CPU cores to use (threads = cpu_cores - 1)"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -107,6 +110,7 @@ task merge_bams_to_cram {
     String base_file_name
     Int cpu_cores = 6
     Int memory_gb = 12
+    String docker_image = "getwilds/samtools:1.19"
   }
 
   command <<<
@@ -125,7 +129,7 @@ task merge_bams_to_cram {
   runtime {
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
-    docker: "getwilds/samtools:1.19"
+    docker: docker_image
   }
 }
 
@@ -148,6 +152,7 @@ task filter_bam_by_chrom_prefix {
     sample_name: "Sample name used for output file naming"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -157,6 +162,7 @@ task filter_bam_by_chrom_prefix {
     String sample_name
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/samtools:1.19"
   }
 
   command <<<
@@ -196,7 +202,7 @@ task filter_bam_by_chrom_prefix {
   runtime {
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
-    docker: "getwilds/samtools:1.19"
+    docker: docker_image
   }
 }
 
@@ -229,6 +235,7 @@ task mpileup {
     min_baseq: "Minimum base quality for bases to be included"
     cpu_cores: "Number of CPU cores to use"
     memory_gb: "Memory allocation in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -240,6 +247,7 @@ task mpileup {
     Int min_baseq = 13
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/samtools:1.19"
   }
 
   command <<<
@@ -264,6 +272,6 @@ task mpileup {
   runtime {
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
-    docker: "getwilds/samtools:1.19"
+    docker: docker_image
   }
 }

@@ -35,6 +35,7 @@ Run Trim Galore on paired-end FASTQ files for adapter and quality trimming.
 - `adapter2` (String?, optional): Adapter sequence for R2 (auto-detected if not specified)
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/trim-galore:0.6.11`)
 
 **Outputs:**
 - `r1_trimmed` (File): Trimmed and validated R1 FASTQ file
@@ -56,6 +57,7 @@ Run Trim Galore on a single-end FASTQ file for adapter and quality trimming.
 - `adapter` (String?, optional): Adapter sequence (auto-detected if not specified)
 - `cpu_cores` (Int, default=4): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/trim-galore:0.6.11`)
 
 **Outputs:**
 - `trimmed_fastq` (File): Trimmed FASTQ file

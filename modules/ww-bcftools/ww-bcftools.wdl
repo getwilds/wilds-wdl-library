@@ -38,6 +38,7 @@ task mpileup_call {
     max_idepth: "Maximum per-sample depth for indel calling"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -53,6 +54,7 @@ task mpileup_call {
     Int max_idepth = 10000
     Int memory_gb = 8
     Int cpu_cores = 2
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -99,7 +101,7 @@ task mpileup_call {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -134,6 +136,7 @@ task concat {
     allow_overlaps: "Allow overlapping positions in input files (default: false)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -144,6 +147,7 @@ task concat {
     Boolean allow_overlaps = false
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/bcftools:1.19"
   }
 
   command <<<
@@ -186,7 +190,7 @@ task concat {
   }
 
   runtime {
-    docker: "getwilds/bcftools:1.19"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

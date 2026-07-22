@@ -47,8 +47,9 @@ Performs QC, normalization, clustering, and marker gene identification on a Cell
 | `min_features` | Int | 200 | Minimum number of features (genes) a cell must have to pass QC |
 | `max_percent_mt` | Float | 10.0 | Maximum mitochondrial gene percentage allowed per cell |
 | `resolution` | Float | 0.5 | Louvain clustering resolution (higher values produce more clusters) |
-| `memory_gb` | Int | 16 | Memory allocated for the task in GB |
-| `cpu_cores` | Int | 4 | Number of CPU cores allocated for the task |
+| `memory_gb` | Int | 4 | Memory allocated for the task in GB |
+| `cpu_cores` | Int | 2 | Number of CPU cores allocated for the task |
+| `docker_image` | String | `getwilds/seurat:5.2.1` | Docker image to use for this task |
 
 **Outputs:**
 

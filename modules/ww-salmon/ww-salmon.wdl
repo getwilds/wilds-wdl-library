@@ -29,12 +29,14 @@ task build_index {
     transcriptome_fasta: "Reference transcriptome in FASTA format"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     File transcriptome_fasta
     Int cpu_cores = 8
     Int memory_gb = 16
+    String docker_image = "getwilds/salmon:1.10.3"
   }
 
   command <<<
@@ -65,7 +67,7 @@ task build_index {
   }
 
   runtime {
-    docker: "getwilds/salmon:1.10.3"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -99,6 +101,7 @@ task quantify {
     fastq_r2: "Optional FASTQ file for read 2 (omit for single-end data)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -108,6 +111,7 @@ task quantify {
     File? fastq_r2
     Int cpu_cores = 8
     Int memory_gb = 16
+    String docker_image = "getwilds/salmon:1.10.3"
   }
 
   command <<<
@@ -146,7 +150,7 @@ task quantify {
   }
 
   runtime {
-    docker: "getwilds/salmon:1.10.3"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }
@@ -179,6 +183,7 @@ task merge_results {
     sample_names: "Array of sample names corresponding to the quantification directories"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -186,6 +191,7 @@ task merge_results {
     Array[String] sample_names
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/salmon:1.10.3"
   }
 
   command <<<
@@ -228,7 +234,7 @@ task merge_results {
   }
 
   runtime {
-    docker: "getwilds/salmon:1.10.3"
+    docker: docker_image
     memory: "~{memory_gb} GB"
     cpu: cpu_cores
   }

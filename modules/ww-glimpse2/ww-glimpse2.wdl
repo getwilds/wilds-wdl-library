@@ -3,7 +3,7 @@
 ## This module provides tasks for reference panel preparation, phasing, and imputation.
 ## Inspired by the Broad Institute's GLIMPSE Imputation Pipeline.
 
-version 1.0
+version 1.2
 
 task glimpse2_chunk {
   meta {
@@ -36,6 +36,7 @@ task glimpse2_chunk {
     uniform_number_variants: "Use uniform number of variants per chunk instead of centiMorgans-based"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -49,6 +50,7 @@ task glimpse2_chunk {
     Boolean uniform_number_variants = false
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -75,7 +77,7 @@ task glimpse2_chunk {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -111,6 +113,7 @@ task glimpse2_split_reference {
     keep_monomorphic_ref_sites: "Keep monomorphic reference sites in output"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -123,6 +126,7 @@ task glimpse2_split_reference {
     Boolean keep_monomorphic_ref_sites = true
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -149,7 +153,7 @@ task glimpse2_split_reference {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -187,6 +191,7 @@ task glimpse2_phase {
     effective_population_size: "Effective population size (default: 15000)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -200,6 +205,7 @@ task glimpse2_phase {
     Int effective_population_size = 15000
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -229,7 +235,7 @@ task glimpse2_phase {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -239,7 +245,7 @@ task glimpse2_phase_cram {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Perform imputation directly from CRAM/BAM files using GLIMPSE2_phase"
+    description: "Perform imputation directly from CRAM/BAM files using GLIMPSE2_phase. Accepts a directory of CRAM/BAM files to avoid file descriptor limits with large sample counts."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-glimpse2/ww-glimpse2.wdl"
     outputs: {
       imputed_chunk: "Imputed and phased BCF file for the chunk",
@@ -257,9 +263,7 @@ task glimpse2_phase_cram {
   }
 
   parameter_meta {
-    input_bams: "Array of input CRAM or BAM files"
-    input_bam_indices: "Array of index files for input CRAM/BAM files"
-    sample_ids: "Array of sample IDs corresponding to each CRAM/BAM file"
+    input_cram_dir: "Directory containing CRAM/BAM files and their index files (.crai/.bai). Sample IDs are derived from filenames by stripping the .cram or .bam extension."
     reference_fasta: "Reference genome FASTA file"
     reference_fasta_index: "Reference genome FASTA index file"
     reference_chunk: "Binary reference chunk from glimpse2_split_reference"
@@ -270,12 +274,11 @@ task glimpse2_phase_cram {
     effective_population_size: "Effective population size (default: 15000)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
-    Array[File] input_bams
-    Array[File] input_bam_indices
-    Array[String] sample_ids
+    Directory input_cram_dir
     File reference_fasta
     File reference_fasta_index
     File reference_chunk
@@ -286,21 +289,50 @@ task glimpse2_phase_cram {
     Int effective_population_size = 15000
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
     set -eo pipefail
 
-    # Create local symlinks to ensure CRAM/BAM files and indices are co-located
-    bams_array=(~{sep=' ' input_bams})
-    indices_array=(~{sep=' ' input_bam_indices})
-    sample_ids_array=(~{sep=' ' sample_ids})
+    # Build bam_list.txt from CRAM/BAM files in the input directory
+    for bam_file in ~{input_cram_dir}/*.cram ~{input_cram_dir}/*.bam; do
+      # Skip if glob matched nothing (literal unexpanded pattern)
+      [ -e "$bam_file" ] || continue
 
-    for i in "${!bams_array[@]}"; do
-      ln -s "${bams_array[$i]}" "$(basename "${bams_array[$i]}")"
-      ln -s "${indices_array[$i]}" "$(basename "${indices_array[$i]}")"
-      echo "$(basename "${bams_array[$i]}")##idx##$(basename "${indices_array[$i]}") ${sample_ids_array[$i]}" >> bam_list.txt
+      bam_basename=$(basename "$bam_file")
+
+      # Determine the index file and sample ID based on extension
+      if [[ "$bam_basename" == *.cram ]]; then
+        sample_id="${bam_basename%.cram}"
+        if [ -f "${bam_file}.crai" ]; then
+          idx_file="${bam_file}.crai"
+        elif [ -f "~{input_cram_dir}/${sample_id}.crai" ]; then
+          idx_file="~{input_cram_dir}/${sample_id}.crai"
+        else
+          echo "ERROR: No index found for ${bam_basename}" >&2
+          exit 1
+        fi
+      elif [[ "$bam_basename" == *.bam ]]; then
+        sample_id="${bam_basename%.bam}"
+        if [ -f "${bam_file}.bai" ]; then
+          idx_file="${bam_file}.bai"
+        elif [ -f "~{input_cram_dir}/${sample_id}.bai" ]; then
+          idx_file="~{input_cram_dir}/${sample_id}.bai"
+        else
+          echo "ERROR: No index found for ${bam_basename}" >&2
+          exit 1
+        fi
+      fi
+
+      echo "${bam_file}##idx##${idx_file} ${sample_id}" >> bam_list.txt
     done
+
+    # Verify we found at least one CRAM/BAM
+    if [ ! -f bam_list.txt ]; then
+      echo "ERROR: No .cram or .bam files found in input directory" >&2
+      exit 1
+    fi
 
     # Create local symlinks for reference FASTA and index
     ln -s "~{reference_fasta}" "~{basename(reference_fasta)}"
@@ -327,7 +359,7 @@ task glimpse2_phase_cram {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -361,6 +393,7 @@ task glimpse2_ligate {
     output_format: "Output format: bcf or vcf.gz (default: bcf)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -370,6 +403,7 @@ task glimpse2_ligate {
     String output_format = "bcf"
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -411,7 +445,7 @@ task glimpse2_ligate {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -449,6 +483,7 @@ task glimpse2_concordance {
     min_val_gq: "Minimum genotype quality in validation data (default: 0)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -463,6 +498,7 @@ task glimpse2_concordance {
     Int min_val_gq = 0
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -490,7 +526,7 @@ task glimpse2_concordance {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -520,10 +556,12 @@ task parse_chunks_file {
 
   parameter_meta {
     chunks_file: "Chunks file from glimpse2_chunk task"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     File chunks_file
+    String docker_image = "getwilds/glimpse2:2.0.1-infofix"
   }
 
   command <<<
@@ -544,7 +582,7 @@ task parse_chunks_file {
   }
 
   runtime {
-    docker: "getwilds/glimpse2:2.0.1-infofix"
+    docker: docker_image
     cpu: 1
     memory: "2 GB"
   }

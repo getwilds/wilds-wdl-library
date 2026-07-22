@@ -15,6 +15,8 @@ This module wraps the core GLIMPSE2 tools and is inspired by the [Broad Institut
 - Efficient chunking of genomic regions for parallel processing
 - Support for both VCF/BCF and CRAM/BAM input formats for phasing
 
+> **WDL version note:** This module uses `version 1.2` to support the `Directory` input type in `glimpse2_phase_cram`, which avoids file-descriptor and container bind-mount limits when running large cohorts. As a result, it is compatible with miniWDL and Sprocket but not with Cromwell-based executors (including PROOF), which do not yet support WDL 1.2. If you need a WDL 1.0-compatible version for use with PROOF or Cromwell, refer to earlier versions of this file in the repository's git history.
+
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
@@ -40,6 +42,7 @@ Split a genomic region into chunks for parallel imputation.
 - `uniform_number_variants` (Boolean, default=false): Use uniform variants per chunk
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `chunks_file` (File): Text file containing chunk definitions
@@ -58,6 +61,7 @@ Convert reference panel VCF to binary format for a specific chunk.
 - `keep_monomorphic_ref_sites` (Boolean, default=true): Keep monomorphic reference sites in output
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `reference_chunk` (File): Binary reference chunk file
@@ -77,6 +81,7 @@ Perform imputation and phasing from VCF input.
 - `effective_population_size` (Int, default=15000): Effective population size
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `imputed_chunk` (File): Imputed BCF file
@@ -84,12 +89,10 @@ Perform imputation and phasing from VCF input.
 
 ### `glimpse2_phase_cram`
 
-Perform imputation directly from CRAM/BAM files. Accepts one or more BAM/CRAM files via an array input, which are passed to GLIMPSE2_phase using `--bam-list`. Sample IDs are explicitly included in the BAM list alongside index paths (matching the Broad Institute's implementation) to ensure correct sample identification by GLIMPSE2.
+Perform imputation directly from CRAM/BAM files. Accepts a directory containing CRAM/BAM files and their co-located index files, which are passed to GLIMPSE2_phase using `--bam-list`. Sample IDs are derived from filenames by stripping the `.cram` or `.bam` extension. Using a directory input (WDL 1.1 `Directory` type) avoids file descriptor limits when running with large sample counts under Apptainer.
 
 **Inputs:**
-- `input_bams` (Array[File]): Array of input CRAM or BAM files
-- `input_bam_indices` (Array[File]): Array of index files for input CRAM/BAM files
-- `sample_ids` (Array[String]): Array of sample IDs corresponding to each CRAM/BAM file
+- `input_cram_dir` (Directory): Directory containing CRAM/BAM files and their index files (`.cram.crai` or `.crai` / `.bam.bai` or `.bai`)
 - `reference_fasta` (File): Reference genome FASTA file
 - `reference_fasta_index` (File): Reference genome FASTA index
 - `reference_chunk` (File): Binary reference chunk
@@ -100,6 +103,7 @@ Perform imputation directly from CRAM/BAM files. Accepts one or more BAM/CRAM fi
 - `effective_population_size` (Int, default=15000): Effective population size
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `imputed_chunk` (File): Imputed BCF file
@@ -116,6 +120,7 @@ Ligate multiple imputed chunks into a single file.
 - `output_format` (String, default="bcf"): Output format (`bcf` or `vcf.gz`)
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `ligated_vcf` (File): Ligated VCF/BCF file
@@ -137,6 +142,7 @@ Compute concordance metrics between imputed and truth genotypes.
 - `min_val_gq` (Int, default=0): Minimum genotype quality
 - `cpu_cores` (Int, default=4): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `concordance_output` (Array[File]): Concordance metrics files
@@ -147,6 +153,7 @@ Utility task to parse chunks file for parallel processing.
 
 **Inputs:**
 - `chunks_file` (File): Chunks file from glimpse2_chunk
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/glimpse2:2.0.1-infofix`)
 
 **Outputs:**
 - `input_regions` (Array[String]): Input regions

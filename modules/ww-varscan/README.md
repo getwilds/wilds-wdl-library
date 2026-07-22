@@ -31,6 +31,7 @@ Performs somatic variant calling on tumor-normal pairs using pre-generated mpile
 - `tumor_pileup` (File): Samtools mpileup file for the tumor sample
 - `cpu_cores` (Int): Number of CPU cores (default: 4)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/varscan:2.4.6`)
 
 **Important**: VarScan2 requires **mpileup files** as input, not BAM or FASTQ files. Mpileup files can be generated using SAMtools from aligned BAM files. See the `ww-samtools` [module](https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-samtools) and the [Samtools documentation](http://www.htslib.org/doc/samtools-mpileup.html) for details on creating mpileup files.
 
@@ -46,6 +47,7 @@ Performs germline variant calling on a single sample using a pre-generated mpile
 - `pileup` (File): Samtools mpileup file generated with `--no-BAQ` flag and reference FASTA
 - `cpu_cores` (Int): Number of CPU cores (default: 4)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/varscan:2.4.6`)
 
 **Important**: The mpileup file must be generated from a sorted BAM file using the `--no-BAQ` flag. See the [VarScan documentation](https://dkoboldt.github.io/varscan/germline-calling.html) for more information and the the `ww-samtools` [module](https://github.com/getwilds/wilds-wdl-library/tree/main/modules/ww-samtools) for running `samtools mpileup` using a WILDS WDL.
 

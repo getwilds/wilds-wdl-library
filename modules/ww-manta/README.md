@@ -32,6 +32,7 @@ Calls structural variants using Manta for a single sample.
 - `is_rna` (Boolean): Flag for RNA-seq mode (default: false)
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/manta:1.6.0`)
 
 **Outputs:**
 - `vcf` (File): Compressed VCF file with structural variant calls

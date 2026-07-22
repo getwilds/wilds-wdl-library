@@ -25,6 +25,7 @@ Builds Salmon index from a reference transcriptome FASTA file.
 - `transcriptome_fasta` (File): Reference transcriptome in FASTA format
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/salmon:1.10.3`)
 
 **Important**: Salmon requires a **transcriptome FASTA** file (mature mRNA sequences), not a genome FASTA. The transcriptome contains only the exonic sequences for each transcript, which Salmon uses for quasi-mapping. See [Salmon documentation](https://salmon.readthedocs.io/) for details on obtaining or building transcriptome references.
 
@@ -41,6 +42,7 @@ Quantifies transcript expression from RNA-seq reads using Salmon. Supports both 
 - `fastq_r2` (File?, optional): FASTQ file for read 2 (omit for single-end data)
 - `cpu_cores` (Int): Number of CPU cores (default: 8)
 - `memory_gb` (Int): Memory allocation in GB (default: 16)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/salmon:1.10.3`)
 
 **Outputs:**
 - `salmon_quant_dir` (File): Compressed tarball containing Salmon quantification results including abundance estimates
@@ -54,6 +56,7 @@ Merges Salmon quantification results from multiple samples into TPM and count ma
 - `sample_names` (Array[String]): Array of sample names corresponding to the quantification directories
 - `cpu_cores` (Int): Number of CPU cores (default: 4)
 - `memory_gb` (Int): Memory allocation in GB (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/salmon:1.10.3`)
 
 **Outputs:**
 - `tpm_matrix` (File): Tab-separated matrix of TPM (Transcripts Per Million) values for all samples

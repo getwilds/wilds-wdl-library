@@ -37,6 +37,7 @@ Downloads sequencing data files from ENA using accession numbers. Supports singl
 - `output_dir_name` (String, default="ena_downloads"): Name for the output directory
 - `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/ena-tools:2.1.1`)
 
 **Note:** Either `accessions` or `accessions_file` must be provided. When using `protocol = "HTTP"`, the `accessions` string input is required (accessions_file is not supported). The HTTP option uses `wget` to fetch files via the ENA portal API rather than the ENA File Downloader tool.
 
@@ -57,6 +58,7 @@ Downloads sequencing data files from ENA using a search query. Allows filtering 
 - `output_dir_name` (String, default="ena_downloads"): Name for the output directory
 - `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/ena-tools:2.1.1`)
 
 **Outputs:**
 - `downloaded_files` (Array[File]): Array of downloaded files from ENA
@@ -69,6 +71,7 @@ Extracts FASTQ files from downloaded ENA files for downstream processing. Suppor
 
 **Inputs:**
 - `downloaded_files` (Array[File]): Array of files downloaded from ENA (typically from `download_files` task)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/ena-tools:2.1.1`)
 
 **Outputs:**
 - `r1_files` (Array[File]): Array of Read 1 FASTQ files, parallel with `r2_files`, `accessions`, and `is_paired_end_list`

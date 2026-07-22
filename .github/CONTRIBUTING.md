@@ -117,7 +117,7 @@ For modules where CI execution is impractical (GPU-only tools, license-gated too
 
 **Your main WDL file (`ww-toolname.wdl`) must include:**
 
-- **Version declaration**: Use WDL version 1.0
+- **Version declaration**: Use WDL version 1.0 (default). Use `version 1.2` only when a feature unavailable in 1.0 is required (e.g., the `Directory` type); document the reason in the module README. Note that WDL 1.2 modules are not tested with Cromwell.
 - **Task definitions**: Individual tasks with proper resource requirements
 - **Metadata documentation**: Describe properties of tasks (e.g. inputs, outputs) using `meta` and `parameter_meta` blocks
 - **Optional metadata**: Include the following metadata tags in each task's `meta` block to describe the task with [EDAM ontology](https://www.ebi.ac.uk/ols4/ontologies/edam) terms (using underscores instead of spaces):
@@ -131,12 +131,14 @@ For modules where CI execution is impractical (GPU-only tools, license-gated too
 
 **Your test workflow file (`testrun.wdl` or `testrun_hpc.wdl`) must include:**
 
-- **Version declaration**: Use WDL version 1.0
-- **Module imports**: Import the module being tested and the `ww-testdata` module using GitHub URLs
+- **Version declaration**: Use WDL version 1.0 (default), or match `version 1.2` if the module under test uses it
+- **Module imports**: Import the module being tested and the `ww-testdata` module using relative paths (e.g. `"./ww-toolname.wdl"` for the own module and `"../ww-testdata/ww-testdata.wdl"` for test data)
 - **Sample struct definition**: Define a struct for organizing sample inputs if needed
 - **Test workflow**: A `toolname_example` workflow that demonstrates all tasks (must follow the naming convention `{module}_example` where `{module}` is the tool name, e.g., `star_example` for `ww-star`)
 - **Auto-downloading of test data**: Use the `ww-testdata` module to automatically provision test data
 - **Validation task (optional)**: Consider including a validation task to verify output correctness
+
+Note: `testrun.wdl` files use relative path imports (unlike the pipeline source WDL files, which use GitHub raw URLs for end-user convenience). Relative imports ensure that CI/CD and local test runs always exercise the local version of the WDL under development, rather than fetching a stale copy from a remote branch.
 
 **Parameter preferences:**
 
@@ -312,7 +314,7 @@ The Makefile automatically handles:
 
 All contributions must pass our automated testing pipeline which executes on a PR via GitHub Actions:
 
-- **Multi-executor validation**: Tests with Cromwell, miniWDL, and Sprocket
+- **Multi-executor validation**: Tests with Cromwell, miniWDL, and Sprocket. `version 1.2` items skip Cromwell (no WDL 1.2 support).
 - **Container verification**: All Docker images must be accessible and functional
 - **Syntax validation**: WDL syntax and structure validation
 - **Integration testing**: Cross-module compatibility testing

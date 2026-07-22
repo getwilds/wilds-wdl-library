@@ -14,7 +14,8 @@ task run_count {
         results_tar: "Compressed tarball of Cell Ranger count output directory (absent if skipped)",
         web_summary: "Web summary HTML file (absent if skipped)",
         metrics_summary: "Metrics summary CSV file (absent if skipped)",
-        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)"
+        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)",
+        raw_h5: "Raw feature-barcode matrix HDF5 file (absent if skipped)"
     }
     topic: "transcriptomics,gene_expression,single_cell_sequencing"
     species: "human,eukaryote,prokaryote,virus"
@@ -23,7 +24,7 @@ task run_count {
     input_sample_optional: "none"
     input_reference_required: "ref_gex:data_index:tar_format"
     input_reference_optional: "none"
-    output_sample: "results_tar:gene_expression_matrix:tar_format,web_summary:quality_control_report:html,metrics_summary:quality_control_report:csv,filtered_h5:gene_expression_matrix:h5"
+    output_sample: "results_tar:gene_expression_matrix:tar_format,web_summary:quality_control_report:html,metrics_summary:quality_control_report:csv,filtered_h5:gene_expression_matrix:h5,raw_h5:gene_expression_matrix:h5"
     output_reference: "none"
   }
 
@@ -153,10 +154,14 @@ task run_count {
     # Create tarball of output directory
     tar -czf "~{sample_id}_outs.tar.gz" "~{sample_id}/outs"
 
-    # Move output files to working directory for outputting
-    mv "~{sample_id}/outs/web_summary.html" .
-    mv "~{sample_id}/outs/metrics_summary.csv" .
-    mv "~{sample_id}/outs/filtered_feature_bc_matrix.h5" .
+    # Move output files to working directory for outputting, prefixing
+    # each with the sample ID so basenames stay unique when a downstream
+    # workflow flattens multiple samples into one directory (e.g.
+    # Cromwell's final_workflow_outputs_dir).
+    mv "~{sample_id}/outs/web_summary.html" "~{sample_id}_web_summary.html"
+    mv "~{sample_id}/outs/metrics_summary.csv" "~{sample_id}_metrics_summary.csv"
+    mv "~{sample_id}/outs/filtered_feature_bc_matrix.h5" "~{sample_id}_filtered_feature_bc_matrix.h5"
+    mv "~{sample_id}/outs/raw_feature_bc_matrix.h5" "~{sample_id}_raw_feature_bc_matrix.h5"
 
     # Clean up Cell Ranger output directory for housekeeping
     # (and to avoid Sprocket symlink validation errors)
@@ -166,9 +171,10 @@ task run_count {
   output {
     File chemistry_status = "chemistry_status.txt"
     File? results_tar = "~{sample_id}_outs.tar.gz"
-    File? web_summary = "web_summary.html"
-    File? metrics_summary = "metrics_summary.csv"
-    File? filtered_h5 = "filtered_feature_bc_matrix.h5"
+    File? web_summary = "~{sample_id}_web_summary.html"
+    File? metrics_summary = "~{sample_id}_metrics_summary.csv"
+    File? filtered_h5 = "~{sample_id}_filtered_feature_bc_matrix.h5"
+    File? raw_h5 = "~{sample_id}_raw_feature_bc_matrix.h5"
   }
 
   runtime {
@@ -189,7 +195,8 @@ task run_count_hpc_cromwell {
         results_tar: "Compressed tarball of Cell Ranger count output directory (absent if skipped)",
         web_summary: "Web summary HTML file (absent if skipped)",
         metrics_summary: "Metrics summary CSV file (absent if skipped)",
-        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)"
+        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)",
+        raw_h5: "Raw feature-barcode matrix HDF5 file (absent if skipped)"
     }
   }
 
@@ -323,10 +330,14 @@ task run_count_hpc_cromwell {
     # Create tarball of output directory
     tar -czf "~{sample_id}_outs.tar.gz" "~{sample_id}/outs"
 
-    # Move output files to working directory for outputting
-    mv "~{sample_id}/outs/web_summary.html" .
-    mv "~{sample_id}/outs/metrics_summary.csv" .
-    mv "~{sample_id}/outs/filtered_feature_bc_matrix.h5" .
+    # Move output files to working directory for outputting, prefixing
+    # each with the sample ID so basenames stay unique when a downstream
+    # workflow flattens multiple samples into one directory (e.g.
+    # Cromwell's final_workflow_outputs_dir).
+    mv "~{sample_id}/outs/web_summary.html" "~{sample_id}_web_summary.html"
+    mv "~{sample_id}/outs/metrics_summary.csv" "~{sample_id}_metrics_summary.csv"
+    mv "~{sample_id}/outs/filtered_feature_bc_matrix.h5" "~{sample_id}_filtered_feature_bc_matrix.h5"
+    mv "~{sample_id}/outs/raw_feature_bc_matrix.h5" "~{sample_id}_raw_feature_bc_matrix.h5"
 
     # Clean up Cell Ranger output directory for housekeeping
     # (and to avoid Sprocket symlink validation errors)
@@ -336,9 +347,10 @@ task run_count_hpc_cromwell {
   output {
     File chemistry_status = "chemistry_status.txt"
     File? results_tar = "~{sample_id}_outs.tar.gz"
-    File? web_summary = "web_summary.html"
-    File? metrics_summary = "metrics_summary.csv"
-    File? filtered_h5 = "filtered_feature_bc_matrix.h5"
+    File? web_summary = "~{sample_id}_web_summary.html"
+    File? metrics_summary = "~{sample_id}_metrics_summary.csv"
+    File? filtered_h5 = "~{sample_id}_filtered_feature_bc_matrix.h5"
+    File? raw_h5 = "~{sample_id}_raw_feature_bc_matrix.h5"
   }
 
   # No docker/container runtime key: Cromwell's HPC backend runs this
@@ -361,7 +373,8 @@ task run_count_hpc_sprocket {
         results_tar: "Compressed tarball of Cell Ranger count output directory (absent if skipped)",
         web_summary: "Web summary HTML file (absent if skipped)",
         metrics_summary: "Metrics summary CSV file (absent if skipped)",
-        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)"
+        filtered_h5: "Filtered feature-barcode matrix HDF5 file (absent if skipped)",
+        raw_h5: "Raw feature-barcode matrix HDF5 file (absent if skipped)"
     }
   }
 
@@ -377,6 +390,7 @@ task run_count_hpc_sprocket {
     chemistry: "Optional: Assay configuration (e.g. SC3Pv2)"
     skip_on_chemistry_failure: "When `true`, let task succeed with absent outputs if chemistry can't be auto detected."
     cellranger_module: "HPC environment module to load for Cell Ranger (e.g. 'CellRanger/10.0.0'). Compatible with Cell Ranger 8.x-10.x; v7 and earlier are not supported."
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -391,6 +405,7 @@ task run_count_hpc_sprocket {
     String? chemistry
     Boolean skip_on_chemistry_failure = false
     String cellranger_module = "CellRanger/10.0.0"
+    String docker_image = "getwilds/lua:5.3.6"
   }
 
   # Keep command block in sync with run_count and run_count_hpc_cromwell.
@@ -497,10 +512,14 @@ task run_count_hpc_sprocket {
     # Create tarball of output directory
     tar -czf "~{sample_id}_outs.tar.gz" "~{sample_id}/outs"
 
-    # Move output files to working directory for outputting
-    mv "~{sample_id}/outs/web_summary.html" .
-    mv "~{sample_id}/outs/metrics_summary.csv" .
-    mv "~{sample_id}/outs/filtered_feature_bc_matrix.h5" .
+    # Move output files to working directory for outputting, prefixing
+    # each with the sample ID so basenames stay unique when a downstream
+    # workflow flattens multiple samples into one directory (e.g.
+    # Cromwell's final_workflow_outputs_dir).
+    mv "~{sample_id}/outs/web_summary.html" "~{sample_id}_web_summary.html"
+    mv "~{sample_id}/outs/metrics_summary.csv" "~{sample_id}_metrics_summary.csv"
+    mv "~{sample_id}/outs/filtered_feature_bc_matrix.h5" "~{sample_id}_filtered_feature_bc_matrix.h5"
+    mv "~{sample_id}/outs/raw_feature_bc_matrix.h5" "~{sample_id}_raw_feature_bc_matrix.h5"
 
     # Clean up Cell Ranger output directory for housekeeping
     # (and to avoid Sprocket symlink validation errors)
@@ -510,16 +529,17 @@ task run_count_hpc_sprocket {
   output {
     File chemistry_status = "chemistry_status.txt"
     File? results_tar = "~{sample_id}_outs.tar.gz"
-    File? web_summary = "web_summary.html"
-    File? metrics_summary = "metrics_summary.csv"
-    File? filtered_h5 = "filtered_feature_bc_matrix.h5"
+    File? web_summary = "~{sample_id}_web_summary.html"
+    File? metrics_summary = "~{sample_id}_metrics_summary.csv"
+    File? filtered_h5 = "~{sample_id}_filtered_feature_bc_matrix.h5"
+    File? raw_h5 = "~{sample_id}_raw_feature_bc_matrix.h5"
   }
 
   # Minimal Lua-having container so the host's bind-mounted Lmod can
   # execute under Apptainer. Cell Ranger itself is not in this image;
   # it comes in via the host bind-mounts in sprocket-hpc.toml.
   runtime {
-    docker: "getwilds/lua:5.3.6"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -541,12 +561,14 @@ task rename_fastqs {
     r1_fastq: "R1 FASTQ file to rename"
     r2_fastq: "R2 FASTQ file to rename"
     sample_id: "Sample ID to use as the prefix in the renamed file"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     File r1_fastq
     File r2_fastq
     String sample_id
+    String docker_image = "ubuntu:22.04"
   }
 
   command <<<
@@ -561,7 +583,7 @@ task rename_fastqs {
   }
 
   runtime {
-    docker: "ubuntu:22.04"
+    docker: docker_image
     cpu: 1
     memory: "2 GB"
   }

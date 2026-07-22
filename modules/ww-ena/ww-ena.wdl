@@ -36,6 +36,7 @@ task download_files {
     output_dir_name: "Name for the output directory where files will be downloaded (default: ena_downloads)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -54,6 +55,7 @@ task download_files {
     # Resource parameters
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/ena-tools:2.1.1"
   }
 
   # Resolve accessions input - prefer string accessions over file
@@ -114,7 +116,7 @@ task download_files {
   }
 
   runtime {
-    docker: "getwilds/ena-tools:2.1.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -150,6 +152,7 @@ task download_by_query {
     output_dir_name: "Name for the output directory where files will be downloaded"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -166,6 +169,7 @@ task download_by_query {
     # Resource parameters
     Int cpu_cores = 2
     Int memory_gb = 8
+    String docker_image = "getwilds/ena-tools:2.1.1"
   }
 
   command <<<
@@ -203,7 +207,7 @@ task download_by_query {
   }
 
   runtime {
-    docker: "getwilds/ena-tools:2.1.1"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -234,10 +238,12 @@ task extract_fastq_pairs {
 
   parameter_meta {
     downloaded_files: "Array of files downloaded from ENA"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     Array[File] downloaded_files
+    String docker_image = "getwilds/ena-tools:2.1.1"
   }
 
   command <<<
@@ -309,7 +315,7 @@ task extract_fastq_pairs {
   }
 
   runtime {
-    docker: "getwilds/ena-tools:2.1.1"
+    docker: docker_image
     cpu: 1
     memory: "2 GB"
   }

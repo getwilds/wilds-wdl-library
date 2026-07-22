@@ -42,6 +42,7 @@ task trimgalore_paired {
     adapter2: "Optional adapter sequence for R2 (auto-detected if not specified)"
     cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
     memory_gb: "Memory allocated for the task in GB (default: 8)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -56,6 +57,7 @@ task trimgalore_paired {
     String? adapter2
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/trim-galore:0.6.11"
   }
 
   command <<<
@@ -97,7 +99,7 @@ task trimgalore_paired {
   }
 
   runtime {
-    docker: "getwilds/trim-galore:0.6.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -134,6 +136,7 @@ task trimgalore_single {
     adapter: "Optional adapter sequence (auto-detected if not specified)"
     cpu_cores: "Number of CPU cores allocated for the task (default: 4)"
     memory_gb: "Memory allocated for the task in GB (default: 8)"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -146,6 +149,7 @@ task trimgalore_single {
     String? adapter
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/trim-galore:0.6.11"
   }
 
   command <<<
@@ -180,7 +184,7 @@ task trimgalore_single {
   }
 
   runtime {
-    docker: "getwilds/trim-galore:0.6.11"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

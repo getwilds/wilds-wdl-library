@@ -32,6 +32,7 @@ Generate sourmash MinHash signatures from BAM or FASTA files.
 - `track_abundance` (Boolean): Whether to track k-mer abundance (default: true)
 - `cpu_cores` (Int): Number of CPU cores to use (only used for BAM input) (default: 4)
 - `memory_gb` (Int): Memory allocated for the task in GB (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/sourmash:4.8.2`)
 - `output_name` (String?): Optional custom output name (defaults to input file basename)
 
 **Important:** This WDL assumes DNA input (not RNA or protein)
@@ -49,6 +50,7 @@ Run sourmash gather to decompose metagenome samples and identify constituent gen
 - `threshold_bp` (Int): Minimum number of base pairs to report a match (default: 50000)
 - `memory_gb` (Int): Memory allocated for the task in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/sourmash:4.8.2`)
 - `output_name` (String?): Optional custom output name (defaults to query basename)
 
 **Important:** Signatures and databases must use identical parameters (same k-mer size, same scaled factor)
@@ -66,6 +68,7 @@ Generate similarity matrix from signature files using sourmash compare.
 - `k_value` (Int): Value of k used for sourmash sketch files
 - `memory_gb` (Int): Memory allocated for the task in GB (default: 8)
 - `cpu_cores` (Int): Number of CPU cores to use (default: 4)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/sourmash:4.8.2`)
 
 **Outputs:**
 - `npy` (File): Numpy binary matrix file of angular similarity matrix

@@ -33,6 +33,7 @@ task metaspades {
     sample_name: "Sample name for output file naming"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -42,6 +43,7 @@ task metaspades {
     String sample_name
     Int cpu_cores = 4
     Int memory_gb = 8
+    String docker_image = "getwilds/spades:4.2.0"
   }
 
   command <<<
@@ -97,7 +99,7 @@ task metaspades {
   }
 
   runtime {
-    docker: "getwilds/spades:4.2.0"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

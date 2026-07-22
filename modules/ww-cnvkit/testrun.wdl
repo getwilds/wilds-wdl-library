@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-cnvkit/ww-cnvkit.wdl" as ww_cnvkit
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "./ww-cnvkit.wdl" as ww_cnvkit
 
 workflow cnvkit_example {
   # Auto-download test data for testing purposes (multiple samples for reference)

@@ -1,7 +1,42 @@
-version 1.0
+version 1.2
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-imputation/ww-imputation.wdl" as ww_imputation
+import "../../modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "./ww-imputation.wdl" as ww_imputation
+
+task create_cram_directory {
+  meta {
+    description: "Copy all input files to a 'cram_dir' folder and return that folder."
+    outputs: {
+      cram_directory: "Directory containing all input CRAM and CRAI files."
+    }
+  }
+
+  input {
+    Array[File] cram_files
+    Array[File] crai_files
+  }
+
+  command <<<
+    set -eo pipefail
+    mkdir cram_dir
+    for f in ~{sep=' ' cram_files}; do
+      cp "$f" cram_dir/
+    done
+    for f in ~{sep=' ' crai_files}; do
+      cp "$f" cram_dir/
+    done
+  >>>
+
+  output {
+    Directory cram_directory = "cram_dir"
+  }
+
+  runtime {
+    docker: "ubuntu:24.04"
+    cpu: 1
+    memory: "2 GB"
+  }
+}
 
 #### TEST WORKFLOW DEFINITION ####
 # This workflow demonstrates the ww-imputation pipeline with automatic test data download.
@@ -17,7 +52,6 @@ workflow imputation_testrun {
   call ww_testdata.download_ref_data as download_reference {
     input:
       chromo = test_chromosome,
-      version = "hg38",
       region = "1-10000000",
       output_name = "chr1_test"
   }
@@ -43,6 +77,13 @@ workflow imputation_testrun {
       ref_fasta = download_reference.fasta
   }
 
+  # Step 4a: Stage CRAM and index into a directory for the imputation pipeline
+  call create_cram_directory {
+    input:
+      cram_files = [download_cram.cram],
+      crai_files = [download_cram.crai]
+  }
+
   # Step 4b: Download truth VCF for concordance evaluation (NA12878 high-coverage genotypes)
   call ww_testdata.download_glimpse2_truth_vcf as download_truth_vcf {
     input:
@@ -54,9 +95,7 @@ workflow imputation_testrun {
   # Step 5: Run the imputation pipeline (with concordance enabled via truth VCF)
   call ww_imputation.imputation {
     input:
-      input_crams = [download_cram.cram],
-      input_cram_indices = [download_cram.crai],
-      sample_ids = ["NA12878"],
+      input_cram_dir = create_cram_directory.cram_directory,
       chromosomes = [
         {
           "chromosome": test_chromosome,

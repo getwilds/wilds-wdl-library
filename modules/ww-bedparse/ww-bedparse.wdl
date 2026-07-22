@@ -31,6 +31,7 @@ task gtf2bed {
     filter_type: "Comma separated list of filterKey field values to retain"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -40,6 +41,7 @@ task gtf2bed {
     String? filter_type
     Int cpu_cores = 1
     Int memory_gb = 2
+    String docker_image = "getwilds/bedparse:0.2.3"
   }
 
   command <<<
@@ -63,7 +65,7 @@ task gtf2bed {
   }
 
   runtime {
-    docker: "getwilds/bedparse:0.2.3"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

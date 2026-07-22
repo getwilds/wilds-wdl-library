@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-aws-sso/ww-aws-sso.wdl" as ww_aws_sso
+import "./ww-aws-sso.wdl" as ww_aws_sso
 
 workflow aws_sso_example {
   # Test listing bucket contents

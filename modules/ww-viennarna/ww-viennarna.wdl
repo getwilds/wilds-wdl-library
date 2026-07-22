@@ -36,6 +36,7 @@ task rnafold {
     extra_args: "Additional command-line arguments to pass to RNAfold"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -46,6 +47,7 @@ task rnafold {
     String extra_args = ""
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/viennarna:2.7.2"
   }
 
   command <<<
@@ -66,7 +68,7 @@ task rnafold {
   }
 
   runtime {
-    docker: "getwilds/viennarna:2.7.2"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -100,6 +102,7 @@ task rnasubopt {
     extra_args: "Additional command-line arguments to pass to RNAsubopt"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -110,6 +113,7 @@ task rnasubopt {
     String extra_args = ""
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/viennarna:2.7.2"
   }
 
   command <<<
@@ -129,7 +133,7 @@ task rnasubopt {
   }
 
   runtime {
-    docker: "getwilds/viennarna:2.7.2"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -164,6 +168,7 @@ task rnacofold {
     extra_args: "Additional command-line arguments to pass to RNAcofold"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -174,6 +179,7 @@ task rnacofold {
     String extra_args = ""
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/viennarna:2.7.2"
   }
 
   command <<<
@@ -193,7 +199,7 @@ task rnacofold {
   }
 
   runtime {
-    docker: "getwilds/viennarna:2.7.2"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -229,6 +235,7 @@ task rnaplfold {
     extra_args: "Additional command-line arguments to pass to RNAplfold"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -240,6 +247,7 @@ task rnaplfold {
     String extra_args = ""
     Int cpu_cores = 1
     Int memory_gb = 4
+    String docker_image = "getwilds/viennarna:2.7.2"
   }
 
   command <<<
@@ -260,7 +268,7 @@ task rnaplfold {
   }
 
   runtime {
-    docker: "getwilds/viennarna:2.7.2"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

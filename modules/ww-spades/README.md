@@ -27,8 +27,9 @@ Performs de novo metagenomic assembly using metaSPAdes in assembler-only mode (s
 - `r2_fastq` (File, optional): Read 2 FASTQ file
 - `interleaved_fastq` (File, optional): Interleaved FASTQ file of paired-end reads
 - `sample_name` (String): Sample name for output file naming
-- `cpu_cores` (Int): Number of CPU cores allocated for the task (default: 16)
-- `memory_gb` (Int): Memory allocated for the task in GB (default: 64)
+- `cpu_cores` (Int): Number of CPU cores allocated for the task (default: 4)
+- `memory_gb` (Int): Memory allocated for the task in GB (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/spades:4.2.0`)
 
 **Note**: You must provide either `interleaved_fastq` OR both `r1_fastq` and `r2_fastq`. Input must be from a single, paired-end library.
 

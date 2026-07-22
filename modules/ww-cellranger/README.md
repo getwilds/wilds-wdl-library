@@ -87,6 +87,7 @@ Run `cellranger count` on gene expression reads from one GEM well using a privat
 - `web_summary` (File?): Web summary HTML file with QC metrics. Absent when the sample was skipped.
 - `metrics_summary` (File?): Metrics summary CSV file with key statistics. Absent when the sample was skipped.
 - `filtered_h5` (File?): Filtered feature-barcode matrix HDF5 file. Absent when the sample was skipped.
+- `raw_h5` (File?): Raw feature-barcode matrix HDF5 file. Absent when the sample was skipped.
 
 ### Graceful chemistry-detection skip
 
@@ -119,7 +120,8 @@ call cellranger_tasks.run_count_hpc_cromwell {
 
 Run `cellranger count` on gene expression reads from one GEM well from inside a minimal Lua container, with the host's Lmod tree and Cell Ranger software tree bind-mounted in. Sprocket always runs tasks inside a container under Apptainer, so this variant cannot omit the `docker` runtime key the way `run_count_hpc_cromwell` does; instead the container ships only the bits needed to execute `module load` (Lua) and the Cell Ranger binary itself comes in via host bind-mounts configured in the Sprocket HPC config.
 
-**Inputs:** Same as `run_count_hpc_cromwell`.
+**Inputs:** Same as `run_count_hpc_cromwell`, plus:
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/lua:5.3.6`)
 
 **Outputs:** Same as `run_count`.
 
@@ -145,6 +147,7 @@ Renames FASTQ files to match the Cell Ranger naming convention. Useful for prepa
 - `r1_fastq` (File): R1 FASTQ file to rename
 - `r2_fastq` (File): R2 FASTQ file to rename
 - `sample_id` (String): Sample ID to use as the prefix in the renamed file
+- `docker_image` (String): Docker image to use for this task (default: `ubuntu:22.04`)
 
 **Outputs:**
 - `r1_renamed` (File): R1 FASTQ file renamed to `{sample_id}_S1_R1_001.fastq.gz`
@@ -179,6 +182,7 @@ workflow my_single_cell_pipeline {
     File web_summary = run_count.web_summary
     File metrics = run_count.metrics_summary
     File filtered_h5 = run_count.filtered_h5
+    File raw_h5 = run_count.raw_h5
   }
 }
 ```

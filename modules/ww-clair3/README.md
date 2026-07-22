@@ -53,6 +53,7 @@ Runs Clair3 to call germline variants from aligned reads using deep learning pil
 - `gpu_enabled` (Boolean, default=false): Enable GPU acceleration for Clair3 inference. Note: the `gpus` runtime attribute is specified as a string (e.g., `"1"`) rather than an integer, as required by Fred Hutch PROOF/Cromwell configuration, but can be adjusted as necessary.
 - `cpu_cores` (Int, default=8): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=32): Memory allocated for the task in GB
+- `docker_image` (String, default=`getwilds/clair3:2.0.0`): Docker image to use for this task
 
 **Outputs:**
 - `output_vcf` (File): VCF file containing merged variant calls

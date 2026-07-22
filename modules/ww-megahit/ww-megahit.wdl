@@ -29,6 +29,7 @@ task megahit {
     sample_name: "Sample name for output file naming"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -36,6 +37,7 @@ task megahit {
     String sample_name = basename(input_fastq, ".fastq.gz")
     Int cpu_cores = 2
     Int memory_gb = 4
+    String docker_image = "getwilds/megahit:1.2.9"
   }
 
   command <<<
@@ -58,7 +60,7 @@ task megahit {
   }
 
   runtime {
-    docker: "getwilds/megahit:1.2.9"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

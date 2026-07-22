@@ -28,12 +28,14 @@ task bwa_index {
     reference_fasta: "Reference genome FASTA file"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
     File reference_fasta
     Int cpu_cores = 8
     Int memory_gb = 32
+    String docker_image = "getwilds/bwa:0.7.17"
   }
 
   String ref_name = basename(reference_fasta)  # Name of local copy
@@ -55,7 +57,7 @@ task bwa_index {
   }
 
   runtime {
-    docker: "getwilds/bwa:0.7.17"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }
@@ -91,6 +93,7 @@ task bwa_mem {
     paired_end: "Optional boolean indicating if reads are paired end (default: true)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
   }
 
   input {
@@ -102,6 +105,7 @@ task bwa_mem {
     Boolean paired_end = true
     Int cpu_cores = 8
     Int memory_gb = 16
+    String docker_image = "getwilds/bwa:0.7.17"
   }
 
     # Name of reference FASTA file, which should be in bwa_genome_tar
@@ -150,7 +154,7 @@ task bwa_mem {
   }
 
   runtime {
-    docker: "getwilds/bwa:0.7.17"
+    docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
   }

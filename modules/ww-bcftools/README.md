@@ -36,6 +36,7 @@ Calls variants using bcftools mpileup and call pipeline with comprehensive param
 - `max_idepth` (Int): Maximum per-sample indel depth (default: 10000)
 - `memory_gb` (Int): Memory allocation (default: 8)
 - `cpu_cores` (Int): CPU cores (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bcftools:1.19`)
 
 **Outputs:**
 - `mpileup_vcf` (File): Compressed VCF file with called variants
@@ -52,6 +53,7 @@ Concatenate multiple VCF/BCF files into a single file using bcftools concat. Inp
 - `allow_overlaps` (Boolean): Allow overlapping positions in input files (default: false)
 - `cpu_cores` (Int): Number of CPU cores (default: 4)
 - `memory_gb` (Int): Memory allocation (default: 8)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/bcftools:1.19`)
 
 **Outputs:**
 - `concatenated_vcf` (File): Concatenated VCF/BCF file

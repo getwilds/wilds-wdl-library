@@ -1,7 +1,7 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-manta/ww-manta.wdl" as ww_manta
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "./ww-manta.wdl" as ww_manta
 
 workflow manta_example {
   # Download test data
