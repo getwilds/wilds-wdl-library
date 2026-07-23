@@ -80,7 +80,7 @@ task generate_ensemble {
     docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    gpus: if gpu_enabled then "1" else "0"
+    gpu: gpu_enabled
   }
 }
 
@@ -156,7 +156,7 @@ task generate_ensemble_batch {
     docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    gpus: if gpu_enabled then "1" else "0"
+    gpu: gpu_enabled
   }
 }
 
