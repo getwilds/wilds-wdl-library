@@ -324,6 +324,22 @@ tools:
       branches:
         - main
 
+  - name: ww-edger
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-edger/ww-edger.wdl
+    readMePath: /modules/ww-edger/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for differential expression analysis using edgeR
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-diamond
     subclass: WDL
     primaryDescriptorPath: /modules/ww-diamond/ww-diamond.wdl
