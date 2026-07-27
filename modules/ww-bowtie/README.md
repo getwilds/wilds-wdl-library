@@ -51,6 +51,20 @@ Aligns short reads to a reference genome using Bowtie.
 - `sorted_bam` (File): Sorted Bowtie alignment output BAM file
 - `sorted_bai` (File): Index file for the sorted Bowtie alignment BAM file
 
+## Building Your Own Index Tarball
+
+`bowtie_build` packages the Bowtie index files inside a subdirectory named after `index_prefix` (default `bowtie_index`) before compressing, and `bowtie_align` expects that same subdirectory when it extracts the tarball. If you already have Bowtie index files, e.g. built outside this module, you can package them for `bowtie_align` yourself by replicating that layout:
+
+```bash
+mkdir bowtie_index
+mv my_index.*.ebwt bowtie_index/
+tar -czf bowtie_index.tar.gz bowtie_index/
+```
+
+The directory name inside the tarball must match whatever `index_prefix` you pass to `bowtie_align` (default `bowtie_index`).
+
+In most cases, it's easier to just run `bowtie_build` on your reference FASTA and pass its `bowtie_index_tar` output straight into `bowtie_align`, rather than assembling the tarball by hand.
+
 ## Usage as a Module
 
 ### Importing into Your Workflow
