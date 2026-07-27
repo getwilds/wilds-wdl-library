@@ -177,7 +177,7 @@ Providing the FASTAs is recommended: the pipeline builds each index from scratch
 - `spikein_merged_fasta`/`spikein_index_tar`: experimental + spike-in genomes concatenated, with a prefix on spike-in contigs
 - `rdna_fasta`/`rdna_index_tar`: rRNA reference for rRNA depletion (typically the host's 45S precursor)
 - `spikein_chrom_prefix`: prefix used on spike-in contig names in the merged FASTA
-- `experimental_index_prefix`/`spikein_index_prefix`/`rdna_index_prefix`: optional. The name prefix of the index files inside each tarball, defaulting to `experimental`, `spikein`, and `rdna`. A tarball must contain a `bowtie2_index/` directory holding files named `<prefix>.*`, exactly as produced by `ww-bowtie2.bowtie2_build`. Set these only if your prebuilt tarball uses different names.
+- `experimental_index_prefix`/`spikein_index_prefix`/`rdna_index_prefix`: optional. The name prefix of the index files inside each tarball, defaulting to `experimental`, `spikein`, and `rdna`. A tarball must contain a `bowtie2_index/` directory holding files named `<prefix>.*`, exactly as produced by `ww-bowtie2.bowtie2_build`. Set these only if your prebuilt tarball uses different names. See [ww-bowtie2's README](../../modules/ww-bowtie2/README.md#building-your-own-index-tarball) for instructions on assembling a compatible tarball by hand.
 
 ## Output Files
 
