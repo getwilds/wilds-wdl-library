@@ -83,3 +83,7 @@ authors:
   - family-names: McClain
     given-names: Alexander
     affiliation: "St. Jude Children's Research Hospital"
+  - family-names: Wang
+    given-names: Ruihong
+    affiliation: "Fred Hutch Cancer Center"
+    orcid: "https://orcid.org/0009-0008-5342-3433"

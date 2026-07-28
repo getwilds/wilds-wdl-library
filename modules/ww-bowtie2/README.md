@@ -59,6 +59,20 @@ Aligns reads to a reference using Bowtie 2, optionally filtering the output usin
 - `unaligned_r1` (File?, optional): FASTQ of R1 reads that failed to align concordantly. Only produced when `capture_unaligned` is true and `mates` is set (paired-end input).
 - `unaligned_r2` (File?, optional): FASTQ of R2 reads that failed to align concordantly. Only produced when `capture_unaligned` is true and `mates` is set (paired-end input).
 
+## Building Your Own Index Tarball
+
+`bowtie2_build` packages the Bowtie 2 index files inside a subdirectory named after `index_prefix` (default `bowtie2_index`) before compressing, and `bowtie2_align` expects that same subdirectory when it extracts the tarball. If you already have Bowtie 2 index files, e.g. built outside this module, you can package them for `bowtie2_align` yourself by replicating that layout:
+
+```bash
+mkdir bowtie2_index
+mv my_index.*.bt2 bowtie2_index/
+tar -czf bowtie2_index.tar.gz bowtie2_index/
+```
+
+The directory name inside the tarball must match whatever `index_prefix` you pass to `bowtie2_align` (default `bowtie2_index`).
+
+In most cases, it's easier to just run `bowtie2_build` on your reference FASTA and pass its `bowtie2_index_tar` output straight into `bowtie2_align`, rather than assembling the tarball by hand.
+
 ## Usage as a Module
 
 ### Importing into Your Workflow
