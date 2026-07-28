@@ -188,13 +188,7 @@ The test workflow runs on CPU (`gpu_enabled = false`) with minimal settings for 
 
 The `gpu_enabled` input controls two things:
 1. **JAX execution mode**: When `false`, sets `JAX_PLATFORMS=cpu` to force CPU-only execution
-2. **PROOF GPU allocation**: Translates to the `gpus` runtime attribute (`"1"` or `"0"`), which is specific to PROOF's Cromwell configuration. Other executors like miniWDL and Sprocket silently ignore this attribute.
-
-### For PROOF Users
-GPU allocation works automatically with the default (`gpu_enabled = true`). ColabFold only supports a single GPU for structure prediction.
-
-### For Other Executors
-Configure GPU passthrough at the engine level (e.g., Docker `--gpus` flag). Set `gpu_enabled = true` to ensure ColabFold uses the GPU via JAX.
+2. **GPU allocation**: Passed directly to the `gpu` runtime attribute, honored by Cromwell (including PROOF), miniWDL, and Sprocket alike. ColabFold only supports a single GPU for structure prediction.
 
 ### CPU-Only Mode
 Set `gpu_enabled = false` to force CPU execution via `JAX_PLATFORMS=cpu`. This is functional but significantly slower and intended primarily for testing.
