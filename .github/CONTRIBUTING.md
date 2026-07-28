@@ -145,7 +145,7 @@ Note: `testrun.wdl` files use relative path imports (unlike the pipeline source 
 - Use descriptive parameter names
 - Include optional parameters with sensible defaults
 - Support both single samples and batch processing where applicable
-- GPU tasks should expose a `Boolean gpu_enabled` input and use `gpu: gpu_enabled` in the runtime block (not `gpus: "1"`)
+- GPU tasks should expose a `Boolean gpu_enabled` input and use `gpu: gpu_enabled` in the runtime block
 
 **Docker image preferences:**
 
