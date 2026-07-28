@@ -28,8 +28,16 @@ struct ProseqReferences {
 
 workflow proseq {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Ruihong Wang",
+            email: "rwang4@fredhutch.org"
+        }
+    ]
     description: "Paired-end PRO-seq pipeline with UMI deduplication and spike-in normalization, adapted from JAJ256/PROseq_alignment.sh. Covers UMI-aware trimming, rRNA depletion + spike-in + experimental alignment, UMI dedup, strand-specific 3' bigWigs, and aggregated QC."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-proseq/ww-proseq.wdl"
     outputs: {

@@ -1066,6 +1066,7 @@ workflows:
         email: rwang4@fredhutch.org
         role: Postdoctoral Research Fellow
         affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0008-5342-3433
     description: "Paired-end PRO-seq pipeline with UMI deduplication and spike-in normalization, adapted from JAJ256/PROseq_alignment.sh"
     topic: proseq
     enableAutoDois: true
