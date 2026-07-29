@@ -34,7 +34,7 @@ Also review `modules/ww-testdata/ww-testdata.wdl` to see what test data is avail
 
 ### 3. Create the Module Files
 
-Create three files in `modules/ww-$ARGUMENTS/`:
+Create four files in `modules/ww-$ARGUMENTS/`:
 
 #### `ww-$ARGUMENTS.wdl`
 - Start with `version 1.0`
@@ -63,6 +63,15 @@ Create three files in `modules/ww-$ARGUMENTS/`:
 #### `README.md`
 - Follow the exact format of `modules/ww-template/README.md`
 - Include: badges, overview, module structure, available tasks (with inputs/outputs), usage examples, testing instructions, Docker container info, citations, parameters/resources
+
+#### `module.json`
+- Use an existing module's `module.json` as a template (e.g. `modules/ww-bwa/module.json`) rather than writing one from scratch. Field definitions come from the upstream spec linked in `.github/CONTRIBUTING.md`; don't rely on your own summary of that spec, since it has changed before.
+- `name` is the module directory name, `license` is `"MIT"` (this repo's own license, not the wrapped tool's)
+- Omit the top-level `version` field entirely
+- Add one `tools[]` entry for the wrapped tool: `name`, `version` (matching the pinned Docker tag), and `license` (current SPDX identifier, e.g. `GPL-3.0-only`). Use `url` for the tool's homepage/repo and `ids` for identifiers as CURIE strings (e.g. `["doi:10.1093/bioinformatics/btp324"]`) if you have a real one; don't fabricate one. Never use `homepage` or `doi` fields directly on a `tools[]` entry.
+- If the tool has a nonstandard license, use an SPDX `LicenseRef-` placeholder (e.g. `"LicenseRef-VarScan-NonCommercial"`) and call it out in the summary at the end of this skill.
+- If the module doesn't wrap one clear external tool (e.g. a data-download utility or a custom script), omit `tools[]` entirely.
+- Run `make lint_module_json NAME=ww-$ARGUMENTS` to validate structure.
 
 ### 4. Lint the Module
 
@@ -98,4 +107,5 @@ Report to the user:
 - What files were created
 - What Docker image and version was used
 - What test data tasks are used
+- Any nonstandard tool license used in `module.json` (`LicenseRef-*` placeholder) that needs reviewer sign-off
 - Any issues that need follow-up (missing Docker image, missing test data in ww-testdata, lint warnings, etc.)

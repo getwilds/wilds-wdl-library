@@ -23,7 +23,7 @@ Check if `$ARGUMENTS` exists in `modules/` or `pipelines/`:
 make lint NAME=$ARGUMENTS
 ```
 
-This runs sprocket, miniwdl, and WOMtool linters.
+This runs sprocket, miniwdl, WOMtool, Cirro validation (pipelines only), and module.json structural validation (if a module.json is present).
 
 If make targets aren't available, run sprocket directly:
 ```bash

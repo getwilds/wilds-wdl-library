@@ -153,15 +153,17 @@ Note: `testrun.wdl` files use relative path imports (unlike the pipeline source 
 - Specify exact image versions (avoid `latest` tags)
 - Document image dependencies in the README
 
-**Module manifest (`module.json`), experimental:**
+**Module manifest (`module.json`):**
 
-You may notice `module.json` files in a handful of modules (currently `ww-bwa`, `ww-gatk`) and pipelines (`ww-bwa-gatk`). These are an early experiment with the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765), which standardizes module metadata (name, version, license, upstream tool provenance, and dependency declarations). The format has been informally validated against Sprocket's `wdl-modules` crate by collaborators at St. Jude.
+Every module and pipeline in this library ships a `module.json` manifest, an early adoption of the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765). For the schema itself (field definitions, dependency selectors, versioning rules) see the spec's [`modules/SPEC.md`](https://github.com/openwdl/wdl/blob/wdl-1.4/modules/SPEC.md) and [`module.schema.json`](https://github.com/openwdl/wdl/blob/wdl-1.4/modules/schemas/module.schema.json). Since the spec is still unmerged and changing, treat that upstream source as ground truth over any summary written here or elsewhere in this repo.
 
-A few things to know:
+WILDS-specific conventions on top of the spec:
 
-- **Contributors are not required to add `module.json` files.** No executor consumes them at runtime yet, and the upstream spec is still unmerged. We're keeping a small set of examples around so the library is ready when tooling support arrives.
-- **The schema is a moving target.** Field names and constraints may change before the spec is finalized.
-- **If you do add one**, license strings must use current [SPDX identifiers](https://spdx.org/licenses/) (e.g. `GPL-3.0-only`, not `GPL-3.0`). The parser rejects deprecated forms.
+- **Add a `module.json` for every new module and pipeline.** No executor consumes it at runtime yet, but please add one anyway to keep the library consistent. Use an existing module's `module.json` as a template.
+- **CI validates structure**, not content: `make lint_module_json` (see `.github/scripts/validate_module_json.py`) checks any `module.json` it finds against the spec's required fields and shapes.
+- **This repo's own `license` is always `"MIT"`.** Per-tool licenses in `tools[]` must use current [SPDX identifiers](https://spdx.org/licenses/); the parser rejects deprecated forms (e.g. `GPL-3.0-only`, not `GPL-3.0`).
+- **For a tool with a nonstandard license**, use an SPDX `LicenseRef-` placeholder (e.g. `"LicenseRef-VarScan-NonCommercial"`) and flag it for reviewer attention in your PR description, since there is no real SPDX identifier for these.
+- **See `pipelines/ww-bwa-gatk/module.json`** for the reference pattern for declaring module dependencies in a pipeline's manifest.
 
 ## Pipeline Development Guidelines
 
