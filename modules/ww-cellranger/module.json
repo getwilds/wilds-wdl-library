@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-cellranger",
+  "license": "MIT",
+  "authors": [
+    "Emma Bishop <ebishop@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for single-cell RNA-seq analysis using Cell Ranger",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-cellranger.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "cellranger",
+      "version": "10.0.0",
+      "license": "LicenseRef-proprietary",
+      "url": "https://www.10xgenomics.com/support/software/cell-ranger"
+    }
+  ],
+  "dependencies": {}
+}

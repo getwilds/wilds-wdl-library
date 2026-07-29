@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-ena-star",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL pipeline demonstrating RNA-seq analysis from ENA download to alignment using modular WILDS components",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-ena-star.wdl",
+  "readme": "README.md",
+  "dependencies": {
+    "ww_ena": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-ena"
+    },
+    "ww_star": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-star"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-saturation",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Sitapriya Moorthi <smoorthi@fredhutch.org>",
+    "Siobhan O'Brien <sobrien2@fredhutch.org>"
+  ],
+  "description": "WILDS WDL pipeline for analyzing saturation mutagenesis experiments using modular WILDS components",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-saturation.wdl",
+  "readme": "README.md",
+  "dependencies": {
+    "ww_bwa": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-bwa"
+    },
+    "ww_gatk": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-gatk"
+    }
+  }
+}

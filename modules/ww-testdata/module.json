@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-testdata",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Emma Bishop <ebishop@fredhutch.org>",
+    "Chris Lo <clo2@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for downloading and provisioning test data used across WILDS WDL module and pipeline test runs",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-testdata.wdl",
+  "readme": "README.md",
+  "dependencies": {}
+}

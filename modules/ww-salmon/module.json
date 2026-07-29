@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-salmon",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for RNA-seq transcript quantification using Salmon",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-salmon.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "salmon",
+      "version": "1.10.3",
+      "license": "GPL-3.0-only",
+      "url": "https://combine-lab.github.io/salmon/"
+    }
+  ],
+  "dependencies": {}
+}

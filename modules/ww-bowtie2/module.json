@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-bowtie2",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for performing sequence alignment using Bowtie 2",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-bowtie2.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "bowtie2",
+      "version": "2.5.4",
+      "license": "GPL-3.0-only",
+      "url": "https://bowtie-bio.sourceforge.net/bowtie2/index.shtml",
+      "ids": [
+        "doi:10.1038/nmeth.1923"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

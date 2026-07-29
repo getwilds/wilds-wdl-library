@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-diamond",
+  "license": "MIT",
+  "authors": [
+    "Emma Bishop <ebishop@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for fast protein sequence alignment using DIAMOND",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-diamond.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "diamond",
+      "version": "2.1.16",
+      "license": "GPL-3.0-or-later",
+      "url": "https://github.com/bbuchfink/diamond"
+    }
+  ],
+  "dependencies": {}
+}

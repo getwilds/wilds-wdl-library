@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-sra-salmon",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Emma Bishop <ebishop@fredhutch.org>",
+    "Alice Berger <aberger@fredhutch.org>",
+    "Janet Young <jyoung@fredhutch.org>"
+  ],
+  "description": "WILDS WDL pipeline demonstrating RNA-seq quantification from SRA download to transcript-level abundance estimation using modular WILDS components",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-sra-salmon.wdl",
+  "readme": "README.md",
+  "dependencies": {
+    "ww_sra": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-sra"
+    },
+    "ww_salmon": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-salmon"
+    }
+  }
+}

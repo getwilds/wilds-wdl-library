@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-cnvkit",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for copy number variation (CNV) detection using CNVkit",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-cnvkit.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "cnvkit",
+      "version": "0.9.10",
+      "license": "Apache-2.0",
+      "url": "https://cnvkit.readthedocs.io/"
+    }
+  ],
+  "dependencies": {}
+}

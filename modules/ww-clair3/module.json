@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-clair3",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for Clair3, a deep learning-based germline small variant caller",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-clair3.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "clair3",
+      "version": "2.0.0",
+      "license": "BSD-3-Clause",
+      "url": "https://github.com/HKU-BAL/Clair3",
+      "ids": [
+        "doi:10.1038/s43588-022-00387-x"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

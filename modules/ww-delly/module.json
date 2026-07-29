@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-delly",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for structural variant calling using Delly",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-delly.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "delly",
+      "version": "1.2.9",
+      "license": "BSD-3-Clause",
+      "url": "https://github.com/dellytools/delly",
+      "ids": [
+        "doi:10.1093/bioinformatics/bts378"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-fastqc",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for FastQC quality control analysis of high-throughput sequencing data",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-fastqc.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "fastqc",
+      "version": "0.12.1",
+      "license": "GPL-3.0-only",
+      "url": "https://www.bioinformatics.babraham.ac.uk/projects/fastqc/"
+    }
+  ],
+  "dependencies": {}
+}

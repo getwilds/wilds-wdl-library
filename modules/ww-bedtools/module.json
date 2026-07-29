@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-bedtools",
+  "license": "MIT",
+  "authors": [
+    "Emma Bishop <ebishop@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for working with genomic intervals using BEDTools",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-bedtools.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "bedtools",
+      "version": "2.31.1",
+      "license": "MIT",
+      "url": "https://bedtools.readthedocs.io/"
+    }
+  ],
+  "dependencies": {}
+}

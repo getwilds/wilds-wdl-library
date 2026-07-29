@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-sourmash",
+  "license": "MIT",
+  "authors": [
+    "Emma Bishop <ebishop@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for genomic sequence comparison and metagenome analysis using sourmash",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-sourmash.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "sourmash",
+      "version": "4.8.2",
+      "license": "BSD-3-Clause",
+      "url": "https://sourmash.readthedocs.io/"
+    }
+  ],
+  "dependencies": {}
+}

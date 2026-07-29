@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-fastq-to-cram",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Emma Bishop <ebishop@fredhutch.org>"
+  ],
+  "description": "WILDS WDL pipeline for converting paired FASTQ files to unmapped CRAM format with validation",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-fastq-to-cram.wdl",
+  "readme": "README.md",
+  "dependencies": {
+    "ww_gatk": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-gatk"
+    },
+    "ww_samtools": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-samtools"
+    }
+  }
+}

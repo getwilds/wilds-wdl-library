@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-cellbender",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Emma Bishop <ebishop@fredhutch.org>",
+    "Hrishi Venkatesh <hvenkate@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for removing ambient RNA contamination and barcode swapping artifacts from single-cell RNA sequencing data using CellBender",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-cellbender.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "cellbender",
+      "version": "0.3.2",
+      "license": "BSD-3-Clause",
+      "url": "https://cellbender.readthedocs.io/",
+      "ids": [
+        "doi:10.1101/791699"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

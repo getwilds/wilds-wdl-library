@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-tritonnp",
+  "license": "MIT",
+  "authors": [
+    "Chris Lo <clo2@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for running TritonNP nucleosome positioning analysis for cell-free DNA samples",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-tritonnp.wdl",
+  "readme": "README.md",
+  "dependencies": {}
+}

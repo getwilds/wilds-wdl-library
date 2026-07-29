@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-rseqc",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for running comprehensive RNA-seq quality control analysis using RSeQC",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-rseqc.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "rseqc",
+      "version": "5.0.4",
+      "license": "GPL-2.0-or-later",
+      "url": "https://rseqc.sourceforge.net/",
+      "ids": [
+        "doi:10.1093/bioinformatics/bts356"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

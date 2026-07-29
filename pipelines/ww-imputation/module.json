@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-imputation",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Emma Bishop <ebishop@fredhutch.org>",
+    "Louisa Goss <lgoss2@fredhutch.org>"
+  ],
+  "description": "WILDS WDL pipeline for genotype imputation from low-coverage whole genome sequencing data using GLIMPSE2",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-imputation.wdl",
+  "readme": "README.md",
+  "dependencies": {
+    "ww_glimpse2": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-glimpse2"
+    },
+    "ww_bcftools": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-bcftools"
+    }
+  }
+}

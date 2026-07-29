@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-deeptools",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for deepTools, a suite of tools for exploring deep sequencing data",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-deeptools.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "deeptools",
+      "version": "3.5.6",
+      "license": "GPL-3.0-only",
+      "url": "https://deeptools.readthedocs.io/",
+      "ids": [
+        "doi:10.1093/nar/gkw257"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-rmats-turbo",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for rMATS-turbo, a tool for detecting differential alternative splicing events from RNA-seq data",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-rmats-turbo.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "rmats-turbo",
+      "version": "4.3.0",
+      "license": "BSD-2-Clause",
+      "url": "https://github.com/Xinglab/rmats-turbo",
+      "ids": [
+        "doi:10.1073/pnas.1419161111"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
