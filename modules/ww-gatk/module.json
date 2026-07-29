@@ -1,6 +1,6 @@
 {
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
   "name": "ww-gatk",
-  "version": "0.2.0",
   "license": "MIT",
   "authors": [
     "Taylor Firman <tfirman@fredhutch.org>",
@@ -16,22 +16,29 @@
       "name": "gatk",
       "version": "4.6.1.0",
       "license": "Apache-2.0",
-      "homepage": "https://gatk.broadinstitute.org/",
-      "doi": "10.1101/gr.107524.110"
+      "url": "https://gatk.broadinstitute.org/",
+      "ids": [
+        "doi:10.1101/gr.107524.110"
+      ]
     },
     {
       "name": "samtools",
       "version": "1.20",
       "license": "MIT",
-      "homepage": "https://www.htslib.org/",
-      "doi": "10.1093/gigascience/giab008"
+      "url": "https://www.htslib.org/",
+      "ids": [
+        "doi:10.1093/gigascience/giab008"
+      ]
     },
     {
       "name": "htslib",
       "version": "1.20",
       "license": "MIT",
-      "homepage": "https://www.htslib.org/",
-      "doi": "10.1093/gigascience/giab007"
+      "url": "https://www.htslib.org/",
+      "ids": [
+        "doi:10.1093/gigascience/giab007"
+      ]
     }
-  ]
+  ],
+  "dependencies": {}
 }

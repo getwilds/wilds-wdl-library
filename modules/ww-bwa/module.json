@@ -1,8 +1,10 @@
 {
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
   "name": "ww-bwa",
-  "version": "0.2.0",
   "license": "MIT",
-  "authors": ["Emma Bishop <ebishop@fredhutch.org>"],
+  "authors": [
+    "Emma Bishop <ebishop@fredhutch.org>"
+  ],
   "description": "WILDS WDL for sequence alignment using BWA-MEM",
   "repository": "https://github.com/getwilds/wilds-wdl-library",
   "homepage": "https://getwilds.org/",
@@ -13,15 +15,20 @@
       "name": "bwa",
       "version": "0.7.17",
       "license": "GPL-3.0-only",
-      "homepage": "https://github.com/lh3/bwa",
-      "doi": "10.1093/bioinformatics/btp324"
+      "url": "https://github.com/lh3/bwa",
+      "ids": [
+        "doi:10.1093/bioinformatics/btp324"
+      ]
     },
     {
       "name": "samtools",
       "version": "1.11",
       "license": "MIT",
-      "homepage": "https://www.htslib.org/",
-      "doi": "10.1093/gigascience/giab008"
+      "url": "https://www.htslib.org/",
+      "ids": [
+        "doi:10.1093/gigascience/giab008"
+      ]
     }
-  ]
+  ],
+  "dependencies": {}
 }
