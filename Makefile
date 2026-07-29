@@ -157,7 +157,15 @@ lint_cirro: check_name ## Validate .cirro configurations in pipelines (use NAME=
 		python3 .github/scripts/validate_cirro.py; \
 	fi
 
-lint: lint_sprocket lint_miniwdl lint_womtool lint_cirro ## Run all linting checks
+lint_module_json: check_name ## Validate module.json manifests, if present (use NAME=foo for specific item)
+	@echo "Validating module.json manifests..."
+	@if [ "$(NAME)" != "*" ]; then \
+		python3 .github/scripts/validate_module_json.py $(NAME); \
+	else \
+		python3 .github/scripts/validate_module_json.py; \
+	fi
+
+lint: lint_sprocket lint_miniwdl lint_womtool lint_cirro lint_module_json ## Run all linting checks
 
 ##@ Run
 
