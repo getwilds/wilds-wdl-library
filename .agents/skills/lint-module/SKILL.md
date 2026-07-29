@@ -34,7 +34,7 @@ make lint_sprocket NAME=$ARGUMENTS
 
 For each lint error:
 - Read the relevant WDL file
-- Fix the issue following project conventions (see CLAUDE.md)
+- Fix the issue following project conventions (see AGENTS.md)
 - Re-run linting to confirm the fix
 
 **Known Sprocket exceptions** (these are OK and won't cause failures):
