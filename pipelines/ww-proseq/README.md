@@ -242,7 +242,7 @@ For the qPRO-seq variant this pipeline implements and the reference shell pipeli
 
 ## Acknowledgments
 
-This pipeline was developed in collaboration with [Ruihong Wang](https://github.com/redd-wang) through the [WILDS WDL Development Program](https://sciwiki.fredhutch.org/datascience/wilds_workflow_dev/). Thank you for the initial motivation and testing!
+This pipeline was developed in collaboration with [Redd Wang](https://github.com/redd-wang) through the [WILDS WDL Development Program](https://sciwiki.fredhutch.org/datascience/wilds_workflow_dev/). Thank you for the initial motivation and testing!
 
 ## Support
 
