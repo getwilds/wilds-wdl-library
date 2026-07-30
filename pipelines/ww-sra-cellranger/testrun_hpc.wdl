@@ -1,7 +1,10 @@
 version 1.0
 
-import "../../modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "./ww-sra-cellranger.wdl" as sra_cellranger_workflow
+# import "../../modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+# import "./ww-sra-cellranger.wdl" as sra_cellranger_workflow
+
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/per-sample-cellbender/pipelines/ww-sra-cellranger/ww-sra-cellranger.wdl" as sra_cellranger_workflow
 
 #### TEST WORKFLOW DEFINITION ####
 # HPC variant of the ww-sra-cellranger pipeline testrun. Dispatches via
@@ -22,8 +25,8 @@ workflow sra_cellranger_example {
     skip_on_chemistry_failure = true,
     execution_mode = "hpc_sprocket",
     cellbender_gpu_enabled = false, # Can't test this in current HPC test run setup
-    cellbender_expected_cells_each = [500, 500],
-    cellbender_total_droplets_each = [5000, 5000]
+    cellbender_expected_cells_each = [200, 200],
+    cellbender_total_droplets_each = [2000, 2000]
   }
 
   Int n_results = length(sra_cellranger.cellranger_results)
