@@ -147,8 +147,10 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `organize_results` | When true, package all Cell Ranger outputs into a tarball organized by sample subdirectory. | Boolean | No | `false` |
 | `output_prefix` | Prefix for the organized results tarball filename. | String | No | `cellranger_results` |
 | `cellbender_gpu_enabled` | Enable GPU acceleration for CellBender. Set to `false` for CPU-only execution. | Boolean | No | `true` |
-| `cellbender_expected_cells` | Expected number of real cells per sample passed to CellBender. | Int | No | auto |
-| `cellbender_total_droplets_included` | Total number of droplets for CellBender to analyze per sample. | Int | No | auto |
+| `cellbender_expected_cells` | Expected number of real cells, applied to every sample. Ignored for samples covered by `cellbender_expected_cells_each`. | Int | No | auto |
+| `cellbender_total_droplets_included` | Total number of droplets for CellBender to analyze, applied to every sample. Ignored for samples covered by `cellbender_total_droplets_each`. | Int | No | auto |
+| `cellbender_expected_cells_each` | Per-sample expected number of real cells, in the same order as `sra_id_list`/`sra_id_file`. Must be the same length as the sample list. Takes precedence over `cellbender_expected_cells`. | Array[Int] | No | - |
+| `cellbender_total_droplets_each` | Per-sample total number of droplets for CellBender to analyze, in the same order as `sra_id_list`/`sra_id_file`. Must be the same length as the sample list. Takes precedence over `cellbender_total_droplets_included`. | Array[Int] | No | - |
 | `cellbender_epochs` | Number of CellBender training epochs. | Int | No | `150` |
 | `cellbender_low_count_threshold` | Droplets with total UMI count below this value are excluded from CellBender analysis. | Int | No | `5` |
 | `cellbender_cpu_cores` | Number of CPU cores for CellBender. | Int | No | `4` |
