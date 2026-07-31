@@ -1,10 +1,7 @@
 version 1.0
 
-# import "../../modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-# import "./ww-sra-cellranger.wdl" as sra_cellranger_workflow
-
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/per-sample-cellbender/pipelines/ww-sra-cellranger/ww-sra-cellranger.wdl" as sra_cellranger_workflow
+import "../../modules/ww-testdata/ww-testdata.wdl" as ww_testdata
+import "./ww-sra-cellranger.wdl" as sra_cellranger_workflow
 
 #### TEST WORKFLOW DEFINITION ####
 # HPC variant of the ww-sra-cellranger pipeline testrun. Dispatches via
