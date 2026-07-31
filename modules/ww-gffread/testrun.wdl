@@ -20,8 +20,15 @@ workflow gffread_example {
       output_prefix = "ensembl_chr15_normalized"
   }
 
+  # Case 3: GFF3-to-GTF conversion, reusing the PAO1 GFF3 fetched above
+  call ww_gffread.gff3_to_gtf { input:
+      input_gff3 = download_pao1_ref.gff3,
+      output_prefix = "pao1_converted"
+  }
+
   output {
     File bacterial_normalized_gtf = normalize_bacterial.normalized_gtf
     File eukaryotic_normalized_gtf = normalize_eukaryotic.normalized_gtf
+    File pao1_converted_gtf = gff3_to_gtf.gtf_file
   }
 }

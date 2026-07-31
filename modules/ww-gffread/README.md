@@ -103,10 +103,11 @@ workflow bacterial_rnaseq {
 
 ### Automatic Demo Mode
 
-The `testrun.wdl` workflow runs `normalize_gtf` against two contrasting inputs with no user configuration:
+The `testrun.wdl` workflow runs `normalize_gtf` and `gff3_to_gtf` against contrasting inputs with no user configuration:
 
 1. **Bacterial case**: the NCBI PAO1 GTF (via `ww-testdata.download_pao1_ref`). Exercises the CDS→exon synthesis path.
 2. **Eukaryotic case**: the Ensembl human chromosome 15 GTF (via `ww-testdata.download_jcast_test_data`). Exercises the pass-through path.
+3. **GFF3 conversion case**: the NCBI PAO1 GFF3 (via `ww-testdata.download_pao1_ref`). Exercises the `gff3_to_gtf` conversion path.
 
 Run locally with:
 
@@ -116,9 +117,10 @@ make run_sprocket NAME=ww-gffread
 make run_miniwdl NAME=ww-gffread
 ```
 
-After the run completes, inspect the normalized GTF output files to verify:
+After the run completes, inspect the output files to verify:
 - The bacterial case has ~5500 `exon` rows (up from ~100 in the input).
 - The eukaryotic case has roughly the same number of `exon` rows as the input.
+- The GFF3 conversion case produces a valid GTF with feature counts matching the source PAO1 GFF3.
 
 ## Docker Container
 
