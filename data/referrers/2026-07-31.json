@@ -1,0 +1,37 @@
+[
+  {
+    "referrer": "github.com",
+    "count": 28,
+    "uniques": 9
+  },
+  {
+    "referrer": "Google",
+    "count": 11,
+    "uniques": 6
+  },
+  {
+    "referrer": "sciwiki.fredhutch.org",
+    "count": 8,
+    "uniques": 2
+  },
+  {
+    "referrer": "linkedin.com",
+    "count": 7,
+    "uniques": 3
+  },
+  {
+    "referrer": "ocdo.fredhutch.org",
+    "count": 4,
+    "uniques": 2
+  },
+  {
+    "referrer": "usc-word-edit.officeapps.live.com",
+    "count": 3,
+    "uniques": 2
+  },
+  {
+    "referrer": "substack.com",
+    "count": 2,
+    "uniques": 2
+  }
+]
