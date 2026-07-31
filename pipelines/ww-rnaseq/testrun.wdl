@@ -34,10 +34,10 @@ workflow rnaseq_example {
   # gff3 is only conditionally populated by download_ref_data (hg38 only),
   # but this testrun always uses hg38 so it will always be defined here.
   File chr1_gff3 = select_first([download_ref_data.gff3])
-  RefGenome reference = {
-    "name": "chr1_50M",
-    "fasta": download_ref_data.fasta,
-    "gff3": chr1_gff3
+  RefGenome reference = object {
+    name: "chr1_50M",
+    fasta: download_ref_data.fasta,
+    gff3: chr1_gff3
   }
 
   # Run the full RNA-seq pipeline with reduced resources for testing
