@@ -127,8 +127,11 @@ task download_ref_data {
         BASE_URL="https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14"
         wget -q --no-check-certificate -O "GRCh38.gff3.gz" "${BASE_URL}/GCF_000001405.40_GRCh38.p14_genomic.gff.gz"
         gunzip "GRCh38.gff3.gz"
-        # Extract only this chromosome's annotations (by RefSeq accession)
-        awk -F'\t' -v acc="$ACCESSION" '$1 == acc' "GRCh38.gff3" > temp.gff3
+        # Extract only this chromosome's annotations (by RefSeq accession),
+        # renaming column 1 from the RefSeq accession to the UCSC chromosome
+        # name so it matches the FASTA's sequence header (~{chromo}) above.
+        awk -F'\t' -v OFS='\t' -v acc="$ACCESSION" -v chr="~{chromo}" \
+          '$1 == acc { $1 = chr; print }' "GRCh38.gff3" > temp.gff3
         rm "GRCh38.gff3"
 
         if [ -n "$REGION" ]; then
