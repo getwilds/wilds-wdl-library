@@ -107,6 +107,9 @@ task download_ref_data {
     # base-for-base, since both trace back to GRCh38). NCBI's GFF3 uses
     # RefSeq accessions (e.g. NC_000001.11) rather than UCSC chromosome
     # names, so map the standard chromosome names before filtering.
+    # Note: --no-check-certificate is required because the getwilds/samtools:1.11
+    # container's CA bundle is older than the intermediate CA that NCBI's FTP
+    # endpoint presents, so strict TLS verification fails (see download_pao1_ref).
     if [ "~{version}" = "hg38" ]; then
       declare -A CHR_ACCESSIONS=(
         [chr1]="NC_000001.11" [chr2]="NC_000002.12" [chr3]="NC_000003.12"
@@ -122,7 +125,7 @@ task download_ref_data {
       ACCESSION="${CHR_ACCESSIONS[~{chromo}]:-}"
       if [ -n "$ACCESSION" ]; then
         BASE_URL="https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14"
-        wget -q -O "GRCh38.gff3.gz" "${BASE_URL}/GCF_000001405.40_GRCh38.p14_genomic.gff.gz"
+        wget -q --no-check-certificate -O "GRCh38.gff3.gz" "${BASE_URL}/GCF_000001405.40_GRCh38.p14_genomic.gff.gz"
         gunzip "GRCh38.gff3.gz"
         # Extract only this chromosome's annotations (by RefSeq accession)
         awk -F'\t' -v acc="$ACCESSION" '$1 == acc' "GRCh38.gff3" > temp.gff3
