@@ -7,7 +7,8 @@ import "./ww-rnaseq.wdl" as rnaseq_workflow
 struct RefGenome {
     String name
     File fasta
-    File gtf
+    File? gtf
+    File? gff3
 }
 
 workflow rnaseq_example {

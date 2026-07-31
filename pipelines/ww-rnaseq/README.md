@@ -77,7 +77,7 @@ This pipeline extends the simpler `ww-star-deseq2` pipeline with upstream read Q
 ## Module Dependencies
 
 This pipeline imports and uses:
-- **ww-gffread module**: GTF normalization to ensure exon features exist (`normalize_gtf` task)
+- **ww-gffread module**: GFF3-to-GTF conversion and GTF normalization to ensure exon features exist (`gff3_to_gtf`, `normalize_gtf` tasks)
 - **ww-fastqc module**: Pre-trim and post-trim read quality assessment (`run_fastqc` task)
 - **ww-trimgalore module**: Adapter and quality trimming (`trimgalore_paired` task)
 - **ww-star module**: Genome indexing and read alignment (`build_index`, `align_two_pass` tasks)
@@ -182,7 +182,7 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 | `r1_fastqs` | Array of R1 FASTQ file paths | Array[File] | No* | - |
 | `r2_fastqs` | Array of R2 FASTQ file paths | Array[File] | No* | - |
 | `conditions` | Array of condition labels per sample | Array[String] | No* | - |
-| `reference_genome` | Reference genome information (name, fasta, gtf) | RefGenome | Yes | - |
+| `reference_genome` | Reference genome information (name, fasta, and either gtf or gff3) | RefGenome | Yes | - |
 | `reference_level` | Reference level for DESeq2 contrast (e.g., 'control') | String | No | "" |
 | `contrast` | DESeq2 contrast string (e.g., 'condition,treatment,control') | String | No | "" |
 | `trim_quality` | Quality threshold for Trim Galore trimming | Int | No | 20 |
@@ -201,11 +201,21 @@ Fred Hutch users can use [PROOF](https://sciwiki.fredhutch.org/datademos/proof-h
 
 ### RefGenome Structure
 
+Provide either `gtf` or `gff3` (not both need to be set, but at least one is required). If `gff3` is provided, it is converted to GTF internally via the `ww-gffread` module's `gff3_to_gtf` task before use.
+
 ```json
 {
   "name": "genome_name",
   "fasta": "/path/to/genome.fasta",
   "gtf": "/path/to/annotation.gtf"
+}
+```
+
+```json
+{
+  "name": "genome_name",
+  "fasta": "/path/to/genome.fasta",
+  "gff3": "/path/to/annotation.gff3"
 }
 ```
 
