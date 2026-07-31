@@ -10,6 +10,9 @@ workflow testdata_example {
       region = "1-10000000"
   }
 
+  # download_ref_data only populates gff3 for hg38, which this testrun always uses
+  File resolved_ref_gff3 = select_first([download_ref_data.gff3])
+
   call ww_testdata.download_fastq_data { }
 
   call ww_testdata.interleave_fastq { input:
@@ -101,6 +104,7 @@ workflow testdata_example {
     ref_fasta_index = download_ref_data.fasta_index,
     ref_dict = download_ref_data.dict,
     ref_gtf = download_ref_data.gtf,
+    ref_gff3 = resolved_ref_gff3,
     ref_bed = download_ref_data.bed,
     r1_fastq = download_fastq_data.r1_fastq,
     r2_fastq = download_fastq_data.r2_fastq,
@@ -156,6 +160,7 @@ workflow testdata_example {
     pao1_fasta_index = download_pao1_ref.fasta_index,
     pao1_dict = download_pao1_ref.dict,
     pao1_gtf = download_pao1_ref.gtf,
+    pao1_gff3 = download_pao1_ref.gff3,
     merged_demo_fasta = merge_fastas_with_prefix.merged_fasta,
     merged_demo_fasta_index = merge_fastas_with_prefix.merged_fasta_index,
     rrna_fasta = download_rrna_reference.fasta,
@@ -168,6 +173,7 @@ workflow testdata_example {
     File ref_fasta_index = download_ref_data.fasta_index
     File ref_dict = download_ref_data.dict
     File ref_gtf = download_ref_data.gtf
+    File ref_gff3 = resolved_ref_gff3
     File ref_bed = download_ref_data.bed
     # Outputs from the fastq, cram, and bam data downloads
     File r1_fastq = download_fastq_data.r1_fastq
@@ -240,6 +246,7 @@ workflow testdata_example {
     File pao1_fasta_index = download_pao1_ref.fasta_index
     File pao1_dict = download_pao1_ref.dict
     File pao1_gtf = download_pao1_ref.gtf
+    File pao1_gff3 = download_pao1_ref.gff3
     # Outputs from merged-FASTA + rRNA reference helpers
     File merged_demo_fasta = merge_fastas_with_prefix.merged_fasta
     File merged_demo_fasta_index = merge_fastas_with_prefix.merged_fasta_index
@@ -264,6 +271,7 @@ task validate_outputs {
     ref_fasta_index: "Reference FASTA index file to validate"
     ref_dict: "Reference FASTA dictionary file to validate"
     ref_gtf: "GTF annotation file to validate"
+    ref_gff3: "GFF3 annotation file to validate"
     ref_bed: "BED file to validate"
     r1_fastq: "R1 FASTQ file to validate"
     r2_fastq: "R2 FASTQ file to validate"
@@ -319,6 +327,7 @@ task validate_outputs {
     pao1_fasta_index: "PAO1 reference FASTA index file to validate"
     pao1_dict: "PAO1 reference FASTA dictionary file to validate"
     pao1_gtf: "PAO1 NCBI RefSeq GTF annotation file to validate"
+    pao1_gff3: "PAO1 NCBI RefSeq GFF3 annotation file to validate"
     merged_demo_fasta: "Merged FASTA produced by merge_fastas_with_prefix to validate"
     merged_demo_fasta_index: "Index for the merged FASTA to validate"
     rrna_fasta: "Human 45S rRNA precursor FASTA from download_rrna_reference to validate"
@@ -332,6 +341,7 @@ task validate_outputs {
     File ref_fasta_index
     File ref_dict
     File ref_gtf
+    File ref_gff3
     File ref_bed
     File r1_fastq
     File r2_fastq
@@ -387,6 +397,7 @@ task validate_outputs {
     File pao1_fasta_index
     File pao1_dict
     File pao1_gtf
+    File pao1_gff3
     File merged_demo_fasta
     File merged_demo_fasta_index
     File rrna_fasta
@@ -423,6 +434,7 @@ task validate_outputs {
     validate_file "~{ref_fasta_index}" "Reference FASTA index" || validation_passed=false
     validate_file "~{ref_dict}" "Reference FASTA dict" || validation_passed=false
     validate_file "~{ref_gtf}" "GTF file" || validation_passed=false
+    validate_file "~{ref_gff3}" "GFF3 file" || validation_passed=false
     validate_file "~{ref_bed}" "BED file" || validation_passed=false
     validate_file "~{r1_fastq}" "R1 FASTQ" || validation_passed=false
     validate_file "~{r2_fastq}" "R2 FASTQ" || validation_passed=false
@@ -483,6 +495,7 @@ task validate_outputs {
     validate_file "~{pao1_fasta_index}" "PAO1 reference FASTA index" || validation_passed=false
     validate_file "~{pao1_dict}" "PAO1 reference FASTA dict" || validation_passed=false
     validate_file "~{pao1_gtf}" "PAO1 NCBI RefSeq GTF" || validation_passed=false
+    validate_file "~{pao1_gff3}" "PAO1 NCBI RefSeq GFF3" || validation_passed=false
     validate_file "~{merged_demo_fasta}" "Merged demo FASTA" || validation_passed=false
     validate_file "~{merged_demo_fasta_index}" "Merged demo FASTA index" || validation_passed=false
     validate_file "~{rrna_fasta}" "Human 45S rRNA precursor FASTA" || validation_passed=false
@@ -502,7 +515,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 61"
+      echo "Total files validated: 63"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then
