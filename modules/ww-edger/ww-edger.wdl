@@ -23,11 +23,11 @@ task run_edger {
     topic: "transcriptomics,gene_expression"
     species: "human,eukaryote,prokaryote,virus"
     operation: "statistical_calculation"
-    input_sample_required: "counts_matrix:gene_expression_matrix:matrix,sample_metadata:report:textual_format"
+    input_sample_required: "counts_matrix:gene_expression_matrix:tsv,sample_metadata:report:textual_format"
     input_sample_optional: "none"
     input_reference_required: "none"
     input_reference_optional: "none"
-    output_sample: "edger_results:report:csv,edger_significant:report:csv,edger_normalized_counts:report:csv,edger_md_plot:plot:pdf,edger_volcano_plot:plot:pdf,edger_heatmap:plot:pdf"
+    output_sample: "edger_results:report:csv,edger_significant:report:csv,edger_normalized_counts:report:csv,edger_md_plot:plot:pdf,edger_volcano_plot:plot:pdf,edger_heatmap:plot:pdf,edger_bcv_plot:plot:pdf"
     output_reference: "none"
   }
 
