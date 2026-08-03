@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-mosdepth",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for calculating sequencing coverage depth using mosdepth",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-mosdepth.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "mosdepth",
+      "version": "0.3.14",
+      "license": "MIT",
+      "url": "https://github.com/brentp/mosdepth",
+      "ids": [
+        "doi:10.1093/bioinformatics/btx699"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

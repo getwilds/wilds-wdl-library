@@ -1,0 +1,32 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-sra-cellranger",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Emma Bishop <ebishop@fredhutch.org>",
+    "Hrishi Venkatesh <hvenkate@fredhutch.org>"
+  ],
+  "description": "WDL workflow to download single-cell RNA-seq data from SRA and process using Cell Ranger count",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-sra-cellranger.wdl",
+  "readme": "README.md",
+  "dependencies": {
+    "ww_sra": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-sra"
+    },
+    "ww_cellranger": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-cellranger"
+    },
+    "ww_cellbender": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-cellbender"
+    }
+  }
+}

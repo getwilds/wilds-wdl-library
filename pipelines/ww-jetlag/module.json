@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-jetlag",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Emma Bishop <ebishop@fredhutch.org>",
+    "Caroline Nondin <cnondin@fredhutch.org>"
+  ],
+  "description": "WILDS WDL pipeline for running Solar Jetlag (SJL) tile processing across an array of geographic tiles",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-jetlag.wdl",
+  "readme": "README.md",
+  "dependencies": {
+    "ww_sjl": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-sjl"
+    }
+  }
+}

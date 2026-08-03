@@ -23,7 +23,7 @@ Check if `$ARGUMENTS` exists in `modules/` or `pipelines/`:
 make lint NAME=$ARGUMENTS
 ```
 
-This runs sprocket, miniwdl, and WOMtool linters.
+This runs sprocket, miniwdl, WOMtool, Cirro validation (pipelines only), and module.json structural validation (if a module.json is present).
 
 If make targets aren't available, run sprocket directly:
 ```bash
@@ -34,7 +34,7 @@ make lint_sprocket NAME=$ARGUMENTS
 
 For each lint error:
 - Read the relevant WDL file
-- Fix the issue following project conventions (see CLAUDE.md)
+- Fix the issue following project conventions (see AGENTS.md)
 - Re-run linting to confirm the fix
 
 **Known Sprocket exceptions** (these are OK and won't cause failures):

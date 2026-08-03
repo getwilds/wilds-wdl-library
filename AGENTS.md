@@ -41,14 +41,18 @@ pipelines/ww-pipeline-name/
 
 ## Linting & Testing
 ```bash
-make lint NAME=ww-toolname          # All linting (Sprocket + miniwdl + WOMtool + Cirro)
-make lint_sprocket NAME=ww-toolname # Sprocket only
-make run NAME=ww-toolname           # Run testrun.wdl on all engines
-make run_sprocket NAME=ww-toolname  # Run testrun.wdl with Sprocket
-make run_miniwdl NAME=ww-toolname   # Run testrun.wdl with miniwdl
-make run_cromwell NAME=ww-toolname  # Run testrun.wdl with Cromwell
+make lint NAME=ww-toolname             # All linting (Sprocket + miniwdl + WOMtool + Cirro + module.json)
+make lint_sprocket NAME=ww-toolname    # Sprocket only
+make lint_module_json NAME=ww-toolname # Validate module.json structure only
+make run NAME=ww-toolname              # Run testrun.wdl on all engines
+make run_sprocket NAME=ww-toolname     # Run testrun.wdl with Sprocket
+make run_miniwdl NAME=ww-toolname      # Run testrun.wdl with miniwdl
+make run_cromwell NAME=ww-toolname     # Run testrun.wdl with Cromwell
 ```
 Sprocket exceptions (from sprocket.toml): TodoComment, ContainerUri, UnusedInput
+
+## Module Manifest (module.json)
+Every module/pipeline has a `module.json` following the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765); treat that upstream spec as ground truth for field definitions, not summaries in this repo. WILDS-specific notes: omit it only for brand-new modules if truly necessary (add one anyway when possible), this repo's own `license` is always `"MIT"`, per-tool `tools[].license` needs a current SPDX identifier (use `LicenseRef-*` placeholders for nonstandard licenses and flag them in the PR), and `tools[]` uses `url`/`ids` fields, never legacy `homepage`/`doi`. See `.github/CONTRIBUTING.md` for details and `pipelines/ww-bwa-gatk/module.json` for the dependency-declaration pattern.
 
 ## Common Development Pitfalls
 - Docker image version conflicts (especially with complex tools like ColabFold) - always pin versions

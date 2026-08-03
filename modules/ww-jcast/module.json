@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-jcast",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for JCAST (Junction Centric Alternative Splicing Translator)",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-jcast.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "jcast",
+      "version": "0.3.5",
+      "license": "MIT",
+      "url": "https://github.com/ed-lau/jcast"
+    }
+  ],
+  "dependencies": {}
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-deepvariant",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for DeepVariant, Google's deep-learning-based germline variant caller",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-deepvariant.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "deepvariant",
+      "version": "1.10.0",
+      "license": "BSD-3-Clause",
+      "url": "https://github.com/google/deepvariant",
+      "ids": [
+        "doi:10.1038/nbt.4235"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

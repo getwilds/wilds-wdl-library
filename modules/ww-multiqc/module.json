@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-multiqc",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for MultiQC, a tool that aggregates results from multiple bioinformatics analyses into a single report",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-multiqc.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "multiqc",
+      "version": "1.33",
+      "license": "GPL-3.0-only",
+      "url": "https://multiqc.info/",
+      "ids": [
+        "doi:10.1093/bioinformatics/btw354"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

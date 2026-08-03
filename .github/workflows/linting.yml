@@ -102,3 +102,18 @@ jobs:
     -
       name: Validate Cirro Configurations
       run: python .github/scripts/validate_cirro.py
+
+  module_json_validation:
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v4
+    -
+      name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.13
+    -
+      name: Validate module.json Manifests
+      run: python .github/scripts/validate_module_json.py

@@ -1,25 +1,27 @@
 {
   "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
-  "name": "ww-bwa-gatk",
+  "name": "ww-imputation",
   "license": "MIT",
   "authors": [
-    "Emma Bishop <ebishop@fredhutch.org>"
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Emma Bishop <ebishop@fredhutch.org>",
+    "Louisa Goss <lgoss2@fredhutch.org>"
   ],
-  "description": "WILDS WDL pipeline aligning sequencing reads with BWA-MEM and performing GATK preprocessing (mark duplicates + base recalibration)",
+  "description": "WILDS WDL pipeline for genotype imputation from low-coverage whole genome sequencing data using GLIMPSE2",
   "repository": "https://github.com/getwilds/wilds-wdl-library",
   "homepage": "https://getwilds.org/",
-  "entrypoint": "ww-bwa-gatk.wdl",
+  "entrypoint": "ww-imputation.wdl",
   "readme": "README.md",
   "dependencies": {
-    "ww_bwa": {
+    "ww_glimpse2": {
       "git": "https://github.com/getwilds/wilds-wdl-library",
       "branch": "main",
-      "path": "modules/ww-bwa"
+      "path": "modules/ww-glimpse2"
     },
-    "ww_gatk": {
+    "ww_bcftools": {
       "git": "https://github.com/getwilds/wilds-wdl-library",
       "branch": "main",
-      "path": "modules/ww-gatk"
+      "path": "modules/ww-bcftools"
     }
   }
 }

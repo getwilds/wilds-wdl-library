@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-bcftools",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for variant calling and manipulation using bcftools",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-bcftools.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "bcftools",
+      "version": "1.19",
+      "license": "MIT",
+      "url": "https://www.htslib.org/"
+    }
+  ],
+  "dependencies": {}
+}

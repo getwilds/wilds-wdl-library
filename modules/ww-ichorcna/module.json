@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-ichorcna",
+  "license": "MIT",
+  "authors": [
+    "Emma Bishop <ebishop@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for tumor fraction estimation in cfDNA using ichorCNA",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-ichorcna.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "hmmcopy",
+      "version": "1.0.0",
+      "license": "GPL-2.0-only",
+      "url": "https://github.com/shahcompbio/hmmcopy_utils"
+    },
+    {
+      "name": "ichorcna",
+      "version": "0.2.0",
+      "license": "GPL-3.0-or-later",
+      "url": "https://github.com/broadinstitute/ichorCNA"
+    }
+  ],
+  "dependencies": {}
+}

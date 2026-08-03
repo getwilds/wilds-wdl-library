@@ -1,25 +1,27 @@
 {
   "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
-  "name": "ww-bwa-gatk",
+  "name": "ww-sra-star",
   "license": "MIT",
   "authors": [
-    "Emma Bishop <ebishop@fredhutch.org>"
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Alice Berger <aberger@fredhutch.org>",
+    "Janet Young <jyoung@fredhutch.org>"
   ],
-  "description": "WILDS WDL pipeline aligning sequencing reads with BWA-MEM and performing GATK preprocessing (mark duplicates + base recalibration)",
+  "description": "WILDS WDL pipeline demonstrating RNA-seq analysis from SRA download to alignment using modular WILDS components",
   "repository": "https://github.com/getwilds/wilds-wdl-library",
   "homepage": "https://getwilds.org/",
-  "entrypoint": "ww-bwa-gatk.wdl",
+  "entrypoint": "ww-sra-star.wdl",
   "readme": "README.md",
   "dependencies": {
-    "ww_bwa": {
+    "ww_sra": {
       "git": "https://github.com/getwilds/wilds-wdl-library",
       "branch": "main",
-      "path": "modules/ww-bwa"
+      "path": "modules/ww-sra"
     },
-    "ww_gatk": {
+    "ww_star": {
       "git": "https://github.com/getwilds/wilds-wdl-library",
       "branch": "main",
-      "path": "modules/ww-gatk"
+      "path": "modules/ww-star"
     }
   }
 }

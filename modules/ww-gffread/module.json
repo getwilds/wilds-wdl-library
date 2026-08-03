@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-gffread",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module wrapping gffread for GTF/GFF3 annotation manipulation",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-gffread.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "gffread",
+      "version": "0.12.7",
+      "license": "MIT",
+      "url": "https://github.com/gpertea/gffread",
+      "ids": [
+        "doi:10.12688/f1000research.23297.2"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

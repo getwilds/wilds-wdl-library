@@ -1,0 +1,57 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-rnaseq",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Emma Bishop <ebishop@fredhutch.org>",
+    "Elaine Glenny <eglenny@fredhutch.org>"
+  ],
+  "description": "Comprehensive RNA-seq pipeline covering read QC, adapter trimming, alignment, post-alignment QC, differential expression, and aggregated reporting",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-rnaseq.wdl",
+  "readme": "README.md",
+  "dependencies": {
+    "ww_fastqc": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-fastqc"
+    },
+    "ww_trimgalore": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-trimgalore"
+    },
+    "ww_star": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-star"
+    },
+    "ww_bedparse": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-bedparse"
+    },
+    "ww_rseqc": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-rseqc"
+    },
+    "ww_deseq2": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-deseq2"
+    },
+    "ww_multiqc": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-multiqc"
+    },
+    "ww_gffread": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-gffread"
+    }
+  }
+}

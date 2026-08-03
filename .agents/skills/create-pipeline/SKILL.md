@@ -43,7 +43,7 @@ Present the design to the user for confirmation before proceeding.
 
 ### 4. Create Pipeline Files
 
-Create four files in `pipelines/ww-$0/`:
+Create five files in `pipelines/ww-$0/`:
 
 #### `ww-$0.wdl`
 - `version 1.0`
@@ -87,6 +87,12 @@ Create four files in `pipelines/ww-$0/`:
 #### `README.md`
 - Follow existing pipeline README format (see `pipelines/ww-sra-star/README.md` or `pipelines/ww-star-deseq2/README.md`)
 - Include: badges, overview, complexity level, pipeline structure, module dependencies, usage, input parameters, output files, testing section, citations
+
+#### `module.json`
+- Use `pipelines/ww-bwa-gatk/module.json` as the template. Field definitions come from the upstream spec linked in `.github/CONTRIBUTING.md`; don't rely on your own summary of that spec, since it has changed before.
+- `name` is the pipeline directory name, `license` is `"MIT"`, omit the top-level `version` field
+- Add a `dependencies{}` entry for each module imported in `ww-$0.wdl`, one per module, following the `git`/`branch`/`path` pattern in the template (pointing at this repo's `main` branch and `modules/ww-<name>`)
+- Run `make lint_module_json NAME=ww-$0` to validate structure.
 
 ### 5. Lint the Pipeline
 

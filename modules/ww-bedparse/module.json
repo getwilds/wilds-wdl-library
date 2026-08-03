@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-bedparse",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for genomic file format conversions using bedparse",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-bedparse.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "bedparse",
+      "version": "0.2.3",
+      "license": "MIT",
+      "url": "https://github.com/tleonardi/bedparse",
+      "ids": [
+        "doi:10.21105/joss.01228"
+      ]
+    }
+  ],
+  "dependencies": {}
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-sjl",
+  "license": "MIT",
+  "authors": [
+    "Caroline Nondin <cnondin@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for calculating sunrise and sunset time differences across geographic tiles as part of the Solar Jetlag (SJL) project",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-sjl.wdl",
+  "readme": "README.md",
+  "dependencies": {}
+}

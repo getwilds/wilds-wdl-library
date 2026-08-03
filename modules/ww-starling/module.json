@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-starling",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for STARLING, a latent-space probabilistic denoising diffusion model for predicting structural ensembles of intrinsically disordered proteins",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-starling.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "starling",
+      "version": "2.0.0a3",
+      "license": "MIT",
+      "url": "https://github.com/idptools/starling",
+      "ids": [
+        "doi:10.1038/s41592-023-02159-5"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
