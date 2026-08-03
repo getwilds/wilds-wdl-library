@@ -50,6 +50,8 @@ Converts a GFF3 annotation file to GTF format. Useful when an upstream source (e
 **Outputs:**
 - `gtf_file` (File): GTF-format annotation converted from the input GFF3
 
+**A note on gffread + `?` strand values:** GFF3 allows a strand value of `?` for "relevant, but unknown" (e.g. some annotators use this for origin-of-replication features), but `gffread` cannot parse it and errors out. The `gff3_to_gtf` task handles this automatically by stripping any row with strand `?` before invoking `gffread`. These rows are not gene/transcript features, so nothing relevant to downstream RNA-seq quantification is lost.
+
 ## Usage as a Module
 
 ### Importing into Your Workflow

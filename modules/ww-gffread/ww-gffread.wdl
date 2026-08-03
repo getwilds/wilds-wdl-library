@@ -91,8 +91,13 @@ task gff3_to_gtf {
   command <<<
     set -eo pipefail
 
+    # Some GFF3s can include features with strand `?` 
+    # (GFF3-legal for "relevant but unknown"), which gffread cannot parse.
+    # These are not gene/transcript features, so drop them before conversion.
+    awk -F'\t' '/^#/ || $7 != "?"' "~{input_gff3}" > stripped.gff3
+
     # -T emits GTF instead of the default GFF3
-    gffread "~{input_gff3}" -T -o "~{output_prefix}.gtf"
+    gffread stripped.gff3 -T -o "~{output_prefix}.gtf"
   >>>
 
   output {
