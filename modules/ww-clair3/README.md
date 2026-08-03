@@ -50,7 +50,7 @@ Runs Clair3 to call germline variants from aligned reads using deep learning pil
 - `ctg_name` (String?, optional): Contig/chromosome name to restrict calling
 - `include_all_ctgs` (Boolean, default=false): Call on all contigs (required for non-human species)
 - `pileup_only` (Boolean, default=false): Use only the pileup model for faster variant calling (skips full-alignment stage)
-- `gpu_enabled` (Boolean, default=false): Enable GPU acceleration for Clair3 inference. Note: the `gpus` runtime attribute is specified as a string (e.g., `"1"`) rather than an integer, as required by Fred Hutch PROOF/Cromwell configuration, but can be adjusted as necessary.
+- `gpu_enabled` (Boolean, default=false): Enable GPU acceleration for Clair3 inference. Passed directly to the `gpu` runtime attribute.
 - `cpu_cores` (Int, default=8): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=32): Memory allocated for the task in GB
 - `docker_image` (String, default=`getwilds/clair3:2.0.0`): Docker image to use for this task

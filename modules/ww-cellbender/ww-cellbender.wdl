@@ -104,6 +104,6 @@ task remove_background {
     docker: docker_image
     cpu: cpu_cores
     memory: "~{memory_gb} GB"
-    gpus: if gpu_enabled then "1" else "0"
+    gpu: gpu_enabled
   }
 }

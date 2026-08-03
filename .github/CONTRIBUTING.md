@@ -145,12 +145,14 @@ Note: `testrun.wdl` files use relative path imports (unlike the pipeline source 
 - Use descriptive parameter names
 - Include optional parameters with sensible defaults
 - Support both single samples and batch processing where applicable
+- GPU tasks should expose a `Boolean gpu_enabled` input and use `gpu: gpu_enabled` in the runtime block
 
 **Docker image preferences:**
 
 - Use images from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library) when available
 - If creating new images, follow WILDS container standards and consider contributing to the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library).
 - Specify exact image versions (avoid `latest` tags)
+- Declare the image as an overridable input parameter with a pinned default: `String docker_image = "getwilds/tool:version"` in the task `input` block, referenced via `docker: docker_image` in the `runtime` block
 - Document image dependencies in the README
 
 **Module manifest (`module.json`):**

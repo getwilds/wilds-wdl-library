@@ -49,8 +49,10 @@ workflow sra_cellranger {
     organize_results: "When true, package all Cell Ranger outputs into a tarball organized by sample subdirectory."
     output_prefix: "Prefix for the organized results tarball filename (default: 'cellranger_results')."
     cellbender_gpu_enabled: "Enable GPU acceleration for CellBender (default: true); set to false for CPU-only execution."
-    cellbender_expected_cells: "Optional expected number of real cells per sample passed to CellBender."
-    cellbender_total_droplets_included: "Optional total number of droplets for CellBender to analyze per sample."
+    cellbender_expected_cells: "Optional expected number of real cells, applied to every sample. Ignored for samples covered by `cellbender_expected_cells_each`."
+    cellbender_total_droplets_included: "Optional total number of droplets for CellBender to analyze, applied to every sample. Ignored for samples covered by `cellbender_total_droplets_each`."
+    cellbender_expected_cells_each: "Optional per-sample expected number of real cells, in the same order as `sra_id_list`/`sra_id_file`. Must be the same length as the sample list. Takes precedence over `cellbender_expected_cells`."
+    cellbender_total_droplets_each: "Optional per-sample total number of droplets for CellBender to analyze, in the same order as `sra_id_list`/`sra_id_file`. Must be the same length as the sample list. Takes precedence over `cellbender_total_droplets_included`."
     cellbender_epochs: "Number of CellBender training epochs (default: 150)."
     cellbender_low_count_threshold: "Droplets with total UMI count below this value are excluded from CellBender analysis (default: 5)."
     cellbender_cpu_cores: "Number of CPU cores for CellBender (default: 4)."
@@ -76,6 +78,8 @@ workflow sra_cellranger {
     Boolean cellbender_gpu_enabled = true
     Int? cellbender_expected_cells
     Int? cellbender_total_droplets_included
+    Array[Int]? cellbender_expected_cells_each
+    Array[Int]? cellbender_total_droplets_each
     Int cellbender_epochs = 150
     Int cellbender_low_count_threshold = 5
     Int cellbender_cpu_cores = 4
@@ -90,7 +94,19 @@ workflow sra_cellranger {
     then read_lines(select_first([sra_id_file]))
     else select_first([sra_id_list])
 
-  scatter (id in sra_ids) {
+  # Per-sample CellBender arrays, when provided, must line up 1:1 with
+  # sra_ids. Fails loudly before any SRA downloads start, rather than
+  # silently mis-pairing samples with the wrong expected_cells/
+  # total_droplets values partway through the run.
+  call check_per_sample_lengths { input:
+      sample_ids = sra_ids,
+      cellbender_expected_cells_each = cellbender_expected_cells_each,
+      cellbender_total_droplets_each = cellbender_total_droplets_each
+  }
+
+  scatter (i in range(length(check_per_sample_lengths.validated_ids))) {
+    String id = check_per_sample_lengths.validated_ids[i]
+
     # Download FASTQ files from SRA
     call sra_tasks.fastqdump { input:
         sra_id = id,
@@ -186,13 +202,22 @@ workflow sra_cellranger {
                   else if defined(run_count_hpc_cromwell.raw_h5) then run_count_hpc_cromwell.raw_h5
                   else run_count_hpc_sprocket.raw_h5
 
+    # Per-sample CellBender values take precedence over the broadcast
+    # scalars when provided (length already validated above).
+    Int? sample_expected_cells = if defined(cellbender_expected_cells_each)
+      then select_first([cellbender_expected_cells_each])[i]
+      else cellbender_expected_cells
+    Int? sample_total_droplets = if defined(cellbender_total_droplets_each)
+      then select_first([cellbender_total_droplets_each])[i]
+      else cellbender_total_droplets_included
+
     # Run CellBender on samples that produced a raw h5 (skipped samples won't have one)
     if (defined(raw_h5)) {
       call cellbender_tasks.remove_background { input:
         input_h5 = select_first([raw_h5]),
         sample_name = id,
-        expected_cells = cellbender_expected_cells,
-        total_droplets_included = cellbender_total_droplets_included,
+        expected_cells = sample_expected_cells,
+        total_droplets_included = sample_total_droplets,
         epochs = cellbender_epochs,
         low_count_threshold = cellbender_low_count_threshold,
         gpu_enabled = cellbender_gpu_enabled,
@@ -238,6 +263,60 @@ workflow sra_cellranger {
     Array[File] cellbender_output_h5s = select_all(remove_background.output_h5)
     Array[File] cellbender_filtered_h5s = select_all(remove_background.filtered_h5)
     File? organized_results = organize_outputs.results_zip
+  }
+}
+
+task check_per_sample_lengths {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Validate that optional per-sample CellBender arrays, if provided, are the same length as the sample list. Passes sample_ids through unchanged so downstream calls can depend on successful validation."
+    outputs: {
+        validated_ids: "sample_ids, unchanged, once length validation has passed"
+    }
+  }
+
+  parameter_meta {
+    sample_ids: "Sample IDs being processed by the pipeline"
+    cellbender_expected_cells_each: "Optional per-sample expected_cells array; must match length(sample_ids) if provided"
+    cellbender_total_droplets_each: "Optional per-sample total_droplets_included array; must match length(sample_ids) if provided"
+  }
+
+  input {
+    Array[String] sample_ids
+    Array[Int]? cellbender_expected_cells_each
+    Array[Int]? cellbender_total_droplets_each
+  }
+
+  Int expected_cells_count = length(select_first([cellbender_expected_cells_each, []]))
+  Int total_droplets_count = length(select_first([cellbender_total_droplets_each, []]))
+
+  command <<<
+    set -eo pipefail
+
+    SAMPLE_COUNT=~{length(sample_ids)}
+
+    if [ ~{expected_cells_count} -ne 0 ] && [ ~{expected_cells_count} -ne "$SAMPLE_COUNT" ]; then
+      echo "ERROR: cellbender_expected_cells_each has ~{expected_cells_count} element(s) but there are $SAMPLE_COUNT sample(s)" >&2
+      exit 1
+    fi
+
+    if [ ~{total_droplets_count} -ne 0 ] && [ ~{total_droplets_count} -ne "$SAMPLE_COUNT" ]; then
+      echo "ERROR: cellbender_total_droplets_each has ~{total_droplets_count} element(s) but there are $SAMPLE_COUNT sample(s)" >&2
+      exit 1
+    fi
+
+    printf '%s\n' ~{sep=' ' sample_ids} > validated_ids.txt
+  >>>
+
+  output {
+    Array[String] validated_ids = read_lines("validated_ids.txt")
+  }
+
+  runtime {
+    docker: "ubuntu:22.04"
+    cpu: 1
+    memory: "2 GB"
   }
 }
 
