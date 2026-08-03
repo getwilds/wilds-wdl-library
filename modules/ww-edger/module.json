@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-edger",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for differential expression analysis using edgeR",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-edger.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "edger",
+      "version": "4.10.0",
+      "license": "GPL-2.0-or-later",
+      "url": "https://bioconductor.org/packages/edgeR/",
+      "ids": [
+        "doi:10.1093/bioinformatics/btp616"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
