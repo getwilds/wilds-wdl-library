@@ -1,0 +1,204 @@
+version 1.0
+
+import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "./ww-edger.wdl" as ww_edger
+
+workflow edger_example {
+  call ww_testdata.generate_pasilla_counts as generate_test_data { input:
+      n_samples = 7,
+      n_genes = 10000,
+      condition_name = "condition"
+  }
+
+  call ww_deseq2_combine_counts as combine_counts { input:
+      gene_count_files = generate_test_data.individual_count_files,
+      sample_names = generate_test_data.sample_names,
+      sample_conditions = generate_test_data.sample_conditions
+  }
+
+  call ww_edger.run_edger { input:
+      counts_matrix = combine_counts.counts_matrix,
+      sample_metadata = combine_counts.sample_metadata,
+      condition_column = "condition",
+      reference_level = "",
+      contrast = ""
+  }
+
+  call validate_outputs { input:
+      edger_results = run_edger.edger_results,
+      edger_significant = run_edger.edger_significant,
+      normalized_counts = run_edger.edger_normalized_counts,
+      expected_samples = length(generate_test_data.sample_names)
+  }
+
+  output {
+    File combined_counts_matrix = combine_counts.counts_matrix
+    File final_metadata = combine_counts.sample_metadata
+    File edger_all_results = run_edger.edger_results
+    File edger_significant_results = run_edger.edger_significant
+    File edger_normalized_cpm = run_edger.edger_normalized_counts
+    File edger_md_plot = run_edger.edger_md_plot
+    File edger_volcano_plot = run_edger.edger_volcano_plot
+    File edger_heatmap = run_edger.edger_heatmap
+    File edger_bcv_plot = run_edger.edger_bcv_plot
+    File validation_report = validate_outputs.validation_report
+  }
+}
+
+task ww_deseq2_combine_counts {
+  meta {
+    description: "Combine STAR gene count files from multiple samples into a single count matrix for edgeR input"
+    outputs: {
+        counts_matrix: "Combined matrix of gene-level counts from all samples",
+        sample_metadata: "Metadata file containing sample names and conditions"
+    }
+  }
+
+  parameter_meta {
+    gene_count_files: "Array of STAR gene count files (ReadsPerGene.out.tab) from each sample"
+    sample_names: "Array of sample names corresponding to the gene_count_files"
+    sample_conditions: "Array of experimental conditions corresponding to each sample"
+    count_column: "Column number in STAR count files to extract (2=unstranded, 3=forward strand, 4=reverse strand)"
+    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    Array[File] gene_count_files
+    Array[String] sample_names
+    Array[String] sample_conditions
+    Int count_column = 2
+    Int memory_gb = 4
+    Int cpu_cores = 1
+    String docker_image = "getwilds/python-utils:0.1.0"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    curl -so combine_star_counts.py \
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/combine_star_counts.py"
+
+    python combine_star_counts.py \
+      --input ~{sep=" " gene_count_files} \
+      --names ~{sep=" " sample_names} \
+      --conditions ~{sep=" " sample_conditions} \
+      --output combined_counts_matrix.txt \
+      --count_column ~{count_column}
+  >>>
+
+  output {
+    File counts_matrix = "combined_counts_matrix.txt"
+    File sample_metadata = "sample_metadata.txt"
+  }
+
+  runtime {
+    docker: docker_image
+    memory: "~{memory_gb} GB"
+    cpu: cpu_cores
+  }
+}
+
+task validate_outputs {
+  meta {
+    description: "Validate edgeR analysis outputs for correctness and completeness"
+    outputs: {
+        validation_report: "Report summarizing validation results and any issues found"
+    }
+  }
+
+  parameter_meta {
+    edger_results: "edgeR all-genes results file to validate"
+    edger_significant: "Significant results file to validate"
+    normalized_counts: "Normalized CPM counts file to validate"
+    expected_samples: "Expected number of samples in the analysis"
+    expected_genes_min: "Minimum expected number of genes in results"
+  }
+
+  input {
+    File edger_results
+    File edger_significant
+    File normalized_counts
+    Int expected_samples
+    Int expected_genes_min = 1000
+  }
+
+  command <<<
+    set -eo pipefail
+
+    python3 << 'EOF'
+import pandas as pd
+import sys
+
+validation_issues = []
+
+try:
+    results_df = pd.read_csv("~{edger_results}")
+    print(f"Results file loaded: {len(results_df)} genes")
+
+    required_cols = ["logFC", "logCPM", "F", "PValue", "FDR"]
+    missing_cols = [col for col in required_cols if col not in results_df.columns]
+    if missing_cols:
+        validation_issues.append(f"Missing required columns in results: {missing_cols}")
+    else:
+        print("All required columns present in results")
+
+    if len(results_df) < ~{expected_genes_min}:
+        validation_issues.append(f"Too few genes in results: {len(results_df)} < ~{expected_genes_min}")
+
+except Exception as e:
+    validation_issues.append(f"Failed to validate results file: {str(e)}")
+
+try:
+    sig_df = pd.read_csv("~{edger_significant}")
+    print(f"Significant results file loaded: {len(sig_df)} genes")
+
+    if len(sig_df) > len(results_df):
+        validation_issues.append("More significant genes than total genes")
+
+except Exception as e:
+    validation_issues.append(f"Failed to validate significant results file: {str(e)}")
+
+try:
+    counts_df = pd.read_csv("~{normalized_counts}", index_col=0)
+    print(f"Normalized CPM loaded: {counts_df.shape[0]} genes, {counts_df.shape[1]} samples")
+
+    if counts_df.shape[1] != ~{expected_samples}:
+        validation_issues.append(f"Expected ~{expected_samples} samples, got {counts_df.shape[1]}")
+
+    if (counts_df < 0).any().any():
+        validation_issues.append("Negative values found in normalized CPM counts")
+
+except Exception as e:
+    validation_issues.append(f"Failed to validate normalized counts: {str(e)}")
+
+with open("validation_report.txt", "w") as f:
+    f.write("edgeR Output Validation Report\n")
+    f.write("=" * 33 + "\n\n")
+
+    if validation_issues:
+        f.write("VALIDATION FAILED\n")
+        f.write("Issues found:\n")
+        for issue in validation_issues:
+            f.write(f"- {issue}\n")
+        sys.exit(1)
+    else:
+        f.write("VALIDATION PASSED\n")
+        f.write("All outputs validated successfully.\n")
+
+EOF
+
+    echo "Validation completed successfully"
+  >>>
+
+  output {
+    File validation_report = "validation_report.txt"
+  }
+
+  runtime {
+    docker: "getwilds/python-utils:0.1.0"
+    memory: "2 GB"
+    cpu: 1
+  }
+}
