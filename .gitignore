@@ -31,3 +31,8 @@ cromwell-workflow-logs/
 _LAST
 [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9]_*/
 __pycache__/
+
+# module signing keys (never commit private key material)
+*signing-key*
+*signing_key*
+id_ed25519*

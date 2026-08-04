@@ -167,6 +167,22 @@ lint_module_json: check_name ## Validate module.json manifests, if present (use 
 
 lint: lint_sprocket lint_miniwdl lint_womtool lint_cirro lint_module_json ## Run all linting checks
 
+##@ Signing
+
+sign_modules: ## Sign module.json manifests (use KEY=path/to/private/key, NAME=foo for one item, or ALL=1 for everything; without KEY, does a dry run over everything)
+	@if [ -z "$(KEY)" ]; then \
+		echo "No KEY= given; doing a dry run over all modules/pipelines. Pass KEY=path/to/private/key to actually sign."; \
+		python3 .github/scripts/sign_modules.py --key /dev/null --all --dry-run; \
+	elif [ "$(ALL)" = "1" ]; then \
+		python3 .github/scripts/sign_modules.py --key $(KEY) --all; \
+	elif [ -n "$(NAME)" ] && [ "$(NAME)" != "*" ]; then \
+		sprocket dev module sign --key $(KEY) --manifest-path modules/$(NAME) 2>/dev/null || \
+		sprocket dev module sign --key $(KEY) --manifest-path pipelines/$(NAME); \
+	else \
+		echo "Pass NAME=foo for one module/pipeline, or ALL=1 to sign everything."; \
+		exit 1; \
+	fi
+
 ##@ Run
 
 run_sprocket: check_sprocket check_name ## Run sprocket on testrun WDLs (use NAME=foo, TYPE=modules|pipelines, TARGET=ci|hpc, SPROCKET_CONFIG=path, NUM_RETRIES=N)

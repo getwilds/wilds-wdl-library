@@ -157,7 +157,7 @@ Note: `testrun.wdl` files use relative path imports (unlike the pipeline source 
 
 **Module manifest (`module.json`):**
 
-Every module and pipeline in this library ships a `module.json` manifest, an early adoption of the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765). For the schema itself (field definitions, dependency selectors, versioning rules) see the spec's [`modules/SPEC.md`](https://github.com/openwdl/wdl/blob/wdl-1.4/modules/SPEC.md) and [`module.schema.json`](https://github.com/openwdl/wdl/blob/wdl-1.4/modules/schemas/module.schema.json). Since the spec is still unmerged and changing, treat that upstream source as ground truth over any summary written here or elsewhere in this repo.
+Every module and pipeline in this library ships a `module.json` manifest, an early adoption of the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765). We're adding these ahead of that spec being finalized, so the library is ready as WDL module-management tooling (like Sprocket's symbolic module imports) matures; the spec itself is still an unmerged draft and its field definitions may still change. For the schema itself (field definitions, dependency selectors, versioning rules) see the spec's [`modules/SPEC.md`](https://github.com/openwdl/wdl/blob/wdl-1.4/modules/SPEC.md) and [`module.schema.json`](https://github.com/openwdl/wdl/blob/wdl-1.4/modules/schemas/module.schema.json). Since the spec is still unmerged and changing, treat that upstream source as ground truth over any summary written here or elsewhere in this repo.
 
 WILDS-specific conventions on top of the spec:
 
@@ -166,6 +166,19 @@ WILDS-specific conventions on top of the spec:
 - **This repo's own `license` is always `"MIT"`.** Per-tool licenses in `tools[]` must use current [SPDX identifiers](https://spdx.org/licenses/); the parser rejects deprecated forms (e.g. `GPL-3.0-only`, not `GPL-3.0`).
 - **For a tool with a nonstandard license**, use an SPDX `LicenseRef-` placeholder (e.g. `"LicenseRef-VarScan-NonCommercial"`) and flag it for reviewer attention in your PR description, since there is no real SPDX identifier for these.
 - **See `pipelines/ww-bwa-gatk/module.json`** for the reference pattern for declaring module dependencies in a pipeline's manifest.
+
+**Module signature (`module.sig`):**
+
+Every module and pipeline with a `module.json` also carries a `module.sig`, an Ed25519 signature over the module's deterministic content hash, produced by `sprocket dev module sign`. This lets a consumer verify that a module's files (WDL, README, scripts, everything except `module.json`'s own `module.sig`/`module-lock.json`) haven't been tampered with since WILDS published them.
+
+**These signatures aren't usable yet.** `sprocket dev module sign`/`sprocket dev module verify` are not in any released Sprocket version; we're adding `module.sig` files now, ahead of that tooling shipping, so the library is ready once it does. There's nothing to check or verify against these signatures today.
+
+A few things to know:
+
+- **You don't need to sign anything yourself.** CI re-signs any module or pipeline whose directory content changed in a push to `main` (see `.github/workflows/sign-modules.yml` and `.github/scripts/sign_modules.py`) and commits the updated `module.sig` automatically. Don't hand-edit `module.sig` files or worry about them in your PR.
+- **Any change to a module's directory invalidates its old signature**, not just WDL edits: a README tweak, a fixed typo, a new test fixture, anything under `modules/ww-toolname/` or `pipelines/ww-pipeline-name/` changes the content hash CI signs.
+- **Ed25519 signatures are deterministic**: signing the same content with the same key always produces the same signature bytes. If `module.sig` changes with no apparent change to the module's content, the key used to sign it changed instead (e.g. after rotating the signing key).
+- **The signing key is a standard Ed25519 SSH key** (the kind `ssh-keygen -t ed25519` produces), in OpenSSH format. `sprocket dev module sign` and `sprocket dev module verify` are not yet in a released Sprocket version; see the pinned commit in `.github/workflows/sign-modules.yml` for what CI currently installs.
 
 ## Pipeline Development Guidelines
 
