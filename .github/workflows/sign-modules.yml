@@ -1,0 +1,75 @@
+name: Sign Modules
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  sign-modules:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      -
+        name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+
+      -
+        name: Set Up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      -
+        name: Install Sprocket (feat/module-porcelain, pinned commit)
+        # `sprocket dev module sign` is not yet in a released Sprocket
+        # version. This installs from the specific commit on
+        # stjude-rust-labs/sprocket's feat/module-porcelain branch that
+        # WILDS has validated module signing against. Re-pin this SHA
+        # deliberately when picking up upstream changes, and switch to a
+        # tagged release once module signing ships in one.
+        run: |
+          cargo install --git https://github.com/stjude-rust-labs/sprocket \
+            --rev fc251dac5ec354256857385eab64bb94861c93c1 \
+            --locked sprocket
+
+      -
+        name: Write signing key
+        run: |
+          umask 077
+          printf '%s\n' "${{ secrets.WILDS_SIGNING_KEY }}" > /tmp/wilds_signing_key
+          chmod 600 /tmp/wilds_signing_key
+
+      -
+        name: Sign changed modules and pipelines
+        run: |
+          python3 .github/scripts/sign_modules.py \
+            --key /tmp/wilds_signing_key \
+            --before "${{ github.event.before }}" \
+            --after "${{ github.sha }}"
+
+      -
+        name: Remove signing key
+        if: always()
+        run: rm -f /tmp/wilds_signing_key
+
+      -
+        name: Commit updated signatures
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add modules/*/module.sig pipelines/*/module.sig
+          if git diff --cached --quiet; then
+            echo "No signature changes to commit"
+          else
+            git commit -m "Update module signatures [skip ci]"
+            git push
+          fi
