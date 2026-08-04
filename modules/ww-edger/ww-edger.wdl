@@ -65,7 +65,7 @@ task run_edger {
     set -eo pipefail
 
     curl -so edger_analysis.R \
-      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-edger-module/modules/ww-edger/edger_analysis.R"
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-edger/edger_analysis.R"
 
     Rscript edger_analysis.R \
       --counts_file="~{counts_matrix}" \
