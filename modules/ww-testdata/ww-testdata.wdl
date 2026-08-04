@@ -8,13 +8,14 @@ task download_ref_data {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Downloads chromosome or whole-genome FASTA + GTF + BED + samtools index/dict from a UCSC assembly."
+    description: "Downloads chromosome or whole-genome FASTA + GTF + BED + samtools index/dict from a UCSC assembly. For hg38, also fetches a matching GFF3 from NCBI (UCSC doesn't publish one)."
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         fasta: "Reference genome FASTA file",
         fasta_index: "Index file for the reference FASTA",
         dict: "Dictionary file for the reference FASTA",
         gtf: "GTF file containing gene annotations for the specified chromosome",
+        gff3: "GFF3 file containing gene annotations for the specified chromosome (only populated when version is hg38)",
         bed: "BED file covering the entire chromosome"
     }
   }
@@ -100,6 +101,48 @@ task download_ref_data {
     # Get length from the FASTA file
     CHR_LENGTH=$(($(grep -v "^>" "~{final_output_name}.fa" | tr -d '\n' | wc -c)))
     echo -e "~{chromo}\t0\t${CHR_LENGTH}" > "~{final_output_name}.bed"
+
+    # UCSC doesn't publish a GFF3 alongside its GTF, so for hg38 fetch the
+    # matching annotation from NCBI instead (coordinates match UCSC's hg38
+    # base-for-base, since both trace back to GRCh38). NCBI's GFF3 uses
+    # RefSeq accessions (e.g. NC_000001.11) rather than UCSC chromosome
+    # names, so map the standard chromosome names before filtering.
+    # Note: --no-check-certificate is required because the getwilds/samtools:1.11
+    # container's CA bundle is older than the intermediate CA that NCBI's FTP
+    # endpoint presents, so strict TLS verification fails (see download_pao1_ref).
+    if [ "~{version}" = "hg38" ]; then
+      declare -A CHR_ACCESSIONS=(
+        [chr1]="NC_000001.11" [chr2]="NC_000002.12" [chr3]="NC_000003.12"
+        [chr4]="NC_000004.12" [chr5]="NC_000005.10" [chr6]="NC_000006.12"
+        [chr7]="NC_000007.14" [chr8]="NC_000008.11" [chr9]="NC_000009.12"
+        [chr10]="NC_000010.11" [chr11]="NC_000011.10" [chr12]="NC_000012.12"
+        [chr13]="NC_000013.11" [chr14]="NC_000014.9" [chr15]="NC_000015.10"
+        [chr16]="NC_000016.10" [chr17]="NC_000017.11" [chr18]="NC_000018.10"
+        [chr19]="NC_000019.10" [chr20]="NC_000020.11" [chr21]="NC_000021.9"
+        [chr22]="NC_000022.11" [chrX]="NC_000023.11" [chrY]="NC_000024.10"
+        [chrM]="NC_012920.1"
+      )
+      ACCESSION="${CHR_ACCESSIONS[~{chromo}]:-}"
+      if [ -n "$ACCESSION" ]; then
+        BASE_URL="https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14"
+        wget -q --no-check-certificate -O "GRCh38.gff3.gz" "${BASE_URL}/GCF_000001405.40_GRCh38.p14_genomic.gff.gz"
+        gunzip "GRCh38.gff3.gz"
+        # Extract only this chromosome's annotations (by RefSeq accession),
+        # renaming column 1 from the RefSeq accession to the UCSC chromosome
+        # name so it matches the FASTA's sequence header (~{chromo}) above.
+        awk -F'\t' -v OFS='\t' -v acc="$ACCESSION" -v chr="~{chromo}" \
+          '$1 == acc { $1 = chr; print }' "GRCh38.gff3" > temp.gff3
+        rm "GRCh38.gff3"
+
+        if [ -n "$REGION" ]; then
+          awk -F'\t' -v start="$REGION_START" -v end="$REGION_END" \
+            '$4 <= end && $5 >= start' temp.gff3 > "~{final_output_name}.gff3"
+          rm temp.gff3
+        else
+          mv temp.gff3 "~{final_output_name}.gff3"
+        fi
+      fi
+    fi
   >>>
 
   output {
@@ -107,6 +150,7 @@ task download_ref_data {
     File fasta_index = "~{final_output_name}.fa.fai"
     File dict = "~{final_output_name}.dict"
     File gtf = "~{final_output_name}.gtf"
+    File? gff3 = "~{final_output_name}.gff3"
     File bed = "~{final_output_name}.bed"
   }
 
@@ -1889,13 +1933,14 @@ task download_pao1_ref {
   meta {
     author: "Taylor Firman"
     email: "tfirman@fredhutch.org"
-    description: "Downloads the Pseudomonas aeruginosa PAO1 reference genome (FASTA and GTF) from NCBI RefSeq for bacterial RNA-seq test runs"
+    description: "Downloads the Pseudomonas aeruginosa PAO1 reference genome (FASTA, GTF, and GFF3) from NCBI RefSeq for bacterial RNA-seq test runs"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
         fasta: "Pseudomonas aeruginosa PAO1 reference genome FASTA (NC_002516.2)",
         fasta_index: "Index file for the PAO1 reference FASTA",
         dict: "Dictionary file for the PAO1 reference FASTA",
-        gtf: "NCBI RefSeq GTF annotation for PAO1 (bacterial layout: mostly CDS rows with only tRNA/rRNA exons)"
+        gtf: "NCBI RefSeq GTF annotation for PAO1 (bacterial layout: mostly CDS rows with only tRNA/rRNA exons)",
+        gff3: "NCBI RefSeq GFF3 annotation for PAO1"
     }
   }
 
@@ -1937,6 +1982,11 @@ task download_pao1_ref {
     # the case the ww-gffread normalize_gtf task is designed to handle.
     wget -q --no-check-certificate -O "~{output_prefix}.gtf.gz" "${BASE_URL}/GCF_000006765.1_ASM676v1_genomic.gtf.gz"
     gunzip "~{output_prefix}.gtf.gz"
+
+    # Download PAO1 GFF3 annotation from NCBI RefSeq (same assembly, for
+    # testing the ww-gffread gff3_to_gtf conversion task)
+    wget -q --no-check-certificate -O "~{output_prefix}.gff3.gz" "${BASE_URL}/GCF_000006765.1_ASM676v1_genomic.gff.gz"
+    gunzip "~{output_prefix}.gff3.gz"
   >>>
 
   output {
@@ -1944,6 +1994,7 @@ task download_pao1_ref {
     File fasta_index = "~{output_prefix}.fa.fai"
     File dict = "~{output_prefix}.dict"
     File gtf = "~{output_prefix}.gtf"
+    File gff3 = "~{output_prefix}.gff3"
   }
 
   runtime {

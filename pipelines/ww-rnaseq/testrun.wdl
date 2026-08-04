@@ -7,11 +7,14 @@ import "./ww-rnaseq.wdl" as rnaseq_workflow
 struct RefGenome {
     String name
     File fasta
-    File gtf
+    File? gtf
+    File? gff3
 }
 
 workflow rnaseq_example {
-  # Download reference data: 50Mbp region of chr1 to keep STAR index size manageable
+  # Download reference data: 50Mbp region of chr1 to keep STAR index size manageable.
+  # Also fetches a matching GFF3 (hg38 only) so this testrun can exercise the
+  # pipeline's gff3 input path via gffread's gff3_to_gtf task.
   call ww_testdata.download_ref_data {
     input:
       region = "1-50000000",
@@ -26,11 +29,15 @@ workflow rnaseq_example {
   call ww_sra.fastqdump as treated1 { input: sra_id = "SRR1039508", ncpu = 2, max_reads = 250000 }
   call ww_sra.fastqdump as treated2 { input: sra_id = "SRR1039512", ncpu = 2, max_reads = 250000 }
 
-  # Construct RefGenome struct
-  RefGenome reference = {
-    "name": "chr1_50M",
-    "fasta": download_ref_data.fasta,
-    "gtf": download_ref_data.gtf
+  # Construct RefGenome struct, providing gff3 (not gtf) to exercise the
+  # pipeline's gff3-to-gtf conversion path. select_first is used because
+  # gff3 is only conditionally populated by download_ref_data (hg38 only),
+  # but this testrun always uses hg38 so it will always be defined here.
+  File chr1_gff3 = select_first([download_ref_data.gff3])
+  RefGenome reference = object {
+    name: "chr1_50M",
+    fasta: download_ref_data.fasta,
+    gff3: chr1_gff3
   }
 
   # Run the full RNA-seq pipeline with reduced resources for testing

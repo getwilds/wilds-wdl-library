@@ -50,6 +50,8 @@ Converts a GFF3 annotation file to GTF format. Useful when an upstream source (e
 **Outputs:**
 - `gtf_file` (File): GTF-format annotation converted from the input GFF3
 
+**A note on gffread + `?` strand values:** GFF3 allows a strand value of `?` for "relevant, but unknown" (e.g. some annotators use this for origin-of-replication features), but `gffread` cannot parse it and errors out. The `gff3_to_gtf` task handles this automatically by stripping any row with strand `?` before invoking `gffread`. These rows are not gene/transcript features, so nothing relevant to downstream RNA-seq quantification is lost.
+
 ## Usage as a Module
 
 ### Importing into Your Workflow
@@ -103,10 +105,11 @@ workflow bacterial_rnaseq {
 
 ### Automatic Demo Mode
 
-The `testrun.wdl` workflow runs `normalize_gtf` against two contrasting inputs with no user configuration:
+The `testrun.wdl` workflow runs `normalize_gtf` and `gff3_to_gtf` against contrasting inputs with no user configuration:
 
 1. **Bacterial case**: the NCBI PAO1 GTF (via `ww-testdata.download_pao1_ref`). Exercises the CDS→exon synthesis path.
 2. **Eukaryotic case**: the Ensembl human chromosome 15 GTF (via `ww-testdata.download_jcast_test_data`). Exercises the pass-through path.
+3. **GFF3 conversion case**: the NCBI PAO1 GFF3 (via `ww-testdata.download_pao1_ref`). Exercises the `gff3_to_gtf` conversion path.
 
 Run locally with:
 
@@ -116,9 +119,10 @@ make run_sprocket NAME=ww-gffread
 make run_miniwdl NAME=ww-gffread
 ```
 
-After the run completes, inspect the normalized GTF output files to verify:
+After the run completes, inspect the output files to verify:
 - The bacterial case has ~5500 `exon` rows (up from ~100 in the input).
 - The eukaryotic case has roughly the same number of `exon` rows as the input.
+- The GFF3 conversion case produces a valid GTF with feature counts matching the source PAO1 GFF3.
 
 ## Docker Container
 

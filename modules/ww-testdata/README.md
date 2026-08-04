@@ -241,7 +241,7 @@ call colabfold_tasks.colabfold_predict {
 
 ### download_ref_data
 
-Downloads a UCSC reference chromosome FASTA + GTF + BED + samtools index/dict for the requested assembly. For assemblies that ship per-chromosome FASTAs (hg19, hg38, mm10, etc.) the per-chromosome file is fetched directly. For assemblies that only ship a whole-genome FASTA at `bigZips/<version>.fa.gz` (e.g. dm6, sacCer3), the task transparently falls back to downloading the whole-genome file and extracting the requested chromosome via `samtools faidx`.
+Downloads a UCSC reference chromosome FASTA + GTF + BED + samtools index/dict for the requested assembly. For assemblies that ship per-chromosome FASTAs (hg19, hg38, mm10, etc.) the per-chromosome file is fetched directly. For assemblies that only ship a whole-genome FASTA at `bigZips/<version>.fa.gz` (e.g. dm6, sacCer3), the task transparently falls back to downloading the whole-genome file and extracting the requested chromosome via `samtools faidx`. For `hg38`, a matching GFF3 is also fetched from NCBI RefSeq, since UCSC doesn't publish one alongside its GTF.
 
 **Inputs**:
 - `chromo` (String): Chromosome to download (default: "chr1")
@@ -259,6 +259,7 @@ Downloads a UCSC reference chromosome FASTA + GTF + BED + samtools index/dict fo
 - `fasta_index` (File): Samtools FASTA index (.fai)
 - `dict` (File): Samtools FASTA dictionary file (.dict) for GATK compatibility
 - `gtf` (File): Chromosome-specific gene annotations (filtered to region if specified)
+- `gff3` (File, optional): Chromosome-specific gene annotations in GFF3 format, from NCBI RefSeq (only populated when `version` is "hg38")
 - `bed` (File): BED file covering the entire chromosome or specified region
 
 ### merge_fastas_with_prefix
@@ -884,7 +885,7 @@ Generates synthetic tile and border points data for testing the `ww-sjl` module 
 
 ### download_pao1_ref
 
-Downloads the Pseudomonas aeruginosa PAO1 reference genome (FASTA + GTF) from NCBI RefSeq (assembly GCF_000006765.1 / ASM676v1) for use in bacterial RNA-seq test runs. The downloaded GTF uses the classic NCBI bacterial layout (~5573 CDS rows, ~5697 gene rows, only ~106 exon rows for tRNAs/rRNAs), making it the canonical input for testing the `ww-gffread` `normalize_gtf` task.
+Downloads the Pseudomonas aeruginosa PAO1 reference genome (FASTA + GTF + GFF3) from NCBI RefSeq (assembly GCF_000006765.1 / ASM676v1) for use in bacterial RNA-seq test runs. The downloaded GTF uses the classic NCBI bacterial layout (~5573 CDS rows, ~5697 gene rows, only ~106 exon rows for tRNAs/rRNAs), making it the canonical input for testing the `ww-gffread` `normalize_gtf` task. The GFF3 is the same annotation in GFF3 form, used for testing the `ww-gffread` `gff3_to_gtf` task.
 
 **Inputs**:
 - `output_prefix` (String): Prefix used for output filenames (default: "pao1")
@@ -897,6 +898,7 @@ Downloads the Pseudomonas aeruginosa PAO1 reference genome (FASTA + GTF) from NC
 - `fasta_index` (File): Samtools FASTA index (.fai)
 - `dict` (File): Samtools FASTA dictionary file (.dict)
 - `gtf` (File): NCBI RefSeq GTF annotation for PAO1
+- `gff3` (File): NCBI RefSeq GFF3 annotation for PAO1
 
 ## Data Sources
 

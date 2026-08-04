@@ -7,12 +7,13 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rseqc/ww-rseqc.wdl" as rseqc_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl" as deseq2_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-multiqc/ww-multiqc.wdl" as multiqc_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gffread/ww-gffread.wdl" as gffread_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-gff3-conversion/modules/ww-gffread/ww-gffread.wdl" as gffread_tasks
 
 struct RefGenome {
     String name
     File fasta
-    File gtf
+    File? gtf
+    File? gff3
 }
 
 workflow rnaseq {
@@ -74,7 +75,7 @@ workflow rnaseq {
     r1_fastqs: "Array of R1 FASTQ file paths, one per sample"
     r2_fastqs: "Array of R2 FASTQ file paths, one per sample"
     conditions: "Array of condition labels for each sample (e.g., 'control', 'treatment')"
-    reference_genome: "Reference genome object containing name, fasta, and gtf files"
+    reference_genome: "Reference genome object containing name, fasta, and gene annotations (provide either gtf or gff3; gff3 is converted to GTF internally)"
     reference_level: "Reference level for DESeq2 contrast (e.g., 'control' when comparing treatment vs. control)"
     contrast: "DESeq2 contrast string in the format 'condition,treatment,control'"
     trim_quality: "Quality threshold for Trim Galore adapter/quality trimming"
@@ -124,12 +125,22 @@ workflow rnaseq {
   Int n_samples = if defined(sample_names) then length(select_first([sample_names])) else (length(tsv_rows) - 1)
   Array[Int] sample_indices = range(n_samples)
 
+  # Accept either a GTF or a GFF3 as the gene annotation input. If only a
+  # GFF3 is provided, convert it to GTF first so the rest of the pipeline
+  # (which is GTF-only) can proceed unchanged.
+  if (!defined(reference_genome.gtf)) {
+    call gffread_tasks.gff3_to_gtf { input:
+        input_gff3 = select_first([reference_genome.gff3])
+    }
+  }
+  File input_gtf = select_first([reference_genome.gtf, gff3_to_gtf.gtf_file])
+
   # Normalize GTF to ensure exon features exist for every transcript.
   # This is critical for bacterial NCBI GTFs which only have CDS rows —
   # without this step, STAR GeneCounts and RSeQC would silently ignore
   # 98% of protein-coding genes. For eukaryotic GTFs this is a pass-through.
   call gffread_tasks.normalize_gtf { input:
-      input_gtf = reference_genome.gtf
+      input_gtf = input_gtf
   }
 
   # Build STAR genome index (runs once)
@@ -215,7 +226,7 @@ workflow rnaseq {
   call deseq2_tasks.compile_deseq2_results as step08_compile_results { input:
       deseq2_results = step07_deseq2.deseq2_results,
       normalized_counts = step07_deseq2.deseq2_normalized_counts,
-      gtf_file = reference_genome.gtf
+      gtf_file = input_gtf
   }
 
   # Step 9: MultiQC aggregation of all QC reports
