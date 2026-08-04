@@ -4,10 +4,9 @@ Sign module.json manifests in WILDS modules and pipelines, writing/updating
 each one's module.sig.
 
 Only re-signs a module/pipeline whose directory content actually changed
-between two given git refs (Ed25519 signatures aren't deterministic, so
-re-signing an unchanged module still produces a different signature byte
-string and a needless commit). Pass --all to sign every module/pipeline
-with a module.json regardless of what changed.
+between two given git refs, so CI doesn't spend time re-invoking `sprocket
+dev module sign` on every module on every push. Pass --all to sign every
+module/pipeline with a module.json regardless of what changed.
 
 Requires a `sprocket` build with `dev module sign` (not yet in a released
 Sprocket version as of this writing; see .github/workflows/sign-modules.yml
