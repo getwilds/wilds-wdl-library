@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - fix-sign-modules-app-token # TEMPORARY: remove before merging, testing only
   workflow_dispatch:
 
 permissions:
