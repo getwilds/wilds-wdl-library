@@ -40,6 +40,8 @@ Complete analysis workflows combining multiple modules.
 - **Testing**: Integration tests verify modules work together seamlessly
 - **Usage**: Templates for common workflows, learning examples, or production analyses
 
+Every module and pipeline also ships a `module.json` manifest and a `module.sig` signature. These are being added ahead of an upcoming WDL module-management feature in [Sprocket](https://sprocket.bio/) and aren't consumable by any released executor yet, so there's nothing you need to do with them today. See [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md#module-development-guidelines) for details.
+
 ## Quick Start
 
 ### Running Pipelines Directly (No Clone Required)

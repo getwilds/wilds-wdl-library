@@ -157,7 +157,7 @@ Note: `testrun.wdl` files use relative path imports (unlike the pipeline source 
 
 **Module manifest (`module.json`):**
 
-Every module and pipeline in this library ships a `module.json` manifest, an early adoption of the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765). For the schema itself (field definitions, dependency selectors, versioning rules) see the spec's [`modules/SPEC.md`](https://github.com/openwdl/wdl/blob/wdl-1.4/modules/SPEC.md) and [`module.schema.json`](https://github.com/openwdl/wdl/blob/wdl-1.4/modules/schemas/module.schema.json). Since the spec is still unmerged and changing, treat that upstream source as ground truth over any summary written here or elsewhere in this repo.
+Every module and pipeline in this library ships a `module.json` manifest, an early adoption of the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765). We're adding these ahead of that spec being finalized, so the library is ready as WDL module-management tooling (like Sprocket's symbolic module imports) matures; the spec itself is still an unmerged draft and its field definitions may still change. For the schema itself (field definitions, dependency selectors, versioning rules) see the spec's [`modules/SPEC.md`](https://github.com/openwdl/wdl/blob/wdl-1.4/modules/SPEC.md) and [`module.schema.json`](https://github.com/openwdl/wdl/blob/wdl-1.4/modules/schemas/module.schema.json). Since the spec is still unmerged and changing, treat that upstream source as ground truth over any summary written here or elsewhere in this repo.
 
 WILDS-specific conventions on top of the spec:
 
@@ -170,6 +170,8 @@ WILDS-specific conventions on top of the spec:
 **Module signature (`module.sig`):**
 
 Every module and pipeline with a `module.json` also carries a `module.sig`, an Ed25519 signature over the module's deterministic content hash, produced by `sprocket dev module sign`. This lets a consumer verify that a module's files (WDL, README, scripts, everything except `module.json`'s own `module.sig`/`module-lock.json`) haven't been tampered with since WILDS published them.
+
+**These signatures aren't usable yet.** `sprocket dev module sign`/`sprocket dev module verify` are not in any released Sprocket version; we're adding `module.sig` files now, ahead of that tooling shipping, so the library is ready once it does. There's nothing to check or verify against these signatures today.
 
 A few things to know:
 
