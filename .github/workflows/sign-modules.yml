@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - fix-sign-modules-app-token # TEMPORARY: remove before merging, testing only
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -60,12 +62,20 @@ jobs:
           chmod 600 /tmp/wilds_signing_key
 
       -
-        name: Sign changed modules and pipelines
+        name: Sign modules and pipelines
+        # Manual runs (workflow_dispatch) always sign everything
+        # Automatic runs (push to main) only sign what changed
         run: |
-          python3 .github/scripts/sign_modules.py \
-            --key /tmp/wilds_signing_key \
-            --before "${{ github.event.before }}" \
-            --after "${{ github.sha }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            python3 .github/scripts/sign_modules.py \
+              --key /tmp/wilds_signing_key \
+              --all
+          else
+            python3 .github/scripts/sign_modules.py \
+              --key /tmp/wilds_signing_key \
+              --before "${{ github.event.before }}" \
+              --after "${{ github.sha }}"
+          fi
 
       -
         name: Remove signing key
