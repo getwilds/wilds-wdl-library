@@ -7,7 +7,7 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-rseqc/ww-rseqc.wdl" as rseqc_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl" as deseq2_tasks
 import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-multiqc/ww-multiqc.wdl" as multiqc_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-gff3-conversion/modules/ww-gffread/ww-gffread.wdl" as gffread_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-gffread/ww-gffread.wdl" as gffread_tasks
 
 struct RefGenome {
     String name
