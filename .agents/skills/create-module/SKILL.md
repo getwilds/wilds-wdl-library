@@ -72,6 +72,7 @@ Create four files in `modules/ww-$ARGUMENTS/`:
 - If the tool has a nonstandard license, use an SPDX `LicenseRef-` placeholder (e.g. `"LicenseRef-VarScan-NonCommercial"`) and call it out in the summary at the end of this skill.
 - If the module doesn't wrap one clear external tool (e.g. a data-download utility or a custom script), omit `tools[]` entirely.
 - Run `make lint_module_json NAME=ww-$ARGUMENTS` to validate structure.
+- Do NOT create a `module.sig` file. CI signs it automatically once the module is merged to `main`.
 
 ### 4. Lint the Module
 

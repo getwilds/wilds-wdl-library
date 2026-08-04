@@ -93,6 +93,7 @@ Create five files in `pipelines/ww-$0/`:
 - `name` is the pipeline directory name, `license` is `"MIT"`, omit the top-level `version` field
 - Add a `dependencies{}` entry for each module imported in `ww-$0.wdl`, one per module, following the `git`/`branch`/`path` pattern in the template (pointing at this repo's `main` branch and `modules/ww-<name>`)
 - Run `make lint_module_json NAME=ww-$0` to validate structure.
+- Do NOT create a `module.sig` file. CI signs it automatically once the pipeline is merged to `main`.
 
 ### 5. Lint the Pipeline
 

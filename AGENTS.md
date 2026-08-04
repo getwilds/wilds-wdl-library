@@ -54,6 +54,9 @@ Sprocket exceptions (from sprocket.toml): TodoComment, ContainerUri, UnusedInput
 ## Module Manifest (module.json)
 Every module/pipeline has a `module.json` following the proposed WDL v1.4 [module manifest spec](https://github.com/openwdl/wdl/pull/765); treat that upstream spec as ground truth for field definitions, not summaries in this repo. WILDS-specific notes: omit it only for brand-new modules if truly necessary (add one anyway when possible), this repo's own `license` is always `"MIT"`, per-tool `tools[].license` needs a current SPDX identifier (use `LicenseRef-*` placeholders for nonstandard licenses and flag them in the PR), and `tools[]` uses `url`/`ids` fields, never legacy `homepage`/`doi`. See `.github/CONTRIBUTING.md` for details and `pipelines/ww-bwa-gatk/module.json` for the dependency-declaration pattern.
 
+## Module Signature (module.sig)
+Every module/pipeline with a `module.json` also has a `module.sig`, an Ed25519 signature over its content hash, produced by `sprocket dev module sign`. CI (`.github/workflows/sign-modules.yml`) re-signs and auto-commits whatever changed on push to `main`; don't hand-edit `module.sig` or worry about signing in a PR. Any change under a module's directory (WDL, README, scripts, anything but `module.json`'s own `module.sig`/`module-lock.json`) invalidates its old signature. `sprocket dev module sign`/`verify` aren't in a released Sprocket version yet; see the pinned commit in the workflow file for what's currently installed.
+
 ## Common Development Pitfalls
 - Docker image version conflicts (especially with complex tools like ColabFold) - always pin versions
 - Test data changes go in the `ww-testdata` module, not individual modules
