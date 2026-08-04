@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -11,12 +12,23 @@ permissions:
 jobs:
   sign-modules:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
+      -
+        name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       -
         name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ steps.generate_token.outputs.token }}
 
       -
         name: Set up Python
@@ -49,12 +61,20 @@ jobs:
           chmod 600 /tmp/wilds_signing_key
 
       -
-        name: Sign changed modules and pipelines
+        name: Sign modules and pipelines
+        # Manual runs (workflow_dispatch) always sign everything
+        # Automatic runs (push to main) only sign what changed
         run: |
-          python3 .github/scripts/sign_modules.py \
-            --key /tmp/wilds_signing_key \
-            --before "${{ github.event.before }}" \
-            --after "${{ github.sha }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            python3 .github/scripts/sign_modules.py \
+              --key /tmp/wilds_signing_key \
+              --all
+          else
+            python3 .github/scripts/sign_modules.py \
+              --key /tmp/wilds_signing_key \
+              --before "${{ github.event.before }}" \
+              --after "${{ github.sha }}"
+          fi
 
       -
         name: Remove signing key
@@ -64,7 +84,7 @@ jobs:
       -
         name: Commit updated signatures
         run: |
-          git config user.name "github-actions[bot]"
+          git config user.name "WILDS WDL Library Automation[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add modules/*/module.sig pipelines/*/module.sig
           if git diff --cached --quiet; then
