@@ -176,6 +176,7 @@ Every module and pipeline with a `module.json` also carries a `module.sig`, an E
 A few things to know:
 
 - **You don't need to sign anything yourself.** CI re-signs any module or pipeline whose directory content changed in a push to `main` (see `.github/workflows/sign-modules.yml` and `.github/scripts/sign_modules.py`) and commits the updated `module.sig` automatically. Don't hand-edit `module.sig` files or worry about them in your PR.
+- **CI pushes those updated `module.sig` files using a GitHub App token, not the default `GITHUB_TOKEN`**, since branch protection on `main` requires a PR and only the App is permitted to bypass that for this automated commit.
 - **Any change to a module's directory invalidates its old signature**, not just WDL edits: a README tweak, a fixed typo, a new test fixture, anything under `modules/ww-toolname/` or `pipelines/ww-pipeline-name/` changes the content hash CI signs.
 - **Ed25519 signatures are deterministic**: signing the same content with the same key always produces the same signature bytes. If `module.sig` changes with no apparent change to the module's content, the key used to sign it changed instead (e.g. after rotating the signing key).
 - **The signing key is a standard Ed25519 SSH key** (the kind `ssh-keygen -t ed25519` produces), in OpenSSH format. `sprocket dev module sign` and `sprocket dev module verify` are not yet in a released Sprocket version; see the pinned commit in `.github/workflows/sign-modules.yml` for what CI currently installs.
