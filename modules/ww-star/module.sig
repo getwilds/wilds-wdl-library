@@ -1,0 +1,4 @@
+{
+  "public_key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC3sRRBlhTgqxLuh5LVHMlnX9sHPzS4CEPLugl+y2HBY",
+  "signature": "GWfIHaQRFnox3X3/c5IY7TssW8S3NaxLZ+n51ROFX/u843Z7YNiqoRdHLbClpJ2oxr8ue9EDrcMOTHcLwRnXDg=="
+}
