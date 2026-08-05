@@ -160,7 +160,7 @@ jobs:
     -
       name: Install Sprocket
       run: |
-        cargo-binstall sprocket --version 0.25.0 -y
+        cargo-binstall sprocket --version 0.28.0 -y
     -
       name: Run workflow with Sprocket
       run: |

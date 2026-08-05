@@ -1,7 +1,7 @@
 [check]
 deny_warnings = true
 hide_notes = true
-except = ['TodoComment', 'ContainerUri', 'UnusedInput']
+except = ['TodoComment', 'ContainerUri', 'UnusedInput', 'BashSetSyntax']
 
 [doc]
 index_page = "docs-README.md"
