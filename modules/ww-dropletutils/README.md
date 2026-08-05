@@ -44,7 +44,7 @@ Calls real cells from a raw (unfiltered) 10x feature-barcode matrix using `Dropl
 - `raw_h5_matrix` (File): Raw (unfiltered) 10x Genomics feature-barcode matrix in HDF5 format, containing all detected barcodes
 - `sample_name` (String): Sample name used as output file prefix and SCE column metadata
 - `fdr_threshold` (Float, default=0.01): False discovery rate threshold below which a barcode is called a real cell
-- `lower_umi_threshold` (Int, default=100): UMI count threshold below which barcodes are assumed to be empty droplets and used to estimate the ambient RNA profile
+- `lower_umi_threshold` (Int, default=500): UMI count threshold below which barcodes are assumed to be empty droplets and used to estimate the ambient RNA profile. Also controls how many barcodes above this threshold get tested by `emptyDrops`'s Monte Carlo procedure; raising it reduces runtime on matrices with a large raw barcode population at the cost of testing fewer ambiguous barcodes
 - `random_seed` (Int, default=100): Random seed for emptyDrops Monte Carlo p-value computation, for reproducibility
 - `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB

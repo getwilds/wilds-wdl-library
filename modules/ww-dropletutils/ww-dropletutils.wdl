@@ -106,7 +106,7 @@ task empty_drops_filter {
     File raw_h5_matrix
     String sample_name
     Float fdr_threshold = 0.01
-    Int lower_umi_threshold = 100
+    Int lower_umi_threshold = 500
     Int random_seed = 100
     Int cpu_cores = 2
     Int memory_gb = 8
@@ -118,7 +118,6 @@ task empty_drops_filter {
 
     Rscript -e '
       library(DropletUtils)
-      library(BiocParallel)
 
       set.seed(~{random_seed})
 
@@ -135,8 +134,7 @@ task empty_drops_filter {
              col = c("dodgerblue", "forestgreen"), lty = 2)
       dev.off()
 
-      bpparam <- MulticoreParam(workers = ~{cpu_cores})
-      empty <- emptyDrops(counts(sce), lower = ~{lower_umi_threshold}, BPPARAM = bpparam)
+      empty <- emptyDrops(counts(sce), lower = ~{lower_umi_threshold})
       write.csv(as.data.frame(empty), file = "~{sample_name}.empty_drops.csv", row.names = TRUE)
 
       is_cell <- which(empty$FDR <= ~{fdr_threshold})
