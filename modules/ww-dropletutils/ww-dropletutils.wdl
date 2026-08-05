@@ -52,6 +52,7 @@ task read10x_counts {
 
       sce <- read10xCounts("~{h5_matrix}", col.names = TRUE)
       sce$Sample <- "~{sample_name}"
+      counts(sce) <- as(counts(sce), "CsparseMatrix")
 
       saveRDS(sce, file = "~{sample_name}.sce.rds")
     '
@@ -138,6 +139,7 @@ task empty_drops_filter {
 
       is_cell <- which(empty$FDR <= ~{fdr_threshold})
       filtered_sce <- sce[, is_cell]
+      counts(filtered_sce) <- as(counts(filtered_sce), "CsparseMatrix")
 
       saveRDS(filtered_sce, file = "~{sample_name}.filtered_sce.rds")
     '
