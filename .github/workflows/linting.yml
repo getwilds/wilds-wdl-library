@@ -55,7 +55,7 @@ jobs:
         java-version: '21'
     -
       name: Pull WOMtool Jarfile
-      run: wget -q https://github.com/broadinstitute/cromwell/releases/download/86/womtool-86.jar
+      run: wget -q https://github.com/broadinstitute/cromwell/releases/download/92/womtool-92.jar
     -
       name: WOMtool Validation
       run: |
@@ -68,7 +68,7 @@ jobs:
             continue
           fi
           echo "  [***] Validating $file [***]"
-          java -jar womtool-86.jar validate "$file"
+          java -jar womtool-92.jar validate "$file"
           EXITCODE=$(($? || EXITCODE))
         done
         exit $EXITCODE
