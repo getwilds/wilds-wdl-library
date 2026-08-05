@@ -155,8 +155,8 @@ This module uses the `getwilds/dropletutils:1.32.0` container image, which inclu
 - **Runtime**: A few minutes per sample for demo data; scales with matrix size and number of barcodes tested by `emptyDrops`
 
 ### Resource Scaling
-- `cpu_cores`: DropletUtils itself is largely single-threaded per sample; increase mainly to accommodate HDF5Array I/O parallelism or to scatter across more samples concurrently
-- `memory_gb`: Both tasks realize the full sparse count matrix in memory before writing the output RDS (`SingleCellExperiment` objects backed by on-disk HDF5Array cannot be serialized directly with `saveRDS`), so increase for matrices with very large numbers of raw barcodes (e.g. >1M droplets) or high gene counts
+- `cpu_cores`: DropletUtils itself is largely single-threaded per sample; increase mainly to scatter across more samples concurrently
+- `memory_gb`: Both tasks load the full count matrix into memory right after `read10xCounts` (needed for `saveRDS` and for `emptyDrops` performance), so increase for matrices with very large numbers of raw barcodes (e.g. >1M droplets) or high gene counts
 
 ## Support and Feedback
 
