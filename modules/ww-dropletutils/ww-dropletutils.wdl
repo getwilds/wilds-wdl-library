@@ -118,6 +118,7 @@ task empty_drops_filter {
 
     Rscript -e '
       library(DropletUtils)
+      library(BiocParallel)
 
       set.seed(~{random_seed})
 
@@ -134,7 +135,8 @@ task empty_drops_filter {
              col = c("dodgerblue", "forestgreen"), lty = 2)
       dev.off()
 
-      empty <- emptyDrops(counts(sce), lower = ~{lower_umi_threshold})
+      bpparam <- MulticoreParam(workers = ~{cpu_cores})
+      empty <- emptyDrops(counts(sce), lower = ~{lower_umi_threshold}, BPPARAM = bpparam)
       write.csv(as.data.frame(empty), file = "~{sample_name}.empty_drops.csv", row.names = TRUE)
 
       is_cell <- which(empty$FDR <= ~{fdr_threshold})
