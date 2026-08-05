@@ -123,6 +123,7 @@ task empty_drops_filter {
 
       sce <- read10xCounts("~{raw_h5_matrix}", col.names = TRUE)
       sce$Sample <- "~{sample_name}"
+      counts(sce) <- as(counts(sce), "CsparseMatrix")
 
       ranks <- barcodeRanks(counts(sce))
       pdf("~{sample_name}.barcode_rank.pdf")
@@ -139,7 +140,6 @@ task empty_drops_filter {
 
       is_cell <- which(empty$FDR <= ~{fdr_threshold})
       filtered_sce <- sce[, is_cell]
-      counts(filtered_sce) <- as(counts(filtered_sce), "CsparseMatrix")
 
       saveRDS(filtered_sce, file = "~{sample_name}.filtered_sce.rds")
     '
