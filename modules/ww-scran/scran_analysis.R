@@ -1,9 +1,7 @@
 #!/usr/bin/env Rscript
 
 library(scran)
-library(scater)
 library(SingleCellExperiment)
-library(ggplot2)
 
 # Parse simple --key=value arguments (no optparse dependency; not present
 # in the getwilds/scran image)
@@ -42,43 +40,59 @@ set.seed(4)
 ##################
 
 message("Loading SingleCellExperiment from: ", opt$sce_rds)
-counts_sce <- readRDS(opt$sce_rds)
-counts_sce <- counts_sce[!duplicated(rownames(counts_sce)), ]
-message("Cells loaded: ", ncol(counts_sce))
+sce <- readRDS(opt$sce_rds)
+sce <- sce[!duplicated(rownames(sce)), ]
+message("Cells loaded: ", ncol(sce))
 
 
 ##################
 ## 2. QC filter ##
 ##################
 
-is_mito <- grepl(opt$mito_pattern, rownames(counts_sce))
+is_mito <- grepl(opt$mito_pattern, rownames(sce))
 message("Mitochondrial genes detected: ", sum(is_mito))
 
-qc_stats <- perCellQCMetrics(counts_sce, subsets = list(Mito = is_mito))
-qc_filter <- quickPerCellQC(qc_stats,
-                            sub.fields = "subsets_Mito_percent",
-                            nmads = opt$nmads)
+counts_mat <- counts(sce)
+lib_size <- colSums(counts_mat)
+n_detected <- colSums(counts_mat > 0)
+mito_percent <- if (sum(is_mito) > 0) {
+  100 * colSums(counts_mat[is_mito, , drop = FALSE]) / lib_size
+} else {
+  rep(0, ncol(counts_mat))
+}
 
-colData(counts_sce) <- cbind(colData(counts_sce), qc_stats)
-counts_sce$discard <- qc_filter$discard
+# MAD-based outlier flagging on log-scale library size/detected genes, and
+# raw-scale mitochondrial percentage
+mad_outlier <- function(x, nmads, log = FALSE, side = "both") {
+  vals <- if (log) log1p(x) else x
+  med <- median(vals, na.rm = TRUE)
+  spread <- mad(vals, center = med, na.rm = TRUE)
+  lower <- med - nmads * spread
+  upper <- med + nmads * spread
+  switch(side,
+    both = vals < lower | vals > upper,
+    lower = vals < lower,
+    higher = vals > upper
+  )
+}
 
-# QC scatter plot of library size vs. detected features, colored by discard status
-qc_plot <- plotColData(counts_sce,
-                       x = "sum",
-                       y = "detected",
-                       colour_by = "discard") +
-  ggtitle(paste("Per-Cell QC for Sample:", opt$sample_name)) +
-  xlab("Total UMI Counts") +
-  ylab("Detected Genes")
+discard <- mad_outlier(lib_size, opt$nmads, log = TRUE, side = "lower") |
+  mad_outlier(n_detected, opt$nmads, log = TRUE, side = "lower") |
+  mad_outlier(mito_percent, opt$nmads, side = "higher")
+message("Cells flagged for discard: ", sum(discard), " / ", ncol(sce))
 
-ggsave(paste0(opt$output_prefix, "_qc.png"),
-       plot = qc_plot,
-       dpi = 300,
-       width = 7,
-       height = 6,
-       device = "png")
+png(paste0(opt$output_prefix, "_qc.png"),
+    width = 1400, height = 1200, res = 200)
+plot(lib_size, n_detected,
+     col = ifelse(discard, "firebrick", "grey40"),
+     pch = 16, cex = 0.5,
+     main = paste("Per-Cell QC:", opt$sample_name),
+     xlab = "Total UMI Counts", ylab = "Detected Genes")
+legend("bottomright", legend = c("kept", "discard"),
+       col = c("grey40", "firebrick"), pch = 16, bty = "n")
+dev.off()
 
-sce <- counts_sce[, !qc_filter$discard]
+sce <- sce[, !discard]
 message("Cells after QC: ", ncol(sce))
 
 
@@ -90,19 +104,12 @@ clusters <- quickCluster(sce)
 sce <- computeSumFactors(sce, clusters = clusters, min.mean = opt$min_mean)
 sce <- logNormCounts(sce)
 
-sf_plot <- ggplot(data.frame(size_factor = sizeFactors(sce)),
-                  aes(x = size_factor)) +
-  geom_histogram(bins = 40) +
-  ggtitle(paste("Size Factor Distribution for Sample:", opt$sample_name)) +
-  xlab("Size Factor") +
-  ylab("Number of Cells")
-
-ggsave(paste0(opt$output_prefix, "_size_factors.png"),
-       plot = sf_plot,
-       dpi = 300,
-       width = 6,
-       height = 5,
-       device = "png")
+png(paste0(opt$output_prefix, "_size_factors.png"),
+    width = 1200, height = 1000, res = 200)
+hist(sizeFactors(sce), breaks = 40,
+     main = paste("Size Factor Distribution:", opt$sample_name),
+     xlab = "Size Factor", ylab = "Number of Cells", col = "grey70")
+dev.off()
 
 
 #####################################################
@@ -118,26 +125,26 @@ write.csv(hvg_df[order(-hvg_df$bio), ],
           paste0(opt$output_prefix, "_hvgs.csv"),
           row.names = FALSE)
 
-mean_var_plot <- ggplot(hvg_df, aes(x = mean, y = total)) +
-  geom_point(alpha = 0.4) +
-  geom_line(aes(y = tech), color = "dodgerblue", linewidth = 1) +
-  ggtitle(paste("Mean-Variance Trend for Sample:", opt$sample_name)) +
-  xlab("Mean Log-Expression") +
-  ylab("Variance")
-
-ggsave(paste0(opt$output_prefix, "_mean_variance.png"),
-       plot = mean_var_plot,
-       dpi = 300,
-       width = 6,
-       height = 5,
-       device = "png")
+png(paste0(opt$output_prefix, "_mean_variance.png"),
+    width = 1200, height = 1000, res = 200)
+plot(hvg_df$mean, hvg_df$total,
+     pch = 16, cex = 0.5, col = "grey40",
+     main = paste("Mean-Variance Trend:", opt$sample_name),
+     xlab = "Mean Log-Expression", ylab = "Variance")
+points(hvg_df$mean[order(hvg_df$mean)], hvg_df$tech[order(hvg_df$mean)],
+       type = "l", col = "dodgerblue", lwd = 2)
+dev.off()
 
 
 ############################
 ## 5. PCA and save object ##
 ############################
 
-sce <- runPCA(sce, subset_row = top_hvgs)
+# Base R PCA on the HVG subset of log-normalized counts (scran has no PCA
+# function of its own; this keeps the script scran-only)
+logcounts_hvg <- t(as.matrix(logcounts(sce)[top_hvgs, , drop = FALSE]))
+pca_result <- prcomp(logcounts_hvg, center = TRUE, scale. = FALSE, rank. = 50)
+reducedDims(sce) <- list(PCA = pca_result$x)
 
 saveRDS(sce, file = paste0(opt$output_prefix, ".rds"))
 message("Done. Output prefix: ", opt$output_prefix)

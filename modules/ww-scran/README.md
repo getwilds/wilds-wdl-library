@@ -6,13 +6,13 @@ A WILDS WDL module for single-cell RNA-seq QC, normalization, and feature select
 
 ## Overview
 
-This module provides a reusable WDL task for per-cell QC filtering, deconvolution-based normalization, and highly variable gene (HVG) selection of single-cell RNA-seq data using [scran](https://bioconductor.org/packages/release/bioc/html/scran.html) and [scater](https://bioconductor.org/packages/release/bioc/html/scater.html). It accepts a `SingleCellExperiment` RDS object (e.g. produced by [`ww-dropletutils`](../ww-dropletutils/)) and runs the following steps:
+This module provides a reusable WDL task for per-cell QC filtering, deconvolution-based normalization, and highly variable gene (HVG) selection of single-cell RNA-seq data using [scran](https://bioconductor.org/packages/release/bioc/html/scran.html) (and its hard dependencies, e.g. `scuttle`, only — no `scater`). It accepts a `SingleCellExperiment` RDS object (e.g. produced by [`ww-dropletutils`](../ww-dropletutils/)) and runs the following steps:
 
 1. **Load data** — reads the `SingleCellExperiment` RDS object
-2. **QC filtering** — computes per-cell QC metrics (library size, detected genes, mitochondrial percentage) and flags outliers with `quickPerCellQC`
+2. **QC filtering** — computes per-cell QC metrics (library size, detected genes, mitochondrial percentage) directly from the counts matrix and flags outliers using MAD-based thresholds
 3. **Normalization** — estimates size factors via scran's pooling/deconvolution method (`quickCluster` + `computeSumFactors`) and applies `logNormCounts`
 4. **Feature selection** — models per-gene mean-variance trends with `modelGeneVar` and selects the top highly variable genes
-5. **Dimensionality reduction** — runs PCA on the selected HVGs and saves the resulting `SingleCellExperiment` object
+5. **Dimensionality reduction** — runs PCA (base R `prcomp`) on the selected HVGs and saves the resulting `SingleCellExperiment` object
 
 This module is intended to run downstream of [`ww-dropletutils`](../ww-dropletutils/) in the standard single-cell post-processing chain (load matrix -> QC filter -> normalize -> HVG -> PCA -> ...).
 
@@ -134,7 +134,7 @@ sprocket run testrun.wdl --entrypoint scran_example
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
 - Internet access for fetching scripts from GitHub at runtime
-- R environment with scran and scater (provided by `getwilds/scran:1.40.0` container)
+- R environment with scran (provided by `getwilds/scran:1.40.0` container)
 
 ## Citation
 
