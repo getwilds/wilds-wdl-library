@@ -1,14 +1,21 @@
 version 1.0
 
 import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+import "../ww-dropletutils/ww-dropletutils.wdl" as ww_dropletutils
 import "./ww-scran.wdl" as ww_scran
 
 workflow scran_example {
   # Download 10x Genomics H5 test data
   call ww_testdata.download_10x_h5_data { }
 
+  # Load the filtered matrix into a SingleCellExperiment (upstream ww-dropletutils step)
+  call ww_dropletutils.read10x_counts { input:
+      h5_matrix = download_10x_h5_data.h5_matrix,
+      sample_name = "2500_Wistar_Rat_PBMCs_Singleplex"
+  }
+
   call ww_scran.run_scran { input:
-      input_h5 = download_10x_h5_data.h5_matrix,
+      sce_rds = read10x_counts.sce_rds,
       sample_name = "2500_Wistar_Rat_PBMCs_Singleplex",
       mito_pattern = "^Mt-"
   }

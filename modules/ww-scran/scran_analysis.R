@@ -1,45 +1,38 @@
 #!/usr/bin/env Rscript
 
-library(optparse)
 library(scran)
 library(scater)
-library(DropletUtils)
 library(SingleCellExperiment)
 library(ggplot2)
 
-option_list <- list(
-  make_option("--input_h5",
-              type = "character",
-              default = NULL,
-              help = "Path to Cell Ranger filtered feature-barcode matrix .h5 file"),
-  make_option("--sample_name",
-              type = "character",
-              default = NULL,
-              help = "Sample name for labeling outputs"),
-  make_option("--mito_pattern",
-              type = "character",
-              default = "^MT-",
-              help = "Regex pattern identifying mitochondrial gene symbols"),
-  make_option("--nmads",
-              type = "double",
-              default = 3.0,
-              help = "Number of MADs from the median used to flag low-quality cells"),
-  make_option("--min_mean",
-              type = "double",
-              default = 0.1,
-              help = "Minimum mean expression for a gene to be used in HVG/PCA selection"),
-  make_option("--n_hvgs",
-              type = "integer",
-              default = 2000,
-              help = "Number of top highly variable genes to select"),
-  make_option("--output_prefix",
-              type = "character",
-              default = NULL,
-              help = "Prefix for all output files (default: sample_name)")
+# Parse simple --key=value arguments (no optparse dependency; not present
+# in the getwilds/scran image)
+parse_args <- function(args, defaults) {
+  opt <- defaults
+  for (arg in args) {
+    kv <- sub("^--", "", arg)
+    key <- sub("=.*$", "", kv)
+    value <- sub("^[^=]*=", "", kv)
+    opt[[key]] <- value
+  }
+  opt
+}
+
+defaults <- list(
+  sce_rds = NULL,
+  sample_name = NULL,
+  mito_pattern = "^MT-",
+  nmads = "3.0",
+  min_mean = "0.1",
+  n_hvgs = "2000",
+  output_prefix = NULL
 )
 
-opt <- parse_args(OptionParser(option_list = option_list))
+opt <- parse_args(commandArgs(trailingOnly = TRUE), defaults)
 if (is.null(opt$output_prefix)) opt$output_prefix <- opt$sample_name
+opt$nmads <- as.double(opt$nmads)
+opt$min_mean <- as.double(opt$min_mean)
+opt$n_hvgs <- as.integer(opt$n_hvgs)
 
 set.seed(4)
 
@@ -48,29 +41,29 @@ set.seed(4)
 ## 1. Load data ##
 ##################
 
-message("Loading matrix from: ", opt$input_h5)
-counts <- read10xCounts(opt$input_h5, col.names = TRUE)
-counts <- counts[!duplicated(rownames(counts)), ]
-message("Cells loaded: ", ncol(counts))
+message("Loading SingleCellExperiment from: ", opt$sce_rds)
+counts_sce <- readRDS(opt$sce_rds)
+counts_sce <- counts_sce[!duplicated(rownames(counts_sce)), ]
+message("Cells loaded: ", ncol(counts_sce))
 
 
 ##################
 ## 2. QC filter ##
 ##################
 
-is_mito <- grepl(opt$mito_pattern, rownames(counts))
+is_mito <- grepl(opt$mito_pattern, rownames(counts_sce))
 message("Mitochondrial genes detected: ", sum(is_mito))
 
-qc_stats <- perCellQCMetrics(counts, subsets = list(Mito = is_mito))
+qc_stats <- perCellQCMetrics(counts_sce, subsets = list(Mito = is_mito))
 qc_filter <- quickPerCellQC(qc_stats,
                             sub.fields = "subsets_Mito_percent",
                             nmads = opt$nmads)
 
-colData(counts) <- cbind(colData(counts), qc_stats)
-counts$discard <- qc_filter$discard
+colData(counts_sce) <- cbind(colData(counts_sce), qc_stats)
+counts_sce$discard <- qc_filter$discard
 
 # QC scatter plot of library size vs. detected features, colored by discard status
-qc_plot <- plotColData(counts,
+qc_plot <- plotColData(counts_sce,
                        x = "sum",
                        y = "detected",
                        colour_by = "discard") +
@@ -85,7 +78,7 @@ ggsave(paste0(opt$output_prefix, "_qc.png"),
        height = 6,
        device = "png")
 
-sce <- counts[, !qc_filter$discard]
+sce <- counts_sce[, !qc_filter$discard]
 message("Cells after QC: ", ncol(sce))
 
 

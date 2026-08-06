@@ -20,7 +20,7 @@ task run_scran {
     topic: "transcriptomics,single_cell"
     species: "human,eukaryote"
     operation: "expression_analysis"
-    input_sample_required: "input_h5:gene_expression_matrix:h5"
+    input_sample_required: "sce_rds:gene_expression_matrix:rds"
     input_sample_optional: "none"
     input_reference_required: "none"
     input_reference_optional: "none"
@@ -29,7 +29,7 @@ task run_scran {
   }
 
   parameter_meta {
-    input_h5: "Cell Ranger filtered feature-barcode matrix HDF5 file (filtered_feature_bc_matrix.h5)"
+    sce_rds: "SingleCellExperiment RDS object (e.g. from ww-dropletutils) containing the raw counts to QC and normalize"
     sample_name: "Sample name used for output file prefixes"
     mito_pattern: "Regex pattern identifying mitochondrial gene symbols"
     nmads: "Number of median absolute deviations from the median used to flag low-quality cells"
@@ -41,7 +41,7 @@ task run_scran {
   }
 
   input {
-    File input_h5
+    File sce_rds
     String sample_name
     String mito_pattern = "^MT-"
     Float nmads = 3.0
@@ -56,10 +56,10 @@ task run_scran {
     set -eo pipefail
 
     curl -so scran_analysis.R \
-      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-scran/modules/ww-scran/scran_analysis.R"
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-scran/scran_analysis.R"
 
     Rscript scran_analysis.R \
-      --input_h5="~{input_h5}" \
+      --sce_rds="~{sce_rds}" \
       --sample_name="~{sample_name}" \
       --mito_pattern="~{mito_pattern}" \
       --nmads=~{nmads} \

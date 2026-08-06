@@ -6,13 +6,15 @@ A WILDS WDL module for single-cell RNA-seq QC, normalization, and feature select
 
 ## Overview
 
-This module provides a reusable WDL task for per-cell QC filtering, deconvolution-based normalization, and highly variable gene (HVG) selection of single-cell RNA-seq data using [scran](https://bioconductor.org/packages/release/bioc/html/scran.html) and [scater](https://bioconductor.org/packages/release/bioc/html/scater.html). It accepts a Cell Ranger HDF5 output file and runs the following steps:
+This module provides a reusable WDL task for per-cell QC filtering, deconvolution-based normalization, and highly variable gene (HVG) selection of single-cell RNA-seq data using [scran](https://bioconductor.org/packages/release/bioc/html/scran.html) and [scater](https://bioconductor.org/packages/release/bioc/html/scater.html). It accepts a `SingleCellExperiment` RDS object (e.g. produced by [`ww-dropletutils`](../ww-dropletutils/)) and runs the following steps:
 
-1. **Load data** — reads the filtered feature-barcode matrix from a `.h5` file into a `SingleCellExperiment`
+1. **Load data** — reads the `SingleCellExperiment` RDS object
 2. **QC filtering** — computes per-cell QC metrics (library size, detected genes, mitochondrial percentage) and flags outliers with `quickPerCellQC`
 3. **Normalization** — estimates size factors via scran's pooling/deconvolution method (`quickCluster` + `computeSumFactors`) and applies `logNormCounts`
 4. **Feature selection** — models per-gene mean-variance trends with `modelGeneVar` and selects the top highly variable genes
 5. **Dimensionality reduction** — runs PCA on the selected HVGs and saves the resulting `SingleCellExperiment` object
+
+This module is intended to run downstream of [`ww-dropletutils`](../ww-dropletutils/) in the standard single-cell post-processing chain (load matrix -> QC filter -> normalize -> HVG -> PCA -> ...).
 
 ## Module Structure
 
@@ -29,19 +31,19 @@ All scripts are fetched from this repository at runtime via `curl`.
 
 | Script | Used by | Language | Description |
 |--------|---------|----------|-------------|
-| [`scran_analysis.R`](scran_analysis.R) | `run_scran` | R | Loads a Cell Ranger `.h5` matrix, filters cells by QC thresholds, normalizes with scran's deconvolution method, models mean-variance trends, and runs PCA on highly variable genes |
+| [`scran_analysis.R`](scran_analysis.R) | `run_scran` | R | Loads a `SingleCellExperiment` RDS object, filters cells by QC thresholds, normalizes with scran's deconvolution method, models mean-variance trends, and runs PCA on highly variable genes |
 
 ## Tasks
 
 ### `run_scran`
 
-Performs QC filtering, normalization, and highly variable gene selection on a Cell Ranger HDF5 matrix file.
+Performs QC filtering, normalization, and highly variable gene selection on a `SingleCellExperiment` RDS object.
 
 **Inputs:**
 
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
-| `input_h5` | File | — | Cell Ranger filtered feature-barcode matrix HDF5 file (`filtered_feature_bc_matrix.h5`) |
+| `sce_rds` | File | — | `SingleCellExperiment` RDS object (e.g. from `ww-dropletutils`) containing the raw counts to QC and normalize |
 | `sample_name` | String | — | Sample name used for output file prefixes |
 | `mito_pattern` | String | `^MT-` | Regex pattern identifying mitochondrial gene symbols |
 | `nmads` | Float | 3.0 | Number of median absolute deviations from the median used to flag low-quality cells |
@@ -70,13 +72,13 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow my_scrna_analysis {
   input {
-    File cellranger_h5
+    File sce_rds
     String sample_name
   }
 
   call scran_tasks.run_scran {
     input:
-      input_h5    = cellranger_h5,
+      sce_rds     = sce_rds,
       sample_name = sample_name
   }
 
@@ -96,7 +98,7 @@ workflow my_scrna_analysis {
 ```wdl
 call scran_tasks.run_scran {
   input:
-    input_h5     = cellranger_h5,
+    sce_rds      = sce_rds,
     sample_name  = "mouse_sample",
     mito_pattern = "^mt-"
 }
@@ -106,7 +108,7 @@ call scran_tasks.run_scran {
 ```wdl
 call scran_tasks.run_scran {
   input:
-    input_h5    = cellranger_h5,
+    sce_rds     = sce_rds,
     sample_name = "sample",
     nmads       = 2.5,
     n_hvgs      = 5000
@@ -115,7 +117,7 @@ call scran_tasks.run_scran {
 
 ## Testing the Module
 
-The test workflow (`testrun.wdl`) automatically downloads a public 10x Genomics PBMC dataset via `ww-testdata` and runs `run_scran` on it, then validates all output files.
+The test workflow (`testrun.wdl`) automatically downloads a public 10x Genomics PBMC dataset via `ww-testdata`, loads it into a `SingleCellExperiment` via `ww-dropletutils`, and runs `run_scran` on it, then validates all output files.
 
 ```bash
 # Using Cromwell
@@ -132,7 +134,7 @@ sprocket run testrun.wdl --entrypoint scran_example
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
 - Internet access for fetching scripts from GitHub at runtime
-- R environment with scran, scater, and DropletUtils (provided by `getwilds/scran:1.40.0` container)
+- R environment with scran and scater (provided by `getwilds/scran:1.40.0` container)
 
 ## Citation
 
