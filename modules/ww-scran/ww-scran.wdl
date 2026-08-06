@@ -6,8 +6,8 @@ version 1.0
 
 task run_scran {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Perform per-cell QC filtering, deconvolution-based normalization, and highly variable gene selection on single-cell RNA-seq data with scran"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-scran/ww-scran.wdl"
     outputs: {

@@ -3,7 +3,7 @@
   "name": "ww-scran",
   "license": "MIT",
   "authors": [
-    "WILDS Team <wilds@fredhutch.org>"
+    "Taylor Firman <tfirman@fredhutch.org>"
   ],
   "description": "WILDS WDL module for single-cell RNA-seq QC, normalization, and feature selection using scran",
   "repository": "https://github.com/getwilds/wilds-wdl-library",
