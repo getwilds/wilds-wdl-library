@@ -10,8 +10,8 @@ version 1.0
 
 task read10x_counts {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Load a 10x Genomics feature-barcode matrix (H5 format) into a SingleCellExperiment object using DropletUtils::read10xCounts"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-dropletutils/ww-dropletutils.wdl"
     outputs: {
@@ -71,8 +71,8 @@ task read10x_counts {
 
 task empty_drops_filter {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
     description: "Call real cells from a raw (unfiltered) 10x feature-barcode matrix using DropletUtils::emptyDrops, filter the SingleCellExperiment to called cells, and produce a barcode-rank QC plot"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-dropletutils/ww-dropletutils.wdl"
     outputs: {
