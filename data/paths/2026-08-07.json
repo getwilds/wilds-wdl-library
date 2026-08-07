@@ -2,20 +2,20 @@
   {
     "path": "/getwilds/wilds-wdl-library",
     "title": "Overview",
-    "count": 130,
-    "uniques": 35
-  },
-  {
-    "path": "/getwilds/wilds-wdl-library/tree/main/pipelines",
-    "title": "/tree/main/pipelines",
-    "count": 36,
-    "uniques": 13
+    "count": 132,
+    "uniques": 36
   },
   {
     "path": "/getwilds/wilds-wdl-library/pulls",
     "title": "/pulls",
-    "count": 35,
-    "uniques": 4
+    "count": 39,
+    "uniques": 5
+  },
+  {
+    "path": "/getwilds/wilds-wdl-library/tree/main/pipelines",
+    "title": "/tree/main/pipelines",
+    "count": 34,
+    "uniques": 13
   },
   {
     "path": "/getwilds/wilds-wdl-library/tree/main/modules",
@@ -36,6 +36,12 @@
     "uniques": 4
   },
   {
+    "path": "/getwilds/wilds-wdl-library/blob/main/pipelines/ww-rnaseq/inputs.json",
+    "title": "/blob/main/pipelines/ww-rnaseq/inputs.json",
+    "count": 13,
+    "uniques": 4
+  },
+  {
     "path": "/getwilds/wilds-wdl-library/pull/380",
     "title": "/pull/380",
     "count": 13,
@@ -52,11 +58,5 @@
     "title": "/pull/365",
     "count": 12,
     "uniques": 3
-  },
-  {
-    "path": "/getwilds/wilds-wdl-library/pull/375",
-    "title": "/pull/375",
-    "count": 12,
-    "uniques": 2
   }
 ]

@@ -1,8 +1,13 @@
 [
   {
     "referrer": "github.com",
-    "count": 24,
-    "uniques": 8
+    "count": 32,
+    "uniques": 9
+  },
+  {
+    "referrer": "teams.public.onecdn.static.microsoft",
+    "count": 20,
+    "uniques": 3
   },
   {
     "referrer": "linkedin.com",
@@ -10,13 +15,8 @@
     "uniques": 6
   },
   {
-    "referrer": "teams.public.onecdn.static.microsoft",
-    "count": 9,
-    "uniques": 2
-  },
-  {
     "referrer": "Google",
-    "count": 7,
+    "count": 6,
     "uniques": 2
   },
   {
