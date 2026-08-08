@@ -53,7 +53,7 @@ task run_scater {
     set -eo pipefail
 
     curl -so scater_analysis.R \
-      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-scater/scater_analysis.R"
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-scater/modules/ww-scater/scater_analysis.R"
 
     Rscript scater_analysis.R \
       --sce_rds="~{sce_rds}" \
