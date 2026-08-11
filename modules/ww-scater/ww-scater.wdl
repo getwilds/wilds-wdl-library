@@ -20,7 +20,7 @@ task run_scater {
     species: "human,eukaryote"
     operation: "dimensionality_reduction"
     input_sample_required: "sce_rds:gene_expression_matrix:binary_format"
-    input_sample_optional: "none"
+    input_sample_optional: "hvg_list:gene_list:txt"
     input_reference_required: "none"
     input_reference_optional: "none"
     output_sample: "sce_object:gene_expression_matrix:binary_format,pca_plot:plot:png,umap_plot:plot:png,qc_plot:quality_control_report:png"
@@ -30,8 +30,9 @@ task run_scater {
   parameter_meta {
     sce_rds: "Normalized SingleCellExperiment RDS object (e.g. from ww-scran) containing a logcounts assay"
     sample_name: "Sample name used for output file prefixes"
+    hvg_list: "Optional plain-text list of highly variable genes to use for PCA (e.g. ww-scran's hvg_list output), one gene per line. If omitted, HVGs are selected by log-expression variance"
     n_pcs: "Number of principal components to compute"
-    n_hvgs: "Number of most variable genes (by log-expression variance) to use for PCA"
+    n_hvgs: "Number of most variable genes (by log-expression variance) to use for PCA, when hvg_list is not provided"
     random_seed: "Random seed for UMAP, for reproducibility"
     memory_gb: "Memory allocated for the task in GB"
     cpu_cores: "Number of CPU cores allocated for the task"
@@ -41,6 +42,7 @@ task run_scater {
   input {
     File sce_rds
     String sample_name
+    File? hvg_list
     Int n_pcs = 50
     Int n_hvgs = 2000
     Int random_seed = 100
@@ -58,6 +60,7 @@ task run_scater {
     Rscript scater_analysis.R \
       --sce_rds="~{sce_rds}" \
       --sample_name="~{sample_name}" \
+      --hvg_list="~{default="" hvg_list}" \
       --n_pcs=~{n_pcs} \
       --n_hvgs=~{n_hvgs} \
       --random_seed=~{random_seed} \

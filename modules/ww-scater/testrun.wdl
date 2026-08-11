@@ -22,8 +22,10 @@ workflow scater_example {
       mito_pattern = "^Mt-"
   }
 
+  # Reuse ww-scran's HVG selection instead of recomputing it
   call ww_scater.run_scater { input:
       sce_rds = run_scran.sce_object,
+      hvg_list = run_scran.hvg_list,
       sample_name = "2500_Wistar_Rat_PBMCs_Singleplex"
   }
 

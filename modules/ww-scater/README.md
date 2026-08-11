@@ -9,7 +9,7 @@ A WILDS WDL module for single-cell RNA-seq dimensionality reduction and QC visua
 This module provides a reusable WDL task for PCA and UMAP dimensionality reduction, plus QC and reduced-dimension diagnostic plotting, of single-cell RNA-seq data using [scater](https://bioconductor.org/packages/release/bioc/html/scater.html) only (no `scran`). It accepts a normalized `SingleCellExperiment` RDS object with a `logcounts` assay (e.g. produced by [`ww-scran`](../ww-scran/)) and runs the following steps:
 
 1. **Load data** — reads the `SingleCellExperiment` RDS object and checks for a `logcounts` assay
-2. **Feature selection** — ranks genes by variance of log-expression and selects the top highly variable genes for dimensionality reduction
+2. **Feature selection** — uses an optional upstream HVG list (e.g. `ww-scran`'s `hvg_list` output) if provided, otherwise ranks genes by variance of log-expression and selects the top highly variable genes for dimensionality reduction
 3. **Dimensionality reduction** — runs PCA (`runPCA`) on the selected genes, then UMAP (`runUMAP`) on the resulting PCA embedding
 4. **QC metrics** — computes per-cell QC metrics with `perCellQCMetrics`
 5. **Visualization** — generates PCA, UMAP, and per-cell QC scatter plots with `plotReducedDim`/`plotColData`, and saves the updated `SingleCellExperiment` object
@@ -45,8 +45,9 @@ Performs PCA and UMAP dimensionality reduction and QC/reduced-dimension visualiz
 |------|------|---------|-------------|
 | `sce_rds` | File | — | Normalized `SingleCellExperiment` RDS object (e.g. from `ww-scran`) containing a `logcounts` assay |
 | `sample_name` | String | — | Sample name used for output file prefixes |
+| `hvg_list` | File? | — | Optional plain-text list of highly variable genes to use for PCA (e.g. `ww-scran`'s `hvg_list` output), one gene per line. If omitted, HVGs are selected by log-expression variance |
 | `n_pcs` | Int | 50 | Number of principal components to compute |
-| `n_hvgs` | Int | 2000 | Number of most variable genes (by log-expression variance) to use for PCA |
+| `n_hvgs` | Int | 2000 | Number of most variable genes (by log-expression variance) to use for PCA, when `hvg_list` is not provided |
 | `random_seed` | Int | 100 | Random seed for UMAP, for reproducibility |
 | `memory_gb` | Int | 8 | Memory allocated for the task in GB |
 | `cpu_cores` | Int | 2 | Number of CPU cores allocated for the task |
@@ -102,9 +103,19 @@ call scater_tasks.run_scater {
 }
 ```
 
+**Reusing an upstream HVG selection (e.g. from `ww-scran`):**
+```wdl
+call scater_tasks.run_scater {
+  input:
+    sce_rds     = run_scran.sce_object,
+    hvg_list    = run_scran.hvg_list,
+    sample_name = "sample"
+}
+```
+
 ## Testing the Module
 
-The test workflow (`testrun.wdl`) automatically downloads a public 10x Genomics PBMC dataset via `ww-testdata`, loads it into a `SingleCellExperiment` via `ww-dropletutils`, normalizes it with `ww-scran`, and runs `run_scater` on it, then validates all output files.
+The test workflow (`testrun.wdl`) automatically downloads a public 10x Genomics PBMC dataset via `ww-testdata`, loads it into a `SingleCellExperiment` via `ww-dropletutils`, normalizes it with `ww-scran`, and runs `run_scater` on it (reusing `ww-scran`'s HVG selection via the `hvg_list` input), then validates all output files.
 
 ```bash
 # Using Cromwell

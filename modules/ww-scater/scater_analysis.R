@@ -20,6 +20,7 @@ parse_args <- function(args, defaults) {
 defaults <- list(
   sce_rds = NULL,
   sample_name = NULL,
+  hvg_list = "",
   n_pcs = "50",
   n_hvgs = "2000",
   random_seed = "100",
@@ -53,11 +54,18 @@ if (!"logcounts" %in% assayNames(sce)) {
 ## 2. Highly variable genes for dimensionality reduction ##
 ########################################################
 
-# Rank genes by variance of log-expression to pick the top HVGs
-# (self-contained: does not assume upstream HVG selection, e.g. scran's)
-gene_var <- apply(logcounts(sce), 1, var)
-n_hvgs <- min(opt$n_hvgs, length(gene_var))
-top_hvgs <- names(sort(gene_var, decreasing = TRUE))[seq_len(n_hvgs)]
+if (nzchar(opt$hvg_list)) {
+  # Reuse an upstream HVG selection (e.g. ww-scran's hvg_list output)
+  # instead of recomputing it from scratch
+  message("Loading HVG list from: ", opt$hvg_list)
+  top_hvgs <- readLines(opt$hvg_list)
+  top_hvgs <- intersect(top_hvgs, rownames(sce))
+} else {
+  # Rank genes by variance of log-expression to pick the top HVGs
+  gene_var <- apply(logcounts(sce), 1, var)
+  n_hvgs <- min(opt$n_hvgs, length(gene_var))
+  top_hvgs <- names(sort(gene_var, decreasing = TRUE))[seq_len(n_hvgs)]
+}
 message("HVGs used for dimensionality reduction: ", length(top_hvgs))
 
 
