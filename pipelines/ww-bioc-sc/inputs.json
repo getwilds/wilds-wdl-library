@@ -1,0 +1,22 @@
+{
+  "bioc_sc.samples": [
+    {
+      "name": "sample1",
+      "h5_matrix": "/path/to/sample1_filtered_feature_bc_matrix.h5"
+    },
+    {
+      "name": "sample2",
+      "raw_h5_matrix": "/path/to/sample2_raw_feature_bc_matrix.h5"
+    }
+  ],
+  "bioc_sc.mito_pattern": "^MT-",
+  "bioc_sc.nmads": 3.0,
+  "bioc_sc.n_hvgs": 2000,
+  "bioc_sc.n_pcs": 50,
+  "bioc_sc.reference_dataset": "HumanPrimaryCellAtlasData",
+  "bioc_sc.reference_ensembl": true,
+  "bioc_sc.label_column": "label.main",
+  "bioc_sc.cpu_cores": 2,
+  "bioc_sc.memory_gb": 8,
+  "bioc_sc.singler_memory_gb": 16
+}
