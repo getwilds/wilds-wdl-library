@@ -24,7 +24,7 @@ task read10x_counts {
     input_sample_optional: "none"
     input_reference_required: "none"
     input_reference_optional: "none"
-    output_sample: "sce_rds:gene_expression_matrix:rds"
+    output_sample: "sce_rds:gene_expression_matrix:binary_format"
     output_reference: "none"
   }
 
@@ -87,7 +87,7 @@ task empty_drops_filter {
     input_sample_optional: "none"
     input_reference_required: "none"
     input_reference_optional: "none"
-    output_sample: "filtered_sce_rds:gene_expression_matrix:rds,empty_drops_csv:gene_report:csv,barcode_rank_pdf:plot:pdf"
+    output_sample: "filtered_sce_rds:gene_expression_matrix:binary_format,empty_drops_csv:gene_report:csv,barcode_rank_pdf:plot:pdf"
     output_reference: "none"
   }
 
