@@ -32,6 +32,7 @@ task run_singler {
     sample_name: "Sample name used for output file prefixes"
     reference_rds: "Optional custom reference SingleCellExperiment RDS object with labeled cell types. If omitted, a celldex reference dataset is fetched by name"
     reference_dataset: "Name of the celldex reference dataset function to fetch (e.g. HumanPrimaryCellAtlasData, MouseRNAseqData), used when reference_rds is not provided"
+    reference_ensembl: "Fetch the celldex reference with Ensembl gene IDs instead of gene symbols, to match 10x Cell Ranger output"
     label_column: "Column name in the reference object's colData containing cell-type labels"
     n_top_markers: "Number of top marker genes to report per cluster"
     random_seed: "Random seed for clustering, for reproducibility"
@@ -45,6 +46,7 @@ task run_singler {
     String sample_name
     File? reference_rds
     String reference_dataset = "HumanPrimaryCellAtlasData"
+    Boolean reference_ensembl = true
     String label_column = "label.main"
     Int n_top_markers = 10
     Int random_seed = 100
@@ -64,6 +66,7 @@ task run_singler {
       --sample_name="~{sample_name}" \
       --reference_rds="~{default="" reference_rds}" \
       --reference_dataset="~{reference_dataset}" \
+      --reference_ensembl=~{reference_ensembl} \
       --label_column="~{label_column}" \
       --n_top_markers=~{n_top_markers} \
       --random_seed=~{random_seed} \

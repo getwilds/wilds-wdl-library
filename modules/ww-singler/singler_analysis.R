@@ -23,6 +23,7 @@ defaults <- list(
   sample_name = NULL,
   reference_rds = "",
   reference_dataset = "HumanPrimaryCellAtlasData",
+  reference_ensembl = "true",
   label_column = "label.main",
   n_top_markers = "10",
   random_seed = "100",
@@ -33,6 +34,7 @@ opt <- parse_args(commandArgs(trailingOnly = TRUE), defaults)
 if (is.null(opt$output_prefix)) opt$output_prefix <- opt$sample_name
 opt$n_top_markers <- as.integer(opt$n_top_markers)
 opt$random_seed <- as.integer(opt$random_seed)
+opt$reference_ensembl <- as.logical(opt$reference_ensembl)
 
 set.seed(opt$random_seed)
 
@@ -96,8 +98,13 @@ if (nzchar(opt$reference_rds)) {
   message("Loading reference SingleCellExperiment from: ", opt$reference_rds)
   reference <- readRDS(opt$reference_rds)
 } else {
-  message("Fetching reference dataset from celldex: ", opt$reference_dataset)
-  reference <- do.call(opt$reference_dataset, list())
+  # 10x Cell Ranger output (the typical upstream source for sce) uses
+  # Ensembl gene IDs as rownames, not gene symbols, so the celldex
+  # reference is fetched in the matching ID space by default
+  message("Fetching reference dataset from celldex: ", opt$reference_dataset,
+          " (ensembl = ", opt$reference_ensembl, ")")
+  reference <- do.call(opt$reference_dataset,
+                        list(ensembl = opt$reference_ensembl))
 }
 
 predictions <- SingleR(test = sce, ref = reference,

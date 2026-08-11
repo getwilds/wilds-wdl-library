@@ -46,6 +46,7 @@ Performs clustering, marker gene identification, and cell-type annotation on a d
 | `sample_name` | String | — | Sample name used for output file prefixes |
 | `reference_rds` | File? | — | Optional custom reference `SingleCellExperiment` RDS object with labeled cell types. If omitted, a celldex reference dataset is fetched by name |
 | `reference_dataset` | String | `HumanPrimaryCellAtlasData` | Name of the celldex reference dataset function to fetch (e.g. `HumanPrimaryCellAtlasData`, `MouseRNAseqData`), used when `reference_rds` is not provided |
+| `reference_ensembl` | Boolean | `true` | Fetch the celldex reference with Ensembl gene IDs instead of gene symbols, to match 10x Cell Ranger output |
 | `label_column` | String | `label.main` | Column name in the reference object's colData containing cell-type labels |
 | `n_top_markers` | Int | 10 | Number of top marker genes to report per cluster |
 | `random_seed` | Int | 100 | Random seed for clustering, for reproducibility |
@@ -115,7 +116,7 @@ call singler_tasks.run_singler {
 
 ## Testing the Module
 
-The test workflow (`testrun.wdl`) automatically downloads a public 10x Genomics PBMC dataset via `ww-testdata`, loads it into a `SingleCellExperiment` via `ww-dropletutils`, normalizes it with `ww-scran`, runs dimensionality reduction with `ww-scater`, and runs `run_singler` on it, then validates all output files. Note that the demo dataset is rat PBMCs annotated against the default human reference (`HumanPrimaryCellAtlasData`), so predicted labels are not biologically meaningful for this test data — the test only validates that the pipeline runs end-to-end and produces well-formed outputs.
+The test workflow (`testrun.wdl`) automatically downloads a raw 10x Genomics human PBMC dataset via `ww-testdata`, calls real cells and loads them into a `SingleCellExperiment` via `ww-dropletutils`, normalizes with `ww-scran`, runs dimensionality reduction with `ww-scater`, and runs `run_singler` on it against the default human reference (`HumanPrimaryCellAtlasData`), then validates all output files.
 
 ```bash
 # Using Cromwell

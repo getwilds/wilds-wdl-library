@@ -7,31 +7,31 @@ import "../ww-scater/ww-scater.wdl" as ww_scater
 import "./ww-singler.wdl" as ww_singler
 
 workflow singler_example {
-  # Download 10x Genomics H5 test data
-  call ww_testdata.download_10x_h5_data { }
+  # Download a raw (unfiltered) 10x Genomics H5 matrix of human PBMCs
+  call ww_testdata.download_10x_raw_h5_data { }
 
-  # Load the filtered matrix into a SingleCellExperiment (upstream ww-dropletutils step)
-  call ww_dropletutils.read10x_counts { input:
-      h5_matrix = download_10x_h5_data.h5_matrix,
-      sample_name = "2500_Wistar_Rat_PBMCs_Singleplex"
+  # Call real cells from the raw matrix (upstream ww-dropletutils step)
+  call ww_dropletutils.empty_drops_filter { input:
+      raw_h5_matrix = download_10x_raw_h5_data.raw_h5_matrix,
+      sample_name = "pbmc_10k_v3"
   }
 
   # Normalize with scran (upstream ww-scran step)
   call ww_scran.run_scran { input:
-      sce_rds = read10x_counts.sce_rds,
-      sample_name = "2500_Wistar_Rat_PBMCs_Singleplex",
-      mito_pattern = "^Mt-"
+      sce_rds = empty_drops_filter.filtered_sce_rds,
+      sample_name = "pbmc_10k_v3",
+      mito_pattern = "^MT-"
   }
 
   # Dimensionality reduction with scater (upstream ww-scater step)
   call ww_scater.run_scater { input:
       sce_rds = run_scran.sce_object,
-      sample_name = "2500_Wistar_Rat_PBMCs_Singleplex"
+      sample_name = "pbmc_10k_v3"
   }
 
   call ww_singler.run_singler { input:
       sce_rds = run_scater.sce_object,
-      sample_name = "2500_Wistar_Rat_PBMCs_Singleplex"
+      sample_name = "pbmc_10k_v3"
   }
 
   call validate_outputs { input:
