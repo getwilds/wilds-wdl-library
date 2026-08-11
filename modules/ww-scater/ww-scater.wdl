@@ -19,11 +19,11 @@ task run_scater {
     topic: "transcriptomics,single_cell"
     species: "human,eukaryote"
     operation: "dimensionality_reduction"
-    input_sample_required: "sce_rds:gene_expression_matrix:rds"
+    input_sample_required: "sce_rds:gene_expression_matrix:binary_format"
     input_sample_optional: "none"
     input_reference_required: "none"
     input_reference_optional: "none"
-    output_sample: "sce_object:gene_expression_matrix:rds_format,pca_plot:plot:png,umap_plot:plot:png,qc_plot:quality_control_report:png"
+    output_sample: "sce_object:gene_expression_matrix:binary_format,pca_plot:plot:png,umap_plot:plot:png,qc_plot:quality_control_report:png"
     output_reference: "none"
   }
 
