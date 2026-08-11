@@ -734,6 +734,22 @@ tools:
       branches:
         - main
 
+  - name: ww-singler
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-singler/ww-singler.wdl
+    readMePath: /modules/ww-singler/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for single-cell RNA-seq clustering, marker gene identification, and cell-type annotation using scran and SingleR
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-sjl
     subclass: WDL
     primaryDescriptorPath: /modules/ww-sjl/ww-sjl.wdl
