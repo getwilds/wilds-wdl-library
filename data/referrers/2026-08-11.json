@@ -1,0 +1,47 @@
+[
+  {
+    "referrer": "github.com",
+    "count": 34,
+    "uniques": 8
+  },
+  {
+    "referrer": "teams.public.onecdn.static.microsoft",
+    "count": 21,
+    "uniques": 4
+  },
+  {
+    "referrer": "linkedin.com",
+    "count": 10,
+    "uniques": 6
+  },
+  {
+    "referrer": "sciwiki.fredhutch.org",
+    "count": 10,
+    "uniques": 4
+  },
+  {
+    "referrer": "Google",
+    "count": 9,
+    "uniques": 3
+  },
+  {
+    "referrer": "ocdo.fredhutch.org",
+    "count": 5,
+    "uniques": 3
+  },
+  {
+    "referrer": "com.linkedin.android",
+    "count": 4,
+    "uniques": 2
+  },
+  {
+    "referrer": "Bing",
+    "count": 4,
+    "uniques": 1
+  },
+  {
+    "referrer": "substack.com",
+    "count": 2,
+    "uniques": 2
+  }
+]
