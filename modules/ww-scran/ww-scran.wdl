@@ -20,11 +20,11 @@ task run_scran {
     topic: "transcriptomics,single_cell"
     species: "human,eukaryote"
     operation: "expression_analysis"
-    input_sample_required: "sce_rds:gene_expression_matrix:rds"
+    input_sample_required: "sce_rds:gene_expression_matrix:binary_format"
     input_sample_optional: "none"
     input_reference_required: "none"
     input_reference_optional: "none"
-    output_sample: "sce_object:gene_expression_matrix:rds_format,qc_plot:quality_control_report:png,size_factor_plot:plot:png,mean_variance_plot:plot:png,hvg_table:gene_report:csv"
+    output_sample: "sce_object:gene_expression_matrix:binary_format,qc_plot:quality_control_report:png,size_factor_plot:plot:png,mean_variance_plot:plot:png,hvg_table:gene_report:csv"
     output_reference: "none"
   }
 
