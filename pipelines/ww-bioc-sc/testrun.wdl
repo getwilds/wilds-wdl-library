@@ -10,12 +10,20 @@ struct SingleCellSample {
 }
 
 workflow bioc_sc_example {
+  input {
+    File? no_h5_matrix
+  }
+
   # Download a raw (unfiltered) 10x Genomics H5 matrix of human PBMCs
   call ww_testdata.download_10x_raw_h5_data { }
 
-  SingleCellSample sample1 = {
-    "name": "pbmc_10k_v3",
-    "raw_h5_matrix": download_10x_raw_h5_data.raw_h5_matrix
+  # WDL struct literals must specify every member (optional fields included)
+  # when constructed as an object; no_h5_matrix is left undefined so
+  # h5_matrix evaluates to null, since this sample uses raw_h5_matrix
+  SingleCellSample sample1 = object {
+    name: "pbmc_10k_v3",
+    h5_matrix: no_h5_matrix,
+    raw_h5_matrix: download_10x_raw_h5_data.raw_h5_matrix
   }
 
   # Run the full pipeline. Human PBMC data lets emptyDrops call real cells
