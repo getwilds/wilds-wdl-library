@@ -125,6 +125,10 @@ write.csv(hvg_df[order(-hvg_df$bio), ],
           paste0(opt$output_prefix, "_hvgs.csv"),
           row.names = FALSE)
 
+# Plain-text list of just the selected top HVGs (one gene per line), for
+# downstream tools (e.g. ww-scater) to reuse without recomputing variance
+writeLines(top_hvgs, paste0(opt$output_prefix, "_hvg_list.txt"))
+
 png(paste0(opt$output_prefix, "_mean_variance.png"),
     width = 1200, height = 1000, res = 200)
 plot(hvg_df$mean, hvg_df$total,

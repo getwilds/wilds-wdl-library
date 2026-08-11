@@ -62,6 +62,7 @@ Performs QC filtering, normalization, and highly variable gene selection on a `S
 | `size_factor_plot` | File | Histogram of scran deconvolution size factors |
 | `mean_variance_plot` | File | Mean-variance trend plot from highly variable gene modeling |
 | `hvg_table` | File | CSV of all genes ranked by biological variance component |
+| `hvg_list` | File | Plain-text list of the selected top highly variable genes (one gene per line) |
 
 ## Usage as a Module
 
@@ -88,6 +89,7 @@ workflow my_scrna_analysis {
     File size_factor_plot     = run_scran.size_factor_plot
     File mean_variance_plot   = run_scran.mean_variance_plot
     File hvg_table            = run_scran.hvg_table
+    File hvg_list             = run_scran.hvg_list
   }
 }
 ```

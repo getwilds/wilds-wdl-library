@@ -25,7 +25,8 @@ workflow scran_example {
       qc_plot = run_scran.qc_plot,
       size_factor_plot = run_scran.size_factor_plot,
       mean_variance_plot = run_scran.mean_variance_plot,
-      hvg_table = run_scran.hvg_table
+      hvg_table = run_scran.hvg_table,
+      hvg_list = run_scran.hvg_list
   }
 
   output {
@@ -34,6 +35,7 @@ workflow scran_example {
     File size_factor_plot = run_scran.size_factor_plot
     File mean_variance_plot = run_scran.mean_variance_plot
     File hvg_table = run_scran.hvg_table
+    File hvg_list = run_scran.hvg_list
     File validation_report = validate_outputs.report
   }
 }
@@ -52,6 +54,7 @@ task validate_outputs {
     size_factor_plot: "Size factor histogram PNG"
     mean_variance_plot: "Mean-variance trend plot PNG"
     hvg_table: "CSV of genes ranked by biological variance"
+    hvg_list: "Plain-text list of selected top HVGs"
   }
 
   input {
@@ -60,6 +63,7 @@ task validate_outputs {
     File size_factor_plot
     File mean_variance_plot
     File hvg_table
+    File hvg_list
   }
 
   command <<<
@@ -71,7 +75,7 @@ task validate_outputs {
 
     validation_passed=true
 
-    for file_path in "~{sce_object}" "~{qc_plot}" "~{size_factor_plot}" "~{mean_variance_plot}" "~{hvg_table}"; do
+    for file_path in "~{sce_object}" "~{qc_plot}" "~{size_factor_plot}" "~{mean_variance_plot}" "~{hvg_table}" "~{hvg_list}"; do
       if [[ -f "$file_path" && -s "$file_path" ]]; then
         file_size=$(stat -c%s "$file_path")
         echo "$(basename $file_path): PASSED (${file_size} bytes)" >> validation_report.txt

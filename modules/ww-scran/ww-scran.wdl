@@ -15,7 +15,8 @@ task run_scran {
         qc_plot: "Per-cell QC scatter plot (library size vs. detected genes, colored by discard status)",
         size_factor_plot: "Histogram of scran deconvolution size factors",
         mean_variance_plot: "Mean-variance trend plot from highly variable gene modeling",
-        hvg_table: "CSV of all genes ranked by biological variance component"
+        hvg_table: "CSV of all genes ranked by biological variance component",
+        hvg_list: "Plain-text list of the selected top highly variable genes (one gene per line)"
     }
     topic: "transcriptomics,single_cell"
     species: "human,eukaryote"
@@ -24,7 +25,7 @@ task run_scran {
     input_sample_optional: "none"
     input_reference_required: "none"
     input_reference_optional: "none"
-    output_sample: "sce_object:gene_expression_matrix:binary_format,qc_plot:quality_control_report:png,size_factor_plot:plot:png,mean_variance_plot:plot:png,hvg_table:gene_report:csv"
+    output_sample: "sce_object:gene_expression_matrix:binary_format,qc_plot:quality_control_report:png,size_factor_plot:plot:png,mean_variance_plot:plot:png,hvg_table:gene_report:csv,hvg_list:gene_list:txt"
     output_reference: "none"
   }
 
@@ -74,6 +75,7 @@ task run_scran {
     File size_factor_plot = "~{sample_name}_scran_size_factors.png"
     File mean_variance_plot = "~{sample_name}_scran_mean_variance.png"
     File hvg_table = "~{sample_name}_scran_hvgs.csv"
+    File hvg_list = "~{sample_name}_scran_hvg_list.txt"
   }
 
   runtime {
