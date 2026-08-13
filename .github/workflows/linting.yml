@@ -27,7 +27,7 @@ jobs:
       name: Install miniwdl
       run: |
         python -m pip install --upgrade pip
-        pip3 install miniwdl
+        pip3 install miniwdl==1.15.0
     - 
       name: Miniwdl Check
       run: |
@@ -55,7 +55,7 @@ jobs:
         java-version: '21'
     -
       name: Pull WOMtool Jarfile
-      run: wget -q https://github.com/broadinstitute/cromwell/releases/download/86/womtool-86.jar
+      run: wget -q https://github.com/broadinstitute/cromwell/releases/download/92/womtool-92.jar
     -
       name: WOMtool Validation
       run: |
@@ -68,7 +68,7 @@ jobs:
             continue
           fi
           echo "  [***] Validating $file [***]"
-          java -jar womtool-86.jar validate "$file"
+          java -jar womtool-92.jar validate "$file"
           EXITCODE=$(($? || EXITCODE))
         done
         exit $EXITCODE
@@ -84,7 +84,7 @@ jobs:
       run: which shellcheck || sudo apt-get install -y shellcheck
     - 
       name: Sprocket Linting
-      uses: stjude-rust-labs/sprocket-action@v0.25.0
+      uses: stjude-rust-labs/sprocket-action@v0.28.0
       with:
         action: lint
 
