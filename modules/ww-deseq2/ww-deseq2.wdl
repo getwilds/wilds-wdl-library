@@ -177,6 +177,97 @@ task run_deseq2 {
   }
 }
 
+task run_deseq2_biocjobs {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Run the canonical DESeq2 differential expression workflow on a raw count matrix using the biocjobs package"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-deseq2/ww-deseq2.wdl"
+    outputs: {
+        results: "Per-gene DESeq2 results table with log2 fold changes and adjusted p-values",
+        normalized_counts: "Median-of-ratios normalized count values for all samples",
+        ma_plot: "MA plot showing log fold change vs. mean expression"
+    }
+    topic: "transcriptomics,gene_expression"
+    species: "human,eukaryote,prokaryote,virus"
+    operation: "statistical_calculation"
+    input_sample_required: "counts:gene_expression_matrix:tsv,coldata:report:tsv"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "results:report:tsv,normalized_counts:report:tsv,ma_plot:plot:pdf"
+    output_reference: "none"
+    biocjobs_package: "DESeq2"
+    biocjobs_job: "deseq2-differential-expression"
+    biocjobs_job_version: "1.0.0"
+  }
+  
+  parameter_meta {
+    counts: "Raw count matrix. Tab-separated matrix of raw (un-normalized) integer read counts: first column gene identifiers, one further column per sample. Do not supply TPM/FPKM or otherwise normalized values.. Format: tsv."
+    coldata: "Sample table. Tab-separated sample annotation: first column sample identifiers matching the count matrix column names, one further column per covariate (e.g. condition, batch). Every variable used in the design formula must be a column of this table.. Format: tsv."
+    design: "Design formula. R formula over sample table columns. Control for covariates by putting them first; the tested variable comes last (e.g. \"~ batch + condition\")."
+    contrast_factor: "Factor to test. Sample table column containing the tested condition."
+    contrast_numerator: "Treatment level (numerator). Level of the tested factor whose effect is reported."
+    contrast_denominator: "Reference level (denominator). Baseline level the treatment is compared against."
+    alpha: "FDR threshold (alpha). Significance cutoff used to optimize independent filtering. Set it to the adjusted p-value threshold you will actually use.. Range: 0 to 1."
+    shrinkage: "Log2 fold change shrinkage. Shrinkage estimator applied to the reported log2 fold changes; \"apeglm\" is the recommended default, \"none\" reports maximum likelihood estimates.. One of: apeglm, ashr, normal, none."
+    prefilter: "Pre-filter low-count genes. Remove genes with insufficient counts before testing."
+    prefilter_min_count: "Pre-filter minimum count. Range: 1 to Inf."
+    prefilter_min_samples: "Pre-filter minimum samples. Keep genes with at least the minimum count in at least this many samples. 0 (default) means automatic: the size of the smallest group of the tested factor.. Range: 0 to Inf."
+    memory_gb: "Memory allocated for the task in GB"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    File counts
+    File coldata
+    String design = "~ condition"
+    String contrast_factor
+    String contrast_numerator
+    String contrast_denominator
+    String alpha = "0.1"
+    String shrinkage = "apeglm"
+    Boolean prefilter = true
+    Int prefilter_min_count = 10
+    Int prefilter_min_samples = 0
+    Int memory_gb = 8
+    Int cpu_cores = 2
+    String docker_image = "ghcr.io/almahmoud/deseq2:devel"
+  }
+
+  command <<<
+    set -euo pipefail
+    Rscript -e 'BiocJobs::execJob("DESeq2", "deseq2-differential-expression")' \
+      --counts '~{sub(counts, "'", "'\\''")}' \
+      --coldata '~{sub(coldata, "'", "'\\''")}' \
+      --design '~{sub(design, "'", "'\\''")}' \
+      --contrast_factor '~{sub(contrast_factor, "'", "'\\''")}' \
+      --contrast_numerator '~{sub(contrast_numerator, "'", "'\\''")}' \
+      --contrast_denominator '~{sub(contrast_denominator, "'", "'\\''")}' \
+      --alpha '~{sub(alpha, "'", "'\\''")}' \
+      --shrinkage '~{sub(shrinkage, "'", "'\\''")}' \
+      --prefilter ~{prefilter} \
+      --prefilter_min_count ~{prefilter_min_count} \
+      --prefilter_min_samples ~{prefilter_min_samples} \
+      --results 'results.tsv' \
+      --normalized_counts 'normalized_counts.tsv' \
+      --ma_plot 'ma_plot.pdf'
+  >>>
+
+  output {
+    File results = "results.tsv"
+    File normalized_counts = "normalized_counts.tsv"
+    File ma_plot = "ma_plot.pdf"
+  }
+
+  runtime {
+    docker: docker_image
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task compile_deseq2_results {
   meta {
     author: [
