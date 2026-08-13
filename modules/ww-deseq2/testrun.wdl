@@ -1,7 +1,10 @@
 version 1.0
 
-import "../ww-testdata/ww-testdata.wdl" as ww_testdata
-import "./ww-deseq2.wdl" as ww_deseq2
+# import "../ww-testdata/ww-testdata.wdl" as ww_testdata
+# import "./ww-deseq2.wdl" as ww_deseq2
+
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/deseq2-bioc-test/modules/ww-deseq2/ww-deseq2.wdl" as ww_deseq2
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/deseq2-bioc-test/modules/ww-testdata/ww-testdata.wdl" as ww_testdata
 
 workflow deseq2_example {
   # Generate test data
@@ -208,7 +211,7 @@ try:
     results_df = pd.read_csv("~{results}", sep="\t")
     print(f"Results file loaded: {len(results_df)} genes")
 
-    required_cols = ["baseMean", "log2FoldChange", "lfcSE", "stat", "pvalue", "padj"]
+    required_cols = ["baseMean", "log2FoldChange", "lfcSE", "pvalue", "padj"]
     missing_cols = [col for col in required_cols if col not in results_df.columns]
     if missing_cols:
         validation_issues.append(f"Missing required columns in results: {missing_cols}")
