@@ -19,11 +19,11 @@ task run_singler {
     topic: "transcriptomics,single_cell"
     species: "human,eukaryote"
     operation: "annotation"
-    input_sample_required: "sce_rds:gene_expression_matrix:rds"
-    input_sample_optional: "reference_rds:gene_expression_matrix:rds"
+    input_sample_required: "sce_rds:gene_expression_matrix:binary_format"
+    input_sample_optional: "none"
     input_reference_required: "none"
-    input_reference_optional: "none"
-    output_sample: "sce_object:gene_expression_matrix:rds_format,cluster_table:gene_report:csv,marker_table:gene_report:csv,prediction_table:gene_report:csv"
+    input_reference_optional: "reference_rds:gene_expression_matrix:binary_format"
+    output_sample: "sce_object:gene_expression_matrix:binary_format,cluster_table:gene_report:csv,marker_table:gene_report:csv,prediction_table:gene_report:csv"
     output_reference: "none"
   }
 
