@@ -57,9 +57,9 @@ if (!"PCA" %in% reducedDimNames(sce)) {
 }
 
 
-#####################
+######################
 ## 2. Cluster cells ##
-#####################
+######################
 
 clusters <- clusterCells(sce, use.dimred = "PCA")
 sce$cluster <- clusters
@@ -69,9 +69,9 @@ write.csv(data.frame(barcode = colnames(sce), cluster = sce$cluster),
           row.names = FALSE)
 
 
-##############################
+#################################
 ## 3. Per-cluster marker genes ##
-##############################
+#################################
 
 markers <- findMarkers(sce, groups = sce$cluster)
 
@@ -90,9 +90,9 @@ write.csv(marker_df,
           row.names = FALSE)
 
 
-######################################
+##########################################
 ## 4. Cell-type annotation with SingleR ##
-######################################
+##########################################
 
 if (nzchar(opt$reference_rds)) {
   message("Loading reference SingleCellExperiment from: ", opt$reference_rds)
