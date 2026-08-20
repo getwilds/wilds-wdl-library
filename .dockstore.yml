@@ -356,6 +356,22 @@ tools:
       branches:
         - main
 
+  - name: ww-dropletutils
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-dropletutils/ww-dropletutils.wdl
+    readMePath: /modules/ww-dropletutils/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for loading 10x Genomics matrices and calling cells from empty droplets using Bioconductor DropletUtils
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-ena
     subclass: WDL
     primaryDescriptorPath: /modules/ww-ena/ww-ena.wdl
