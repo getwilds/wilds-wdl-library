@@ -670,6 +670,22 @@ tools:
       branches:
         - main
 
+  - name: ww-scater
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-scater/ww-scater.wdl
+    readMePath: /modules/ww-scater/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for single-cell RNA-seq dimensionality reduction and QC visualization using scater
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-scran
     subclass: WDL
     primaryDescriptorPath: /modules/ww-scran/ww-scran.wdl
