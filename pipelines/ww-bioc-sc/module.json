@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-bioc-sc",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL pipeline for standard Bioconductor/OSCA single-cell RNA-seq post-processing: load matrix, QC filter, normalize, HVG selection, dimensionality reduction, clustering, marker genes, and cell-type annotation",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-bioc-sc.wdl",
+  "readme": "README.md",
+  "dependencies": {
+    "ww_dropletutils": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-dropletutils"
+    },
+    "ww_scran": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-scran"
+    },
+    "ww_scater": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-scater"
+    },
+    "ww_singler": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-singler"
+    }
+  }
+}
