@@ -57,7 +57,7 @@ task run_scran {
     set -eo pipefail
 
     curl -so scran_analysis.R \
-      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-scran/modules/ww-scran/scran_analysis.R"
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-scran/scran_analysis.R"
 
     Rscript scran_analysis.R \
       --sce_rds="~{sce_rds}" \

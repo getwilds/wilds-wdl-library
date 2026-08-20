@@ -1,9 +1,9 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-bioc-sc/modules/ww-dropletutils/ww-dropletutils.wdl" as dropletutils_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-bioc-sc/modules/ww-scran/ww-scran.wdl" as scran_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-bioc-sc/modules/ww-scater/ww-scater.wdl" as scater_tasks
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-bioc-sc/modules/ww-singler/ww-singler.wdl" as singler_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-dropletutils/ww-dropletutils.wdl" as dropletutils_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-scran/ww-scran.wdl" as scran_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-scater/ww-scater.wdl" as scater_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-singler/ww-singler.wdl" as singler_tasks
 
 struct SingleCellSample {
     String name
