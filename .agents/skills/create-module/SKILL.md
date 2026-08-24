@@ -41,8 +41,18 @@ Create four files in `modules/ww-$ARGUMENTS/`:
 - Add a header comment block describing the module
 - Define task(s) with the tool's core functionality
 - Every task MUST have:
-  - `meta` block with: author, email, description, url, outputs
+  - `meta` block with: author, email, description, url, outputs, and ontology-related fields
     - Use `author: "WILDS Team"` and `email: "wilds@fredhutch.org"` as placeholders — the actual contributor will replace these in review
+    - Ontology-related fields: read the "Ontology metadata" section of [.github/CONTRIBUTING.md](../../../.github/CONTRIBUTING.md) for the full field definitions and conventions (e.g. using `"any"` for non-specific tasks, or `|` to separate multiple formats for one parameter). Fill in these fields on the task's `meta` block:
+      - `topic`
+      - `species`
+      - `operation`
+      - `input_sample_required`
+      - `input_sample_optional`
+      - `input_reference_required`
+      - `input_reference_optional`
+      - `output_sample`
+      - `output_reference`
   - `parameter_meta` block describing every input
   - `input` block with typed parameters; include `cpu_cores` (Int, default sensible), `memory_gb` (Int, default sensible), and `String docker_image = "getwilds/$ARGUMENTS:<version>"` (pinned, never `latest`)
   - `command <<<` block starting with `set -eo pipefail`, using `~{var}` interpolation
