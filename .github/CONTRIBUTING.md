@@ -10,7 +10,6 @@ Thank you for your interest in contributing to the WILDS WDL Library! This docum
 - [Module Development Guidelines](#module-development-guidelines)
 - [Pipeline Development Guidelines](#pipeline-development-guidelines)
 - [Testing Requirements](#testing-requirements)
-- [Documentation Standards](#documentation-standards)
 - [Documentation Website](#documentation-website)
 - [Citation and Attribution](#citation-and-attribution)
 - [Dockstore Registration](#dockstore-registration)
