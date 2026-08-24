@@ -126,6 +126,7 @@ Fred Hutch researchers can use [PROOF](https://sciwiki.fredhutch.org/datademos/p
 - **Standardized Structure**: Consistent organization across all components
 - **Container Management**: Versioned, tested Docker images from the [WILDS Docker Library](https://github.com/getwilds/wilds-docker-library)
 - **Documentation Standards**: Comprehensive README files and inline documentation
+- **Ontology-Described Metadata**: Tasks use custom metadata fields and [EDAM ontology](https://www.ebi.ac.uk/ols4/ontologies/edam) terms ([publication](https://pubmed.ncbi.nlm.nih.gov/23479348/)) to describe what each task does and its file inputs/outputs
 - **Version Control**: Semantic versioning and careful dependency management
 
 ## AI Disclosure
