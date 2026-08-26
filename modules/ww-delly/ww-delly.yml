@@ -1,0 +1,175 @@
+# Sprocket unit tests for ww-delly.wdl
+# Run with: sprocket dev test modules/ww-delly/ww-delly.wdl
+#
+# These tests validate the delly_call task for structural variant calling.
+# Test fixtures are located in <workspace>/test/fixtures/delly/
+
+delly_call:
+  # Basic test with minimal required inputs
+  - name: basic_sv_calling
+    tags: [unit, delly, fast]
+    inputs:
+      $sample_files:
+        aligned_bam:
+          - delly/test_sample.bam
+        aligned_bam_index:
+          - delly/test_sample.bam.bai
+      $reference_files:
+        reference_fasta:
+          - delly/test_reference.fa
+        reference_fasta_index:
+          - delly/test_reference.fa.fai
+      cpu_cores:
+        - 2
+      memory_gb:
+        - 4
+    assertions:
+      outputs:
+        vcf:
+          - Name: test_sample.delly.vcf.gz
+        vcf_index:
+          - Name: test_sample.delly.vcf.gz.csi
+        summary:
+          - Name: test_sample.delly.summary.txt
+
+  # Test specific SV type calling (DEL only)
+  - name: deletion_only_calling
+    tags: [unit, delly]
+    inputs:
+      $sample_files:
+        aligned_bam:
+          - delly/test_sample.bam
+        aligned_bam_index:
+          - delly/test_sample.bam.bai
+      $reference_files:
+        reference_fasta:
+          - delly/test_reference.fa
+        reference_fasta_index:
+          - delly/test_reference.fa.fai
+      sv_type:
+        - "DEL"
+      cpu_cores:
+        - 2
+      memory_gb:
+        - 4
+    assertions:
+      outputs:
+        vcf:
+          - Name: test_sample.delly.vcf.gz
+        summary:
+          - Name: test_sample.delly.summary.txt
+
+  # Test with exclude regions BED file
+  - name: with_exclude_regions
+    tags: [unit, delly]
+    inputs:
+      $sample_files:
+        aligned_bam:
+          - delly/test_sample.bam
+        aligned_bam_index:
+          - delly/test_sample.bam.bai
+      $reference_files:
+        reference_fasta:
+          - delly/test_reference.fa
+        reference_fasta_index:
+          - delly/test_reference.fa.fai
+      exclude_regions_bed:
+        - delly/exclude_regions.bed
+      cpu_cores:
+        - 2
+      memory_gb:
+        - 4
+    assertions:
+      outputs:
+        vcf:
+          - Name: test_sample.delly.vcf.gz
+        summary:
+          - Name: test_sample.delly.summary.txt
+
+  # Test with target regions BED file
+  - name: with_target_regions
+    tags: [unit, delly]
+    inputs:
+      $sample_files:
+        aligned_bam:
+          - delly/test_sample.bam
+        aligned_bam_index:
+          - delly/test_sample.bam.bai
+      $reference_files:
+        reference_fasta:
+          - delly/test_reference.fa
+        reference_fasta_index:
+          - delly/test_reference.fa.fai
+      target_regions_bed:
+        - delly/target_regions.bed
+      cpu_cores:
+        - 2
+      memory_gb:
+        - 4
+    assertions:
+      outputs:
+        vcf:
+          - Name: test_sample.delly.vcf.gz
+
+  # Test different SV types
+  - name: sv_type_variations
+    tags: [unit, delly]
+    inputs:
+      $sample_files:
+        aligned_bam:
+          - delly/test_sample.bam
+        aligned_bam_index:
+          - delly/test_sample.bam.bai
+      $reference_files:
+        reference_fasta:
+          - delly/test_reference.fa
+        reference_fasta_index:
+          - delly/test_reference.fa.fai
+      sv_type:
+        - "DEL"
+        - "DUP"
+        - "INV"
+        - "INS"
+      cpu_cores:
+        - 2
+      memory_gb:
+        - 4
+    assertions:
+      outputs:
+        vcf:
+          - Name: test_sample.delly.vcf.gz
+        summary:
+          - Name: test_sample.delly.summary.txt
+
+  # Test with all optional parameters combined
+  - name: full_options
+    tags: [unit, delly]
+    inputs:
+      $sample_files:
+        aligned_bam:
+          - delly/test_sample.bam
+        aligned_bam_index:
+          - delly/test_sample.bam.bai
+      $reference_files:
+        reference_fasta:
+          - delly/test_reference.fa
+        reference_fasta_index:
+          - delly/test_reference.fa.fai
+      target_regions_bed:
+        - delly/target_regions.bed
+      exclude_regions_bed:
+        - delly/exclude_regions.bed
+      sv_type:
+        - "DEL"
+      cpu_cores:
+        - 2
+      memory_gb:
+        - 4
+    assertions:
+      outputs:
+        vcf:
+          - Name: test_sample.delly.vcf.gz
+        vcf_index:
+          - Name: test_sample.delly.vcf.gz.csi
+        summary:
+          - Name: test_sample.delly.summary.txt

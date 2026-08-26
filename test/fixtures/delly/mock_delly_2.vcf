@@ -1,0 +1,45 @@
+##fileformat=VCFv4.2
+##fileDate=20240101
+##source=DELLY
+##reference=test_reference.fa
+##contig=<ID=chr1,length=3000>
+##ALT=<ID=DEL,Description="Deletion">
+##ALT=<ID=DUP,Description="Duplication">
+##ALT=<ID=INV,Description="Inversion">
+##ALT=<ID=INS,Description="Insertion">
+##ALT=<ID=BND,Description="Breakend">
+##FILTER=<ID=PASS,Description="All filters passed">
+##FILTER=<ID=LowQual,Description="Low quality call">
+##INFO=<ID=PRECISE,Number=0,Type=Flag,Description="Precise structural variation">
+##INFO=<ID=IMPRECISE,Number=0,Type=Flag,Description="Imprecise structural variation">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">
+##INFO=<ID=SVMETHOD,Number=1,Type=String,Description="Type of approach used to detect SV">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End position of the structural variant">
+##INFO=<ID=CHR2,Number=1,Type=String,Description="Chromosome for POS2 coordinate in case of an pointwise chromosome-specific re-annotation">
+##INFO=<ID=POS2,Number=1,Type=Integer,Description="Genomic position for CHR2 in case of a pointwise chromosome-specific re-annotation">
+##INFO=<ID=PE,Number=1,Type=Integer,Description="Paired-end support of the structural variant">
+##INFO=<ID=MAPQ,Number=1,Type=Integer,Description="Median mapping quality of paired-ends">
+##INFO=<ID=SR,Number=1,Type=Integer,Description="Split-read support">
+##INFO=<ID=SRQ,Number=1,Type=Float,Description="Split-read consensus alignment quality">
+##INFO=<ID=CONSENSUS,Number=1,Type=String,Description="Split-read consensus sequence">
+##INFO=<ID=CT,Number=1,Type=String,Description="Paired-end signature induced connection type">
+##INFO=<ID=CIPOS,Number=2,Type=Integer,Description="PE confidence interval around POS">
+##INFO=<ID=CIEND,Number=2,Type=Integer,Description="PE confidence interval around END">
+##INFO=<ID=INSLEN,Number=1,Type=Integer,Description="Predicted length of the insertion">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=GL,Number=G,Type=Float,Description="Log10-scaled genotype likelihoods for RR,RA,AA genotypes">
+##FORMAT=<ID=GQ,Number=1,Type=Integer,Description="Genotype Quality">
+##FORMAT=<ID=FT,Number=1,Type=String,Description="Per-sample genotype filter">
+##FORMAT=<ID=RC,Number=1,Type=Integer,Description="Raw high-quality read counts or base counts for the SV">
+##FORMAT=<ID=RCL,Number=1,Type=Integer,Description="Raw high-quality read counts or base counts for the left control region">
+##FORMAT=<ID=RCR,Number=1,Type=Integer,Description="Raw high-quality read counts or base counts for the right control region">
+##FORMAT=<ID=CN,Number=1,Type=Integer,Description="Read-depth based copy-number estimate for autosomal sites">
+##FORMAT=<ID=DR,Number=1,Type=Integer,Description="# high-quality reference pairs">
+##FORMAT=<ID=DV,Number=1,Type=Integer,Description="# high-quality variant pairs">
+##FORMAT=<ID=RR,Number=1,Type=Integer,Description="# high-quality reference junction reads">
+##FORMAT=<ID=RV,Number=1,Type=Integer,Description="# high-quality variant junction reads">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	test_sample_2
+chr1	150	INV00001	N	<INV>	92	PASS	PRECISE;SVTYPE=INV;SVMETHOD=EMBL.DELLYv1.2.9;END=450;PE=6;MAPQ=59;CT=3to3;CIPOS=-8,8;CIEND=-8,8	GT:GL:GQ:FT:RC:RCL:RCR:CN:DR:DV:RR:RV	0/1:-11.2,0,-16.8:92:PASS:28:32:30:2:12:6:7:5
+chr1	900	DEL00003	N	<DEL>	88	PASS	PRECISE;SVTYPE=DEL;SVMETHOD=EMBL.DELLYv1.2.9;END=1100;PE=4;MAPQ=57;CT=3to5;CIPOS=-12,12;CIEND=-12,12	GT:GL:GQ:FT:RC:RCL:RCR:CN:DR:DV:RR:RV	1/1:-18.5,-5.2,0:88:PASS:8:26:24:0:2:8:1:6
+chr1	1700	DUP00002	N	<DUP>	78	PASS	IMPRECISE;SVTYPE=DUP;SVMETHOD=EMBL.DELLYv1.2.9;END=1950;PE=3;MAPQ=52;CT=5to3;CIPOS=-20,20;CIEND=-20,20	GT:GL:GQ:FT:RC:RCL:RCR:CN:DR:DV:RR:RV	0/1:-7.5,0,-11.3:78:PASS:42:20:21:3:7:3:0:0
+chr1	2500	INS00001	N	<INS>	65	PASS	IMPRECISE;SVTYPE=INS;SVMETHOD=EMBL.DELLYv1.2.9;END=2500;INSLEN=150;PE=2;MAPQ=48;CT=NtoN;CIPOS=-30,30;CIEND=-30,30	GT:GL:GQ:FT:RC:RCL:RCR:CN:DR:DV:RR:RV	0/1:-6.1,0,-9.8:65:PASS:15:18:17:2:9:2:0:0
