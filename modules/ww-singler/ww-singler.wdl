@@ -59,7 +59,7 @@ task run_singler {
     set -eo pipefail
 
     curl -so singler_analysis.R \
-      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-singler/singler_analysis.R"
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/singler-debugging/modules/ww-singler/singler_analysis.R"
 
     Rscript singler_analysis.R \
       --sce_rds="~{sce_rds}" \
