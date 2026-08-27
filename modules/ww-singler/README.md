@@ -15,6 +15,12 @@ This module provides a reusable WDL task for graph-based clustering, per-cluster
 
 This module is intended to run downstream of [`ww-scater`](../ww-scater/) in the standard single-cell post-processing chain (load matrix -> QC filter -> normalize -> HVG -> PCA -> UMAP -> clustering -> marker genes -> cell-type annotation).
 
+### Reference dataset caching
+
+When a named celldex reference is used (the default), `celldex` 2.x fetches it through the `gypsum` backend. The `getwilds/singler:2.14.1` image bakes the `HumanPrimaryCellAtlasData` reference (both the gene-symbol and Ensembl-ID variants) into `/opt/hubcache/gypsum` so the annotation step does not need to download it at runtime.
+
+`gypsum` takes a write lock in its cache directory even when the requested data is already present, and the baked-in path is read-only under Apptainer. The `run_singler` task therefore copies the baked cache into the task working directory and points `GYPSUM_CACHE_DIR` at that writable copy before running the analysis script. This is transparent to callers; it just means a named `HumanPrimaryCellAtlasData` run works without network access to the celldex servers. Other celldex references (for example `MouseRNAseqData`) are not bundled and are still downloaded on first use.
+
 ## Module Structure
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
@@ -132,7 +138,7 @@ sprocket run testrun.wdl --entrypoint singler_example
 ## Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
-- Internet access for fetching scripts from GitHub and reference datasets from celldex at runtime
+- Internet access for fetching scripts from GitHub at runtime. The default `HumanPrimaryCellAtlasData` reference is baked into the container (see [Reference dataset caching](#reference-dataset-caching)), but any other celldex reference or a from-scratch fetch still needs network access to the celldex servers
 - R environment with scran, SingleR, and celldex (provided by `getwilds/singler:2.14.1` container)
 
 ## Citation

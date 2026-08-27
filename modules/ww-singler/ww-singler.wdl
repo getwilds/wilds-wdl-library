@@ -61,6 +61,15 @@ task run_singler {
     curl -so singler_analysis.R \
       "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/singler-debugging/modules/ww-singler/singler_analysis.R"
 
+    # gypsum locks its cache dir even for a cache hit, and the image's baked-in
+    # reference cache is read-only under Apptainer. Seed a writable copy in the
+    # task dir and point gypsum at it (skipped for images without the cache).
+    if [ -d /opt/hubcache/gypsum ]; then
+      mkdir -p "${PWD}/gypsum-cache"
+      cp -r /opt/hubcache/gypsum/. "${PWD}/gypsum-cache/"
+      export GYPSUM_CACHE_DIR="${PWD}/gypsum-cache"
+    fi
+
     Rscript singler_analysis.R \
       --sce_rds="~{sce_rds}" \
       --sample_name="~{sample_name}" \
