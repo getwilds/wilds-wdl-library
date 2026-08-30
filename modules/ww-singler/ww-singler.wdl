@@ -59,7 +59,30 @@ task run_singler {
     set -eo pipefail
 
     curl -so singler_analysis.R \
-      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-singler/singler_analysis.R"
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/singler-debugging/modules/ww-singler/singler_analysis.R"
+
+    # celldex/AnnotationHub/gypsum all take a write lock in their cache dir even
+    # for a cache hit, and the getwilds/singler image's baked-in caches are
+    # read-only under Apptainer. Seed a writable copy of each in the task dir
+    # and repoint the corresponding env var (skipped for images without them).
+    if [ -d /opt/hubcache/gypsum ]; then
+      mkdir -p "${PWD}/gypsum-cache"
+      cp -r /opt/hubcache/gypsum/. "${PWD}/gypsum-cache/"
+      export GYPSUM_CACHE_DIR="${PWD}/gypsum-cache"
+    fi
+    if [ -d /opt/hubcache/annotationhub ]; then
+      mkdir -p "${PWD}/annotationhub-cache"
+      cp -r /opt/hubcache/annotationhub/. "${PWD}/annotationhub-cache/"
+      export ANNOTATION_HUB_CACHE="${PWD}/annotationhub-cache"
+      # Work purely from the local cache; skip the online metadata refresh and
+      # its own read-only lock on the metadata SQLite DB.
+      export ANNOTATION_HUB_LOCAL=TRUE
+    fi
+    if [ -d /opt/hubcache/experimenthub ]; then
+      mkdir -p "${PWD}/experimenthub-cache"
+      cp -r /opt/hubcache/experimenthub/. "${PWD}/experimenthub-cache/"
+      export EXPERIMENT_HUB_CACHE="${PWD}/experimenthub-cache"
+    fi
 
     Rscript singler_analysis.R \
       --sce_rds="~{sce_rds}" \
