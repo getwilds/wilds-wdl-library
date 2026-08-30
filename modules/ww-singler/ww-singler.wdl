@@ -59,7 +59,7 @@ task run_singler {
     set -eo pipefail
 
     curl -so singler_analysis.R \
-      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/singler-debugging/modules/ww-singler/singler_analysis.R"
+      "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-singler/singler_analysis.R"
 
     # celldex/AnnotationHub/gypsum all take a write lock in their cache dir even
     # for a cache hit, and the getwilds/singler image's baked-in caches are
