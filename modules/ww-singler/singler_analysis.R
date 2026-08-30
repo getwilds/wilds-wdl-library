@@ -5,25 +5,6 @@ library(SingleR)
 library(celldex)
 library(SingleCellExperiment)
 
-# TEMPORARY: verbose HTTP tracing to debug an intermittent
-# save_file()/array.h5 fetch failure seen only in Sprocket runs on HPC
-# (not reproducible via GitHub CI or any manual repro attempt so far).
-# Remove once root-caused.
-library(httr)
-httr::set_config(httr::verbose(data_out = TRUE, data_in = TRUE, info = TRUE, ssl = TRUE))
-message("DEBUG HOME = ", Sys.getenv("HOME"))
-writable <- function(p) if (nzchar(p)) file.access(p, mode = 2) == 0 else NA
-for (v in c("GYPSUM_CACHE_DIR", "ANNOTATION_HUB_CACHE", "EXPERIMENT_HUB_CACHE")) {
-  p <- Sys.getenv(v)
-  message("DEBUG ", v, " = ", p,
-          "  (exists=", dir.exists(p), " writable=", writable(p), ")")
-}
-message("DEBUG gypsum::cacheDirectory() = ",
-        tryCatch(gypsum::cacheDirectory(), error = function(e) paste("ERR:", conditionMessage(e))))
-message("DEBUG AnnotationHub cache dir = ",
-        tryCatch(tools::R_user_dir("AnnotationHub", "cache"),
-                 error = function(e) paste("ERR:", conditionMessage(e))))
-
 # Parse simple --key=value arguments (no optparse dependency; not present
 # in the getwilds/singler image)
 parse_args <- function(args, defaults) {
