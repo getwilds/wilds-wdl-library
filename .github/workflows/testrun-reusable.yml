@@ -159,8 +159,14 @@ jobs:
       run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
     -
       name: Install Sprocket
+      # Pinned to 0.25.0: Sprocket 0.28.0 added version-aware runtime key type
+      # checking that rejects `gpu: <Boolean>` in the `runtime` section (it types
+      # `gpu` as `Int | String` per WDL 1.1+), breaking `sprocket run` on the
+      # GPU-enabled modules (ww-starling, ww-clair3, ww-cellbender, ww-colabfold,
+      # ww-esmfold). Linting stays on 0.28.0. Revisit once those modules move to
+      # `version 1.2` + `requirements { gpu: Boolean }`.
       run: |
-        cargo-binstall sprocket --version 0.28.0 -y
+        cargo-binstall sprocket --version 0.25.0 -y
     -
       name: Run workflow with Sprocket
       run: |
