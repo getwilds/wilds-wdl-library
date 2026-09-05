@@ -84,7 +84,10 @@ jobs:
       run: which shellcheck || sudo apt-get install -y shellcheck
     - 
       name: Sprocket Linting
-      uses: stjude-rust-labs/sprocket-action@v0.28.0
+      # sprocket-action has no v0.29.x tag (jumps v0.28.1 -> v0.30.0); v0.30.0
+      # is used here since linting is unaffected by the 0.30 module-root check
+      # that keeps the testrun jobs on the 0.29.0 CLI.
+      uses: stjude-rust-labs/sprocket-action@v0.30.0
       with:
         action: lint
 
