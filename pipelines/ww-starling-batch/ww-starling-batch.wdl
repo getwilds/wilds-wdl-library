@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-starling/ww-starling.wdl" as starling_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/sprocket-0.30.1-upgrade/modules/ww-starling/ww-starling.wdl" as starling_tasks
 
 workflow starling_batch {
   meta {
