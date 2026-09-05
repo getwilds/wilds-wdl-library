@@ -173,3 +173,4 @@ task colabfold_predict {
     gpu: gpu_enabled
   }
 }
+

@@ -56,3 +56,4 @@ workflow starling_batch {
     Array[Array[File]] xtc_files = generate_ensemble_batch.xtc_files
   }
 }
+
