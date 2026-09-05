@@ -10,5 +10,9 @@
   "homepage": "https://getwilds.org/",
   "entrypoint": "ww-ena.wdl",
   "readme": "README.md",
+  "exclude": [
+    "testrun.wdl",
+    "testrun_hpc.wdl"
+  ],
   "dependencies": {}
 }

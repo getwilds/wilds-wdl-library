@@ -10,6 +10,10 @@
   "homepage": "https://getwilds.org/",
   "entrypoint": "ww-glimpse2.wdl",
   "readme": "README.md",
+  "exclude": [
+    "testrun.wdl",
+    "testrun_hpc.wdl"
+  ],
   "tools": [
     {
       "name": "glimpse2",

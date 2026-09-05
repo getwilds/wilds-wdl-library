@@ -11,6 +11,10 @@
   "homepage": "https://getwilds.org/",
   "entrypoint": "ww-deseq2.wdl",
   "readme": "README.md",
+  "exclude": [
+    "testrun.wdl",
+    "testrun_hpc.wdl"
+  ],
   "tools": [
     {
       "name": "deseq2",
