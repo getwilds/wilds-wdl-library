@@ -10,6 +10,10 @@
   "homepage": "https://getwilds.org/",
   "entrypoint": "ww-dropletutils.wdl",
   "readme": "README.md",
+  "exclude": [
+    "testrun.wdl",
+    "testrun_hpc.wdl"
+  ],
   "tools": [
     {
       "name": "dropletutils",

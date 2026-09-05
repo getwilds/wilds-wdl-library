@@ -275,3 +275,4 @@ task ensemble_info {
     memory: "~{memory_gb} GB"
   }
 }
+

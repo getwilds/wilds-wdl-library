@@ -15,17 +15,17 @@
   "dependencies": {
     "ww_sra": {
       "git": "https://github.com/getwilds/wilds-wdl-library",
-      "branch": "main",
+      "branch": "sprocket-0.30.1-upgrade",
       "path": "modules/ww-sra"
     },
     "ww_cellranger": {
       "git": "https://github.com/getwilds/wilds-wdl-library",
-      "branch": "main",
+      "branch": "sprocket-0.30.1-upgrade",
       "path": "modules/ww-cellranger"
     },
     "ww_cellbender": {
       "git": "https://github.com/getwilds/wilds-wdl-library",
-      "branch": "main",
+      "branch": "sprocket-0.30.1-upgrade",
       "path": "modules/ww-cellbender"
     }
   }

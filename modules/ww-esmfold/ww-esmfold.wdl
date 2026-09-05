@@ -89,3 +89,4 @@ task esmfold_predict {
     gpu: gpu_enabled
   }
 }
+
