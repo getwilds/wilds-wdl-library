@@ -159,8 +159,13 @@ jobs:
       run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
     -
       name: Install Sprocket
+      # Pinned to 0.29.0: 0.30.0 adds a module-root import check that rejects
+      # our pipelines' `module.json` dependencies, since those dependency
+      # modules' testrun.wdl files import ../ww-testdata (outside the module
+      # root). See the sprocket-0.30.1-upgrade branch for the 0.30.x
+      # investigation and a reproduction to raise upstream.
       run: |
-        cargo-binstall sprocket --version 0.28.0 -y
+        cargo-binstall sprocket --version 0.29.0 -y
     -
       name: Run workflow with Sprocket
       run: |
