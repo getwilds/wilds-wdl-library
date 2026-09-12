@@ -9,7 +9,7 @@ A WILDS WDL module wrapping [Pairtree](https://github.com/morrislab/pairtree), a
 
 Pairtree infers phylogenetic relationships between cancer cell subpopulations (subclones) by analyzing mutation frequencies across multiple tissue samples from the same tumor. It first computes pairwise probability distributions over possible evolutionary relationships between mutations, then uses MCMC to sample clone trees whose subclonal frequencies best explain the observed variant allele frequencies. Pairtree scales to substantially more samples and subclones than earlier clone-tree reconstruction methods.
 
-This module wraps the three core steps of a Pairtree analysis: clustering mutations into subclones, sampling clone trees, and visualizing the results.
+This module wraps the core steps of a Pairtree analysis: converting per-sample VCFs into Pairtree's SSM format, clustering mutations into subclones, sampling clone trees, and visualizing the results.
 
 ## Module Structure
 
@@ -20,6 +20,25 @@ This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
+
+### `vcf_to_ssm`
+
+Converts single-sample SNV VCFs into a multi-sample SSM file and a matching skeleton params.json. Assumes diploid heterozygous SNVs with no copy-number correction (a fixed `var_read_prob` per input), suitable for clonal cell-line lineage analyses where purity is ~100% and ploidy is uniform across samples.
+
+**Inputs:**
+- `vcfs` (Array[File]): Single-sample VCFs containing SNV calls with AD (allelic depth) FORMAT fields, one per sample
+- `sample_names` (Array[String]): Sample names, in the same order as `vcfs`, used to label the params.json samples array
+- `var_read_prob` (Float, default=0.5): Expected fraction of reads supporting the variant allele given true heterozygosity
+- `output_name` (String, default="converted"): Prefix for the output SSM and params.json files
+- `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
+- `memory_gb` (Int, default=4): Memory allocated for the task in GB
+- `docker_image` (String, default=`getwilds/bcftools:1.19`): Docker image to use for this task
+
+**Outputs:**
+- `ssm_file` (File): SSM file with variant/total read counts per mutation per sample
+- `params_file` (File): Skeleton params JSON with sample names and empty clusters/garbage arrays
+
+**Note:** Mutations called in some samples but not others (private mutations) are recorded as 0 variant reads out of 0 total reads for the samples lacking that call, marking the site as uncovered/uninformative there rather than fabricating a reference genotype. This task does not adjust for differing ploidy or copy number between samples; if your samples have known karyotype differences, compute `var_read_prob` per-sample outside this task and build the SSM directly.
 
 ### `cluster_variants`
 
@@ -81,25 +100,31 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow my_analysis_pipeline {
   input {
-    File ssm_file
-    File params_file
+    Array[File] sample_vcfs
+    Array[String] sample_names
+  }
+
+  call pairtree_tasks.vcf_to_ssm {
+    input:
+      vcfs = sample_vcfs,
+      sample_names = sample_names
   }
 
   call pairtree_tasks.cluster_variants {
     input:
-      ssm_file = ssm_file,
-      params_file = params_file
+      ssm_file = vcf_to_ssm.ssm_file,
+      params_file = vcf_to_ssm.params_file
   }
 
   call pairtree_tasks.run_pairtree {
     input:
-      ssm_file = ssm_file,
+      ssm_file = vcf_to_ssm.ssm_file,
       params_file = cluster_variants.clustered_params_file
   }
 
   call pairtree_tasks.plot_tree {
     input:
-      ssm_file = ssm_file,
+      ssm_file = vcf_to_ssm.ssm_file,
       params_file = cluster_variants.clustered_params_file,
       results_file = run_pairtree.results_file
   }
@@ -140,8 +165,8 @@ call pairtree_tasks.cluster_variants {
 ### Integration Examples
 
 This module integrates seamlessly with other WILDS components:
-- **ww-testdata**: Automatic provisioning of synthetic SSM/params test data via `create_pairtree_data`
-- **Variant calling modules** (e.g. ww-gatk, ww-clair3): Somatic variant calls can be converted into SSM format upstream of this module
+- **ww-testdata**: Automatic provisioning of synthetic daughter-cell-line VCF test data via `create_pairtree_vcfs`
+- **Variant calling modules** (e.g. ww-gatk, ww-clair3): Somatic or germline SNV calls can be fed directly into `vcf_to_ssm`
 
 ## Testing the Module
 
@@ -161,16 +186,19 @@ java -jar cromwell.jar run testrun.wdl
 ### Automatic Demo Mode
 
 The test workflow automatically:
-1. Generates a small synthetic SSM file and params.json using `ww-testdata`
-2. Clusters the synthetic mutations into subclones
-3. Samples clone trees via MCMC (reduced `trees_per_chain` for fast CI runs)
-4. Generates an interactive HTML visualization of the results
+1. Generates two synthetic daughter-cell-line VCFs using `ww-testdata`
+2. Converts them into a multi-sample SSM file and skeleton params.json
+3. Clusters the synthetic mutations into subclones
+4. Samples clone trees via MCMC (reduced `trees_per_chain` for fast CI runs)
+5. Generates an interactive HTML visualization of the results
 
 ## Docker Container
 
-This module uses the `getwilds/pairtree:1.0.1` container image, which includes:
-- Pairtree and its Python dependencies (numpy, scipy)
+Most tasks in this module use the `getwilds/pairtree:1.0.1` container image, which includes:
+- Pairtree and its Python dependencies (numpy, scipy, scikit-learn)
 - All necessary system dependencies for clustering, tree sampling, and visualization
+
+The `vcf_to_ssm` task instead uses `getwilds/bcftools:1.19`, since the conversion relies on `bcftools merge`/`query` rather than any Pairtree functionality.
 
 ## Citation
 

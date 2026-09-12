@@ -10,6 +10,111 @@ version 1.0
 #### TASK DEFINITIONS ####
 # Define tasks for each functionality of the tool represented by this module
 
+task vcf_to_ssm {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Converts single-sample SNV VCFs into a multi-sample SSM file and a matching skeleton params.json consumable by cluster_variants. Assumes diploid heterozygous SNVs with no copy-number correction (var_read_prob fixed per input), suitable for clonal cell-line lineage analyses."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-pairtree/ww-pairtree.wdl"
+    outputs: {
+        ssm_file: "SSM file with variant/total read counts per mutation per sample",
+        params_file: "Skeleton params JSON with sample names and empty clusters/garbage arrays"
+    }
+    topic: "oncology,genomics"
+    species: "human"
+    operation: "format_conversion"
+    input_sample_required: "vcfs:variant_calling:vcf"
+    input_sample_optional: "none"
+    input_reference_required: "none"
+    input_reference_optional: "none"
+    output_sample: "ssm_file:variant_calling:tabular,params_file:variant_calling:json"
+    output_reference: "none"
+  }
+
+  parameter_meta {
+    vcfs: "Array of single-sample VCFs containing SNV calls with AD (allelic depth) FORMAT fields, one per sample"
+    sample_names: "Sample names, in the same order as vcfs, used to label the params.json samples array"
+    var_read_prob: "Expected fraction of reads supporting the variant allele given true heterozygosity (0.5 for diploid heterozygous SNVs with no copy-number correction)"
+    output_name: "Prefix for the output SSM and params.json files"
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    Array[File] vcfs
+    Array[String] sample_names
+    Float var_read_prob = 0.5
+    String output_name = "converted"
+    Int cpu_cores = 2
+    Int memory_gb = 4
+    String docker_image = "getwilds/bcftools:1.19"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Compress and index each single-sample VCF so bcftools merge can join them
+    vcf_array=(~{sep=' ' vcfs})
+    compressed_vcfs=()
+    for vcf in "${vcf_array[@]}"; do
+      base="$(basename "$vcf")"
+      bcftools view -O z -o "${base}.gz" "$vcf"
+      bcftools index -t "${base}.gz"
+      compressed_vcfs+=("${base}.gz")
+    done
+
+    # Join all samples on shared loci; sites absent from a given sample are
+    # recorded as missing ("./.") genotypes rather than dropped
+    bcftools merge -m none "${compressed_vcfs[@]}" -O v -o merged.vcf
+
+    # Build the SSM header
+    printf "id\tname\tvar_reads\ttotal_reads\tvar_read_prob\n" > "~{output_name}.ssm"
+
+    # Extract per-sample allelic depths and assemble SSM rows. A missing AD
+    # (private mutation not called in that sample) is recorded as 0 variant
+    # reads out of 0 total reads -- an uninformative, uncovered site rather
+    # than a fabricated reference call.
+    bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%AD]\n' merged.vcf | \
+      awk -v OFS='\t' -v vrp="~{var_read_prob}" '
+      BEGIN { vrp = vrp + 0 }
+      {
+        var_str = ""
+        tot_str = ""
+        vrp_str = ""
+        for (i = 5; i <= NF; i++) {
+          split($i, ad, ",")
+          if ($i == "." || ad[1] == "" || ad[2] == "") {
+            v = 0; t = 0
+          } else {
+            v = ad[2] + 0
+            t = ad[1] + ad[2]
+          }
+          sep = (i == 5) ? "" : ","
+          var_str = var_str sep v
+          tot_str = tot_str sep t
+          vrp_str = vrp_str sep vrp
+        }
+        printf "s%d\t%s_%s_%s_%s\t%s\t%s\t%s\n", NR-1, $1, $2, $3, $4, var_str, tot_str, vrp_str
+      }' >> "~{output_name}.ssm"
+
+    # Build a skeleton params.json: sample names only, ready for cluster_variants
+    sample_json=$(printf '"%s",' ~{sep=' ' sample_names} | sed 's/,$//')
+    printf '{"samples": [%s], "clusters": [], "garbage": []}\n' "$sample_json" > "~{output_name}.params.json"
+  >>>
+
+  output {
+    File ssm_file = "~{output_name}.ssm"
+    File params_file = "~{output_name}.params.json"
+  }
+
+  runtime {
+    docker: docker_image
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task cluster_variants {
   meta {
     author: "Taylor Firman"
