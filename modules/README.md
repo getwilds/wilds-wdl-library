@@ -89,6 +89,7 @@ In anticipation of the proposed WDL v1.4 [module manifest spec](https://github.c
 | `ww-manta` | Structural Variant Caller | `getwilds/manta:1.6.0` | Call structural variants with Manta |
 | `ww-megahit` | MEGAHIT Metagenome Assembler | `getwilds/megahit:1.2.9` | De novo metagenome assembly using MEGAHIT |
 | `ww-multiqc` | MultiQC Report Aggregator | `getwilds/multiqc:1.33` | Aggregate results from multiple bioinformatics tools into a single interactive HTML report |
+| `ww-pairtree` | Cancer Phylogeny Reconstructor | `getwilds/pairtree:1.0.1` | Reconstruct cancer evolutionary trees from multi-sample bulk DNA sequencing data with Pairtree |
 | `ww-rmats-turbo` | rMATS-turbo Splicing Analysis | `getwilds/rmats-turbo:4.3.0` | Detect and quantify differential alternative splicing events from RNA-seq data |
 | `ww-rseqc` | RSeQC Quality Control | `getwilds/rseqc:5.0.4` | Run comprehensive quality control metrics on aligned RNA-seq data |
 | `ww-salmon` | Salmon Transcript Quantifier | `getwilds/salmon:1.10.3` | Build Salmon index and quantify transcript expression from RNA-seq reads |
