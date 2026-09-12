@@ -1,0 +1,15 @@
+{
+  "pairtree_lineage.sample_vcfs": [
+    "/path/to/daughter_line_A.vcf",
+    "/path/to/daughter_line_B.vcf"
+  ],
+  "pairtree_lineage.sample_names": [
+    "daughter_line_A",
+    "daughter_line_B"
+  ],
+  "pairtree_lineage.var_read_prob": 0.5,
+  "pairtree_lineage.clustering_model": "linfreq",
+  "pairtree_lineage.trees_per_chain": 3000,
+  "pairtree_lineage.cpu_cores": 2,
+  "pairtree_lineage.memory_gb": 8
+}

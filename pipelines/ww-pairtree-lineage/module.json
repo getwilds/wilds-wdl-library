@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-pairtree-lineage",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>"
+  ],
+  "description": "WILDS WDL pipeline for inferring clonal lineage relationships among related samples from SNV VCFs using Pairtree",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-pairtree-lineage.wdl",
+  "readme": "README.md",
+  "dependencies": {
+    "ww_pairtree": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "add-pairtree-module",
+      "path": "modules/ww-pairtree"
+    }
+  }
+}
