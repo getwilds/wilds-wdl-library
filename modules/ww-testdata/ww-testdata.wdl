@@ -1152,6 +1152,67 @@ task create_clean_amplicon_reference {
   }
 }
 
+task create_pairtree_data {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Creates a small synthetic SSM file and params.json for testing Pairtree cancer phylogeny reconstruction. Hardcoded values avoid any network dependency."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        ssm_file: "Synthetic SSM file with variant/total read counts across 3 samples for 6 mutations",
+        params_file: "Params JSON specifying sample names and pre-computed mutation clusters"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Small synthetic dataset: 6 mutations across 3 samples, forming 2 clear clusters
+    # (s0-s2 high VAF trending together, s3-s5 low VAF trending together), so
+    # Pairtree's tree search has an easy, fast-converging signal for CI testing.
+    cat > pairtree_demo.ssm <<'SSM'
+id	name	var_reads	total_reads	var_read_prob
+s0	S_0	180,190,185	200,200,200	0.5,0.5,0.5
+s1	S_1	175,185,182	200,200,200	0.5,0.5,0.5
+s2	S_2	178,188,180	200,200,200	0.5,0.5,0.5
+s3	S_3	40,45,42	200,200,200	0.5,0.5,0.5
+s4	S_4	38,44,41	200,200,200	0.5,0.5,0.5
+s5	S_5	42,46,43	200,200,200	0.5,0.5,0.5
+SSM
+
+    cat > pairtree_demo.params.json <<'JSON'
+{
+  "samples": ["Sample1", "Sample2", "Sample3"],
+  "clusters": [["s0", "s1", "s2"], ["s3", "s4", "s5"]],
+  "garbage": []
+}
+JSON
+  >>>
+
+  output {
+    File ssm_file = "pairtree_demo.ssm"
+    File params_file = "pairtree_demo.params.json"
+  }
+
+  runtime {
+    docker: docker_image
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task create_gdc_manifest {
   meta {
     author: "Taylor Firman"
