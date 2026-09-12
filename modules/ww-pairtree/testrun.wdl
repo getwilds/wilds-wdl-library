@@ -27,8 +27,7 @@ workflow pairtree_example {
   call ww_pairtree.run_pairtree { input:
       ssm_file = vcf_to_ssm.ssm_file,
       params_file = cluster_variants.clustered_params_file,
-      trees_per_chain = 100,
-      parallel_chains = 1
+      trees_per_chain = 100
   }
 
   # Generate an interactive visualization of the results

@@ -139,6 +139,7 @@ task cluster_variants {
     ssm_file: "SSM file with variant/total read counts per mutation per sample"
     params_file: "Params JSON file specifying sample names (clusters/garbage may be empty)"
     model: "Clustering model to use (linfreq or pairwise)"
+    parallel_chains: "Number of Gibbs sampling chains to run in parallel via multiprocessing. 0 runs chains serially with no multiprocessing, which avoids clustervars' multiprocessing.Manager() Unix-socket path-length failures under executors with deeply nested working directories (e.g. Cromwell); increase for large real datasets on executors without that issue."
     output_name: "Prefix for the output params.json file"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
@@ -149,6 +150,7 @@ task cluster_variants {
     File ssm_file
     File params_file
     String model = "linfreq"
+    Int parallel_chains = 0
     String output_name = "clustered"
     Int cpu_cores = 2
     Int memory_gb = 4
@@ -160,6 +162,7 @@ task cluster_variants {
 
     clustervars \
       --model ~{model} \
+      --parallel ~{parallel_chains} \
       "~{ssm_file}" \
       "~{params_file}" \
       "~{output_name}.params.json"
@@ -201,7 +204,7 @@ task run_pairtree {
     params_file: "Params JSON file with samples and mutation clusters (e.g. from cluster_variants)"
     output_name: "Prefix for the output results.npz file"
     trees_per_chain: "Number of MCMC tree samples to draw per chain"
-    parallel_chains: "Number of parallel MCMC chains/processes to use"
+    parallel_chains: "Number of MCMC chains/processes to run in parallel via multiprocessing. 0 runs chains serially with no multiprocessing, which avoids pairtree's multiprocessing.Manager() Unix-socket path-length failures under executors with deeply nested working directories (e.g. Cromwell); increase for large real datasets on executors without that issue."
     phi_fitter: "Method used to fit subclonal frequencies to observed data"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
@@ -213,7 +216,7 @@ task run_pairtree {
     File params_file
     String output_name = "pairtree_results"
     Int trees_per_chain = 3000
-    Int parallel_chains = 2
+    Int parallel_chains = 0
     String phi_fitter = "projection"
     Int cpu_cores = 2
     Int memory_gb = 8

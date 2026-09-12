@@ -48,6 +48,7 @@ Clusters somatic mutations into subclones based on variant allele frequencies ac
 - `ssm_file` (File): SSM file with variant/total read counts per mutation per sample
 - `params_file` (File): Params JSON file specifying sample names (clusters/garbage may be empty)
 - `model` (String, default="linfreq"): Clustering model to use (`linfreq` or `pairwise`)
+- `parallel_chains` (Int, default=0): Number of Gibbs sampling chains to run in parallel via multiprocessing. Defaults to 0 (serial, no multiprocessing) since `clustervars`' multiprocessing.Manager() fails with an `AF_UNIX path too long` error under executors with deeply nested working directories, such as Cromwell
 - `output_name` (String, default="clustered"): Prefix for the output params.json file
 - `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=4): Memory allocated for the task in GB
@@ -65,7 +66,7 @@ Samples clone trees consistent with observed mutation frequencies via MCMC (wrap
 - `params_file` (File): Params JSON file with samples and mutation clusters (e.g. from `cluster_variants`)
 - `output_name` (String, default="pairtree_results"): Prefix for the output results.npz file
 - `trees_per_chain` (Int, default=3000): Number of MCMC tree samples to draw per chain
-- `parallel_chains` (Int, default=2): Number of parallel MCMC chains/processes to use
+- `parallel_chains` (Int, default=0): Number of MCMC chains/processes to run in parallel via multiprocessing. Defaults to 0 (serial, no multiprocessing) since `pairtree`'s multiprocessing.Manager() fails with an `AF_UNIX path too long` error under executors with deeply nested working directories, such as Cromwell
 - `phi_fitter` (String, default="projection"): Method used to fit subclonal frequencies to observed data
 - `cpu_cores` (Int, default=2): Number of CPU cores allocated for the task
 - `memory_gb` (Int, default=8): Memory allocated for the task in GB
@@ -151,6 +152,7 @@ call pairtree_tasks.run_pairtree {
     memory_gb = 32
 }
 ```
+**Note:** Only raise `parallel_chains` above 0 on executors that don't nest working directories deeply (e.g. Sprocket, miniWDL). Under Cromwell, `pairtree`'s multiprocessing.Manager() fails with `AF_UNIX path too long` once the container's working directory path exceeds the OS's Unix-socket path limit.
 
 **Using the pairwise clustering model instead of the default linfreq model:**
 ```wdl
