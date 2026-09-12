@@ -68,6 +68,7 @@ Pipelines follow the same `testrun.wdl` / `testrun_hpc.wdl` split as modules: mo
 | `ww-imputation` | Intermediate | `ww-glimpse2`, `ww-bcftools` | Genotype imputation from low-coverage WGS data using GLIMPSE2 |
 | `ww-jetlag` | Basic | `ww-sjl` | Solar Jetlag tile processing across an array of geographic tiles |
 | `ww-leukemia` | Advanced | Multiple | Complete leukemia analysis pipeline |
+| `ww-pairtree-lineage` | Basic | `ww-pairtree` | Clonal lineage inference among related samples from SNV VCFs using Pairtree |
 | `ww-rnaseq` | Advanced | `ww-fastqc`, `ww-trimgalore`, `ww-star`, `ww-bedparse`, `ww-rseqc`, `ww-deseq2`, `ww-multiqc`, `ww-gffread` | Production-ready RNA-seq workflow with QC, trimming, alignment, differential expression, and MultiQC reporting |
 | `ww-saturation` | Intermediate | Multiple | Sequencing saturation analysis |
 | `ww-splicing-proteomics` | Intermediate | `ww-star`, `ww-rmats-turbo`, `ww-jcast` | Alternative splicing proteomics: STAR alignment, rMATS splicing detection, and JCAST protein translation |
