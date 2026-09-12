@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-pairtree",
+  "license": "MIT",
+  "authors": [
+    "WILDS Team <wilds@fredhutch.org>"
+  ],
+  "description": "WILDS WDL module for reconstructing cancer evolutionary trees from multi-sample bulk DNA sequencing data using Pairtree",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-pairtree.wdl",
+  "readme": "README.md",
+  "tools": [
+    {
+      "name": "pairtree",
+      "version": "1.0.1",
+      "license": "MIT",
+      "url": "https://github.com/morrislab/pairtree",
+      "ids": [
+        "doi:10.1158/2643-3230.BCD-21-0092"
+      ]
+    }
+  ],
+  "dependencies": {}
+}
