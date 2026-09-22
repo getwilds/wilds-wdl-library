@@ -20,14 +20,14 @@ task vcf_to_ssm {
         ssm_file: "SSM file with variant/total read counts per mutation per sample",
         params_file: "Skeleton params JSON with sample names and empty clusters/garbage arrays"
     }
-    topic: "oncology,genomics"
-    species: "human"
-    operation: "format_conversion"
-    input_sample_required: "vcfs:variant_calling:vcf"
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
+    operation: "data_formatting"
+    input_sample_required: "vcfs:sequence_variations:vcf"
     input_sample_optional: "none"
     input_reference_required: "none"
     input_reference_optional: "none"
-    output_sample: "ssm_file:variant_calling:tabular,params_file:variant_calling:json"
+    output_sample: "ssm_file:sequence_variations:tsv,params_file:sample_annotation:json"
     output_reference: "none"
   }
 
@@ -124,14 +124,14 @@ task cluster_variants {
     outputs: {
         clustered_params_file: "Params JSON file with samples, mutation clusters, and garbage mutations"
     }
-    topic: "oncology,genomics"
-    species: "human"
+    topic: "genomics,dna_polymorphism"
+    species: "human,eukaryote"
     operation: "clustering"
-    input_sample_required: "ssm_file:variant_calling:tabular"
+    input_sample_required: "ssm_file:sequence_variations:tsv,params_file:sample_annotation:json"
     input_sample_optional: "none"
-    input_reference_required: "params_file:variant_calling:json"
+    input_reference_required: "none"
     input_reference_optional: "none"
-    output_sample: "clustered_params_file:variant_calling:json"
+    output_sample: "clustered_params_file:sequence_cluster:json"
     output_reference: "none"
   }
 
@@ -188,12 +188,12 @@ task run_pairtree {
     outputs: {
         results_file: "NPZ archive containing sampled tree structures, subclonal frequencies, and log-likelihoods"
     }
-    topic: "oncology,genomics"
-    species: "human"
-    operation: "phylogenetic_analysis"
-    input_sample_required: "ssm_file:variant_calling:tabular"
+    topic: "phylogenetics,evolutionary_biology"
+    species: "human,eukaryote"
+    operation: "phylogenetic_inference"
+    input_sample_required: "ssm_file:sequence_variations:tsv,params_file:sequence_cluster:json"
     input_sample_optional: "none"
-    input_reference_required: "params_file:variant_calling:json"
+    input_reference_required: "none"
     input_reference_optional: "none"
     output_sample: "results_file:phylogenetic_tree:npz"
     output_reference: "none"
@@ -256,12 +256,12 @@ task plot_tree {
         tree_html: "Interactive HTML visualization of the reconstructed clone trees",
         tree_json: "Tree structure and frequency data exported as JSON"
     }
-    topic: "oncology,genomics"
-    species: "human"
-    operation: "visualization"
-    input_sample_required: "ssm_file:variant_calling:tabular,results_file:phylogenetic_tree:npz"
+    topic: "phylogenetics,data_visualisation"
+    species: "human,eukaryote"
+    operation: "phylogenetic_tree_visualisation"
+    input_sample_required: "ssm_file:sequence_variations:tsv,params_file:sequence_cluster:json,results_file:phylogenetic_tree:npz"
     input_sample_optional: "none"
-    input_reference_required: "params_file:variant_calling:json"
+    input_reference_required: "none"
     input_reference_optional: "none"
     output_sample: "tree_html:phylogenetic_tree:html,tree_json:phylogenetic_tree:json"
     output_reference: "none"
