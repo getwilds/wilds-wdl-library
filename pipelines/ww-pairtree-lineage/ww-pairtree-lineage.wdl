@@ -6,7 +6,7 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-pairtree-module/modules/ww-pairtree/ww-pairtree.wdl" as ww_pairtree
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-pairtree/ww-pairtree.wdl" as ww_pairtree
 
 workflow pairtree_lineage {
   meta {
