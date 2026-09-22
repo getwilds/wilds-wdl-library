@@ -1146,6 +1146,24 @@ workflows:
       branches:
         - main
 
+  - name: ww-pairtree-lineage
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-pairtree-lineage/ww-pairtree-lineage.wdl
+    readMePath: /pipelines/ww-pairtree-lineage/README.md
+    testParameterFiles:
+      - /pipelines/ww-pairtree-lineage/inputs.json
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL pipeline for inferring clonal lineage relationships among related samples from SNV VCFs using Pairtree
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-proseq
     subclass: WDL
     primaryDescriptorPath: /pipelines/ww-proseq/ww-proseq.wdl
