@@ -70,6 +70,8 @@ workflow testdata_example {
 
   call ww_testdata.create_diamond_data { }
 
+  call ww_testdata.create_pairtree_vcfs { }
+
   call ww_testdata.create_test_protein_fasta { }
 
   call ww_testdata.download_glimpse2_genetic_map { }
@@ -141,6 +143,8 @@ workflow testdata_example {
     cellranger_ref_tar = download_test_cellranger_ref.ref_tar,
     diamond_reference = create_diamond_data.reference,
     diamond_query = create_diamond_data.query,
+    pairtree_sampleA_vcf = create_pairtree_vcfs.sampleA_vcf,
+    pairtree_sampleB_vcf = create_pairtree_vcfs.sampleB_vcf,
     test_protein_fasta = create_test_protein_fasta.test_fasta,
     glimpse2_genetic_map = download_glimpse2_genetic_map.genetic_map,
     glimpse2_reference_vcf = download_glimpse2_reference_panel.reference_vcf,
@@ -222,6 +226,9 @@ workflow testdata_example {
     # Outputs from DIAMOND data download
     File diamond_reference = create_diamond_data.reference
     File diamond_query = create_diamond_data.query
+    # Outputs from Pairtree synthetic data creation
+    File pairtree_sampleA_vcf = create_pairtree_vcfs.sampleA_vcf
+    File pairtree_sampleB_vcf = create_pairtree_vcfs.sampleB_vcf
     # Output from test protein FASTA creation
     File test_protein_fasta = create_test_protein_fasta.test_fasta
     # Outputs from GLIMPSE2 test data downloads
@@ -308,6 +315,8 @@ task validate_outputs {
     cellranger_ref_tar: "CellRanger reference tar.gz file to validate"
     diamond_reference: "DIAMOND E. coli reference proteome FASTA file to validate"
     diamond_query: "DIAMOND E. coli query subset FASTA file to validate"
+    pairtree_sampleA_vcf: "Pairtree synthetic daughter-line-A VCF to validate"
+    pairtree_sampleB_vcf: "Pairtree synthetic daughter-line-B VCF to validate"
     test_protein_fasta: "Test protein FASTA file for structure prediction to validate"
     glimpse2_genetic_map: "GLIMPSE2 genetic map file to validate"
     glimpse2_reference_vcf: "GLIMPSE2 reference panel BCF file to validate"
@@ -378,6 +387,8 @@ task validate_outputs {
     File cellranger_ref_tar
     File diamond_reference
     File diamond_query
+    File pairtree_sampleA_vcf
+    File pairtree_sampleB_vcf
     File test_protein_fasta
     File glimpse2_genetic_map
     File glimpse2_reference_vcf
@@ -476,6 +487,8 @@ task validate_outputs {
     validate_file "~{shapemapper_untreated_r2}" "ShapeMapper untreated R2 FASTQ" || validation_passed=false
     validate_file "~{diamond_reference}" "DIAMOND reference proteome FASTA" || validation_passed=false
     validate_file "~{diamond_query}" "DIAMOND query subset FASTA" || validation_passed=false
+    validate_file "~{pairtree_sampleA_vcf}" "Pairtree synthetic daughter-line-A VCF" || validation_passed=false
+    validate_file "~{pairtree_sampleB_vcf}" "Pairtree synthetic daughter-line-B VCF" || validation_passed=false
     validate_file "~{test_protein_fasta}" "Test protein FASTA" || validation_passed=false
     validate_file "~{glimpse2_genetic_map}" "GLIMPSE2 genetic map" || validation_passed=false
     validate_file "~{glimpse2_reference_vcf}" "GLIMPSE2 reference panel BCF" || validation_passed=false
@@ -515,7 +528,7 @@ task validate_outputs {
     {
       echo ""
       echo "=== Validation Summary ==="
-      echo "Total files validated: 63"
+      echo "Total files validated: 65"
     } >> validation_report.txt
 
     if [[ "$validation_passed" == "true" ]]; then

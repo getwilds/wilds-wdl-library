@@ -601,6 +601,22 @@ tools:
       branches:
         - main
 
+  - name: ww-pairtree
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-pairtree/ww-pairtree.wdl
+    readMePath: /modules/ww-pairtree/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for reconstructing cancer evolutionary trees from multi-sample bulk DNA sequencing data using Pairtree
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-rmats-turbo
     subclass: WDL
     primaryDescriptorPath: /modules/ww-rmats-turbo/ww-rmats-turbo.wdl

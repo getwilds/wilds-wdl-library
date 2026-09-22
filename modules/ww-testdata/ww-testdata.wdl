@@ -1152,6 +1152,73 @@ task create_clean_amplicon_reference {
   }
 }
 
+task create_pairtree_vcfs {
+  meta {
+    author: "Taylor Firman"
+    email: "tfirman@fredhutch.org"
+    description: "Creates two small synthetic single-sample SNV VCFs mimicking daughter cell lines with both shared and private mutations, for testing Pairtree's vcf_to_ssm conversion task. Hardcoded values avoid any network dependency."
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        sampleA_vcf: "Synthetic single-sample VCF for daughter line A (shares 2 SNVs with line B, has 1 private SNV)",
+        sampleB_vcf: "Synthetic single-sample VCF for daughter line B (shares 2 SNVs with line A, has 1 private SNV)"
+    }
+  }
+
+  parameter_meta {
+    cpu_cores: "Number of CPU cores allocated for the task"
+    memory_gb: "Memory allocated for the task in GB"
+    docker_image: "Docker image to use for this task"
+  }
+
+  input {
+    Int cpu_cores = 1
+    Int memory_gb = 2
+    String docker_image = "getwilds/awscli:2.27.49"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    # Two synthetic daughter cell lines sharing a common ancestor: both carry
+    # the chr1:100 and chr1:300 SNVs (inherited from the ancestor), while each
+    # also carries one private SNV acquired after the lines diverged.
+    cat > sampleA.vcf <<'VCF'
+##fileformat=VCFv4.2
+##contig=<ID=chr1,length=248956422>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read depth">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sampleA
+chr1	100	.	A	G	.	PASS	.	GT:AD:DP	0/1:80,120:200
+chr1	200	.	C	T	.	PASS	.	GT:AD:DP	0/1:150,50:200
+chr1	300	.	G	A	.	PASS	.	GT:AD:DP	0/1:100,100:200
+VCF
+
+    cat > sampleB.vcf <<'VCF'
+##fileformat=VCFv4.2
+##contig=<ID=chr1,length=248956422>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read depth">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sampleB
+chr1	100	.	A	G	.	PASS	.	GT:AD:DP	0/1:70,130:200
+chr1	300	.	G	A	.	PASS	.	GT:AD:DP	0/1:180,20:200
+chr1	400	.	T	C	.	PASS	.	GT:AD:DP	0/1:90,110:200
+VCF
+  >>>
+
+  output {
+    File sampleA_vcf = "sampleA.vcf"
+    File sampleB_vcf = "sampleB.vcf"
+  }
+
+  runtime {
+    docker: docker_image
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
+
 task create_gdc_manifest {
   meta {
     author: "Taylor Firman"

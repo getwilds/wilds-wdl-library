@@ -21,7 +21,7 @@ Rather than maintaining large static test datasets, `ww-testdata` enables:
 
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Tasks**: `download_ref_data`, `merge_fastas_with_prefix`, `download_rrna_reference`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `inject_synthetic_umis`, `download_ichor_data`, `download_tritonnp_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_10x_h5_data`, `download_10x_raw_h5_data`, `create_diamond_data`, `create_test_protein_fasta`, `create_test_idp_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`, `download_pao1_ref`
+- **Tasks**: `download_ref_data`, `merge_fastas_with_prefix`, `download_rrna_reference`, `download_fastq_data`, `download_test_transcriptome`, `interleave_fastq`, `download_cram_data`, `download_bam_data`, `inject_synthetic_umis`, `download_ichor_data`, `download_tritonnp_data`, `download_dbsnp_vcf`, `download_known_indels_vcf`, `download_gnomad_vcf`, `download_annotsv_vcf`, `generate_pasilla_counts`, `create_clean_amplicon_reference`, `create_gdc_manifest`, `download_shapemapper_data`, `download_test_cellranger_ref`, `download_10x_h5_data`, `download_10x_raw_h5_data`, `create_diamond_data`, `create_pairtree_vcfs`, `create_test_protein_fasta`, `create_test_idp_fasta`, `download_glimpse2_genetic_map`, `download_glimpse2_reference_panel`, `download_glimpse2_test_gl_vcf`, `download_glimpse2_truth_vcf`, `generate_sjl_data`, `download_jcast_test_data`, `download_pao1_ref`
 - **Test workflow**: `testrun.wdl` (demonstration workflow that executes all tasks)
 
 ## Usage
@@ -682,6 +682,32 @@ call diamond_tasks.diamond_blastp {
 }
 ```
 
+### create_pairtree_vcfs
+
+Creates two small synthetic single-sample SNV VCFs mimicking daughter cell lines with both shared and private mutations, for testing Pairtree's `vcf_to_ssm` conversion task. Hardcoded values avoid any network dependency.
+
+**Use Case**: When testing Pairtree's VCF-to-SSM conversion (e.g. for a clonal cell-line lineage analysis), you need per-sample VCFs with AD/DP FORMAT fields. This task generates two single-sample VCFs sharing 2 SNVs (mimicking inheritance from a common ancestor) plus 1 private SNV each (mimicking post-divergence mutations).
+
+**Inputs**:
+- `cpu_cores` (Int): CPU allocation (default: 1)
+- `memory_gb` (Int): Memory allocation (default: 2)
+- `docker_image` (String): Docker image to use for this task (default: `getwilds/awscli:2.27.49`)
+
+**Outputs**:
+- `sampleA_vcf` (File): Synthetic single-sample VCF for daughter line A (shares 2 SNVs with line B, has 1 private SNV)
+- `sampleB_vcf` (File): Synthetic single-sample VCF for daughter line B (shares 2 SNVs with line A, has 1 private SNV)
+
+**Example Usage**:
+```wdl
+# For testing Pairtree's VCF-to-SSM conversion
+call testdata.create_pairtree_vcfs { }
+call pairtree_tasks.vcf_to_ssm {
+  input:
+    vcfs = [create_pairtree_vcfs.sampleA_vcf, create_pairtree_vcfs.sampleB_vcf],
+    sample_names = ["sampleA", "sampleB"]
+}
+```
+
 ### create_test_protein_fasta
 
 Creates a minimal protein FASTA file with a short peptide for testing structure prediction tools. Uses the Trp-cage miniprotein, one of the smallest known folding proteins at just 20 amino acid residues.
@@ -950,6 +976,7 @@ This module is specifically designed to support other WILDS modules:
 - **ww-shapemapper**: RNA structure analysis (uses TPP riboswitch example data from `download_shapemapper_data`)
 - **ww-cellranger**: Single-cell RNA-seq analysis (uses minimal reference from `download_test_cellranger_ref`)
 - **ww-diamond**: Protein sequence alignment (uses E. coli proteome from `create_diamond_data`)
+- **ww-pairtree**: Cancer phylogeny reconstruction (uses synthetic daughter-line VCFs from `create_pairtree_vcfs`)
 - **ww-colabfold**: Protein structure prediction (uses Trp-cage miniprotein from `create_test_protein_fasta`)
 - **ww-annovar**: Variant annotation (uses gnomAD VCF from `download_gnomad_vcf`)
 - **ww-glimpse2**: Genotype imputation (uses genetic maps, reference panels, and GL VCFs from GLIMPSE2 tasks)
