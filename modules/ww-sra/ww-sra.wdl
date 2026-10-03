@@ -30,6 +30,7 @@ task fastqdump {
   parameter_meta {
     sra_id: "SRA ID of the sample to be downloaded via prefetch and fasterq-dump"
     ncpu: "number of cpus to use during download"
+    max_download_attempts: "Maximum number of attempts for each network-dependent step (prefetch plus integrity check, and fasterq-dump). Retries use a linearly increasing backoff to ride out transient NCBI/network failures."
     max_reads: "Optional maximum number of reads to download (for testing/downsampling). If not specified, downloads all reads."
     ngc_file: "Optional NGC repository key file for downloading controlled-access dbGaP data. Must be obtained through an approved dbGaP project."
     docker_image: "Docker image to use for this task"
@@ -38,6 +39,7 @@ task fastqdump {
   input {
     String sra_id
     Int ncpu = 8
+    Int max_download_attempts = 3
     Int? max_reads
     File? ngc_file
     String docker_image = "getwilds/sra-tools:3.1.1"
@@ -45,9 +47,47 @@ task fastqdump {
 
   command <<<
     set -eo pipefail
-    # Prefetch the SRA data (handles both public and dbGaP data)
-    prefetch "~{sra_id}" \
-      ~{if defined(ngc_file) then "--ngc " + ngc_file else ""}
+    MAX_ATTEMPTS=~{max_download_attempts}
+
+    # Run a command up to MAX_ATTEMPTS times with linear backoff. SRA
+    # downloads fail intermittently (NCBI throttling, network blips), so
+    # a single failure should not fail the whole task.
+    retry() {
+      local attempt=1
+      while true; do
+        if "$@"; then
+          return 0
+        fi
+        if [ "$attempt" -ge "$MAX_ATTEMPTS" ]; then
+          echo "ERROR: '$1' failed after $attempt attempts" >&2
+          return 1
+        fi
+        local wait_secs=$((attempt * 30))
+        echo "WARNING: '$1' failed (attempt $attempt of $MAX_ATTEMPTS), retrying in ${wait_secs}s" >&2
+        sleep "$wait_secs"
+        attempt=$((attempt + 1))
+      done
+    }
+
+    # Prefetch the SRA data (handles both public and dbGaP data), then
+    # verify the download is complete. prefetch resumes partial downloads
+    # on retry, and a failed validation forces a fresh download.
+    prefetch_and_validate() {
+      prefetch "~{sra_id}" \
+        ~{if defined(ngc_file) then "--ngc " + ngc_file else ""} \
+        && vdb-validate "~{sra_id}" \
+        || { rm -rf "~{sra_id}"; return 1; }
+    }
+    retry prefetch_and_validate
+
+    # fasterq-dump wrapper that clears partial output and temp files
+    # between attempts so a retry starts clean.
+    run_fasterq_dump() {
+      rm -rf ./fasterq_tmp
+      mkdir -p ./fasterq_tmp
+      rm -f "~{sra_id}"*.fastq
+      fasterq-dump "~{sra_id}" "$@"
+    }
     # Pre-create an explicit temp dir for fasterq-dump. Letting it pick
     # its own path has produced "cannot create this temporary directory"
     # failures on NFS-backed execution dirs even when the dir is writable
@@ -58,7 +98,7 @@ task fastqdump {
       ~{if defined(ngc_file) then "--ngc " + ngc_file else ""} | wc -l)
     if [ "$numLines" -gt 4 ]; then
       echo true > paired_file
-      fasterq-dump "~{sra_id}" \
+      retry run_fasterq_dump \
         --threads ~{ncpu} \
         --outdir ./ \
         --temp ./fasterq_tmp \
@@ -67,7 +107,7 @@ task fastqdump {
         ~{if defined(ngc_file) then "--ngc " + ngc_file else ""}
     else
       echo false > paired_file
-      fasterq-dump "~{sra_id}" \
+      retry run_fasterq_dump \
         --threads ~{ncpu} \
         --outdir ./ \
         --temp ./fasterq_tmp \

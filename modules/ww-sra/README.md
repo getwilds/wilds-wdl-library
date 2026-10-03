@@ -32,6 +32,7 @@ Downloads FASTQ files from SRA accessions with automatic read structure detectio
 **Inputs:**
 - `sra_id` (String): SRA accession ID
 - `ncpu` (Int): Number of CPUs for parallel download (default: 8)
+- `max_download_attempts` (Int): Maximum attempts for each network-dependent step, with linear backoff between attempts (default: 3)
 - `max_reads` (Int, optional): Maximum number of reads to download for testing/downsampling
 - `ngc_file` (File, optional): NGC repository key file for downloading controlled-access dbGaP data
 - `docker_image` (String): Docker image to use for this task (default: `getwilds/sra-tools:3.1.1`)
@@ -155,12 +156,14 @@ The module supports flexible resource configuration:
 - **Standardized output**: Consistent naming for downstream processing
 - **Cross-platform**: Works with SRA accessions from NCBI, ENA, and DDBJ
 - **Optional downsampling**: Limit read count for testing and development via `max_reads` parameter
+- **Retry and validation**: `prefetch` is followed by `vdb-validate`, and both `prefetch` and `fasterq-dump` are retried (up to `max_download_attempts`, default 3) with backoff, clearing partial files between attempts, to tolerate intermittent NCBI/network failures
 - **dbGaP support**: Download controlled-access data using NGC repository key files via optional `ngc_file` parameter
 
 ## Performance Considerations
 
 - **Download speed**: Performance scales with CPU count and network bandwidth
 - **Storage requirements**: FASTQ files can be large; ensure adequate disk space
+- **Transient failures**: Increase `max_download_attempts` if running many concurrent downloads, since NCBI may throttle or drop connections under load
 - **Memory usage**: Scales automatically with CPU allocation
 - **Downsampling**: Use `max_reads` parameter to limit data download for testing or when working with constrained resources (e.g., CI runners, local development)
 
