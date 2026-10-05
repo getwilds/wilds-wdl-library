@@ -12,7 +12,9 @@ struct StarSample {
 workflow star_example {
   # Download test data
   call ww_testdata.download_ref_data { }
-  call ww_testdata.download_fastq_data { }
+  call ww_testdata.download_fastq_data { input:
+      gzip_output = true
+  }
 
   call ww_star.build_index { input:
       reference_fasta = download_ref_data.fasta,
@@ -39,7 +41,7 @@ workflow star_example {
         r2 = sample.r2,
         name = sample.name,
         sjdb_overhang = 100,
-        memory_gb = 2,
+        memory_gb = 8,
         cpu_cores = 2
     }
   }
@@ -50,7 +52,7 @@ workflow star_example {
       r1 = download_fastq_data.r1_fastq,
       name = "demo_sample_se",
       sjdb_overhang = 100,
-      memory_gb = 2,
+      memory_gb = 8,
       cpu_cores = 2
   }
 
@@ -62,7 +64,7 @@ workflow star_example {
         name = "demo_sample_ns",
         prohibit_splicing = true,
         sjdb_overhang = 100,
-        memory_gb = 2,
+        memory_gb = 8,
         cpu_cores = 2
   }
 
@@ -165,6 +167,11 @@ task validate_outputs {
           if [[ "$mapped_reads" =~ ^[0-9]+$ ]]; then
             total_mapped_reads=$((total_mapped_reads + mapped_reads))
           fi
+
+          if [[ ! "$mapped_reads" =~ ^[0-9]+$ || "$mapped_reads" -eq 0 ]]; then
+            echo "  ERROR: no mapped reads in $bam_file" >> validation_report.txt
+            validation_passed=false
+          fi
         fi
       else
         echo "BAM file: $bam_file - MISSING OR EMPTY" >> validation_report.txt
@@ -205,6 +212,11 @@ task validate_outputs {
         se_total=$(samtools view -c "~{se_bam}" 2>/dev/null || echo "N/A")
         echo "  Total reads: $se_total" >> validation_report.txt
         echo "  Mapped reads: $se_mapped" >> validation_report.txt
+
+        if [[ ! "$se_mapped" =~ ^[0-9]+$ || "$se_mapped" -eq 0 ]]; then
+          echo "  ERROR: no mapped reads in ~{se_bam}" >> validation_report.txt
+          validation_passed=false
+        fi
       fi
     else
       echo "BAM file: ~{se_bam} - MISSING OR EMPTY" >> validation_report.txt
@@ -242,6 +254,11 @@ task validate_outputs {
         ns_total=$(samtools view -c "~{ns_bam}" 2>/dev/null || echo "N/A")
         echo "  Total reads: $ns_total" >> validation_report.txt
         echo "  Mapped reads: $ns_mapped" >> validation_report.txt
+
+        if [[ ! "$ns_mapped" =~ ^[0-9]+$ || "$ns_mapped" -eq 0 ]]; then
+          echo "  ERROR: no mapped reads in ~{ns_bam}" >> validation_report.txt
+          validation_passed=false
+        fi
       fi
     else
       echo "BAM file: ~{ns_bam} - MISSING OR EMPTY" >> validation_report.txt

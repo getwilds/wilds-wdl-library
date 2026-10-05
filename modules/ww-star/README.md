@@ -38,8 +38,8 @@ Performs RNA-seq alignment using STAR's two-pass methodology.
 
 **Inputs:**
 - `star_genome_tar` (File): STAR genome index from `build_index`
-- `r1` (File): R1 FASTQ file
-- `r2` (File?, optional): R2 FASTQ file (omit for single-end data)
+- `r1` (File): R1 FASTQ file (must be gzip-compressed, e.g. `.fastq.gz`; the task uses `zcat` to read it)
+- `r2` (File?, optional): R2 FASTQ file, also gzip-compressed (omit for single-end data)
 - `name` (String): Sample name for output files
 - `prohibit_splicing` (Boolean): Whether to set `--alignIntronMax` to 1 (default: false)
 - `sjdb_overhang` (Int): Length of genomic sequence around junctions (default: 100)
@@ -155,11 +155,12 @@ sprocket run testrun.wdl
 
 The test workflow (`star_example`) automatically:
 1. Downloads reference genome data using `ww-testdata`
-2. Downloads demonstration FASTQ data using `ww-testdata`
+2. Downloads gzip-compressed demonstration FASTQ data using `ww-testdata`
 3. Builds STAR genome index
 4. Performs paired-end RNA-seq alignment using STAR two-pass methodology
 5. Performs single-end RNA-seq alignment using STAR two-pass methodology
-6. Validates all outputs (both paired-end and single-end)
+6. Performs paired-end alignment with splicing prohibited (`prohibit_splicing = true`)
+7. Validates all outputs (paired-end, single-end, and splice-prohibited), failing if any alignment contains no mapped reads
 
 ## Configuration Guidelines
 
