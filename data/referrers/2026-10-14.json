@@ -1,0 +1,22 @@
+[
+  {
+    "referrer": "Google",
+    "count": 6,
+    "uniques": 3
+  },
+  {
+    "referrer": "github.com",
+    "count": 4,
+    "uniques": 4
+  },
+  {
+    "referrer": "dockstore.org",
+    "count": 1,
+    "uniques": 1
+  },
+  {
+    "referrer": "sciwiki.fredhutch.org",
+    "count": 1,
+    "uniques": 1
+  }
+]
