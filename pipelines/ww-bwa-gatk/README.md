@@ -34,13 +34,35 @@ This pipeline imports and uses:
 - **ww-bwa module**: For genome indexing and read alignment (`bwa_index`, `bwa_mem` tasks)
 - **ww-gatk module**: For marking duplicate reads and recalibrating base quality scores (`mark_duplicates`, `create_sequence_dictionary`, `base_recalibrator` tasks)
 
+## Module Imports
+
+This pipeline imports its modules using **relative paths** rather than remote URLs:
+
+```wdl
+import "../../modules/ww-bwa/ww-bwa.wdl" as bwa_tasks
+import "../../modules/ww-gatk/ww-gatk.wdl" as gatk_tasks
+```
+
+Relative imports keep the entire workflow self-contained and inspectable: every line of code that runs travels with the pipeline, with no content fetched from the network at runtime. This makes the pipeline compatible with executors that block remote imports for security reasons (for example, AWS HealthOmics), and it removes the supply-chain risk of pulling unverified code from a URL at execution time. The tradeoff is that you need the surrounding repository layout (`modules/` alongside `pipelines/`) on disk, so clone the WILDS WDL Library (or use a release bundle) rather than downloading the single `ww-bwa-gatk.wdl` file.
+
+### Using remote URL imports instead
+
+If you would rather run the pipeline as a single file without cloning the repository, you can swap the relative imports for remote URL imports. Pin them to an immutable commit SHA (not a moving branch like `refs/heads/main`) so the code you reviewed is the code that runs:
+
+```wdl
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/4e501e6996af284c3444150e39bf7c5629394732/modules/ww-bwa/ww-bwa.wdl" as bwa_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/4e501e6996af284c3444150e39bf7c5629394732/modules/ww-gatk/ww-gatk.wdl" as gatk_tasks
+```
+
+Note that remote imports are fetched at runtime with no integrity check, and executors such as AWS HealthOmics will reject them.
+
 ## Usage
 
 ### Requirements
 
 - WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
 - Docker/Apptainer support
-- Internet access for module imports
+- A local clone of the WILDS WDL Library (or a release bundle), since this pipeline imports its modules via relative paths (see [Module Imports](#module-imports) below)
 - Sufficient compute resources for BWA-MEM alignment
 
 ### Input Configuration
@@ -137,7 +159,7 @@ For detailed information on configuring and using Cirro pipelines, see the [offi
 - **Memory**: 64GB recommended for human genome alignment (16 GB for testing purposes)
 - **CPUs**: 8+ cores recommended for efficient processing (8 cores for testing purposes)
 - **Storage**: Sufficient space for indexed reference genome and BAM files
-- **Network**: Stable internet connection for module imports
+- **Network**: Internet access to pull the Docker/Apptainer images used by each task
 
 ### Optimization Tips
 - Use call caching to save intermediate files if the pipeline crashes partway
