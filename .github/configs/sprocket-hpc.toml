@@ -20,3 +20,6 @@ run.backends.default.apptainer.extra_args = [
 
 # Define CPU slurm partition as necessary ("campus-new" or "short" for FH users)
 run.backends.default.default_slurm_partition.name = "campus-new"
+
+# Slurm partition for tasks that request a GPU ("campus-new" for FH users)
+run.backends.default.gpu_slurm_partition.name = "campus-new"
