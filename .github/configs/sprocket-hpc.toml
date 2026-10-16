@@ -10,7 +10,7 @@ run.backends.default.sbatch.args = ["--time=240"]
 # Bind-mount the host's Lmod, modulefile tree, and software tree into the
 # Apptainer container so tasks loaded via `module load` find their binaries.
 # Update these paths for your HPC.
-run.backends.default.extra_apptainer_exec_args = [
+run.backends.default.apptainer.extra_args = [
     "--bind", "/app/lmod:/app/lmod",
     "--bind", "/app/modules/all:/app/modules/all",
     "--bind", "/app/software:/app/software",
