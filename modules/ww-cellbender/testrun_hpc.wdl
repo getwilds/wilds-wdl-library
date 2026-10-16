@@ -1,8 +1,9 @@
 version 1.0
 
-# HPC variant of the CellBender testrun. Runs remove-background with GPU enabled.
-# Uses the same test data as testrun.wdl; the only difference is gpu_enabled = true,
-# which adds --cuda to the CellBender command and requests 1 GPU in the runtime block.
+# HPC variant of the CellBender testrun. Uses the same test data and reduced
+# parameters as testrun.wdl (capped droplets, few epochs), but runs with
+# gpu_enabled = true, which adds --cuda to the CellBender command and requests
+# 1 GPU in the runtime block.
 import "./ww-cellbender.wdl" as ww_cellbender
 import "../ww-testdata/ww-testdata.wdl" as ww_testdata
 
@@ -13,12 +14,14 @@ workflow cellbender_example {
   call ww_testdata.download_10x_raw_h5_data as download_raw_h5 { }
 
   # Run CellBender remove-background with GPU acceleration
+  # total_droplets_included caps the barcode count to keep runtime manageable.
   call ww_cellbender.remove_background { input:
     input_h5 = download_raw_h5.raw_h5_matrix,
     sample_name = "pbmc_10k_v3",
-    expected_cells = 10000,
-    epochs = 150,
-    gpu_enabled = false, # Can't test this in current HPC test run setup
+    expected_cells = 500,
+    total_droplets_included = 5000,
+    epochs = 10,
+    gpu_enabled = true,
     cpu_cores = 4,
     memory_gb = 32
   }
