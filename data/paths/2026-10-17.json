@@ -2,8 +2,14 @@
   {
     "path": "/getwilds/wilds-wdl-library",
     "title": "Overview",
-    "count": 18,
-    "uniques": 10
+    "count": 14,
+    "uniques": 7
+  },
+  {
+    "path": "/getwilds/wilds-wdl-library/issues/324",
+    "title": "/issues/324",
+    "count": 10,
+    "uniques": 1
   },
   {
     "path": "/getwilds/wilds-wdl-library/actions",
@@ -18,14 +24,14 @@
     "uniques": 3
   },
   {
-    "path": "/getwilds/wilds-wdl-library/actions/runs/36944817674",
-    "title": "/actions/runs/36944817674",
-    "count": 4,
-    "uniques": 1
+    "path": "/getwilds/wilds-wdl-library/blob/main/pipelines/ww-rnaseq/ww-rnaseq.wdl",
+    "title": "/blob/main/pipelines/ww-rnaseq/ww-rnaseq.wdl",
+    "count": 5,
+    "uniques": 2
   },
   {
-    "path": "/getwilds/wilds-wdl-library/issues/324",
-    "title": "/issues/324",
+    "path": "/getwilds/wilds-wdl-library/actions/runs/36944817674",
+    "title": "/actions/runs/36944817674",
     "count": 4,
     "uniques": 1
   },
@@ -42,20 +48,14 @@
     "uniques": 1
   },
   {
+    "path": "/getwilds/wilds-wdl-library/issues",
+    "title": "/issues",
+    "count": 2,
+    "uniques": 1
+  },
+  {
     "path": "/getwilds/wilds-wdl-library/pull/403",
     "title": "/pull/403",
-    "count": 2,
-    "uniques": 1
-  },
-  {
-    "path": "/getwilds/wilds-wdl-library/pull/404",
-    "title": "/pull/404",
-    "count": 2,
-    "uniques": 1
-  },
-  {
-    "path": "/getwilds/wilds-wdl-library/tree/main",
-    "title": "/tree/main",
     "count": 2,
     "uniques": 1
   }
