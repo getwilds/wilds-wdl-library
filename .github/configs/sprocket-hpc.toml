@@ -4,9 +4,6 @@ run.experimental_features_enabled = true
 # Set the default backend to Slurm + Apptainer.
 run.backends.default.type = "slurm_apptainer"
 
-# Temporary short wallclock due to FH HPC maintenance
-run.backends.default.sbatch.args = ["--time=240"]
-
 # Bind-mount the host's Lmod, modulefile tree, and software tree into the
 # Apptainer container so tasks loaded via `module load` find their binaries.
 # Update these paths for your HPC.
