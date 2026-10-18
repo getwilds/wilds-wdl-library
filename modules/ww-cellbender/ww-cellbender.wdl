@@ -67,7 +67,7 @@ task remove_background {
     Boolean gpu_enabled = true
     Int cpu_cores = 4
     Int memory_gb = 32
-    String docker_image = "getwilds/cellbender:ubuntu"
+    String docker_image = "getwilds/cellbender:0.3.2"
   }
 
   command <<<
