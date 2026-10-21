@@ -126,6 +126,20 @@ The test workflow automatically:
 2. Calls the `starling_batch` pipeline with batches of 2, 50 conformations, and GPU disabled for CI compatibility
 3. The pipeline splits the FASTA and scatters ensemble generation across 2 batches in parallel
 
+### GPU Testing on HPC
+
+GitHub Actions runners have no GPUs, so `testrun.wdl` runs with `gpu_enabled = false`. The `testrun_hpc.wdl` variant uses the same test data with `gpu_enabled = true` so each batch task requests a GPU. Run it on a GPU-equipped node:
+
+```bash
+# Using Sprocket
+sprocket run testrun_hpc.wdl
+
+# Using miniWDL
+miniwdl run testrun_hpc.wdl
+```
+
+With GPU enabled, each `generate_ensemble_batch` task prints `nvidia-smi` output and checks that PyTorch can see CUDA before running STARLING. If no GPU is visible, the task fails instead of silently running on CPU. Check the task stdout for the `CUDA available: True` line to confirm GPU execution.
+
 ## Citation
 
 > Lotthammer, J.M., Ginell, G.M., Griffith, D., Emenecker, R.J., & Holehouse, A.S. (2024)

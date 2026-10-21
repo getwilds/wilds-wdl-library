@@ -14,7 +14,8 @@ STARLING uses a Vision Transformer architecture operating in VAE latent space to
 This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and follows the standard WILDS module structure:
 
 - **Main WDL file**: `ww-starling.wdl` - Contains task definitions for ensemble generation and metadata querying
-- **Test workflow**: `testrun.wdl` - Demonstration workflow using the p53 N-terminal disordered region
+- **Test workflow**: `testrun.wdl` - Demonstration workflow using the p53 N-terminal disordered region (CPU-only, runs in CI)
+- **HPC test workflow**: `testrun_hpc.wdl` - Same workflow with GPU enabled, for validation on GPU-equipped HPC nodes
 - **Documentation**: This README with usage examples and parameter descriptions
 
 ## Available Tasks
@@ -155,6 +156,20 @@ The test workflow exercises all four module tasks:
 2. Queries ensemble metadata with `ensemble_info`
 3. Creates a multi-sequence IDP FASTA (4 sequences) using `ww-testdata` and processes it with `generate_ensemble_batch`
 4. Splits the multi-sequence FASTA into batches of 2 using `split_fasta`
+
+### GPU Testing on HPC
+
+GitHub Actions runners have no GPUs, so `testrun.wdl` runs with `gpu_enabled = false`. The `testrun_hpc.wdl` variant uses the same test data with `gpu_enabled = true`, which sets the STARLING device to `cuda` and requests a GPU in the runtime block. Run it on a GPU-equipped node:
+
+```bash
+# Using Sprocket
+sprocket run testrun_hpc.wdl
+
+# Using miniWDL
+miniwdl run testrun_hpc.wdl
+```
+
+When `gpu_enabled` is true, `generate_ensemble` and `generate_ensemble_batch` print `nvidia-smi` output and check that PyTorch can see CUDA before running STARLING. If no GPU is visible, the task fails instead of silently running on CPU. To confirm GPU execution, check the task stdout for the `nvidia-smi` table and the `CUDA available: True` line.
 
 ## Docker Container
 
