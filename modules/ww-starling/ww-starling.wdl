@@ -58,6 +58,12 @@ task generate_ensemble {
     TORCH_HOME="$(pwd)/.torch_cache"
     export TORCH_HOME
 
+    # Fail early if a GPU was requested but is not visible to PyTorch
+    if [ "~{gpu_enabled}" = "true" ]; then
+      nvidia-smi
+      python -c "import sys, torch; ok = torch.cuda.is_available(); print('CUDA available:', ok, torch.cuda.get_device_name(0) if ok else ''); sys.exit(0 if ok else 1)"
+    fi
+
     # Generate the structural ensemble
     starling "~{sequence}" \
       -c ~{num_conformations} \
@@ -132,6 +138,12 @@ task generate_ensemble_batch {
     # Use working directory for model cache to avoid filling up container root filesystem
     TORCH_HOME="$(pwd)/.torch_cache"
     export TORCH_HOME
+
+    # Fail early if a GPU was requested but is not visible to PyTorch
+    if [ "~{gpu_enabled}" = "true" ]; then
+      nvidia-smi
+      python -c "import sys, torch; ok = torch.cuda.is_available(); print('CUDA available:', ok, torch.cuda.get_device_name(0) if ok else ''); sys.exit(0 if ok else 1)"
+    fi
 
     # Generate structural ensembles for all sequences in the FASTA
     starling "~{fasta_file}" \
