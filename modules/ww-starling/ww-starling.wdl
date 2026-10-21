@@ -46,7 +46,7 @@ task generate_ensemble {
     Boolean gpu_enabled = true
     Int cpu_cores = 4
     Int memory_gb = 8
-    String docker_image = "getwilds/starling:2.0.0a3"
+    String docker_image = "getwilds/starling:ubuntu"
   }
 
   String device = if gpu_enabled then "cuda" else "cpu"
@@ -121,7 +121,7 @@ task generate_ensemble_batch {
     Boolean gpu_enabled = true
     Int cpu_cores = 4
     Int memory_gb = 8
-    String docker_image = "getwilds/starling:2.0.0a3"
+    String docker_image = "getwilds/starling:ubuntu"
   }
 
   String device = if gpu_enabled then "cuda" else "cpu"
@@ -256,7 +256,7 @@ task ensemble_info {
     String sample_name
     Int cpu_cores = 1
     Int memory_gb = 4
-    String docker_image = "getwilds/starling:2.0.0a3"
+    String docker_image = "getwilds/starling:ubuntu"
   }
 
   command <<<
