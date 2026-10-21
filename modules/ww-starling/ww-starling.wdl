@@ -61,7 +61,7 @@ task generate_ensemble {
     # Fail early if a GPU was requested but is not visible to PyTorch
     if [ "~{gpu_enabled}" = "true" ]; then
       nvidia-smi
-      python -c "import sys, torch; ok = torch.cuda.is_available(); print('CUDA available:', ok, torch.cuda.get_device_name(0) if ok else ''); sys.exit(0 if ok else 1)"
+      python3 -c "import sys, torch; ok = torch.cuda.is_available(); print('CUDA available:', ok, torch.cuda.get_device_name(0) if ok else ''); sys.exit(0 if ok else 1)"
     fi
 
     # Generate the structural ensemble
@@ -142,7 +142,7 @@ task generate_ensemble_batch {
     # Fail early if a GPU was requested but is not visible to PyTorch
     if [ "~{gpu_enabled}" = "true" ]; then
       nvidia-smi
-      python -c "import sys, torch; ok = torch.cuda.is_available(); print('CUDA available:', ok, torch.cuda.get_device_name(0) if ok else ''); sys.exit(0 if ok else 1)"
+      python3 -c "import sys, torch; ok = torch.cuda.is_available(); print('CUDA available:', ok, torch.cuda.get_device_name(0) if ok else ''); sys.exit(0 if ok else 1)"
     fi
 
     # Generate structural ensembles for all sequences in the FASTA
