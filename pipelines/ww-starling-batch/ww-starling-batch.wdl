@@ -1,6 +1,6 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-starling/ww-starling.wdl" as starling_tasks
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/test-ubuntu-starling/modules/ww-starling/ww-starling.wdl" as starling_tasks
 
 workflow starling_batch {
   meta {
@@ -56,5 +56,4 @@ workflow starling_batch {
     Array[Array[File]] xtc_files = generate_ensemble_batch.xtc_files
   }
 }
-
 
