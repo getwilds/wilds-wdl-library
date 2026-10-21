@@ -10,6 +10,10 @@
   "homepage": "https://getwilds.org/",
   "entrypoint": "ww-starling.wdl",
   "readme": "README.md",
+  "exclude": [
+    "testrun.wdl",
+    "testrun_hpc.wdl"
+  ],
   "tools": [
     {
       "name": "starling",
