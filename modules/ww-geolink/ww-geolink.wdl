@@ -16,34 +16,36 @@ task extract_raster {
   }
 
   parameter_meta {
-    points_csv: "CSV file containing patient coordinates"
+    points_csv: "CSV file containing patient coordinates (columns: patientID, longitude, latitude)"
     raster_tif: "TIF raster file for exposure data"
     buffer_dist: "Buffer distance in meters (0 for point extraction)"
     stat_fun: "Summary function to use (e.g., mean, min, max)"
-    output_prefix: "Prefix for the output CSV filename"
+    output_prefix: "Prefix for the output CSV filename (the raster name and buffer distance are appended)"
   }
 
   input {
-    File points_csv,
-    File raster_tif,
-    Float buffer_dist = 0.0,
-    String stat_fun = "mean",
-    String output_prefix = "extract_"
+    File points_csv
+    File raster_tif
+    Float buffer_dist = 0.0
+    String stat_fun = "mean"
+    String output_prefix = "extract"
   }
+
+  String output_name = "~{output_prefix}_~{basename(raster_tif, '.tif')}_buf~{round(buffer_dist)}m.csv"
 
   command <<<
     set -eo pipefail
-    wget -O extract_val.R https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-geolink/extract_val.R
+    wget -O extract_val.R https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-exposure/modules/ww-geolink/extract_val.R
     Rscript extract_val.R \
       --points "~{points_csv}" \
       --raster "~{raster_tif}" \
       --buffer ~{buffer_dist} \
       --fun "~{stat_fun}" \
-      --out "~{output_prefix}.csv"
+      --out "~{output_name}"
   >>>
 
   output {
-    File result_csv = "~{output_prefix}.csv"
+    File result_csv = output_name
   }
 
   runtime {
@@ -69,16 +71,16 @@ task compute_wildfire_metrics {
   }
 
   input {
-    Array[File] daily_extracts,
-    Float p90_pctile = 0.90,
+    Array[File] daily_extracts
+    Float p90_pctile = 0.90
     Int min_days = 2
   }
 
   command <<<
     set -eo pipefail
-    wget -O compute_wf_metrics.R https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-geolink/compute_wf_metrics.R
+    wget -O compute_wf_metrics.R https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-exposure/modules/ww-geolink/compute_wf_metrics.R
     Rscript compute_wf_metrics.R \
-      --inputs "~{sep=', ' daily_extracts}" \
+      --inputs "~{sep=',' daily_extracts}" \
       --pctile ~{p90_pctile} \
       --min_days ~{min_days} \
       --out "annual_wildfire_metrics.csv"
@@ -111,17 +113,17 @@ task join_exposures {
   }
 
   input {
-    File patient_base,
-    Array[File] all_extracts,
+    File patient_base
+    Array[File] all_extracts
     File annual_wf_metrics
   }
 
   command <<<
     set -eo pipefail
-    wget -O join_all.R https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-geolink/join_all.R
+    wget -O join_all.R https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-exposure/modules/ww-geolink/join_all.R
     Rscript join_all.R \
       --base "~{patient_base}" \
-      --extracts "~{sep=', ' all_extracts}" \
+      --extracts "~{sep=',' all_extracts}" \
       --annuals "~{annual_wf_metrics}" \
       --out "final_dataset.csv"
   >>>

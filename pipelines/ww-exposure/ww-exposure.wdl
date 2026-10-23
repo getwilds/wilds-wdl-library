@@ -4,8 +4,8 @@
 
 version 1.0
 
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-exposure/modules/ww-geolink/ww-geolink.wdl" as ww_geolink
-import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-exposure/modules/ww-aws-sso/ww-aws-sso.wdl" as aws_sso
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-geolink/ww-geolink.wdl" as ww_geolink
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-aws-sso/ww-aws-sso.wdl" as aws_sso
 
 workflow exposure_linkage {
   meta {
@@ -14,7 +14,7 @@ workflow exposure_linkage {
     description: "Parallel pipeline to link patient coordinates to environmental exposure rasters and compute annual metrics"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-exposure/ww-exposure.wdl"
     outputs: {
-      final_dataset: "The final joined dataset containingall exposure measures and metrics"
+      final_dataset: "The final joined dataset containing all exposure measures and metrics"
     }
   }
 
@@ -29,44 +29,43 @@ workflow exposure_linkage {
   }
 
   input {
-    File? patient_csv,
-    String? patient_csv_s3,
-    Array[File]? rasters_local,
-    Array[String]? rasters_manifest_s3,
-    Array[Float] buffer_distances = [0.0, 1000.0, 5000.0, 10000.0],
-    File? aws_config,
+    File? patient_csv
+    String? patient_csv_s3
+    Array[File]? rasters_local
+    Array[String]? rasters_manifest_s3
+    Array[Float] buffer_distances = [0.0, 1000.0, 5000.0, 10000.0]
+    File? aws_config
     File? aws_creds
   }
 
-  # 1. Optional S3 Download for base patient file
-  call aws_sso.s3_download_file {
-    input:
-      s3_uri = patient_csv_s3,
-      aws_config_file = aws_config,
-      aws_credentials_file = aws_creds
+  # 1. Optional S3 download for the base patient file
+  if (defined(patient_csv_s3)) {
+    call aws_sso.s3_download_file as download_patients { input:
+        s3_uri = select_first([patient_csv_s3]),
+        aws_config_file = aws_config,
+        aws_credentials_file = aws_creds
+    }
   }
 
   # Normalize patient file input
-  File final_patient_file = select_first([patient_csv, s3_download_file.downloaded_file])
+  File final_patient_file = select_first([patient_csv, download_patients.downloaded_file])
 
-  # 2. Optional S3 Download for rasters
+  # 2. Optional S3 download for rasters
   scatter (s3_uri in select_first([rasters_manifest_s3, []])) {
-    call aws_sso.s3_download_file {
-      input:
+    call aws_sso.s3_download_file as download_raster { input:
         s3_uri = s3_uri,
         aws_config_file = aws_config,
         aws_credentials_file = aws_creds
     }
   }
 
-  # Normalize raster manifest input
-  Array[File] final_rasters = select_first([rasters_local, s3_download_file.downloaded_file])
+  # Normalize raster input
+  Array[File] final_rasters = select_first([rasters_local, download_raster.downloaded_file])
 
-  # 3. Parallel Extraction: one task per raster per buffer distance
+  # 3. Parallel extraction: one task per raster per buffer distance
   scatter (raster in final_rasters) {
     scatter (dist in buffer_distances) {
-      call ww_geolink.extract_raster {
-        input:
+      call ww_geolink.extract_raster { input:
           points_csv = final_patient_file,
           raster_tif = raster,
           buffer_dist = dist
@@ -74,17 +73,17 @@ workflow exposure_linkage {
     }
   }
 
-  # 4. Compute complex wildfire metrics
-  call ww_geolink.compute_wildfire_metrics {
-    input:
-      daily_extracts = extract_raster.result_csv
+  Array[File] all_extracts = flatten(extract_raster.result_csv)
+
+  # 4. Compute annual wildfire metrics
+  call ww_geolink.compute_wildfire_metrics { input:
+      daily_extracts = all_extracts
   }
 
   # 5. Aggregate all fragmented outputs into the final dataset
-  call ww_geolink.join_exposures {
-    input:
+  call ww_geolink.join_exposures { input:
       patient_base = final_patient_file,
-      all_extracts = extract_raster.result_csv,
+      all_extracts = all_extracts,
       annual_wf_metrics = compute_wildfire_metrics.annual_metrics
   }
 

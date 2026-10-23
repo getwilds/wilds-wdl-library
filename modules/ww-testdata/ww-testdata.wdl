@@ -2164,8 +2164,8 @@ task generate_test_geodata {
     description: "Generates synthetic patient coordinates and small TIF rasters for testing geospatial workflows"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
     outputs: {
-        patient_csv: "Synthetic patient coordinates CSV",
-        test_rasters: "Array of synthetic TIF raster files"
+        patient_csv: "Synthetic patient coordinates CSV (patientID, longitude, latitude)",
+        test_rasters: "Array of synthetic daily TIF raster files, named test_raster_YYYY-MM-DD.tif"
     }
   }
 
@@ -2187,7 +2187,7 @@ task generate_test_geodata {
 
   command <<<
     set -eo pipefail
-    
+
     cat > generate_geodata.R << 'EOF'
     library(terra)
     args <- commandArgs(trailingOnly = TRUE)
@@ -2198,16 +2198,16 @@ task generate_test_geodata {
     set.seed(42)
     patients <- data.frame(
       patientID = paste0("P", 1:n_p),
-      lon = runif(n_p, -122.5, -122.0),
-      lat = runif(n_p, 47.0, 47.5)
+      longitude = runif(n_p, -122.5, -122.0),
+      latitude = runif(n_p, 47.0, 47.5)
     )
     write.csv(patients, "test_patients.csv", row.names = FALSE)
 
-    # 2. Generate Rasters
+    # 2. Generate daily rasters (named by date, starting 2020-01-01)
     for (i in 1:n_r) {
       r <- rast(nrows=100, ncols=100, xmin=-122.5, xmax=-122.0, ymin=47.0, ymax=47.5)
-      values(r) <- runif(10000)
-      writeRaster(r, paste0("test_raster_", i, ".tif"), overwrite=TRUE)
+      values(r) <- runif(10000, 0, 10)
+      writeRaster(r, paste0("test_raster_", as.Date("2020-01-01") + i - 1, ".tif"), overwrite=TRUE)
     }
     EOF
 
