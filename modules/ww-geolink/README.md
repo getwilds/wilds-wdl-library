@@ -1,68 +1,157 @@
-# ww-geolink Module
-
+# ww-geolink
 [![Project Status: Prototype – Useable, some support, open to feedback, unstable API.](https://getwilds.org/badges/badges/prototype.svg)](https://getwilds.org/badges/#prototype)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A WILDS WDL module for geospatial linkage and exposure measure extraction. It provides atomic tasks to extract values from environmental rasters for specific points or buffers, and computes aggregated annual exposure metrics.
+A WILDS WDL module for geospatial linkage: extracting environmental raster values for patient locations and computing aggregated annual exposure metrics.
 
 ## Overview
 
-This module solves the "bottleneck" of sequential raster extraction by providing granular tasks that can be scattered across a compute cluster. It is designed to work with the `ww-exposure` pipeline to generate high-resolution exposure datasets for large patient cohorts.
+This module provides granular tasks that extract a value (or summary statistic) from a single raster for a set of patient coordinates, compute annual wildfire smoke exposure metrics from daily extracts, and join everything into one wide-format dataset. Because each extraction is a separate task, extractions can be scattered across a compute cluster rather than run sequentially. The `ww-exposure` pipeline demonstrates this pattern.
 
 ## Module Structure
 
-This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library):
+This module is part of the [WILDS WDL Library](https://github.com/getwilds/wilds-wdl-library) and contains:
 
-- **Main WDL file**: `ww-geolink.wdl` - Contains task definitions
-- **Worker Scripts**: 
-    - `extract_val.R`: Point/buffer extraction logic
-    - `compute_wf_metrics.R`: Wildfire annual metrics and lags
-    - `join_all.R`: Final dataset aggregation
-- **Docker Config**: `Dockerfile_latest` - Specification for the `r-spatial` image
+- **Tasks**: `extract_raster`, `compute_wildfire_metrics`, `join_exposures`
+- **Scripts**: `extract_val.R`, `compute_wf_metrics.R`, `join_all.R` (fetched via wget at runtime)
+- **Test workflow**: `testrun.wdl` (demonstration workflow using synthetic patients and rasters)
+- **Containers**: `getwilds/r-spatial:0.1.0`
+- **Dependencies**: Integrates with the `ww-testdata` module (`generate_test_geodata`) for test data generation
 
-## Available Tasks
+## Scripts
+
+All scripts are fetched from this repository at runtime via `wget`. This keeps the Docker image generic and makes it easy to iterate on analysis logic without rebuilding containers.
+
+| Script | Used by | Language | Description |
+|--------|---------|----------|-------------|
+| [`extract_val.R`](extract_val.R) | `extract_raster` | R | Projects patient points (optionally buffered in meters) to the raster CRS and extracts values with `terra` |
+| [`compute_wf_metrics.R`](compute_wf_metrics.R) | `compute_wildfire_metrics` | R | Computes annual metrics per patient and buffer distance from daily extracts |
+| [`join_all.R`](join_all.R) | `join_exposures` | R | Pivots extracts and annual metrics wide and joins them to the base patient table |
+
+## Data Conventions
+
+- **Patient CSV**: must contain `patientID`, `longitude`, and `latitude` (WGS84, EPSG:4326). Any additional columns are carried through to the final dataset.
+- **Extract CSVs** (output of `extract_raster`): columns `patientID`, `raster` (raster file name without extension), `buffer_m`, and `value`. Files are named `<output_prefix>_<raster>_buf<N>m.csv`.
+- **Dates**: `compute_wildfire_metrics` currently parses the date (`YYYY-MM-DD` or `YYYYMMDD`) from the raster file name, so daily rasters must be named accordingly (e.g. `pm25_2020-01-01.tif`). The task fails with an error if a date cannot be found.
+
+## Tasks
 
 ### `extract_raster`
 
-Extracts a value or statistic from a single TIF raster for a set of points or buffers.
+Extracts a value or statistic from a single raster for a set of points or buffers.
 
 **Inputs:**
-- `points_csv` (File): CSV containing patient coordinates (latitude/longitude)
+- `points_csv` (File): CSV with `patientID`, `longitude`, `latitude`
 - `raster_tif` (File): TIF raster file
 - `buffer_dist` (Float, default=0.0): Buffer radius in meters; 0.0 performs a simple point extraction
-- `stat_fun` (String, default="mean"): Summary function for buffered areas (e.g., "mean", "max", "min")
-- `output_prefix` (String, default="extract_"): Prefix for the resulting CSV
+- `stat_fun` (String, default="mean"): Summary function for buffered areas (e.g. "mean", "max", "min")
+- `output_prefix` (String, default="extract"): Prefix for the resulting CSV name
+- `cpu_cores` (Int, default=1): Number of CPU cores
+- `memory_gb` (Int, default=4): Memory in GB
+- `docker_image` (String, default="getwilds/r-spatial:0.1.0"): Docker image
 
 **Outputs:**
-- `result_csv` (File): CSV containing `patientID` and the extracted `value`
+- `result_csv` (File): CSV with `patientID`, `raster`, `buffer_m`, and `value`
 
 ### `compute_wildfire_metrics`
 
-Computes specialized annual wildfire exposure metrics and 3-year lags from daily extracts.
+Computes annual wildfire exposure metrics from daily extracts, separately for each buffer distance: weeks with mean above 5, days above 0, peak weekly mean, number of smoke waves, annual mean, and the 3-year lagged mean.
 
 **Inputs:**
-- `daily_extracts` (Array[File]): Array of daily exposure CSVs
+- `daily_extracts` (Array[File]): Extract CSVs from `extract_raster`, one per raster and buffer distance
 - `p90_pctile` (Float, default=0.90): Percentile threshold for smoke-wave events
-- `min_days` (Int, default=2): Minimum consecutive days to qualify as a smoke-wave
+- `min_days` (Int, default=2): Minimum consecutive days to qualify as a smoke wave
+- `cpu_cores` (Int, default=1): Number of CPU cores
+- `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String, default="getwilds/r-spatial:0.1.0"): Docker image
 
 **Outputs:**
-- `annual_metrics` (File): CSV containing aggregated annual metrics per patient
+- `annual_metrics` (File): CSV with one row per patient, year, and buffer distance
 
 ### `join_exposures`
 
-Aggregates fragmented extraction CSVs and annual metrics into a final wide-format dataset.
+Pivots all extracts to one column per raster and buffer distance, pivots the annual metrics to one column per metric, year, and buffer distance, and joins both to the base patient table (one row per patient).
 
 **Inputs:**
-- `patient_base` (File): Base patient demographics/coordinates CSV
-- `all_extracts` (Array[File]): All extracted daily exposure CSVs
-- `annual_wf_metrics` (File): The output from `compute_wildfire_metrics`
+- `patient_base` (File): Base patient CSV
+- `all_extracts` (Array[File]): All extract CSVs from `extract_raster`
+- `annual_wf_metrics` (File): Output of `compute_wildfire_metrics`
+- `cpu_cores` (Int, default=1): Number of CPU cores
+- `memory_gb` (Int, default=8): Memory in GB
+- `docker_image` (String, default="getwilds/r-spatial:0.1.0"): Docker image
 
 **Outputs:**
-- `final_dataset` (File): The final joined exposure dataset
+- `final_dataset` (File): Wide-format dataset with one row per patient
 
-## Docker Container
+## Usage as a Module
 
-This module requires the `getwilds/r-spatial` image (based on `rocker/geospatial`), which includes:
-- **R Spatial Stack**: `sf`, `terra`, `raster`
-- **Data Utilities**: `data.table`, `dplyr`, `lubridate`
-- **System Dependencies**: GDAL, GEOS, PROJ
+### Importing into Your Workflow
+
+```wdl
+version 1.0
+
+import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-geolink/ww-geolink.wdl" as ww_geolink
+
+workflow my_exposure_analysis {
+  input {
+    File patients
+    Array[File] rasters
+  }
+
+  scatter (raster in rasters) {
+    call ww_geolink.extract_raster { input:
+        points_csv = patients,
+        raster_tif = raster,
+        buffer_dist = 1000.0
+    }
+  }
+
+  call ww_geolink.compute_wildfire_metrics { input:
+      daily_extracts = extract_raster.result_csv
+  }
+
+  call ww_geolink.join_exposures { input:
+      patient_base = patients,
+      all_extracts = extract_raster.result_csv,
+      annual_wf_metrics = compute_wildfire_metrics.annual_metrics
+  }
+
+  output {
+    File final_dataset = join_exposures.final_dataset
+  }
+}
+```
+
+## Testing the Module
+
+The module includes a test workflow that runs with zero configuration, using synthetic patients and daily rasters from `ww-testdata`:
+
+```bash
+# Using Cromwell
+java -jar cromwell.jar run testrun.wdl
+
+# Using miniWDL
+miniwdl run testrun.wdl
+
+# Using Sprocket
+sprocket run testrun.wdl
+```
+
+## Requirements
+
+- WDL-compatible workflow executor (Cromwell, miniWDL, Sprocket, etc.)
+- Docker or Apptainer/Singularity support
+- Internet access for fetching scripts from GitHub at runtime
+- R spatial stack (`terra`, `sf`, `data.table`, `dplyr`, `lubridate`, `readr`, `tidyr`, `purrr`, `optparse`), provided by `getwilds/r-spatial:0.1.0`
+
+## Support
+
+For questions, bugs, and/or feature requests, reach out to the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).
+
+## Contributing
+
+If you would like to contribute to this WILDS WDL module, please see our [contributing guidelines](https://github.com/getwilds/wilds-wdl-library/blob/main/.github/CONTRIBUTING.md) for more details.
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for details.

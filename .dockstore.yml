@@ -473,6 +473,22 @@ tools:
       branches:
         - main
 
+  - name: ww-geolink
+    subclass: WDL
+    primaryDescriptorPath: /modules/ww-geolink/ww-geolink.wdl
+    readMePath: /modules/ww-geolink/README.md
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL module for extracting environmental raster values for patient locations and computing annual exposure metrics
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
   - name: ww-gffread
     subclass: WDL
     primaryDescriptorPath: /modules/ww-gffread/ww-gffread.wdl
@@ -1034,6 +1050,24 @@ workflows:
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
     topic: WDL workflow to download raw sequencing data from ENA and align using STAR two-pass methodology
+    enableAutoDois: true
+    filters:
+      branches:
+        - main
+
+  - name: ww-exposure
+    subclass: WDL
+    primaryDescriptorPath: /pipelines/ww-exposure/ww-exposure.wdl
+    readMePath: /pipelines/ww-exposure/README.md
+    testParameterFiles:
+      - /pipelines/ww-exposure/inputs.json
+    authors:
+      - name: Taylor Firman
+        email: tfirman@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0002-2052-1084
+    topic: WDL workflow for parallel linkage of patient coordinates to environmental rasters and annual exposure metrics
     enableAutoDois: true
     filters:
       branches:
