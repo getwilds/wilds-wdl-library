@@ -1,0 +1,15 @@
+{
+  "patient_csv": "/path/to/your/patients.csv",
+  "patient_csv_s3": "s3://your-bucket/data/patients.csv",
+  "rasters_local": [
+    "/path/to/your/raster_daily_1.tif",
+    "/path/to/your/raster_daily_2.tif"
+  ],
+  "rasters_manifest_s3": [
+    "s3://your-bucket/rasters/raster_daily_1.tif",
+    "s3://your-bucket/rasters/raster_daily_2.tif"
+  ],
+  "buffer_distances": [0.0, 1000.0, 5000.0, 10000.0],
+  "aws_config": "/path/to/.aws/config",
+  "aws_creds": "/path/to/.aws/credentials"
+}

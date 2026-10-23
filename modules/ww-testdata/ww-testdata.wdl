@@ -2156,3 +2156,72 @@ task download_10x_raw_h5_data {
     memory: "~{memory_gb} GB"
   }
 }
+
+task generate_test_geodata {
+  meta {
+    author: "WILDS Team"
+    email: "wilds@fredhutch.org"
+    description: "Generates synthetic patient coordinates and small TIF rasters for testing geospatial workflows"
+    url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-testdata/ww-testdata.wdl"
+    outputs: {
+        patient_csv: "Synthetic patient coordinates CSV (patientID, longitude, latitude)",
+        test_rasters: "Array of synthetic daily TIF raster files, named test_raster_YYYY-MM-DD.tif"
+    }
+  }
+
+  parameter_meta {
+    n_patients: "Number of synthetic patients to generate"
+    n_rasters: "Number of synthetic rasters to generate"
+    cpu_cores: "CPU cores"
+    memory_gb: "Memory in GB"
+    docker_image: "Docker image (needs terra)"
+  }
+
+  input {
+    Int n_patients = 10
+    Int n_rasters = 2
+    Int cpu_cores = 1
+    Int memory_gb = 4
+    String docker_image = "getwilds/r-spatial:0.1.0"
+  }
+
+  command <<<
+    set -eo pipefail
+
+    cat > generate_geodata.R << 'EOF'
+    library(terra)
+    args <- commandArgs(trailingOnly = TRUE)
+    n_p <- as.numeric(args[1])
+    n_r <- as.numeric(args[2])
+
+    # 1. Generate Patients
+    set.seed(42)
+    patients <- data.frame(
+      patientID = paste0("P", 1:n_p),
+      longitude = runif(n_p, -122.5, -122.0),
+      latitude = runif(n_p, 47.0, 47.5)
+    )
+    write.csv(patients, "test_patients.csv", row.names = FALSE)
+
+    # 2. Generate daily rasters (named by date, starting 2020-01-01)
+    for (i in 1:n_r) {
+      r <- rast(nrows=100, ncols=100, xmin=-122.5, xmax=-122.0, ymin=47.0, ymax=47.5)
+      values(r) <- runif(10000, 0, 10)
+      writeRaster(r, paste0("test_raster_", as.Date("2020-01-01") + i - 1, ".tif"), overwrite=TRUE)
+    }
+    EOF
+
+    Rscript generate_geodata.R ~{n_patients} ~{n_rasters}
+  >>>
+
+  output {
+    File patient_csv = "test_patients.csv"
+    Array[File] test_rasters = glob("*.tif")
+  }
+
+  runtime {
+    docker: docker_image
+    cpu: cpu_cores
+    memory: "~{memory_gb} GB"
+  }
+}
