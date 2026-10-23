@@ -3,7 +3,10 @@
   "name": "ww-geolink",
   "license": "MIT",
   "authors": [
-    "Taylor Firman <tfirman@fredhutch.org>"
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Emma Bishop <ebishop@fredhutch.org>",
+    "Malia Cortez <mcortez@fredhutch.org>",
+    "Chloe Lin <jlin6@fredhutch.org>"
   ],
   "description": "WILDS WDL module for geospatial linkage, extracting raster values for patient points or buffers and computing annual exposure metrics",
   "repository": "https://github.com/getwilds/wilds-wdl-library",

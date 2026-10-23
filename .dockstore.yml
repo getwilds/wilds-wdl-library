@@ -483,6 +483,20 @@ tools:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+      - name: Malia Cortez
+        email: mcortez@fredhutch.org
+        role: Research Assistant
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0000-3264-5215
+      - name: Chloe Lin
+        email: jlin6@fredhutch.org
+        role: Research Assistant
+        affiliation: Fred Hutch Cancer Center
     topic: WDL module for extracting environmental raster values for patient locations and computing annual exposure metrics
     enableAutoDois: true
     filters:
@@ -1067,6 +1081,20 @@ workflows:
         role: Research Informatics Data Scientist
         affiliation: Fred Hutch Cancer Center
         orcid: 0009-0002-2052-1084
+      - name: Emma Bishop
+        email: ebishop@fredhutch.org
+        role: Research Informatics Data Scientist
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0000-0003-4484-3336
+      - name: Malia Cortez
+        email: mcortez@fredhutch.org
+        role: Research Assistant
+        affiliation: Fred Hutch Cancer Center
+        orcid: 0009-0000-3264-5215
+      - name: Chloe Lin
+        email: jlin6@fredhutch.org
+        role: Research Assistant
+        affiliation: Fred Hutch Cancer Center
     topic: WDL workflow for parallel linkage of patient coordinates to environmental rasters and annual exposure metrics
     enableAutoDois: true
     filters:

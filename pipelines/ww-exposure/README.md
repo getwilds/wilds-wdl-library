@@ -111,6 +111,10 @@ sprocket run testrun.wdl
 
 See the [ww-geolink README](../../modules/ww-geolink/README.md#future-considerations) for open design ideas (explicit date column instead of filename parsing, and chunked extraction). The scatter in this pipeline would change if chunked extraction is adopted.
 
+## Acknowledgments
+
+This module was developed in collaboration with Malia Cortez ([@Malia-T](https://github.com/Malia-T)) and Chloe Lin ([@GITHUB_HANDLE](https://github.com/GITHUB_HANDLE)) from the [VoPham Lab](https://www.geoexlab.com/) at Fred Hutch through the [WILDS WDL Development Program](https://sciwiki.fredhutch.org/datascience/wilds_workflow_dev/). The original R scripts and workflow design come from Malia and Chloe. For questions about the underlying science, please reach out to the VoPham Lab through their website. Thank you to the VoPham Lab for their contributions and domain expertise!
+
 ## Support
 
 For questions, bugs, and/or feature requests, reach out to the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).

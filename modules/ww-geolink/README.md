@@ -153,6 +153,10 @@ Design ideas that are intentionally not implemented yet, pending feedback on how
 - Internet access for fetching scripts from GitHub at runtime
 - R spatial stack (`terra`, `sf`, `data.table`, `dplyr`, `lubridate`, `readr`, `tidyr`, `purrr`, `optparse`), provided by `getwilds/r-spatial:0.1.0`
 
+## Acknowledgments
+
+This module was developed in collaboration with Malia Cortez ([@Malia-T](https://github.com/Malia-T)) and Chloe Lin ([@GITHUB_HANDLE](https://github.com/GITHUB_HANDLE)) from the [VoPham Lab](https://www.geoexlab.com/) at Fred Hutch through the [WILDS WDL Development Program](https://sciwiki.fredhutch.org/datascience/wilds_workflow_dev/). The original R scripts and workflow design come from Malia and Chloe. For questions about the underlying science, please reach out to the VoPham Lab through their website. Thank you to the VoPham Lab for their contributions and domain expertise!
+
 ## Support
 
 For questions, bugs, and/or feature requests, reach out to the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).

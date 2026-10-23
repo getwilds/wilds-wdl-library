@@ -9,8 +9,24 @@ import "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/
 
 workflow exposure_linkage {
   meta {
-    author: "WILDS Team"
-    email: "wilds@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        },
+        {
+            name: "Malia Cortez",
+            email: "mcortez@fredhutch.org"
+        },
+        {
+            name: "Chloe Lin",
+            email: "jlin6@fredhutch.org"
+        }
+    ]
     description: "Parallel pipeline to link patient coordinates to environmental exposure rasters and compute annual metrics"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/pipelines/ww-exposure/ww-exposure.wdl"
     outputs: {

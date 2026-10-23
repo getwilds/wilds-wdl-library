@@ -3,7 +3,10 @@
   "name": "ww-exposure",
   "license": "MIT",
   "authors": [
-    "Taylor Firman <tfirman@fredhutch.org>"
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Emma Bishop <ebishop@fredhutch.org>",
+    "Malia Cortez <mcortez@fredhutch.org>",
+    "Chloe Lin <jlin6@fredhutch.org>"
   ],
   "description": "WILDS WDL pipeline for parallel environmental exposure linkage of patient coordinates to rasters",
   "repository": "https://github.com/getwilds/wilds-wdl-library",

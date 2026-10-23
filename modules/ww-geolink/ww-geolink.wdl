@@ -6,8 +6,24 @@ version 1.0
 
 task extract_raster {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        },
+        {
+            name: "Malia Cortez",
+            email: "mcortez@fredhutch.org"
+        },
+        {
+            name: "Chloe Lin",
+            email: "jlin6@fredhutch.org"
+        }
+    ]
     description: "Extract a value or statistic from a single raster for a set of points or buffers"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-geolink/ww-geolink.wdl"
     outputs: {
@@ -72,8 +88,24 @@ task extract_raster {
 
 task compute_wildfire_metrics {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        },
+        {
+            name: "Malia Cortez",
+            email: "mcortez@fredhutch.org"
+        },
+        {
+            name: "Chloe Lin",
+            email: "jlin6@fredhutch.org"
+        }
+    ]
     description: "Compute annual wildfire exposure metrics and lags from daily extracts"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-geolink/ww-geolink.wdl"
     outputs: {
@@ -137,8 +169,24 @@ task compute_wildfire_metrics {
 
 task join_exposures {
   meta {
-    author: "Taylor Firman"
-    email: "tfirman@fredhutch.org"
+    author: [
+        {
+            name: "Taylor Firman",
+            email: "tfirman@fredhutch.org"
+        },
+        {
+            name: "Emma Bishop",
+            email: "ebishop@fredhutch.org"
+        },
+        {
+            name: "Malia Cortez",
+            email: "mcortez@fredhutch.org"
+        },
+        {
+            name: "Chloe Lin",
+            email: "jlin6@fredhutch.org"
+        }
+    ]
     description: "Join fragmented exposure extracts and annual metrics into a final dataset"
     url: "https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-geolink/ww-geolink.wdl"
     outputs: {
