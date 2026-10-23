@@ -1,0 +1,9 @@
+{
+  "name": "ww-exposure",
+  "description": "Pipeline for parallel environmental exposure linkage",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": [
+    "ww-geolink"
+  ]
+}

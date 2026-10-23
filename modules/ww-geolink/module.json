@@ -1,0 +1,14 @@
+{
+  "name": "ww-geolink",
+  "description": "Module for geospatial extraction and exposure linkage",
+  "version": "1.0.0",
+  "license": "MIT",
+  "tools": [
+    {
+      "name": "r-spatial",
+      "version": "1.0.0",
+      "url": "https://github.com/getwilds/wilds-docker-library",
+      "license": "MIT"
+    }
+  ]
+}
