@@ -55,12 +55,14 @@ Extracts a value or statistic from a single raster for a set of points or buffer
 
 ### `compute_wildfire_metrics`
 
-Computes annual wildfire exposure metrics from daily extracts, separately for each buffer distance: weeks with mean above 5, days above 0, peak weekly mean, number of smoke waves, annual mean, and the 3-year lagged mean.
+Computes annual wildfire exposure metrics from daily extracts, separately for each buffer distance: `n_weeks_above_threshold` (weeks with mean above `weekly_threshold`), `n_days_gt0`, `peak_week_mean`, `n_smoke_waves`, `mean_daily` (annual mean), and `mean_lagged` (mean of the previous `lag_years` annual means).
 
 **Inputs:**
 - `daily_extracts` (Array[File]): Extract CSVs from `extract_raster`, one per raster and buffer distance
 - `p90_pctile` (Float, default=0.90): Percentile threshold for smoke-wave events
 - `min_days` (Int, default=2): Minimum consecutive days to qualify as a smoke wave
+- `weekly_threshold` (Float, default=5.0): Weekly mean above which a week counts as high-exposure
+- `lag_years` (Int, default=3): Number of prior years averaged for `mean_lagged`
 - `cpu_cores` (Int, default=1): Number of CPU cores
 - `memory_gb` (Int, default=8): Memory in GB
 - `docker_image` (String, default="getwilds/r-spatial:0.1.0"): Docker image
@@ -136,6 +138,13 @@ miniwdl run testrun.wdl
 # Using Sprocket
 sprocket run testrun.wdl
 ```
+
+## Future Considerations
+
+Design ideas that are intentionally not implemented yet, pending feedback on how collaborators use this module:
+
+- **Explicit dates instead of filename parsing**: add an optional `raster_date` input to `extract_raster` that writes a `date` column to each extract CSV, so `compute_wildfire_metrics` no longer depends on dates in raster file names.
+- **Chunked extraction**: for very large raster libraries, let each `extract_raster` task handle several rasters (or all buffer distances for one raster) to reduce per-task container startup and repeated reads of the patient CSV.
 
 ## Requirements
 

@@ -107,6 +107,10 @@ miniwdl run testrun.wdl
 sprocket run testrun.wdl
 ```
 
+## Future Considerations
+
+See the [ww-geolink README](../../modules/ww-geolink/README.md#future-considerations) for open design ideas (explicit date column instead of filename parsing, and chunked extraction). The scatter in this pipeline would change if chunked extraction is adopted.
+
 ## Support
 
 For questions, bugs, and/or feature requests, reach out to the Fred Hutch Office of the Chief Data Officer (OCDO) at wilds@fredhutch.org, or open an issue on the [WILDS WDL Library issue tracker](https://github.com/getwilds/wilds-wdl-library/issues).

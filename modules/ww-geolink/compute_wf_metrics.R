@@ -10,6 +10,8 @@ option_list <- list(
   make_option("--inputs", dest="inputs", type="character", help="Comma-separated list of daily extract CSVs"),
   make_option("--pctile", dest="pctile", type="numeric", default=0.90, help="Percentile for smoke-wave threshold"),
   make_option("--min_days", dest="min_days", type="integer", default=2, help="Min days for smoke wave"),
+  make_option("--weekly_threshold", dest="weekly_threshold", type="numeric", default=5, help="Weekly mean threshold for counting high-exposure weeks"),
+  make_option("--lag_years", dest="lag_years", type="integer", default=3, help="Number of prior years averaged for the lagged annual mean"),
   make_option("--out", dest="out", type="character", help="Output CSV path")
 )
 opt <- parse_args(OptionParser(option_list=option_list))
@@ -32,7 +34,7 @@ count_smoke_waves <- function(date, exposure, threshold, min_days) {
 }
 
 # Calculate annual metrics for a single buffer distance
-calc_annual_metrics <- function(data, pctile, min_days) {
+calc_annual_metrics <- function(data, pctile, min_days, weekly_threshold, lag_years) {
   data <- data %>%
     mutate(year = year(date), week = isoweek(date)) %>%
     arrange(patientID, date)
@@ -42,10 +44,10 @@ calc_annual_metrics <- function(data, pctile, min_days) {
     group_by(patientID, year, week) %>%
     summarise(mean_val = mean(value, na.rm = TRUE), .groups = "drop")
 
-  # 1. Weeks with mean > 5
+  # 1. Weeks with mean above the weekly threshold
   w_gt5 <- weekly %>%
     group_by(patientID, year) %>%
-    summarise(n_weeks_gt5 = sum(mean_val > 5, na.rm = TRUE), .groups = "drop")
+    summarise(n_weeks_above_threshold = sum(mean_val > weekly_threshold, na.rm = TRUE), .groups = "drop")
 
   # 2. Days > 0
   d_gt0 <- data %>%
@@ -71,13 +73,13 @@ calc_annual_metrics <- function(data, pctile, min_days) {
     }) %>%
     ungroup()
 
-  # 5. Annual mean with 3-year lag
+  # 5. Annual mean with lag (mean of the previous lag_years annual means)
   annual_mean <- data %>%
     group_by(patientID, year) %>%
     summarise(mean_daily = mean(value, na.rm = TRUE), .groups = "drop") %>%
     arrange(patientID, year) %>%
     group_by(patientID) %>%
-    mutate(mean_3ylag = rowMeans(cbind(lag(mean_daily, 1), lag(mean_daily, 2), lag(mean_daily, 3)), na.rm = FALSE)) %>%
+    mutate(mean_lagged = rowMeans(do.call(cbind, lapply(seq_len(lag_years), function(k) lag(mean_daily, k))), na.rm = FALSE)) %>%
     ungroup()
 
   # Merge all
@@ -102,7 +104,7 @@ daily_df$date <- as.Date(gsub("-", "", date_str), format = "%Y%m%d")
 final_metrics <- daily_df %>%
   group_split(buffer_m) %>%
   map_df(function(d) {
-    res <- calc_annual_metrics(d, opt$pctile, opt$min_days)
+    res <- calc_annual_metrics(d, opt$pctile, opt$min_days, opt$weekly_threshold, opt$lag_years)
     res$buffer_m <- d$buffer_m[1]
     res
   })

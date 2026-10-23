@@ -94,6 +94,8 @@ task compute_wildfire_metrics {
     daily_extracts: "Array of daily exposure CSVs"
     p90_pctile: "Percentile for smoke-wave threshold (default 0.90)"
     min_days: "Minimum days to qualify as a smoke-wave (default 2)"
+    weekly_threshold: "Weekly mean exposure above which a week counts as high-exposure (default 5)"
+    lag_years: "Number of prior years averaged for the lagged annual mean (default 3)"
     cpu_cores: "Number of CPU cores allocated for the task"
     memory_gb: "Memory allocated for the task in GB"
     docker_image: "Docker image to use for this task"
@@ -103,6 +105,8 @@ task compute_wildfire_metrics {
     Array[File] daily_extracts
     Float p90_pctile = 0.90
     Int min_days = 2
+    Float weekly_threshold = 5.0
+    Int lag_years = 3
     Int cpu_cores = 1
     Int memory_gb = 8
     String docker_image = "getwilds/r-spatial:0.1.0"
@@ -115,6 +119,8 @@ task compute_wildfire_metrics {
       --inputs "~{sep=',' daily_extracts}" \
       --pctile ~{p90_pctile} \
       --min_days ~{min_days} \
+      --weekly_threshold ~{weekly_threshold} \
+      --lag_years ~{lag_years} \
       --out "annual_wildfire_metrics.csv"
   >>>
 
