@@ -63,7 +63,7 @@ task build_index {
     tar -czf star_index.tar.gz star_index/*
 
     # Clean up the index directory to save space
-    rm -rf star_index
+    rm -rf star_index 2>/dev/null || true
   >>>
 
   output {
