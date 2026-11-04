@@ -82,17 +82,24 @@ task fastqdump {
 
     # fasterq-dump wrapper that clears partial output and temp files
     # between attempts so a retry starts clean.
+    FASTERQ_ATTEMPT=0
     run_fasterq_dump() {
+      FASTERQ_ATTEMPT=$((FASTERQ_ATTEMPT + 1))
       rm -rf ./fasterq_tmp
-      mkdir -p ./fasterq_tmp
+      local tmp_dir
+      if [ "$FASTERQ_ATTEMPT" -eq 1 ]; then
+        tmp_dir=./fasterq_tmp
+        mkdir -p "$tmp_dir"
+      else
+        tmp_dir=$(mktemp -d)
+        echo "Using local scratch temp dir $tmp_dir for fasterq-dump" >&2
+      fi
       rm -f "~{sra_id}"*.fastq
-      fasterq-dump "~{sra_id}" "$@"
+      local status=0
+      fasterq-dump "~{sra_id}" --temp "$tmp_dir" "$@" || status=$?
+      rm -rf "$tmp_dir" 2>/dev/null || true
+      return $status
     }
-    # Pre-create an explicit temp dir for fasterq-dump. Letting it pick
-    # its own path has produced "cannot create this temporary directory"
-    # failures on NFS-backed execution dirs even when the dir is writable
-    # and a shell `mkdir` of the same name succeeds.
-    mkdir -p ./fasterq_tmp
     # Check if paired ended
     numLines=$(fastq-dump -X 1 -Z --split-spot "~{sra_id}" \
       ~{if defined(ngc_file) then "--ngc " + ngc_file else ""} | wc -l)
@@ -101,7 +108,6 @@ task fastqdump {
       retry run_fasterq_dump \
         --threads ~{ncpu} \
         --outdir ./ \
-        --temp ./fasterq_tmp \
         --split-files \
         --include-technical \
         ~{if defined(ngc_file) then "--ngc " + ngc_file else ""}
@@ -110,7 +116,6 @@ task fastqdump {
       retry run_fasterq_dump \
         --threads ~{ncpu} \
         --outdir ./ \
-        --temp ./fasterq_tmp \
         ~{if defined(ngc_file) then "--ngc " + ngc_file else ""}
       # Rename the file to match the expected output format
       mv "~{sra_id}.fastq" "~{sra_id}_1.fastq"
