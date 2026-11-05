@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/openwdl/wdl/8199dd7e3f17322e827225d6e6bc886dac139207/modules/schemas/module.schema.json",
+  "name": "ww-exposure",
+  "license": "MIT",
+  "authors": [
+    "Taylor Firman <tfirman@fredhutch.org>",
+    "Emma Bishop <ebishop@fredhutch.org>",
+    "Malia Cortez <mcortez@fredhutch.org>",
+    "Chloe Lin <jlin6@fredhutch.org>"
+  ],
+  "description": "WILDS WDL pipeline for parallel environmental exposure linkage of patient coordinates to rasters",
+  "repository": "https://github.com/getwilds/wilds-wdl-library",
+  "homepage": "https://getwilds.org/",
+  "entrypoint": "ww-exposure.wdl",
+  "readme": "README.md",
+  "dependencies": {
+    "ww_aws_sso": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "main",
+      "path": "modules/ww-aws-sso"
+    },
+    "ww_geolink": {
+      "git": "https://github.com/getwilds/wilds-wdl-library",
+      "branch": "add-exposure",
+      "path": "modules/ww-geolink"
+    }
+  }
+}
