@@ -21,7 +21,7 @@
     },
     "ww_geolink": {
       "git": "https://github.com/getwilds/wilds-wdl-library",
-      "branch": "add-exposure",
+      "branch": "main",
       "path": "modules/ww-geolink"
     }
   }

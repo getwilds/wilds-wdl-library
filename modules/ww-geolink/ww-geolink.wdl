@@ -66,7 +66,7 @@ task extract_raster {
 
   command <<<
     set -eo pipefail
-    wget -O extract_val.R https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-exposure/modules/ww-geolink/extract_val.R
+    wget -O extract_val.R https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-geolink/extract_val.R
     Rscript extract_val.R \
       --points "~{points_csv}" \
       --raster "~{raster_tif}" \
@@ -146,7 +146,7 @@ task compute_wildfire_metrics {
 
   command <<<
     set -eo pipefail
-    wget -O compute_wf_metrics.R https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-exposure/modules/ww-geolink/compute_wf_metrics.R
+    wget -O compute_wf_metrics.R https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-geolink/compute_wf_metrics.R
     Rscript compute_wf_metrics.R \
       --inputs "~{sep=',' daily_extracts}" \
       --pctile ~{p90_pctile} \
@@ -223,7 +223,7 @@ task join_exposures {
 
   command <<<
     set -eo pipefail
-    wget -O join_all.R https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/add-exposure/modules/ww-geolink/join_all.R
+    wget -O join_all.R https://raw.githubusercontent.com/getwilds/wilds-wdl-library/refs/heads/main/modules/ww-geolink/join_all.R
     Rscript join_all.R \
       --base "~{patient_base}" \
       --extracts "~{sep=',' all_extracts}" \
