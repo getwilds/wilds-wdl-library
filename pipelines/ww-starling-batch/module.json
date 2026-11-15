@@ -13,7 +13,7 @@
   "dependencies": {
     "ww_starling": {
       "git": "https://github.com/getwilds/wilds-wdl-library",
-      "branch": "main",
+      "branch": "sprocket-0.30.1-upgrade",
       "path": "modules/ww-starling"
     }
   }

@@ -54,3 +54,4 @@ workflow starling_example {
     Array[File] split_batch_files = split_fasta.batch_files
   }
 }
+
